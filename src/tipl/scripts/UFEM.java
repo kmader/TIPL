@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.Hashtable;
 
+import tipl.formats.PureFImage;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
@@ -41,6 +42,8 @@ import tipl.util.TImgTools;
  *         easier to read and potentially reuse
  *         <p>
  *         Change Log:
+ *         <p> 
+ *         v26 added the ability to run without any mask at all (just a white image as a mask)
  *         <p>
  *         v25 added maximum io threads and fixed parameter for maskdistance in
  *         the subscript
@@ -74,7 +77,7 @@ import tipl.util.TImgTools;
  */
 public class UFEM implements Runnable {
 	/** date and version number of the script **/
-	public static final String kVer = "27-03-2013 v024";
+	public static final String kVer = "19-09-2013 v026";
 
 	/**
 	 * find the extents of non-zero values in an image and resize based on the
@@ -101,8 +104,31 @@ public class UFEM implements Runnable {
 	public static TImg contour(final TImg maskAim, boolean remEdges,
 			double remEdgesRadius, boolean doCL, double minVolumePct,
 			boolean removeMarrowCore, int maskContourSteps,
-			double maskContourBW, boolean justCircle) {
+			double maskContourBW, boolean justCircle,boolean pureWhiteMask) {
+		if (pureWhiteMask) {
+			PureFImage.PositionFunction whitePF=new PureFImage.PositionFunction() {
 
+				@Override
+				public final double get(Double[] ipos) {
+					// TODO Auto-generated method stub
+					return 1;
+				}
+
+				@Override
+				public double[] getRange() {
+					// TODO Auto-generated method stub
+					return new double[] {0,1};
+				}
+
+				@Override
+				public String name() {
+					// TODO Auto-generated method stub
+					return "WhiteMask";
+				}
+				
+			};
+			return new PureFImage(maskAim,10,whitePF);
+		}
 		if (justCircle) {
 			final EasyContour myContour = new EasyContour(maskAim);
 			myContour.useFixedCirc(remEdgesRadius);
@@ -381,7 +407,7 @@ public class UFEM implements Runnable {
 	int upsampleFactor, downsampleFactor, threshVal, maskContourSteps,
 			porosMaskPeel, stage;
 	boolean doLaplace, doGradient, doGauss, singleStep, resume, makePreviews,
-			multiJobs, doFixMasks, doCL, removeMarrowCore, justCircle;
+			multiJobs, doFixMasks, doCL, removeMarrowCore, justCircle,pureWhiteMask;
 	private int smcOperation = 0;
 	private volatile int ufemCores = 0;
 	protected volatile int submittedJobs = 0;
@@ -527,6 +553,9 @@ public class UFEM implements Runnable {
 		justCircle = p
 				.getOptionBoolean("justcircle",
 						"Use the same circle used to remove edges for the mask of the image");
+		pureWhiteMask = p
+				.getOptionBoolean("nomask",
+						"Dont use a mask (just a white image)");
 
 		maskContourSteps = p.getOptionInt("maskcontoursteps", 180,
 				"Number of steps to use for the contouring of the mask");
@@ -965,7 +994,7 @@ public class UFEM implements Runnable {
 				maskAim = TImgTools.ReadTImg(boneAimFile);
 			maskAim = contour(maskAim, rmEdges, remEdgesRadius, doCL,
 					minVolumePct, removeMarrowCore, maskContourSteps,
-					maskContourBW, justCircle);
+					maskContourBW, justCircle,pureWhiteMask);
 			maskAim.WriteAim(maskAimFile);
 			// Now open the bone and porosity files to process them
 			if (boneAim == null)
@@ -1004,7 +1033,7 @@ public class UFEM implements Runnable {
 					boneAim.getDim(), boneAim.getOffset());
 			maskAim = contour(maskAim, false, remEdgesRadius, doCL,
 					minVolumePct, removeMarrowCore, maskContourSteps,
-					maskContourBW, justCircle);
+					maskContourBW, justCircle,pureWhiteMask);
 			maskAim.WriteAim(maskAimFile);
 
 			boneAim = peelAim(boneAim, maskAim, 1, true);

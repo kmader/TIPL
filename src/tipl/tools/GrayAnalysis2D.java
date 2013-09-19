@@ -200,9 +200,6 @@ public class GrayAnalysis2D extends Hist2D {
 			return outslice;
 		}
 
-		public int getSlices() {
-			return img.getSlices();
-		}
 
 		public Double[] getXYZVec(int cIndex, int cSlice) {
 			return TImgTools.getXYZVecFromVec(img, cIndex, cSlice);
@@ -609,7 +606,7 @@ public class GrayAnalysis2D extends Hist2D {
 		// extents
 		if (debugMode)
 			System.out.println("Reading MapSlice " + sliceNumber + "/"
-					+ dmapA.getSlices());
+					+ dmapA.getDim().z);
 		// Read in the indices
 		final int[] mapSliceA = dmapA.getSliceIndices(sliceNumber);
 		final int[] mapSliceB = dmapB.getSliceIndices(sliceNumber);
@@ -692,11 +689,11 @@ public class GrayAnalysis2D extends Hist2D {
 
 	private void processSlices() {
 		final long start = System.currentTimeMillis();
-		System.out.println("Reading Slices... " + dmapA.getSlices());
-		for (int cSlice = 0; cSlice < dmapA.getSlices(); cSlice++) {
+		System.out.println("Reading Slices... " + dmapA.getDim().z);
+		for (int cSlice = 0; cSlice < dmapA.getDim().z; cSlice++) {
 			if (debugMode)
 				System.out.println("Reading Slices " + cSlice + "/"
-						+ dmapA.getSlices());
+						+ dmapA.getDim().z);
 			AnalyzeSlice(cSlice, true, 0);
 		}
 

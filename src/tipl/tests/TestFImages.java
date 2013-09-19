@@ -2,6 +2,7 @@ package tipl.tests;
 
 import tipl.formats.PureFImage;
 import tipl.formats.TImgRO;
+import tipl.formats.PureFImage.PositionFunction;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
@@ -149,11 +150,6 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 				return null;
 			}
 
-			@Override
-			public int getSlices() {
-				// TODO Auto-generated method stub
-				return inDim.z;
-			}
 		};
 	}
 

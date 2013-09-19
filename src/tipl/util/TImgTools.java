@@ -85,7 +85,6 @@ public class TImgTools {
 		 */
 		public String getProcLog();
 
-		public int getSlices();
 	}
 
 	//
@@ -95,6 +94,17 @@ public class TImgTools {
 	public static final int FAST_MEMORY_BASED = 3;
 	/** minimum isfast level to count as being cached */
 	public static int FAST_CACHED = FAST_MEMORY_MAP_BASED;
+	
+	public static final int IMAGETYPE_BOOL=10;
+	public static final int IMAGETYPE_CHAR=0;
+	public static final int IMAGETYPE_SHORT=1;
+	public static final int IMAGETYPE_INT=2;
+	public static final int IMAGETYPE_FLOAT=3;
+	public static final int IMAGETYPE_DOUBLE=4;
+	public static final int IMAGETYPE_COMPLEX=5;
+	public static final int IMAGETYPE_SPECTRAL=6;
+	public static final int IMAGETYPE_GLOB=7;
+	
 	/**
 	 * A global image cache so images can be referenced until they are unloaded
 	 * by just their name
@@ -160,19 +170,19 @@ public class TImgTools {
 		assert isValidType(inType);
 		assert isValidType(outType);
 		switch (inType) {
-		case 0: // byte
+		case IMAGETYPE_CHAR: // byte
 			return convertCharArray((char[]) inArray, outType, isSigned,
 					shortScaleFactor, maxVal);
-		case 1: // short
+		case IMAGETYPE_SHORT: // short
 			return convertShortArray((short[]) inArray, outType, isSigned,
 					shortScaleFactor, maxVal);
-		case 2: // int
+		case IMAGETYPE_INT: // int
 			return convertIntArray((int[]) inArray, outType, isSigned,
 					shortScaleFactor);
-		case 3: // float
+		case IMAGETYPE_FLOAT: // float
 			return convertFloatArray((float[]) inArray, outType, isSigned,
 					shortScaleFactor);
-		case 10: // boolean
+		case IMAGETYPE_BOOL: // boolean
 			return convertBooleanArray((boolean[]) inArray, outType);
 		}
 		return inArray;
@@ -184,33 +194,33 @@ public class TImgTools {
 		assert (asType >= 0 && asType <= 3) || asType == 10;
 		final int sliceSize = gf.length;
 		switch (asType) {
-		case 0: // Char
+		case IMAGETYPE_CHAR: // Char
 			final char[] gb = new char[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				if (gf[i])
 					gb[i] = 127;
 			return gb;
-		case 1: // Short
+		case IMAGETYPE_SHORT: // Short
 			// Read short data type in
 			final short[] gs = new short[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				if (gf[i])
 					gs[i] = 127;
 			return gs;
-		case 2: // Spec / Int
+		case IMAGETYPE_INT: // Spec / Int
 			// Read integer data type in
 			final int[] gi = new int[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				if (gf[i])
 					gi[i] = 127;
 			return gi;
-		case 3: // Float - Long
+		case IMAGETYPE_FLOAT: // Float - Long
 			final float[] gout = new float[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				if (gf[i])
 					gout[i] = 1.0f;
 			return gout;
-		case 10: // Mask
+		case IMAGETYPE_BOOL: // Mask
 			return gf;
 		default:
 			throw new IllegalArgumentException("Unknown data type!!!" + asType
@@ -224,29 +234,29 @@ public class TImgTools {
 			final boolean isSigned, final float shortScaleFactor, int maxVal) {
 		final int sliceSize = gs.length;
 		switch (asType) {
-		case 0: // Char
+		case IMAGETYPE_CHAR: // Char
 			return gs;
-		case 1: // Short
+		case IMAGETYPE_SHORT: // Short
 			// Read short data type in
 			final short[] gshort = new short[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				gshort[i] = (short) gs[i];
 			return gshort;
-		case 2: // Spec / Int
+		case IMAGETYPE_INT: // Spec / Int
 			// Read integer data type in
 			final int[] gi = new int[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				gi[i] = gi[i];
 			return gi;
 
-		case 3: // Float - Long
+		case IMAGETYPE_FLOAT: // Float - Long
 			final float[] gf = new float[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				gf[i] = (gs[i] - (isSigned ? maxVal / 2.0f : 0.0f))
 						* shortScaleFactor;
 			return gf;
 
-		case 10: // Mask
+		case IMAGETYPE_BOOL: // Mask
 			final boolean[] gbool = new boolean[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				gbool[i] = gs[i] > 0;
@@ -264,29 +274,29 @@ public class TImgTools {
 		assert (asType >= 0 && asType <= 3) || asType == 10;
 		final int sliceSize = gf.length;
 		switch (asType) {
-		case 0: // Char
+		case IMAGETYPE_CHAR: // Char
 			final char[] gb = new char[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				gb[i] = (char) ((gf[i] / shortScaleFactor) + (isSigned ? 127
 						: 0));
 			return gb;
-		case 1: // Short
+		case IMAGETYPE_SHORT: // Short
 			// Read short data type in
 			final short[] gs = new short[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				gs[i] = (short) ((gf[i] / shortScaleFactor) + (isSigned ? 32768
 						: 0));
 			return gs;
-		case 2: // Spec / Int
+		case IMAGETYPE_INT: // Spec / Int
 			// Read integer data type in
 			final int[] gi = new int[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				gi[i] = (int) ((gf[i] / shortScaleFactor) + (isSigned ? 32768
 						: 0));
 			return gi;
-		case 3: // Float - Long
+		case IMAGETYPE_FLOAT: // Float - Long
 			return gf;
-		case 10: // Mask
+		case IMAGETYPE_BOOL: // Mask
 			final boolean[] gbool = new boolean[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				gbool[i] = gf[i] > 0;
@@ -309,7 +319,7 @@ public class TImgTools {
 			final boolean isSigned, final float ShortScaleFactor, int maxVal) {
 		final int sliceSize = gi.length;
 		switch (asType) {
-		case 0: // Char
+		case IMAGETYPE_CHAR: // Char
 			final char[] gb = new char[sliceSize];
 			for (int i = 0; i < sliceSize; i++) {
 				gb[i] = (char) gi[i];
@@ -317,26 +327,26 @@ public class TImgTools {
 
 			return gb;
 
-		case 1: // Short
+		case IMAGETYPE_SHORT: // Short
 			// Read short data type in
 			final short[] gs = new short[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				gs[i] = (short) gi[i];
 			return gs;
 
-		case 2: // Spec / Int
+		case IMAGETYPE_INT: // Spec / Int
 			// Read integer data type in
 
 			return gi;
 
-		case 3: // Float - Long
+		case IMAGETYPE_FLOAT: // Float - Long
 			final float[] gf = new float[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				gf[i] = (gi[i] - (isSigned ? maxVal / 2.0f : 0.0f))
 						* ShortScaleFactor;
 			return gf;
 
-		case 10: // Mask
+		case IMAGETYPE_BOOL: // Mask
 			final boolean[] gbool = new boolean[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				gbool[i] = gi[i] > 0;
@@ -354,7 +364,7 @@ public class TImgTools {
 			final boolean isSigned, final float ShortScaleFactor, int maxVal) {
 		final int sliceSize = gs.length;
 		switch (asType) {
-		case 0: // Char
+		case IMAGETYPE_CHAR: // Char
 			final char[] gb = new char[sliceSize];
 			for (int i = 0; i < sliceSize; i++) {
 				gb[i] = (char) gs[i];
@@ -362,26 +372,26 @@ public class TImgTools {
 
 			return gb;
 
-		case 1: // Short
+		case IMAGETYPE_SHORT: // Short
 			// Read short data type in
 
 			return gs;
 
-		case 2: // Spec / Int
+		case IMAGETYPE_INT: // Spec / Int
 			// Read integer data type in
 			final int[] gi = new int[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				gi[i] = gi[i];
 			return gi;
 
-		case 3: // Float - Long
+		case IMAGETYPE_FLOAT: // Float - Long
 			final float[] gf = new float[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				gf[i] = (gs[i] - (isSigned ? maxVal / 2.0f : 0.0f))
 						* ShortScaleFactor;
 			return gf;
 
-		case 10: // Mask
+		case IMAGETYPE_BOOL: // Mask
 			final boolean[] gbool = new boolean[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
 				gbool[i] = gs[i] > 0;
@@ -547,7 +557,20 @@ public class TImgTools {
 			System.err.println("Image:" + path + " is not in the cache!");
 		}
 	}
-
+	/**
+	 * Calculate the type of object it is from the slice information (getPolyImage, etc)
+	 * @param iData a slice from the image (usually an array)
+	 * @return the type of the object
+	 */
+	public static int identifySliceType(Object iData) {
+		if (iData instanceof boolean[]) return TImgTools.IMAGETYPE_BOOL;
+		if (iData instanceof char[]) return  TImgTools.IMAGETYPE_CHAR;
+		if (iData instanceof short[]) return  TImgTools.IMAGETYPE_SHORT;
+		if (iData instanceof int[]) return  TImgTools.IMAGETYPE_INT;
+		if (iData instanceof float[]) return  TImgTools.IMAGETYPE_FLOAT;
+		if (iData instanceof double[]) return  TImgTools.IMAGETYPE_DOUBLE;
+		throw new IllegalArgumentException("Type of object:"+iData+" cannot be determined!! Proceed with extreme caution");
+	}
 	/**
 	 * The size in bytes of each datatype
 	 * 
@@ -557,13 +580,13 @@ public class TImgTools {
 	public static long typeSize(int inType) {
 		assert isValidType(inType);
 		switch (inType) {
-		case 0:
+		case IMAGETYPE_CHAR:
 			return 1;
-		case 1:
+		case IMAGETYPE_SHORT:
 			return 2;
-		case 2:
+		case IMAGETYPE_INT:
 			return 4;
-		case 10:
+		case IMAGETYPE_BOOL:
 			return 1;
 		}
 		return -1;

@@ -981,7 +981,7 @@ public class GrayAnalysis implements Runnable {
 		// extents
 		if (debugMode)
 			System.out.println("Reading MapSlice " + sliceNumber + "/"
-					+ mapA.getSlices());
+					+ mapA.getDim().z);
 		final TImg.TImgFull fullMapA = new TImg.TImgFull(mapA);
 
 		int[] mapSlice;
@@ -1019,7 +1019,7 @@ public class GrayAnalysis implements Runnable {
 
 		if (debugMode)
 			System.out.println("Reading gfiltSlice " + sliceNumber + "/"
-					+ gfiltA.getSlices());
+					+ gfiltA.getDim().z);
 
 		int[] gfiltSlice = new int[1];
 		float[] fgfiltSlice = new float[1];
@@ -1296,21 +1296,21 @@ public class GrayAnalysis implements Runnable {
 			}
 
 			start = System.currentTimeMillis();
-			System.out.println("Reading Slices... " + mapA.getSlices());
+			System.out.println("Reading Slices... " + mapA.getDim().z);
 			if ((mapA.getImageType() == 1) | (mapA.getImageType() == 2)
 					| (mapA.getImageType() == 3)) {
-				for (int cSlice = 0; cSlice < mapA.getSlices(); cSlice++) {
+				for (int cSlice = 0; cSlice < mapA.getDim().z; cSlice++) {
 					if (debugMode)
 						System.out.println("Reading Slices " + cSlice + "/"
-								+ mapA.getSlices());
+								+ mapA.getDim().z);
 					AnalyzeSlice(cSlice, noThresh, 0);
 				}
 				System.out.println("Rescanning Slices for COV Matrix... "
-						+ mapA.getSlices());
-				for (int cSlice = 0; cSlice < mapA.getSlices(); cSlice++) {
+						+ mapA.getDim().z);
+				for (int cSlice = 0; cSlice < mapA.getDim().z; cSlice++) {
 					if (debugMode)
 						System.out.println("Reading Slices " + cSlice + "/"
-								+ mapA.getSlices());
+								+ mapA.getDim().z);
 					AnalyzeSlice(cSlice, noThresh, 1);
 				}
 			} else {
@@ -1337,10 +1337,10 @@ public class GrayAnalysis implements Runnable {
 				restart = System.currentTimeMillis();
 				if ((mapA.getImageType() == 1) | (mapA.getImageType() == 2)
 						| (mapA.getImageType() == 3)) {
-					for (int cSlice = 0; cSlice < mapA.getSlices(); cSlice++) {
+					for (int cSlice = 0; cSlice < mapA.getDim().z; cSlice++) {
 						if (debugMode)
 							System.out.println("Reading Slices " + cSlice + "/"
-									+ mapA.getSlices());
+									+ mapA.getDim().z);
 						AnalyzeSlice(cSlice, noThresh, 2);
 					}
 				}
