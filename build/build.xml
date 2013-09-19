@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project TIPL">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="/Users/mader/Dropbox/TIPL/build/TIPL.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="org.python.util.jython"/>
+            </manifest>
+            <fileset dir="/Users/mader/Dropbox/TIPL/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/mader/Dropbox/TIPL/libraries/ij.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/mader/Dropbox/TIPL/libraries/jai_codec.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/mader/Dropbox/TIPL/libraries/jai_core.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/mader/Dropbox/TIPL/libraries/jai_imageio.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/mader/Dropbox/TIPL/libraries/jmatharray.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/mader/Dropbox/TIPL/libraries/jmathplot.jar"/>
+            <!--<zipfileset excludes="META-INF/*.SF" src="/Users/mader/Dropbox/TIPL/libraries/jython-2.7-b1.jar"/>-->
+            <!--<zipfileset excludes="META-INF/*.SF" src="/Users/mader/Dropbox/TIPL/libraries/jython.jar"/>-->
+            <zipfileset excludes="META-INF/*.SF" src="/Users/mader/Dropbox/TIPL/libraries/jython-standalone-2.5.3.jar"/>
+            
+            <zipfileset excludes="META-INF/*.SF" src="/Users/mader/Dropbox/TIPL/libraries/VIB_.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/mader/Dropbox/TIPL/libraries/VIB-lib.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/mader/Dropbox/TIPL/libraries/sezpoz-1.9.jar"/>
+        </jar>
+    </target>
+</project>
