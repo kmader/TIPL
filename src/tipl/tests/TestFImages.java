@@ -26,7 +26,15 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 			return (z == y & y == x);
 		}
 	}
-
+	
+	public static class DiagonalPlaneAndDotsFunction extends TestFImages {
+		private final TestFImages Plane=new DiagonalPlaneFunction();
+		private final TestFImages Dots=new DotsFunction();
+		@Override
+		public boolean tget(long x, long y, long z) {
+			return Plane.tget(x, y, z) | Dots.tget(x, y, z);
+		}
+	}
 	/**
 	 * diagonal plane
 	 * 
