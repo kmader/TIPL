@@ -214,10 +214,7 @@ public interface TReader {
 			return true;
 		}
 
-		@Override
-		public int getSlices() {
-			return getPos().z;
-		}
+
 
 		@Override
 		public TImg inheritedAim(boolean[] imgArray, D3int dim, D3int offset) {

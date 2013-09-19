@@ -1,5 +1,7 @@
 package tipl.formats;
 
+import java.util.ArrayList;
+
 import ij.ImageStack;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
@@ -57,12 +59,40 @@ public interface TImgRO extends TImgTools.HasDimensions {
 
 		public short[] getShortAim();
 	}
+	/**
+	 * an object that can output its entire stack
+	 * @author mader
+	 *
+	 */
+	public static interface HasStack extends TImgRO {
+		/**
+		 * Returns a stack of images as an array of linear arrays
+		 * @param asType
+		 * @return
+		 */
+		public Object[] getPolyStack(int asType);
+	}
+	public abstract static class TImgStack implements HasStack {
+		@Override
+		public Object[] getPolyStack(int asType) {
+			ArrayList<Object> cStack=new ArrayList<Object>();
+			for(int i=0;i<=getDim().z;i++) cStack.add(getPolyImage(i,asType));
+			return cStack.toArray();
+		}
+	}
 
 	public static class TImgFull implements TImgOld {
-		final TImgRO myImg;
+		protected final TImgRO myImg;
 
 		public TImgFull(final TImgRO inImg) {
 			myImg = inImg;
+		}
+		/**
+		 * return the underlying TImgRO object
+		 * @return the TImgRO object
+		 */
+		public TImgRO gT() {
+			return myImg;
 		}
 
 		@Override

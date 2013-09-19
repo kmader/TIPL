@@ -470,10 +470,7 @@ public class PureFImage implements TImg {
 		return false;
 	}
 
-	@Override
-	public int getSlices() {
-		return myDim.getSlices();
-	}
+
 
 	public Double[] getXYZVec(int cIndex, int sliceNumber) {
 		return TImgTools.getXYZVecFromVec(myPos, myDim, cIndex, sliceNumber);

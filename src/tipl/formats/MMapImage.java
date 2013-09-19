@@ -107,23 +107,23 @@ public class MMapImage implements TImg, TReader, TWriter {
 	protected static MappedByteBuffer putSlice(final MappedByteBuffer curMap,
 			final Object iSlice, int asType) {
 		switch (asType) {
-		case 10:
+		case TImgTools.IMAGETYPE_BOOL:
 			for (final boolean cVal : (boolean[]) iSlice)
 				curMap.putChar((cVal ? (char) 127 : (char) 0));
 			break;
-		case 0:
+		case TImgTools.IMAGETYPE_CHAR:
 			for (final char cVal : (char[]) iSlice)
 				curMap.putChar(cVal);
 			break;
-		case 1:
+		case TImgTools.IMAGETYPE_SHORT:
 			for (final short sVal : (short[]) iSlice)
 				curMap.putShort(sVal);
 			break;
-		case 2:
+		case TImgTools.IMAGETYPE_INT:
 			for (final int iVal : (int[]) iSlice)
 				curMap.putInt(iVal);
 			break;
-		case 3:
+		case TImgTools.IMAGETYPE_FLOAT:
 			for (final float fVal : (float[]) iSlice)
 				curMap.putFloat(fVal);
 			break;
@@ -286,22 +286,22 @@ public class MMapImage implements TImg, TReader, TWriter {
 		final MappedByteBuffer curMap = getSliceFromFuture(iSliceNumber);
 
 		switch (type) {
-		case 0:
-		case 10:
+		case TImgTools.IMAGETYPE_CHAR:
+		case TImgTools.IMAGETYPE_BOOL:
 			final char[] cb = new char[sliceElements];
 			curMap.asCharBuffer().get(cb, 0, sliceElements);
 			return TImgTools.convertArrayType(cb, 0, asType, false, 1.0f, 127);
-		case 1:
+		case TImgTools.IMAGETYPE_SHORT:
 			final short[] sb = new short[sliceElements];
 			curMap.asShortBuffer().get(sb, 0, sliceElements);
 			return TImgTools.convertArrayType(sb, type, asType, false, 1.0f,
 					127);
-		case 2:
+		case TImgTools.IMAGETYPE_INT:
 			final int[] ib = new int[sliceElements];
 			curMap.asIntBuffer().get(ib, 0, sliceElements);
 			return TImgTools.convertArrayType(ib, type, asType, false, 1.0f,
 					127);
-		case 3:
+		case TImgTools.IMAGETYPE_FLOAT:
 			final float[] fb = new float[sliceElements];
 			curMap.asFloatBuffer().get(fb, 0, sliceElements);
 			return TImgTools.convertArrayType(fb, type, asType, false, 1.0f,
@@ -387,16 +387,6 @@ public class MMapImage implements TImg, TReader, TWriter {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see tipl.formats.TImg#getSlices()
-	 */
-	@Override
-	public int getSlices() {
-		// TODO Auto-generated method stub
-		return getDim().z - 1;
-	}
 
 	@Override
 	public TImg inheritedAim(boolean[] imgArray, D3int dim, D3int offset) {

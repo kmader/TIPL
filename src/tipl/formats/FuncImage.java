@@ -247,10 +247,7 @@ public abstract class FuncImage implements TImg {
 		return templateData.getSigned();
 	}
 
-	@Override
-	public int getSlices() {
-		return templateData.getSlices();
-	}
+
 
 	/**
 	 * The output value for a given position and value

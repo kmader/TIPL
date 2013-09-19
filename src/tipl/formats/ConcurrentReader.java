@@ -230,10 +230,6 @@ public class ConcurrentReader implements TImgRO {
 		return templateData.getSigned();
 	}
 
-	@Override
-	public int getSlices() {
-		return templateData.getSlices();
-	}
 
 	public Double[] getXYZVec(int cIndex, int sliceNumber) {
 		return TImgTools.getXYZVecFromVec(this, cIndex, sliceNumber);

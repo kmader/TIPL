@@ -33,6 +33,7 @@ import java.util.Vector;
 
 import javax.media.jai.PlanarImage;
 
+import tipl.ij.TImgToImagePlus;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
@@ -66,137 +67,8 @@ import com.sun.media.jai.codecimpl.util.RasterFactory;
  */
 public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 		TImgRO.FullReadable, TImgRO.CanExport {
-	/**
-	 * Autoranger class is a thread which runs in the background and calculates
-	 * means and std
-	 */
-	private static class autoRanger extends Thread {
-		short[] spixels;
-		float[] fpixels;
-		char[] bpixels;
-		ImageProcessor ip;
-		float sum = 0;
-		float ssum = 0;
-		float cnt = 1;
-		float minv = 0;
-		float maxv = 0;
-		int mode;
-		HistogramWindow chw;
-
-		public autoRanger(ImageProcessor outIm, HistogramWindow ichw,
-				char[] ipixels) {
-			super("Charer");
-			ip = outIm;
-			bpixels = ipixels;
-			chw = ichw;
-			mode = 0;
-
-		}
-
-		public autoRanger(ImageProcessor outIm, HistogramWindow ichw,
-				float[] ipixels) {
-			super("Floater");
-			ip = outIm;
-			fpixels = ipixels;
-			chw = ichw;
-			mode = 3;
-
-		}
-
-		public autoRanger(ImageProcessor outIm, HistogramWindow ichw,
-				short[] ipixels) {
-			super("Shorter");
-			ip = outIm;
-			spixels = ipixels;
-			chw = ichw;
-			mode = 1;
-
-		}
-
-		@Override
-		public void run() {
-			switch (mode) {
-			case 0:
-				cnt = 0;
-				sum = 0;
-				ssum = 0;
-				minv = bpixels[0];
-				maxv = bpixels[0];
-				for (int i = 0; i < bpixels.length; i++) {
-					// if (bpixels[i]>0) {
-					sum += bpixels[i];
-					ssum += ((float) bpixels[i]) * bpixels[i];
-					cnt++;
-					if (bpixels[i] > maxv)
-						maxv = bpixels[i];
-					if (bpixels[i] < minv)
-						minv = bpixels[i];
-					// }
-				}
-				break;
-			case 1:
-				cnt = 0;
-				sum = 0;
-				ssum = 0;
-				minv = spixels[0];
-				maxv = spixels[0];
-				for (int i = 0; i < spixels.length; i++) {
-					// if (spixels[i]>0) {
-					sum += spixels[i];
-					ssum += ((float) spixels[i]) * spixels[i];
-					cnt++;
-					if (spixels[i] > maxv)
-						maxv = spixels[i];
-					if (spixels[i] < minv)
-						minv = spixels[i];
-					// }
-				}
-				break;
-			case 3:
-				cnt = 0;
-				sum = 0;
-				ssum = 0;
-				minv = fpixels[0];
-				maxv = fpixels[0];
-				for (int i = 0; i < fpixels.length; i++) {
-					sum += fpixels[i];
-					ssum += fpixels[i] * fpixels[i];
-					if (fpixels[i] > maxv)
-						maxv = fpixels[i];
-					if (fpixels[i] < minv)
-						minv = fpixels[i];
-					cnt++;
-				}
-				break;
-			default:
-				System.out.println("Not really sure what's up!" + mode + ", "
-						+ ip);
-			}
-			final float mean = sum / cnt;
-			final float std = (float) Math.sqrt(ssum / cnt - mean * mean);
-
-			ip.setMinAndMax(mean - std, mean + std);
-			// new HistogramWindow("Histogram of "+ip.getShortTitle(), ip, 200,
-			// mean-std, mean+std, iyMax);
-			final String mytitle = "AR:" + this;
-			if (chw != null) {
-				chw.showHistogram(new ImagePlus(mytitle, ip), 255,
-						max(minv, mean - std), min(maxv, mean + std));
-				chw.run();
-			}
-			System.out.println("AutoRanger:" + this + ", Finished:(" + (mean)
-					+ " -> [" + minv + "," + (mean - std) + "," + (mean + std)
-					+ "," + maxv + "])");
-
-		}
-
-	}
-
-	/**
-	 * Autoranger class is a thread which runs in the background and calculates
-	 * means and std
-	 */
-	private static class sliceLoader extends Thread {
+	
+	public static class sliceLoader extends Thread {
 		int sslice, fslice, asType;
 		volatile VirtualAim parent;
 
@@ -1500,6 +1372,7 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 
 	/** Returns the pixel array for the specified slice, were 1<=n<=nslices. */
 	@Override
+	@Deprecated
 	public Object getPixels(int n) {
 		final ImageProcessor ip = getProcessor(n);
 		if (ip != null)
@@ -1605,8 +1478,8 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 							+ curPt[2].floatValue() + ") in (" + pos.x + ","
 							+ pos.y + "," + pos.z + ")");
 					System.out.println("Search for (" + curX + "," + curY + ","
-							+ curZ + ") in (" + getWidth() + "," + getHeight()
-							+ "," + getSlices() + ")");
+							+ curZ + ") in (" + getDim().x + "," + getDim().y
+							+ "," + getDim().z + ")");
 				}
 			}
 		}
@@ -1641,6 +1514,7 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 	 * Returns null if the stack is empty.
 	 */
 	@Override
+	@Deprecated
 	public ImageProcessor getProcessor(int n) {
 		final int wid = getWidth();
 		final int het = getHeight();
@@ -1661,7 +1535,7 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 			ip = new ByteProcessor(wid, het, rbpixels, cm);
 			ip.setSnapshotPixels(rbpixels);
 			ip.setMinAndMax(Byte.MIN_VALUE, Byte.MAX_VALUE);
-			(new autoRanger(ip, curHistWind, bpixels)).start();
+			(new TImgToImagePlus.autoRanger(ip, curHistWind, bpixels)).start();
 			break;
 		case 1:
 		case 2:
@@ -1671,7 +1545,7 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 			ip = new ShortProcessor(wid, het, spixels, cm);
 			ip.setSnapshotPixels(spixels);
 			ip.setMinAndMax(Short.MIN_VALUE, Short.MAX_VALUE);
-			(new autoRanger(ip, curHistWind, spixels)).start();
+			(new TImgToImagePlus.autoRanger(ip, curHistWind, spixels)).start();
 			break;
 
 		case 3:
@@ -1681,7 +1555,7 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 			ip = new FloatProcessor(wid, het, fpixels, cm);
 			ip.setSnapshotPixels(fpixels);
 			ip.setMinAndMax(-Double.MAX_VALUE, Double.MAX_VALUE);
-			(new autoRanger(ip, curHistWind, fpixels)).start();
+			(new TImgToImagePlus.autoRanger(ip, curHistWind, fpixels)).start();
 			break;
 
 		}
@@ -1821,11 +1695,6 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 		return isSigned;
 	}
 
-	/** Returns the number of slices in this stack. */
-	@Override
-	public int getSize() {
-		return getSlices();
-	}
 
 	/** Returns the file name of the Nth image. */
 	@Override
@@ -1833,11 +1702,7 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 		return "KSM VirtualAim Interface";
 	}
 
-	/** ImageJ.ImageStack: function to get the number of slices */
-	@Override
-	public int getSlices() {
-		return getDim().getSlices();
-	}
+
 
 	public float GetSpot(int x, int y, int z) {
 		System.out.println("Not working yet...");
@@ -2263,6 +2128,7 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 	 * requires twice as much memory due to the different methods used in Aim
 	 * and ImageJ data models, and the lack of operator overloading in java :-(
 	 */
+	@Deprecated
 	protected void loadAimfromStack() {
 		System.out.println("Loading ImageJ stack as Aim");
 		boolean changedSize = false;
@@ -2366,6 +2232,7 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 	 * requires twice as much memory due to the different methods used in Aim
 	 * and ImageJ data models, and the lack of operator overloading in java :-(
 	 */
+	@Deprecated
 	protected void loadAimfromStack(Object[] istack) {
 		stack = istack;
 		loadAimfromStack();

@@ -245,16 +245,6 @@ public class TiffDirectory implements TImg {
 		return signedValue;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see tipl.formats.TImg#getSlices()
-	 */
-	@Override
-	public int getSlices() {
-		// TODO Auto-generated method stub
-		return getDim().z;
-	}
 
 	public void getTIFFheader(TIFFField[] allfields) {
 
