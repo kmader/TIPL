@@ -485,157 +485,6 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 
 	}
 
-	private BufferedImage aimSlice(int n, int cType) {
-
-		BufferedImage image = null;
-		System.gc();
-		int maxVal = 255;
-		if (cType == BufferedImage.TYPE_BYTE_GRAY)
-			maxVal = 127;
-		if (cType == BufferedImage.TYPE_USHORT_GRAY)
-			maxVal = 65536;
-		if (cType == BufferedImage.TYPE_BYTE_BINARY)
-			maxVal = 255;
-		// int outPos=n*width*height;
-		final int outPos = n * dim.x * dim.y;
-		final int sliceLen = dim.x * dim.y;
-		// System.out.println("Slice:"+n+", cop-"+String.format("%.2f",(outPos+0.0)/1e6)+" MVx, "+String.format("%.2f",(outPos*100.0)/tPos)+" %");
-		int[] pixels;
-		float[] fpixels;
-		if (!fullAimLoaded) {
-			if (cType == BufferedImage.TYPE_BYTE_GRAY)
-				getByteAim();
-			if (cType == BufferedImage.TYPE_USHORT_GRAY)
-				getShortAim();
-			if (cType == BufferedImage.TYPE_BYTE_BINARY)
-				getBoolAim();
-			if (cType == BufferedImage.TYPE_CUSTOM)
-				getFloatAim();
-		}
-		if (fullAimLoaded) {
-			if (cType == BufferedImage.TYPE_CUSTOM) { // Float is a special case
-				fpixels = new float[sliceLen];
-
-				switch (imageType) {
-				case 0:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						fpixels[cIndex - outPos] = (aimByte[cIndex] + (isSigned ? maxVal / 2
-								: 0))
-								* ShortScaleFactor;
-					}
-					break;
-				case 1:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						fpixels[cIndex - outPos] = (aimShort[cIndex] + (isSigned ? maxVal / 2
-								: 0))
-								* ShortScaleFactor;
-					}
-					break;
-				case 2:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						fpixels[cIndex - outPos] = (aimInt[cIndex] + (isSigned ? maxVal / 2
-								: 0))
-								* ShortScaleFactor;
-					}
-					break;
-				case 3:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						fpixels[cIndex - outPos] = aimFloat[cIndex];
-					}
-					break;
-				case 10:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						if (aimMask[cIndex])
-							fpixels[cIndex - outPos] = 1.0f;
-					}
-					break;
-
-				default:
-					System.out.println("Not supported!");
-					break;
-				}
-
-				final int nbBands = 1;
-				final int[] rgbOffset = new int[nbBands];
-				final SampleModel sampleModel = RasterFactory
-						.createPixelInterleavedSampleModel(
-								DataBuffer.TYPE_FLOAT, dim.x, dim.y, nbBands,
-								nbBands * dim.x, rgbOffset);
-
-				final ColorModel colorModel = ImageCodec
-						.createComponentColorModel(sampleModel);
-
-				final DataBufferFloat dataBuffer = new DataBufferFloat(fpixels,
-						fpixels.length);
-				fpixels = null;
-				final WritableRaster raster = RasterFactory
-						.createWritableRaster(sampleModel, dataBuffer,
-								new Point(0, 0));
-
-				image = new BufferedImage(colorModel, raster, false, null);
-
-			} else {
-				image = new BufferedImage(dim.x, dim.y, cType);
-				final WritableRaster raster = (WritableRaster) image.getData();
-
-				pixels = new int[sliceLen]; // is unsigned (deletes negative
-											// values)
-
-				switch (imageType) {
-				case 0:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						pixels[cIndex - outPos] = (aimByte[cIndex])
-								+ (isSigned ? maxVal / 2 : 0);
-
-					}
-					break;
-				case 1:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						pixels[cIndex - outPos] = (aimShort[cIndex])
-								+ (isSigned ? maxVal / 2 : 0);
-						// sliceAvg+=pixels[cIndex-outPos];
-					}
-					break;
-				case 2:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						pixels[cIndex - outPos] = aimInt[cIndex]
-								+ (isSigned ? maxVal / 2 : 0);
-						// sliceAvg+=pixels[cIndex-outPos];
-					}
-					break;
-				case 3:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						pixels[cIndex - outPos] = (int) (aimFloat[cIndex] / ShortScaleFactor)
-								+ (isSigned ? maxVal / 2 : 0);
-						// sliceAvg+=pixels[cIndex-outPos];
-					}
-					break;
-				case 10:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						if (aimMask[cIndex])
-							pixels[cIndex - outPos] = maxVal;
-						// sliceAvg+=pixels[cIndex-outPos];
-					}
-
-					break;
-
-				default:
-					System.out.println("Not supported!");
-					break;
-				}
-				raster.setPixels(0, 0, dim.x, dim.y, pixels);
-				image.setData(raster);
-				pixels = null;
-			}
-		} else {
-			System.out.println("Error, Full Aim data has not yet been loaded!");
-		}
-		System.gc();
-
-		return image;
-
-	}
-
 	@Override
 	public String appendProcLog(String logText) {
 		// String newLog=getProcLog()+"\n"+logText;
@@ -2894,9 +2743,10 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 
 	/** Show aim as a stack */
 	public ImagePlus show() {
-		System.out.println("Show Aim...");
+		
+		System.out.println("Show Aim... "+getDim().z);
 		isVirtual = true;
-		if (getSize() > 0) {
+		if (getDim().z > 0) {
 			curImPlus = new ImagePlus(sampleName, this);
 			final Calibration cal = new Calibration();
 			cal.pixelWidth = elSize.x;
@@ -3125,6 +2975,165 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 		}
 
 	}
+	
+	
+	/**
+	 * Creates a buffered image for the given slice which can be used to save as jpg
+	 * @param n slice number
+	 * @param cType type of image to buffer
+	 * @return a bufferedimage
+	 */
+	protected BufferedImage aimSlice(int n, int cType) {
+
+		BufferedImage image = null;
+		System.gc();
+		int maxVal = 255;
+		if (cType == BufferedImage.TYPE_BYTE_GRAY)
+			maxVal = 127;
+		if (cType == BufferedImage.TYPE_USHORT_GRAY)
+			maxVal = 65536;
+		if (cType == BufferedImage.TYPE_BYTE_BINARY)
+			maxVal = 255;
+		// int outPos=n*width*height;
+		final int outPos = n * dim.x * dim.y;
+		final int sliceLen = dim.x * dim.y;
+		// System.out.println("Slice:"+n+", cop-"+String.format("%.2f",(outPos+0.0)/1e6)+" MVx, "+String.format("%.2f",(outPos*100.0)/tPos)+" %");
+		int[] pixels;
+		float[] fpixels;
+		if (!fullAimLoaded) {
+			if (cType == BufferedImage.TYPE_BYTE_GRAY)
+				getByteAim();
+			if (cType == BufferedImage.TYPE_USHORT_GRAY)
+				getShortAim();
+			if (cType == BufferedImage.TYPE_BYTE_BINARY)
+				getBoolAim();
+			if (cType == BufferedImage.TYPE_CUSTOM)
+				getFloatAim();
+		}
+		if (fullAimLoaded) {
+			if (cType == BufferedImage.TYPE_CUSTOM) { // Float is a special case
+				fpixels = new float[sliceLen];
+
+				switch (imageType) {
+				case 0:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						fpixels[cIndex - outPos] = (aimByte[cIndex] + (isSigned ? maxVal / 2
+								: 0))
+								* ShortScaleFactor;
+					}
+					break;
+				case 1:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						fpixels[cIndex - outPos] = (aimShort[cIndex] + (isSigned ? maxVal / 2
+								: 0))
+								* ShortScaleFactor;
+					}
+					break;
+				case 2:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						fpixels[cIndex - outPos] = (aimInt[cIndex] + (isSigned ? maxVal / 2
+								: 0))
+								* ShortScaleFactor;
+					}
+					break;
+				case 3:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						fpixels[cIndex - outPos] = aimFloat[cIndex];
+					}
+					break;
+				case 10:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						if (aimMask[cIndex])
+							fpixels[cIndex - outPos] = 1.0f;
+					}
+					break;
+
+				default:
+					System.out.println("Not supported!");
+					break;
+				}
+
+				final int nbBands = 1;
+				final int[] rgbOffset = new int[nbBands];
+				final SampleModel sampleModel = RasterFactory
+						.createPixelInterleavedSampleModel(
+								DataBuffer.TYPE_FLOAT, dim.x, dim.y, nbBands,
+								nbBands * dim.x, rgbOffset);
+
+				final ColorModel colorModel = ImageCodec
+						.createComponentColorModel(sampleModel);
+
+				final DataBufferFloat dataBuffer = new DataBufferFloat(fpixels,
+						fpixels.length);
+				fpixels = null;
+				final WritableRaster raster = RasterFactory
+						.createWritableRaster(sampleModel, dataBuffer,
+								new Point(0, 0));
+
+				image = new BufferedImage(colorModel, raster, false, null);
+
+			} else {
+				image = new BufferedImage(dim.x, dim.y, cType);
+				final WritableRaster raster = (WritableRaster) image.getData();
+
+				pixels = new int[sliceLen]; // is unsigned (deletes negative
+											// values)
+
+				switch (imageType) {
+				case 0:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						pixels[cIndex - outPos] = (aimByte[cIndex])
+								+ (isSigned ? maxVal / 2 : 0);
+
+					}
+					break;
+				case 1:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						pixels[cIndex - outPos] = (aimShort[cIndex])
+								+ (isSigned ? maxVal / 2 : 0);
+						// sliceAvg+=pixels[cIndex-outPos];
+					}
+					break;
+				case 2:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						pixels[cIndex - outPos] = aimInt[cIndex]
+								+ (isSigned ? maxVal / 2 : 0);
+						// sliceAvg+=pixels[cIndex-outPos];
+					}
+					break;
+				case 3:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						pixels[cIndex - outPos] = (int) (aimFloat[cIndex] / ShortScaleFactor)
+								+ (isSigned ? maxVal / 2 : 0);
+						// sliceAvg+=pixels[cIndex-outPos];
+					}
+					break;
+				case 10:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						if (aimMask[cIndex])
+							pixels[cIndex - outPos] = maxVal;
+						// sliceAvg+=pixels[cIndex-outPos];
+					}
+
+					break;
+
+				default:
+					System.out.println("Not supported!");
+					break;
+				}
+				raster.setPixels(0, 0, dim.x, dim.y, pixels);
+				image.setData(raster);
+				pixels = null;
+			}
+		} else {
+			System.out.println("Error, Full Aim data has not yet been loaded!");
+		}
+		System.gc();
+
+		return image;
+
+	}
+
 
 	public void WriteAim(String outpath, int outType, float scaleVal) {
 		ShortScaleFactor = scaleVal;

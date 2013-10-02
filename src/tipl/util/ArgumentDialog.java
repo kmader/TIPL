@@ -51,7 +51,9 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
 		g = new TIPLDialog(title);
 		g.addMessage(helpText, null, Color.red);
 		inList.processOptions(this);
-		g.showDialog();
+		//g.showDialog();
+		
+		
 	}
 
 	protected GUIControl addD3Control(String cName, D3float cStat,
@@ -88,7 +90,8 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
 			return g.appendNumericField(fName, ((Integer) cValue).intValue(), 0);
 		} else if (cValue instanceof Boolean) {
 			final boolean cStat = ((Boolean) cValue).booleanValue();
-			return g.appendCheckbox(fName, cStat);
+			GUIControl cChecks=g.appendCheckbox(fName, cStat);
+			cChecks.setValueCallback(cArgument.getCallback());
 		} else if (cValue instanceof D3float) {
 			final D3float cStat = (D3float) cValue;
 			return addD3Control(cName, cStat, cHelp);
@@ -115,6 +118,9 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
 
 	public void show() {
 		g.showDialog();
+	}
+	public void nbshow() {
+		g.NonBlockingShow();
 	}
 
 }

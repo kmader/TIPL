@@ -22,6 +22,12 @@ public class ArgumentList {
 	 * (parameter without key), 1 (raw key and parameter) or 2 (fully supported
 	 * parameter, key, default value, type, and help
 	 * **/
+	public static interface ArgumentCallback {
+		public Object valueSet(Object value);
+	}
+	public final static ArgumentCallback emptyCallback=new ArgumentCallback() {
+		public Object valueSet(Object value) {return value;}
+	};
 	public static interface Argument {
 		public String getHelpText();
 
@@ -34,23 +40,22 @@ public class ArgumentList {
 		public String getValueAsString();
 
 		public boolean wasInput();
+		/** a callback function used when the value is changed (usually in a dialog)
+		 * 
+		 * @param curCallback callback to send the value to
+		 */
+		public void setCallback(ArgumentCallback curCallback);
+		
+		public ArgumentCallback getCallback();
+		
 	}
 
-	protected static class EmptyArgument extends GenericArgument {
-		public EmptyArgument(String inValue) {
-			super("", inValue);
-		}
 
-		@Override
-		public final int getType() {
-			return 0;
-		}
-	}
 
 	protected static class GenericArgument implements Argument {
 		protected final String value;
 		public final String name;
-
+		public ArgumentCallback curCallback=emptyCallback;
 		public GenericArgument(String inName, String inValue) {
 			name = inName;
 			value = inValue;
@@ -85,8 +90,30 @@ public class ArgumentList {
 		public boolean wasInput() {
 			return true;
 		}
+
+		@Override
+		public void setCallback(ArgumentCallback inCallback) {
+			curCallback=inCallback;
+		}
+
+		@Override
+		public ArgumentCallback getCallback() {
+			// TODO Auto-generated method stub
+			return curCallback;
+		}
+		
 	}
 
+	protected static class EmptyArgument extends GenericArgument {
+		public EmptyArgument(String inValue) {
+			super("", inValue);
+		}
+
+		@Override
+		public final int getType() {
+			return 0;
+		}
+	}
 	/**
 	 * simply interface for performing operations on a list (like map in python)
 	 * 
@@ -164,6 +191,7 @@ public class ArgumentList {
 		protected final boolean usedDefault;
 		public final String name;
 		public final String helpText;
+		protected ArgumentCallback curCallback=emptyCallback;
 
 		public TypedArgument(Argument inArg, String inHelpText, T defValue,
 				ArgumentParser.strParse<T> tParse) {
@@ -229,6 +257,16 @@ public class ArgumentList {
 		@Override
 		public boolean wasInput() {
 			return !usedDefault;
+		}
+		
+		@Override
+		public void setCallback(ArgumentCallback inCallback) {
+			curCallback=inCallback;
+		}
+
+		@Override
+		public ArgumentCallback getCallback() {
+			return curCallback;
 		}
 	}
 

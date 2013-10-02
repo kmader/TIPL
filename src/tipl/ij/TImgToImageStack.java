@@ -21,7 +21,8 @@ import ij.process.ShortProcessor;
  *
  */
 public class TImgToImageStack extends ImageStack {
-	final protected TImgRO.TImgFull coreTImg;
+	final protected TImgRO coreTImg;
+	final protected TImgRO.TImgFull coreTFull;
 	/** ImageJ.ImageStack colormodel */
 	protected static ColorModel cm = null;
 	//ImagePlus curImPlus = null;
@@ -29,13 +30,17 @@ public class TImgToImageStack extends ImageStack {
 	// Image Stack Implementation Code
 	protected Object[] stack = null;
 	protected boolean isVirtual=true;
+	public static ImageStack MakeImageStack(TImgRO inputImage) {
+		return new TImgToImageStack(inputImage);
+	}
 	/**
 	 * Take an input image and convert it to an imagestack (read-only, won't be forced but it won't sync)
 	 * @param inputImage the image to use
 	 */
 	public TImgToImageStack(TImgRO inputImage) {
 		super(inputImage.getDim().x, inputImage.getDim().y, inputImage.getDim().z);
-		coreTImg=new TImgRO.TImgFull(inputImage);
+		coreTImg=inputImage;
+		coreTFull=new TImgRO.TImgFull(inputImage);
 	}
 
 
@@ -47,7 +52,7 @@ public class TImgToImageStack extends ImageStack {
 	public ImageProcessor getProcessor(int n) {
 		final int wid = getWidth();
 		final int het = getHeight();
-		int imageType=coreTImg.gT().getImageType();
+		int imageType=coreTImg.getImageType();
 		System.out.println("getProcessor: " + n + ", Type=" + imageType + ", wid=" + wid + " , het=" + het);
 		ImageProcessor ip = null;
 		switch (imageType) {
@@ -55,7 +60,7 @@ public class TImgToImageStack extends ImageStack {
 		case 10:
 			char[] bpixels = null;
 			// if (!isLoaded)
-			bpixels = coreTImg.getByteArray(n - 1);
+			bpixels = coreTFull.getByteArray(n - 1);
 			final byte[] rbpixels = new byte[bpixels.length];
 			for (int i = 0; i < bpixels.length; i++)
 				rbpixels[i] = (byte) bpixels[i];
@@ -68,7 +73,7 @@ public class TImgToImageStack extends ImageStack {
 		case 2:
 			short[] spixels = null;
 			// if (!isLoaded)
-			spixels = coreTImg.getShortArray(n - 1);
+			spixels = coreTFull.getShortArray(n - 1);
 			ip = new ShortProcessor(wid, het, spixels, cm);
 			ip.setSnapshotPixels(spixels);
 			ip.setMinAndMax(Short.MIN_VALUE, Short.MAX_VALUE);
@@ -78,7 +83,7 @@ public class TImgToImageStack extends ImageStack {
 		case 3:
 			float[] fpixels = null;
 			// if (!isLoaded)
-			fpixels = coreTImg.getFloatArray(n - 1);
+			fpixels = coreTFull.getFloatArray(n - 1);
 			ip = new FloatProcessor(wid, het, fpixels, cm);
 			ip.setSnapshotPixels(fpixels);
 			ip.setMinAndMax(-Double.MAX_VALUE, Double.MAX_VALUE);
@@ -221,6 +226,11 @@ public class TImgToImageStack extends ImageStack {
 	@Override
 	public void setPixels(Object pixels, int n) {
 		throw new IllegalArgumentException("setPixels function has not yet been implemented");	
+	}
+	
+	@Override
+	public int getSize() {
+		return coreTImg.getDim().z;
 	}
 
 
