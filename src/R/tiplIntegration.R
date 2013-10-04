@@ -4,13 +4,21 @@ require("rJava")
 # Test Functions
 as.tipl.pf<-function(obj) .jcast(obj,new.class="tipl/formats/PureFImage$PositionFunction",check=T)
 tiplPlane<-as.tipl.pf(.jnew("tipl/tests/TestFImages$DiagonalPlaneFunction"))
-tiplLines<-as.tipl.pf(.jnew("tipl/tests/TestFImages$LinesFunction"))
+tiplLine<-as.tipl.pf(.jnew("tipl/tests/TestFImages$LinesFunction"))
+tiplDots<-as.tipl.pf(.jnew("tipl/tests/TestFImages$DotsFunction"))
 # this doesnt work :: not sure why .jcall("tipl/tests/TestFImages","tipl/formats/TImgRO","wrapIt",as.integer(10),tiplPlane)
-testWrap<-function(c.fun,size=10) J("tipl.tests.TestFImages")$wrapIt(as.integer(size),c.fun)
-planeImg<-testWrap(tiplPlane)
-lineImg<-testWrap(tiplLine)
+tiplWrap<-function(c.fun,size=10) J("tipl.tests.TestFImages")$wrapIt(as.integer(size),c.fun)
+planeImg<-tiplWrap(tiplPlane)
+lineImg<-tiplWrap(tiplLine)
+dotsImg<-tiplWrap(tiplDots)
 # this gets very unhappy with AWT ReadTImg("/Users/mader/Dropbox/TIPL/test/foam/ufilt.tif")
 ReadTImg<-function(filename) J("tipl.util.TImgTools")$ReadTImg(filename)
-
-
+# read a slice from an image
+getSlice<-function(c.img,c.slice,slice.type=3) {
+  size<-c.img$getDim()
+  cur.slice<-c.img$getPolyImage(as.integer(c.slice),as.integer(slice.type))
+  matrix(cur.slice,nrow=size$x,byrow=T)
+}
+# show slice from an image
+showSlice<-function(...) image(getSlice(...))
 
