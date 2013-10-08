@@ -40,14 +40,7 @@ public class ResizeTest {
 		assertEquals(img.getPos().z, pos.z);
 	}
 
-	protected static long countVoxelsSlice(TImgRO img, int sliceZ) {
-		final boolean[] cSlice = (boolean[]) img.getPolyImage(sliceZ, 10);
-		long i = 0;
-		for (final boolean cVal : cSlice)
-			if (cVal)
-				i++;
-		return i;
-	}
+
 
 	protected static boolean doSlicesMatch(boolean[] slice1, boolean[] slice2) {
 		assertEquals(slice1.length, slice2.length);
@@ -198,7 +191,7 @@ public class ResizeTest {
 		RS.setParameter("-pos=0,0,5 -dim=10,10,1");
 		RS.execute();
 		final TImgRO outImg = RS.ExportImages(testImg)[0];
-		assertEquals(countVoxelsSlice(outImg, 0), countVoxelsSlice(testImg, 5));
+		assertEquals(TestFImages.countVoxelsSlice(outImg, 0), TestFImages.countVoxelsSlice(testImg, 5));
 
 	}
 	/**

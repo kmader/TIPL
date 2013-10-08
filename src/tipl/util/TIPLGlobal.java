@@ -14,8 +14,12 @@ import tipl.tools.BaseTIPLPlugin;
 import tipl.tools.BaseTIPLPluginIn;
 
 public class TIPLGlobal {
+	/**
+	 * the current runtime being used (whatever that is)
+	 */
+	public static Runtime curRuntime=Runtime.getRuntime();
 	/** number of cores available for processing tasks */
-	public static int availableCores = Runtime.getRuntime()
+	public static int availableCores = curRuntime
 			.availableProcessors();
 	/** maximum number of IO operations to perform at the same time */
 	public static int supportedIOThreads = 4;
@@ -94,7 +98,7 @@ public class TIPLGlobal {
 	 * should be delated when the runtime finishes
 	 **/
 	public static void DeleteTempAtFinish(final String delName) {
-		Runtime.getRuntime().addShutdownHook(new Thread() {
+		curRuntime.addShutdownHook(new Thread() {
 			public boolean MyDeleteFile(String file, String whoDel) {
 				final File f1 = new File(file);
 				final boolean success = f1.delete();

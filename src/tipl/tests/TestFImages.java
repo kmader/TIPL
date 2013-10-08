@@ -73,6 +73,30 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 			return ((x + y) % 2 == 1);
 		}
 	}
+	
+	/**
+	 * single point at (5,5,5)
+	 * 
+	 * @author mader
+	 * 
+	 */
+	public static class SinglePointFunction extends TestFImages {
+		protected final int x,y,z;
+		public SinglePointFunction() {
+			x=5;
+			y=5;
+			z=5;
+		}
+		public SinglePointFunction(int ix,int iy, int iz) {
+			x=ix;
+			y=iy;
+			z=iz;
+		}
+		@Override
+		public boolean tget(long ix, long iy, long iz) {
+			return (ix==x) & (iy==y) & (iz==z);
+		}
+	}
 
 	/**
 	 * progressive x image
@@ -163,6 +187,30 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 		public boolean tget(long x, long y, long z) {
 			return (x % 2 == 1); // sheets
 		}
+	}
+	/** 
+	 * count the number of voxels in a slice 
+	 * @param img the image to use
+	 * @param sliceZ the slice number to look at
+	 * @return the number of voxels
+	 */
+	public static long countVoxelsSlice(TImgRO img, int sliceZ) {
+		final boolean[] cSlice = (boolean[]) img.getPolyImage(sliceZ, 10);
+		long i = 0;
+		for (final boolean cVal : cSlice)
+			if (cVal)
+				i++;
+		return i;
+	}
+	/**
+	 * count voxels in an entire image
+	 * @param img image
+	 * @return total number of true voxels
+	 */
+	public static long countVoxelsImage(TImgRO img) {
+		long totalCount=0;
+		for(int i=0;i<img.getDim().z;i++) totalCount+=countVoxelsSlice(img,i);
+		return totalCount;
 	}
 
 	public static TImgTools.HasDimensions justDims(final D3int inDim) {

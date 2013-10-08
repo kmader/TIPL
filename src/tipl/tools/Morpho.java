@@ -61,6 +61,9 @@ public class Morpho extends BaseTIPLPluginBW {
 	public Morpho(TImgRO inputAim) {
 		LoadImages(new TImgRO[] { inputAim });
 	}
+	public Morpho() {
+		
+	}
 
 	@Deprecated
 	public void close() {

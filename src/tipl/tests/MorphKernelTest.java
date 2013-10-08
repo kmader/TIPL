@@ -7,7 +7,11 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import tipl.formats.TImgRO;
 import tipl.tools.BaseTIPLPluginIn;
+import tipl.tools.Morpho;
+import tipl.tools.Resize;
+import tipl.util.TIPLPluginIO;
 
 /**
  * @author mader
@@ -22,6 +26,8 @@ public class MorphKernelTest {
 					Math.sqrt(3) + 0.1);
 
 	private final BaseTIPLPluginIn.morphKernel d = BaseTIPLPluginIn.fullKernel;
+
+	
 	private void checkD(BaseTIPLPluginIn.morphKernel b) {
 		assertEquals(b.inside(0, 0, 10, 10, 10, 10, 10, 10), true);
 		// x
@@ -98,5 +104,97 @@ public class MorphKernelTest {
 	public void testUseFullKernel() {
 		checkFull(d);
 	}
-
+	// start the morphological plugin tests
+	protected static TIPLPluginIO makeMorpho(TImgRO inImage) {
+		final TIPLPluginIO MP = new Morpho();
+		
+		MP.LoadImages(new TImgRO[] { inImage });
+		return MP;
+	}
+	
+	/**
+	 * Test the same number of voxels in the right slices
+	 */
+	@Test
+	public void testMorphDilationDK() {
+		final TImgRO testImg = TestFImages.wrapIt(10,
+				new TestFImages.SinglePointFunction(5,5,5));
+		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
+		System.out.println("Testing Dilation with D-kernel");
+		TIPLPluginIO RS = makeMorpho(testImg);
+		// kernel all (0), d-all on the axes (1), spherical (2)
+		RS.setParameter("-kernel=1");
+		RS.execute("dilateMany",new Integer(1));
+		TImgRO outImg = RS.ExportImages(testImg)[0];
+		assertEquals(TestFImages.countVoxelsImage(outImg),7); //7 = self + (+/- 1) in x,y,z (6)		
+	}
+	
+	@Test
+	public void testMorphDilationAll() {
+		final TImgRO testImg = TestFImages.wrapIt(10,
+				new TestFImages.SinglePointFunction(5,5,5));
+		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
+		System.out.println("Testing Dilation with all kernel");
+		TIPLPluginIO RS = makeMorpho(testImg);
+		// kernel all (0), d-all on the axes (1), spherical (2)
+		RS.setParameter("-kernel=0");
+		RS.execute("dilateMany",new Integer(1));
+		TImgRO outImg = RS.ExportImages(testImg)[0];
+		assertEquals(TestFImages.countVoxelsImage(outImg),27); // 27=3x3x3 (perfect)		
+	}
+	
+	@Test
+	public void testMorphErosionDK() {
+		final TImgRO testImg = TestFImages.wrapIt(10,
+				new TestFImages.SinglePointFunction(5,5,5));
+		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
+		System.out.println("Testing Dilation with D-kernel");
+		TIPLPluginIO RS = makeMorpho(testImg);
+		// kernel all (0), d-all on the axes (1), spherical (2)
+		RS.setParameter("-kernel=1");
+		RS.execute("erodeMany",new Integer(1));
+		TImgRO outImg = RS.ExportImages(testImg)[0];
+		assertEquals(TestFImages.countVoxelsImage(outImg),0);		
+	}
+	
+	
+	
+	@Test
+	public void testMorphClose() {
+		final TImgRO testImg = TestFImages.wrapIt(10,
+				new TestFImages.SinglePointFunction(5,5,5));
+		System.out.println("Testing Closing with D-kernel");
+		TIPLPluginIO RS = makeMorpho(testImg);
+		// kernel all (0), d-all on the axes (1), spherical (2)
+		RS.setParameter("-kernel=1");
+		RS.execute("closeMany",new Integer(1));
+		TImgRO outImg = RS.ExportImages(testImg)[0];
+		assertEquals(TestFImages.countVoxelsImage(outImg),1); // from one point to one point		
+	}
+	
+	@Test
+	public void testMorphCloseAll() {
+		final TImgRO testImg = TestFImages.wrapIt(10,
+				new TestFImages.SinglePointFunction(5,5,5));
+		System.out.println("Testing Closing with All-Kernel");
+		TIPLPluginIO RS = makeMorpho(testImg);
+		// kernel all (0), d-all on the axes (1), spherical (2)
+		RS.setParameter("-kernel=0");
+		RS.execute("closeMany",new Integer(1));
+		TImgRO outImg = RS.ExportImages(testImg)[0];
+		assertEquals(TestFImages.countVoxelsImage(outImg),1); // from one point to one point		
+	}
+	
+	@Test
+	public void testMorphDilationSph() {
+		final TImgRO testImg = TestFImages.wrapIt(10,
+				new TestFImages.SinglePointFunction(5,5,5));
+		System.out.println("Testing Dilation with spherical-kernel");
+		TIPLPluginIO RS = makeMorpho(testImg);
+		// kernel all (0), d-all on the axes (1), spherical (2)
+		RS.setParameter("-kernel=2 -neighborhood=2,2,2");
+		RS.execute("dilateMany",new Integer(1));
+		TImgRO outImg = RS.ExportImages(testImg)[0];
+		assertEquals(TestFImages.countVoxelsImage(outImg),33);		
+	}
 }
