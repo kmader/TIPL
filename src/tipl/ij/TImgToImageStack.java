@@ -43,7 +43,20 @@ public class TImgToImageStack extends ImageStack {
 		coreTFull=new TImgRO.TImgFull(inputImage);
 	}
 
+	@Override
+	public void addSlice(String sliceLabel, Object pixels)
+	{throw new IllegalArgumentException("cannot add new slices!");}
+	@Override
+	public void addSlice(String sliceLabel, ImageProcessor ip)
+	{throw new IllegalArgumentException("cannot add new slices!");}
+	@Override
+	public void addSlice(String sliceLabel, ImageProcessor ip, int n)
+	{throw new IllegalArgumentException("cannot add new slices!");}
+	@Override
+	public void deleteSlice(int n)
+	{throw new IllegalArgumentException("cannot add new slices!");}
 
+	
 	/**
 	 * Returns an ImageProcessor for the specified slice, were 1<=n<=nslices.
 	 * Returns null if the stack is empty.
@@ -99,6 +112,45 @@ public class TImgToImageStack extends ImageStack {
 		return ip;
 
 	}
+
+	/** Always return true. */
+	@Override
+	public boolean isVirtual() {
+		return isVirtual; // Virtual images suck
+	}
+	/** Returns the pixel array for the specified slice, were 1<=n<=nslices. */
+	@Override
+	public Object getPixels(int n) {
+		final ImageProcessor ip = getProcessor(n);
+		if (ip != null)
+			return ip.getPixels();
+		else
+			return null;
+	}
+	@Override
+	/** Returns null. */
+	public Object[] getImageArray() {
+		return null;
+	}
+	
+	
+	/**
+	 * Assigns a pixel array to the specified slice, were 1<=n<=nslices.
+	 */
+	@Override
+	public void setPixels(Object pixels, int n) {
+		System.out.println("setPixels not defined but we can pretend like it is:"+pixels+" @ "+n);
+		//throw new IllegalArgumentException("setPixels function has not yet been implemented");	
+	}
+	
+	@Override
+	public int getSize() {
+		return coreTImg.getDim().z;
+	}
+	@Override
+	/** Returns the label of the Nth image. */
+	public String getSliceLabel(int n) {return "TIPL:Slice:"+n;}
+	
 	/**
 	 * Convert the loaded image to a stack Warning loading an image as a stack
 	 * requires twice as much memory due to the different methods used in Aim
@@ -204,34 +256,6 @@ public class TImgToImageStack extends ImageStack {
 		}
 	}
 	*/
-
-	/** Always return true. */
-	@Override
-	public boolean isVirtual() {
-		return isVirtual; // Virtual images suck
-	}
-	/** Returns the pixel array for the specified slice, were 1<=n<=nslices. */
-	@Override
-	public Object getPixels(int n) {
-		final ImageProcessor ip = getProcessor(n);
-		if (ip != null)
-			return ip.getPixels();
-		else
-			return null;
-	}
-	
-	/**
-	 * Assigns a pixel array to the specified slice, were 1<=n<=nslices.
-	 */
-	@Override
-	public void setPixels(Object pixels, int n) {
-		throw new IllegalArgumentException("setPixels function has not yet been implemented");	
-	}
-	
-	@Override
-	public int getSize() {
-		return coreTImg.getDim().z;
-	}
 
 
 }

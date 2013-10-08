@@ -34,6 +34,7 @@ import java.util.Vector;
 import javax.media.jai.PlanarImage;
 
 import tipl.ij.TImgToImagePlus;
+import tipl.ij.TImgToImageStack;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
@@ -65,7 +66,7 @@ import com.sun.media.jai.codecimpl.util.RasterFactory;
  * <li>Mar 13, 2013 - Added ability to load data using the DirectoryReader
  * classes <li>Mar 14, 2013 - Changed the way local loading works
  */
-public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
+public class VirtualAim implements TImg, TImgRO.TImgOld,
 		TImgRO.FullReadable, TImgRO.CanExport {
 	
 	public static class sliceLoader extends Thread {
@@ -224,17 +225,13 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 
 	private File[] imglist;
 	private int cgLength = -1;
-	ImagePlus curImPlus = null;
+	
 	HistogramWindow curHistWind = null;
 	// Image Stack Implementation Code
 	protected Object[] stack = null;
 
 	protected boolean isLoaded = false;
-	/**
-	 * Is the imagej aim a virtual aim or should the entire dataset be copied
-	 * into an imageJ apropriate interface
-	 */
-	public boolean isVirtual = false;
+
 	/** Show a preview everytime a file is written or opened */
 	public boolean showPreview = true;
 	/** Is the stack in sync with the aim data */
@@ -461,29 +458,6 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 		GenerateHeader(idim, ioffset, ipos, ielSize);
 	}
 
-	/** Add a slice to the image */
-	@Override
-	public void addSlice(String sliceLabel, Object pixels) {
-		if (isVirtual) {
-			return;
-		} else {
-			if (!isLoaded)
-				loadStackFromAim();
-			if (pixels == null)
-				throw new IllegalArgumentException("'pixels' is null!");
-			if (!pixels.getClass().isArray())
-				throw new IllegalArgumentException("'pixels' is not an array");
-
-			final Object[] tmp1 = new Object[nSlices + 1];
-			System.arraycopy(stack, 0, tmp1, 0, nSlices);
-
-			stack = tmp1;
-			stack[nSlices - 1] = pixels;
-			inSync = false;
-
-		}
-
-	}
 
 	@Override
 	public String appendProcLog(String logText) {
@@ -609,17 +583,8 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 
 	}
 
-	/** Deletes the last slice in the stack. */
-	@Override
-	public void deleteLastSlice() {
-		if (nSlices > 0)
-			deleteSlice(nSlices);
-	}
 
-	/** Deletes the specified slice, were 1<=n<=nslices. */
-	@Override
-	public void deleteSlice(int n) {
-	}
+
 
 	/**
 	 * Object to divide the thread work into supportCores equal parts, default
@@ -1003,7 +968,7 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 			bCount = 0;
 			// Initializes slice as empty
 			gg = getByteArray(i);
-			curSlice = new boolean[getWidth()][getHeight()];
+			curSlice = new boolean[getDim().x][getDim().y];
 			for (final char b : gg) {
 				if (b > minValue) {
 					if ((b <= maxValue) | (maxValue < minValue)) {
@@ -1091,32 +1056,10 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 		return gf;
 	}
 
-	/** ImageJ.ImageStack: function to get the height of a slice */
-	@Override
-	public int getHeight() {
-		return getDim().getHeight();
-
-	}
-
-	/** Returns null. */
-	@Override
-	public Object[] getImageArray() {
-		if (!isLoaded)
-			loadStackFromAim();
-		return stack;
-	}
 
 	/** Package as ImagePlus */
 	public ImagePlus getImagePlus() {
-		curImPlus = new ImagePlus(sampleName, this);
-
-		final Calibration cal = new Calibration();
-		cal.pixelWidth = elSize.x;
-		cal.pixelHeight = elSize.y;
-		cal.pixelDepth = elSize.z;
-		cal.setUnit("mm");
-		curImPlus.setCalibration(cal);
-		return curImPlus;
+		return TImgToImagePlus.MakeImagePlus(this);
 	}
 
 	// Implement TImg Interface
@@ -1219,16 +1162,6 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 		return aimPath;
 	}
 
-	/** Returns the pixel array for the specified slice, were 1<=n<=nslices. */
-	@Override
-	@Deprecated
-	public Object getPixels(int n) {
-		final ImageProcessor ip = getProcessor(n);
-		if (ip != null)
-			return ip.getPixels();
-		else
-			return null;
-	}
 
 	public void GetPoints() {
 		GetPoints(0, -1, 0);
@@ -1358,65 +1291,7 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 		return pos;
 	}
 
-	/**
-	 * Returns an ImageProcessor for the specified slice, were 1<=n<=nslices.
-	 * Returns null if the stack is empty.
-	 */
-	@Override
-	@Deprecated
-	public ImageProcessor getProcessor(int n) {
-		final int wid = getWidth();
-		final int het = getHeight();
-
-		System.out.println("getProcessor: " + n + ", Type=" + this.imageType
-				+ ", wid=" + wid + " , het=" + het);
-
-		ImageProcessor ip = null;
-		switch (imageType) {
-		case 0:
-		case 10:
-			char[] bpixels = null;
-			// if (!isLoaded)
-			bpixels = getByteArray(n - 1);
-			final byte[] rbpixels = new byte[bpixels.length];
-			for (int i = 0; i < bpixels.length; i++)
-				rbpixels[i] = (byte) bpixels[i];
-			ip = new ByteProcessor(wid, het, rbpixels, cm);
-			ip.setSnapshotPixels(rbpixels);
-			ip.setMinAndMax(Byte.MIN_VALUE, Byte.MAX_VALUE);
-			(new TImgToImagePlus.autoRanger(ip, curHistWind, bpixels)).start();
-			break;
-		case 1:
-		case 2:
-			short[] spixels = null;
-			// if (!isLoaded)
-			spixels = getShortArray(n - 1);
-			ip = new ShortProcessor(wid, het, spixels, cm);
-			ip.setSnapshotPixels(spixels);
-			ip.setMinAndMax(Short.MIN_VALUE, Short.MAX_VALUE);
-			(new TImgToImagePlus.autoRanger(ip, curHistWind, spixels)).start();
-			break;
-
-		case 3:
-			float[] fpixels = null;
-			// if (!isLoaded)
-			fpixels = getFloatArray(n - 1);
-			ip = new FloatProcessor(wid, het, fpixels, cm);
-			ip.setSnapshotPixels(fpixels);
-			ip.setMinAndMax(-Double.MAX_VALUE, Double.MAX_VALUE);
-			(new TImgToImagePlus.autoRanger(ip, curHistWind, fpixels)).start();
-			break;
-
-		}
-
-		if (isLoaded) { // Set the processor for the stack
-			ip.setPixels(stack[n - 1]);
-			ip.setSnapshotPixels(stack[n - 1]);
-		}
-		return ip;
-
-	}
-
+	
 	@Override
 	public String getProcLog() {
 		return procLog;
@@ -1545,11 +1420,6 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 	}
 
 
-	/** Returns the file name of the Nth image. */
-	@Override
-	public String getSliceLabel(int n) {
-		return "KSM VirtualAim Interface";
-	}
 
 
 
@@ -1657,12 +1527,7 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 				+ " tags skipped of " + totalTag);
 	}
 
-	/** ImageJ.ImageStack: function to get the width of a slice */
-	@Override
-	public int getWidth() {
-		return getDim().getWidth();
 
-	}
 
 	public Double[] getXYZVec(int cIndex, int sliceNumber) {
 		return TImgTools.getXYZVecFromVec(pos, dim, cIndex, sliceNumber);
@@ -1967,11 +1832,6 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 		System.arraycopy(slice, 0, aimShort, oPos, cLen);
 	}
 
-	/** Always return true. */
-	@Override
-	public boolean isVirtual() {
-		return isVirtual; // Virtual images suck
-	}
 
 	/**
 	 * Convert the loaded image to a stack Warning loading an image as a stack
@@ -2446,21 +2306,15 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 	public ImagePlus previewSlice() {
 		return previewSlice(Math.round(dim.z / 2 + 1));
 	}
-
+	@Deprecated
 	/** Show a preview of a given slice */
 	public ImagePlus previewSlice(int n) {
 		if (previewDisabled)
 			return null; // X windows can lick my ball and stop hard crashing
 							// fuckin eh
 		try {
-			curImPlus = new ImagePlus("Preview:" + sampleName + " - " + n,
-					getProcessor(n));
-			final Calibration cal = new Calibration();
-			cal.pixelWidth = elSize.x;
-			cal.pixelHeight = elSize.y;
-			cal.pixelDepth = elSize.z;
-			cal.setUnit("mm");
-			curImPlus.setCalibration(cal);
+			ImagePlus curImPlus = TImgToImagePlus.MakeImagePlus(this);
+			
 
 			curImPlus.show();
 			curImPlus.getProcessor().setMinAndMax(0, 255);
@@ -2674,12 +2528,6 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 		offset = inData;
 	}
 
-	/**
-	 * Assigns a pixel array to the specified slice, were 1<=n<=nslices.
-	 */
-	@Override
-	public void setPixels(Object pixels, int n) {
-	}
 
 	/**
 	 * The position of the bottom leftmost voxel in the image in real space,
@@ -2717,11 +2565,6 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 		isSigned = inData;
 	}
 
-	/** Does nothing. */
-	@Override
-	public void setSliceLabel(String label, int n) {
-	}
-
 	public void setTIFFheader(TIFFEncodeParam tparam) {
 		getProcLog().split("\n");
 		final TIFFField[] tiffProcLog = new TIFFField[6];
@@ -2745,17 +2588,10 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 
 	/** Show aim as a stack */
 	public ImagePlus show() {
-		
+		ImagePlus curImPlus =  TImgToImagePlus.MakeImagePlus(this);
 		System.out.println("Show Aim... "+getDim().z);
-		isVirtual = true;
 		if (getDim().z > 0) {
-			curImPlus = new ImagePlus(sampleName, this);
-			final Calibration cal = new Calibration();
-			cal.pixelWidth = elSize.x;
-			cal.pixelHeight = elSize.y;
-			cal.pixelDepth = elSize.z;
-			cal.setUnit("mm");
-			curImPlus.setCalibration(cal);
+			
 			System.out.println("Created...");
 			switch (imageType) {
 			case 0:
@@ -2798,10 +2634,6 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 		return String.format("%.2f", ((a) / (b)));
 	}
 
-	/** Does nothing. */
-	@Override
-	public void trim() {
-	}
 
 	/**
 	 * Deletes the stack information from memory and marks the stack as

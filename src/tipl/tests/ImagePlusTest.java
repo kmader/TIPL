@@ -14,7 +14,7 @@ public class ImagePlusTest {
 
 	@Test
 	public void testMakeImagePlus() {
-		final TImgRO testImg = TestFImages.wrapIt(10,
+		final TImgRO testImg = TestFImages.wrapIt(100,
 				new TestFImages.DiagonalPlaneFunction());
 		ImageStack curStack=TImgToImageStack.MakeImageStack(testImg);
 		//ij.IJ.
