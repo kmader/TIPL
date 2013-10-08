@@ -3,7 +3,7 @@ classdef TIPL < handle
     % easily used matlab
     properties(GetAccess = 'public', SetAccess = 'private')
         %important properties
-        plane_fn; line_fn; x_fun; z_fun
+        plane_fn; line_fn; x_fun; z_fun; y_fun
     end
     
     methods
@@ -13,13 +13,14 @@ classdef TIPL < handle
             obj.plane_fn=javaObjectEDT('tipl.tests.TestFImages$DiagonalPlaneFunction');
             obj.line_fn=javaObjectEDT('tipl.tests.TestFImages$LinesFunction');
             obj.x_fun=javaObjectEDT('tipl.tests.TestFImages$ProgXImage');
+            obj.y_fun=javaObjectEDT('tipl.tests.TestFImages$ProgYImage');
             obj.z_fun=javaObjectEDT('tipl.tests.TestFImages$ProgZImage');
         end
         function wrapped_im=wrap_img(obj,im_fun,side_len,im_type)
             % wrap a function in an image
             % test function 
-            %   t=TIPL();p=t.wrap_img(t.x_fun,10,1)
-            % p.im_data.setPos(t.d3int([100,200,300]))
+            %   h=TIPL();p=h.wrap_img(h.x_fun,10,1)
+            % p.im_data.setPos(h.d3int([100,200,300]))
             wrapped_im=TIPLImage(obj,TIPL.wrap_fun_as(im_fun,side_len,im_type));
         end
     end
@@ -56,9 +57,11 @@ classdef TIPL < handle
             in_images(1)=in_image;
             resize_plugin.LoadImages(in_images);
             resize_plugin.cutROI(TIPL.d3int(start_pos),TIPL.d3int(dim_rng))
-            resize_plugin.execute()
+            resize_plugin.execute();
             out_images=resize_plugin.ExportImages(in_image);
             out_image=out_images(1);
         end
+        
+        
     end
 end
