@@ -26,7 +26,9 @@ classdef TIPLImage < handle
             slice=obj.in_tipl.get_slice(obj.im_data,slice_num,im_type);
         end
         function preview(obj,slice_num)
-            imagesc(obj.get_slice(slice_num,3))
+            im_pos=obj.in_tipl.d3_to_array(obj.im_data.getPos());
+            
+            imagesc(im_pos(1)+[0:(obj.dim(1)-1)],im_pos(2)+[0:(obj.dim(2)-1)],obj.get_slice(slice_num,3))
         end
         function out_data=get_all(obj,im_type)
             out_data=zeros(obj.dim)
@@ -35,7 +37,7 @@ classdef TIPLImage < handle
             end
         end
         
-        function new_image=resize(obj)
+        function new_image=resize_gui(obj)
             % resize by clicking bounding boxes
             disp('Select Bottom Corner');
             pos1=obj.get_point(0);
@@ -45,6 +47,14 @@ classdef TIPLImage < handle
             start_pos=[min(box_vec)]
             end_pos=[max(box_vec)]
             dim_rng=end_pos-start_pos
+            new_image=resize(obj,start_pos,dim_rng);
+        end
+        function new_image=resize(obj,start_pos,dim_rng)
+            % actual resize function using the static method in the TIPL
+            % library
+            % example code
+            % testImg=TIPLImage(t,'/afs/psi.ch/project/tipl/test/foamSample/labels.tif');
+            % resizeImg=testImg.resize(t.d3_to_array(testImg.im_data.getPos()),[testImg.dim(1:2) 1])
             out_data=obj.in_tipl.resize(obj.im_data,start_pos,dim_rng)
             new_image=TIPLImage(obj.in_tipl,out_data);
         end
@@ -54,7 +64,8 @@ classdef TIPLImage < handle
             cur_z=start_z;
             while c~=2
                 cur_z=median([0,obj.dim(3)-1,cur_z]);
-                imagesc(obj.get_slice(cur_z,3));
+                obj.preview(cur_z);
+                
                 title(['Slice: ' num2str(cur_z) '/' num2str(obj.dim(3)) ' Left click to go back a slice, middle to accept, right to go forward']);
                 [x,y,c]=ginput(1);
                 if c==1

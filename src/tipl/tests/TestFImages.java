@@ -75,7 +75,7 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 	}
 
 	/**
-	 * progresive x image
+	 * progressive x image
 	 * 
 	 * @author mader
 	 * 
@@ -94,7 +94,7 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 	}
 
 	/**
-	 * progresive z image
+	 * progressive z image
 	 * 
 	 * @author mader
 	 * 
@@ -111,9 +111,49 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 		}
 
 	}
+	/**
+	 * progressive y image
+	 * 
+	 * @author mader
+	 * 
+	 */
+	public static class ProgYImage extends TestFImages {
+		@Override
+		public double[] getRange() {
+			return new double[] { 0, 2000 };
+		}
+
+		@Override
+		public double rget(long x, long y, long z) {
+			return y;
+		}
+
+	}
+	/**
+	 * fixed value image
+	 * 
+	 * @author mader
+	 * 
+	 */
+	public static class FixedValueImage extends TestFImages {
+		private final int fixedValue;
+		public FixedValueImage(final int value) {
+			fixedValue=value;
+		}
+		@Override
+		public double[] getRange() {
+			return new double[] { 0, fixedValue };
+		}
+
+		@Override
+		public double rget(long x, long y, long z) {
+			return fixedValue;
+		}
+
+	}
 
 	/**
-	 * simple sheets seperated by 1 voxel
+	 * simple sheets separated by 1 voxel
 	 * 
 	 * @author mader
 	 * 
@@ -151,11 +191,16 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 				// TODO Auto-generated method stub
 				return new D3int(0);
 			}
-
+			
 			@Override
 			public String getProcLog() {
-				// TODO Auto-generated method stub
-				return null;
+				// just return nothing
+				return "";
+			}
+			
+			public float getShortScaleFactor() {
+				// this value is fixed in these images
+				return 1.0f; 
 			}
 
 		};

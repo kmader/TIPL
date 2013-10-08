@@ -1900,8 +1900,9 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 		outImage.fullAimLoaded = true;
 		outImage.procLog = procLog;
 		outImage.sampleName = sampleName;
-		outImage.ShortScaleFactor = ShortScaleFactor;
+		outImage.setShortScaleFactor(getShortScaleFactor());
 		outImage.GenerateHeader(outImage.dim, outImage.offset, pos, elSize);
+		
 		outImage.ischGuet = true;
 	}
 
@@ -2087,6 +2088,7 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 		loadAimfromStack();
 	}
 
+	@Deprecated // this function is hideous, this really needs to be fixed
 	protected void loadAimfromTImg(TImgRO inTImg) {
 		System.out.println("Loading generic TImg as Aim");
 		useTImg = true;
@@ -2814,6 +2816,8 @@ public class VirtualAim extends ImageStack implements TImg, TImgRO.TImgOld,
 	/** Generic code for wrapping a TImg **/
 	public void WrapTImg(TImgRO inTImg) {
 		loadAimfromTImg(inTImg);
+		// This is sort of a hack, but it needs to be done, VirtualAims should be copied the same way everything else is
+		TImgTools.mirrorImage(inTImg, this);
 		GenerateHeader(inTImg.getDim(), inTImg.getOffset(), inTImg.getPos(),
 				inTImg.getElSize());
 	}

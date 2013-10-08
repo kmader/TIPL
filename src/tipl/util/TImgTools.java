@@ -52,6 +52,12 @@ public class TImgTools {
 		 * only needed for ROIs
 		 */
 		public void setPos(D3int inData);
+		/**
+		 * A function to set the short scale factor used to convert shorts to double and back
+		 * @param ssf
+		 */
+		public void setShortScaleFactor(float ssf);
+		
 	}
 
 	/**
@@ -84,6 +90,11 @@ public class TImgTools {
 		 * the aim-file
 		 */
 		public String getProcLog();
+		/**
+		 * A function to change the short scale factor used to convert shorts to double and back
+		 * @return
+		 */
+		public float getShortScaleFactor();
 
 	}
 
@@ -518,10 +529,10 @@ public class TImgTools {
 		outData.setOffset(inData.getOffset());
 		outData.setDim(inData.getDim());
 		outData.setElSize(inData.getElSize());
-
 		outData.appendProcLog(inData.getProcLog());
+		outData.setShortScaleFactor(inData.getShortScaleFactor());
 	}
-
+	
 	public static TImg ReadTImg(String path) {
 		return ReadTImg(path, false, false);
 	}

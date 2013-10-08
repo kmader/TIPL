@@ -7,6 +7,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import tipl.formats.PureFImage;
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
 import tipl.tools.Resize;
@@ -154,6 +155,7 @@ public class ResizeTest {
 		// offset lines
 		final TImgRO testImg = TestFImages.wrapIt(10,
 				new TestFImages.LinesFunction());
+		
 		final TIPLPluginIO RS = makeRS(testImg);
 		RS.setParameter("-pos=5,5,5 -dim=5,5,1");
 		RS.execute();
@@ -197,6 +199,52 @@ public class ResizeTest {
 		RS.execute();
 		final TImgRO outImg = RS.ExportImages(testImg)[0];
 		assertEquals(countVoxelsSlice(outImg, 0), countVoxelsSlice(testImg, 5));
+
+	}
+	/**
+	 * a new test to ensure short scale factor and type is preserved during resizing
+	 */
+	@Test
+	public void testOutSSF() {
+		// offset lines
+		final int sizeX=10;
+		final float ssf=1.5f;
+		final TImgRO testImg = new PureFImage(TestFImages.justDims(new D3int(sizeX, sizeX, sizeX)), 2,
+				new TestFImages.DiagonalPlaneFunction(),ssf);
+		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
+		System.out.println("Testing Short Scale Factor");
+		final TIPLPluginIO RS = makeRS(testImg);
+
+		RS.setParameter("-pos=0,0,5 -dim=10,10,1");
+		RS.execute();
+		final TImgRO outImg = RS.ExportImages(testImg)[0];
+		assertEquals(testImg.getShortScaleFactor(),outImg.getShortScaleFactor(),0.01f);
+
+	}
+	/**
+	 * a new test to ensure image type is preserved during resizing
+	 */
+	@Test
+	public void testOutImageType() {
+		// offset lines
+		final int sizeX=10;
+		final PureFImage.PositionFunction pf=new TestFImages.DiagonalPlaneFunction();
+		// make one of each
+		final TImgRO[] testImgs = {TestFImages.wrapItAs(10,pf,0),
+				TestFImages.wrapItAs(10,pf,1),
+				TestFImages.wrapItAs(10,pf,2),
+				TestFImages.wrapItAs(10,pf,3),
+				TestFImages.wrapItAs(10,pf,10)};
+		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
+		System.out.println("Testing Short Scale Factor");
+		TIPLPluginIO RS;
+		for(TImgRO testImg : testImgs) {
+			System.out.println("Testing Image Type: "+testImg.getImageType());
+			RS=makeRS(testImg);
+			RS.setParameter("-pos=0,0,5 -dim=10,10,1");
+			RS.execute();
+			assertEquals(testImg.getImageType(),RS.ExportImages(testImg)[0].getImageType());
+		}
 
 	}
 
