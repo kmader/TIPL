@@ -37,7 +37,7 @@ public class VFilterScale extends FilterScale {
 	 *      <li>outputAim.WriteAim(outputFile,0);
 	 * </pre>
 	 */
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final String kVer = "120514_002";
 		System.out.println("V_FilterScale v" + kVer);
 		System.out.println(" FilterScales Aim files based on given criteria");
@@ -81,7 +81,7 @@ public class VFilterScale extends FilterScale {
 	public VFilterScale() {
 	}
 
-	public VFilterScale(TImgRO inAim) {
+	public VFilterScale(final TImgRO inAim) {
 		LoadImages(new TImgRO[] { inAim });
 	}
 
@@ -96,7 +96,7 @@ public class VFilterScale extends FilterScale {
 	 * @param templateAim
 	 *            input template aim file
 	 */
-	public TImg JunkExportAim(VirtualAim templateAim) {
+	public TImg JunkExportAim(final VirtualAim templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				VirtualAim outVirtualAim;
@@ -149,7 +149,7 @@ public class VFilterScale extends FilterScale {
 	}
 
 	@Override
-	public void LoadImages(TImgRO[] inImages) {
+	public void LoadImages(final TImgRO[] inImages) {
 		if (inImages.length < 1)
 			throw new IllegalArgumentException(
 					"Too few arguments for LoadImages in:" + getPluginName());
@@ -168,7 +168,7 @@ public class VFilterScale extends FilterScale {
 	 * each slice as needed
 	 */
 	@Override
-	protected boolean runFilter(int bSlice, int tSlice) {
+	protected boolean runFilter(final int bSlice, final int tSlice) {
 		final int inImageType = _inputAim.getImageType();
 		final int outImageType = oimageType;
 		int ooff;

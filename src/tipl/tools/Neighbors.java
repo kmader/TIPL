@@ -18,23 +18,21 @@ import tipl.util.TImgTools;
  */
 public class Neighbors extends BaseTIPLPluginIO {
 	private class NeighborList {
-		public int label;
 		// label of neighbor, voxel count
 		private final HashMap<Integer, Integer> nvox;
 		private final Integer one = new Integer(1);
 		private final Integer zero = new Integer(0);
 
-		public NeighborList(int ilabel) {
-			label = ilabel;
+		public NeighborList(final int ilabel) {
 			nvox = new HashMap<Integer, Integer>();
 		}
 
-		public void addvox(int inlabel) {
+		public void addvox(final int inlabel) {
 			final Integer nlabel = new Integer(inlabel);
 			addvox(nlabel);
 		}
 
-		public void addvox(Integer nlabel) {
+		public void addvox(final Integer nlabel) {
 			if (nvox.containsKey(nlabel)) {
 				nvox.put(nlabel, new Integer(nvox.get(nlabel).intValue() + 1));
 			} else
@@ -49,7 +47,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 			return nvox.keySet().iterator();
 		}
 
-		public Integer getvoxs(Integer nlabel) {
+		public Integer getvoxs(final Integer nlabel) {
 			if (nvox.containsKey(nlabel)) {
 				return nvox.get(nlabel);
 			} else
@@ -72,7 +70,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 			mp = new HashMap<Integer, NeighborList>();
 		}
 
-		public void addvox(int ilabel, int jlabel) {
+		public void addvox(final int ilabel, final int jlabel) {
 
 			final Integer nlabel = new Integer(Math.min(ilabel, jlabel));
 			final Integer mlabel = new Integer(Math.max(ilabel, jlabel));
@@ -81,7 +79,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 			mp.get(nlabel).addvox(mlabel);
 		}
 
-		public int count(int ilabel) { // number of neighbors
+		public int count(final int ilabel) { // number of neighbors
 			final Integer nlabel = new Integer(ilabel);
 			if (mp.containsKey(nlabel))
 				return mp.get(nlabel).count();
@@ -137,7 +135,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final String kVer = "120105_001";
 		System.out.println(" Neighborhood Script v" + kVer);
 		System.out.println(" Counts neighbors for each object and voxel v"
@@ -215,14 +213,15 @@ public class Neighbors extends BaseTIPLPluginIO {
 	}
 
 	@Deprecated
-	public Neighbors(int[] inputmap, D3int idim, D3int ioffset) {
+	public Neighbors(final int[] inputmap, final D3int idim, final D3int ioffset) {
 		aimLength = inputmap.length;
 		inAim = inputmap;
 		InitLabels(idim, ioffset);
 	}
 
 	@Deprecated
-	public Neighbors(short[] inputmap, D3int idim, D3int ioffset) {
+	public Neighbors(final short[] inputmap, final D3int idim,
+			final D3int ioffset) {
 		aimLength = inputmap.length;
 		inAim = new int[aimLength];
 		for (int i = 0; i < aimLength; i++)
@@ -230,7 +229,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 		InitLabels(idim, ioffset);
 	}
 
-	public Neighbors(TImgRO inputAim) {
+	public Neighbors(final TImgRO inputAim) {
 		LoadImages(new TImgRO[] { inputAim });
 	}
 
@@ -332,7 +331,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 	}
 
 	@Override
-	public boolean execute(String command, Object cObj) {
+	public boolean execute(final String command, final Object cObj) {
 		if (command.equalsIgnoreCase("WriteNeighborList"))
 			return WriteNeighborList((String) cObj);
 
@@ -341,7 +340,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 
 	/** export the default (count image) */
 	@Override
-	public TImg ExportAim(TImg.CanExport templateAim) {
+	public TImg ExportAim(final TImg.CanExport templateAim) {
 		return ExportCountImageAim(templateAim);
 	}
 
@@ -349,7 +348,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 	 * function to export the count image as an aim file (the number of
 	 * neighbors for each object)
 	 */
-	public TImg ExportCountImageAim(TImg.CanExport templateAim) {
+	public TImg ExportCountImageAim(final TImg.CanExport templateAim) {
 		TImg outAim = null;
 		if (isInitialized) {
 
@@ -385,7 +384,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 	 * This implementation exports the neighbors and then the voxel count
 	 */
 	@Override
-	public TImg[] ExportImages(TImgRO templateImage) {
+	public TImg[] ExportImages(final TImgRO templateImage) {
 		// TODO Auto-generated method stub
 		final TImg cImg = TImgTools.WrapTImgRO(templateImage);
 		return new TImg[] { ExportAim(cImg), ExportVoxCountImageAim(cImg) };
@@ -395,7 +394,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 	 * function to export the voxel count image as an aim file (the number of
 	 * neighbors for each voxel)
 	 */
-	public TImg ExportVoxCountImageAim(TImg.CanExport templateAim) {
+	public TImg ExportVoxCountImageAim(final TImg.CanExport templateAim) {
 		TImg outAim = null;
 		if (isInitialized) {
 			outAim = templateAim.inheritedAim(voxCountImage(), dim, offset);
@@ -415,7 +414,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 		return "Neighbors";
 	}
 
-	private void InitLabels(D3int idim, D3int ioffset) {
+	private void InitLabels(final D3int idim, final D3int ioffset) {
 		isRun = false;
 		nvlist = new NeighborVoxel();
 		InitDims(idim, ioffset);
@@ -425,7 +424,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 	 * LoadImages assumes the first image is label map
 	 */
 	@Override
-	public void LoadImages(TImgRO[] inImages) {
+	public void LoadImages(final TImgRO[] inImages) {
 		// TODO Auto-generated method stub
 		if (inImages.length < 1)
 			throw new IllegalArgumentException(
@@ -444,7 +443,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 	}
 
 	@Override
-	public ArgumentParser setParameter(ArgumentParser p) {
+	public ArgumentParser setParameter(final ArgumentParser p) {
 		countBg = p
 				.getOptionBoolean("countbg", "Count background as an object");
 		return super.setParameter(p);
@@ -527,7 +526,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 	 * Write list of neighbors from analysis as a csv file with (obj_a,
 	 * obj_b,overlapping_voxels) for all obj_a IS_TOUCHING obj_b
 	 */
-	public boolean WriteNeighborList(String outfileName) {
+	public boolean WriteNeighborList(final String outfileName) {
 		if (!isRun)
 			run();
 		System.out.println("Writing EdgeFile..." + outfileName);

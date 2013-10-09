@@ -42,24 +42,25 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 	 * Constructor used for custom initialization routines, please only experts
 	 * meddle here
 	 */
-	protected VoronoiTransform(int iPromiseIknowWhatIamDoing) {
+	protected VoronoiTransform(final int iPromiseIknowWhatIamDoing) {
 	}
 
 	/**
 	 * Create a voronoitransform using labeled regions and a solid filled
 	 * background
 	 */
-	public VoronoiTransform(TImgRO labelAim) {
+	public VoronoiTransform(final TImgRO labelAim) {
 		ImportAim(labelAim);
 	}
 
 	/** Create a voronoitransform using labeled regions and a given mask */
-	public VoronoiTransform(TImgRO labelAim, TImgRO maskAim) {
+	public VoronoiTransform(final TImgRO labelAim, final TImgRO maskAim) {
 		ImportAim(labelAim, maskAim);
 	}
 
 	/** This function is not finished yet... */
-	protected boolean checkGrowthTemplate(int idx1, int idx2, int gtmode) {
+	protected boolean checkGrowthTemplate(final int idx1, final int idx2,
+			final int gtmode) {
 		if (gtmode == -1)
 			return true;
 		return true;
@@ -73,12 +74,12 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 	}
 
 	@Override
-	public TImg ExportAim(TImgRO.CanExport templateAim) {
+	public TImg ExportAim(final TImgRO.CanExport templateAim) {
 		return ExportVolumesAim(templateAim);
 	}
 
 	/** Code for exporting the voronoi distances to an Aim class */
-	public TImg ExportDistanceAim(TImgRO.CanExport templateAim) {
+	public TImg ExportDistanceAim(final TImgRO.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				final TImg outAim = templateAim.inheritedAim(distmap, dim,
@@ -104,14 +105,14 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 	 * This implementation exports the volume image and then the distance image
 	 */
 	@Override
-	public TImg[] ExportImages(TImgRO templateImage) {
+	public TImg[] ExportImages(final TImgRO templateImage) {
 		// TODO Auto-generated method stub
 		final TImg cImg = TImgTools.WrapTImgRO(templateImage);
 		return new TImg[] { ExportVolumesAim(cImg), ExportDistanceAim(cImg) };
 	}
 
 	/** Code for exporting the voronoi volumes to an Aim class */
-	public TImg ExportVolumesAim(TImgRO.CanExport templateAim) {
+	public TImg ExportVolumesAim(final TImgRO.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				return templateAim.inheritedAim(outlabels, dim, offset);
@@ -131,8 +132,8 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 		}
 	}
 
-	public void ImportAim(boolean[] inputmap, boolean[] inputmask, D3int idim,
-			D3int ioffset) {
+	public void ImportAim(final boolean[] inputmap, final boolean[] inputmask,
+			final D3int idim, final D3int ioffset) {
 		aimLength = inputmap.length;
 		labels = new int[aimLength];
 		mask = inputmask;
@@ -144,15 +145,16 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 		Init(idim, ioffset);
 	}
 
-	public void ImportAim(int[] inputmap, boolean[] inputmask, D3int idim,
-			D3int ioffset) {
+	public void ImportAim(final int[] inputmap, final boolean[] inputmask,
+			final D3int idim, final D3int ioffset) {
 		aimLength = inputmap.length;
 		labels = inputmap;
 		mask = inputmask;
 		Init(idim, ioffset);
 	}
 
-	public void ImportAim(int[] inputmap, D3int idim, D3int ioffset) {
+	public void ImportAim(final int[] inputmap, final D3int idim,
+			final D3int ioffset) {
 		aimLength = inputmap.length;
 		labels = inputmap; // Since the input map will be modified we should
 							// have our own
@@ -164,8 +166,8 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 		Init(idim, ioffset);
 	}
 
-	public void ImportAim(short[] inputmap, boolean[] inputmask, D3int idim,
-			D3int ioffset) {
+	public void ImportAim(final short[] inputmap, final boolean[] inputmask,
+			final D3int idim, final D3int ioffset) {
 		aimLength = inputmap.length;
 		labels = new int[aimLength];
 		mask = inputmask;
@@ -176,7 +178,8 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 		Init(idim, ioffset);
 	}
 
-	public void ImportAim(short[] inputmap, D3int idim, D3int ioffset) {
+	public void ImportAim(final short[] inputmap, final D3int idim,
+			final D3int ioffset) {
 		aimLength = inputmap.length;
 		labels = new int[aimLength];
 		mask = new boolean[aimLength];
@@ -188,18 +191,18 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 		Init(idim, ioffset);
 	}
 
-	public void ImportAim(TImgRO labelImg) {
+	public void ImportAim(final TImgRO labelImg) {
 		ImportAim(TImgTools.makeTImgFullReadable(labelImg).getIntAim(),
 				labelImg.getDim(), labelImg.getOffset());
 	}
 
-	public void ImportAim(TImgRO labelImg, TImgRO maskImg) {
+	public void ImportAim(final TImgRO labelImg, final TImgRO maskImg) {
 		ImportAim(TImgTools.makeTImgFullReadable(labelImg).getIntAim(),
 				TImgTools.makeTImgFullReadable(maskImg).getBoolAim(),
 				labelImg.getDim(), labelImg.getOffset());
 	}
 
-	private void Init(D3int idim, D3int ioffset) {
+	private void Init(final D3int idim, final D3int ioffset) {
 		if (labels.length != mask.length) {
 			System.out.println("SIZES DO NOT MATCH!!!!!!!!");
 			return;
@@ -222,7 +225,7 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 	 * the mask image (if present)
 	 */
 	@Override
-	public void LoadImages(TImgRO[] inImages) {
+	public void LoadImages(final TImgRO[] inImages) {
 		// TODO Auto-generated method stub
 		if (inImages.length < 1)
 			throw new IllegalArgumentException(
@@ -235,7 +238,7 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 	}
 
 	/** Code for writing the voronoi distances to an Aim file */
-	public void WriteDistanceAim(TImg templateAim, String outname) {
+	public void WriteDistanceAim(final TImg templateAim, final String outname) {
 		final TImg newAim = ExportDistanceAim(templateAim);
 		newAim.appendProcLog(procLog);
 
@@ -243,7 +246,8 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 	}
 
 	/** Code for writing the voronoi volumes to an Aim file */
-	public void WriteVolumesAim(TImgRO.CanExport templateAim, String outname) {
+	public void WriteVolumesAim(final TImgRO.CanExport templateAim,
+			final String outname) {
 		final TImg newAim = ExportVolumesAim(templateAim);
 		newAim.appendProcLog(procLog);
 		newAim.WriteAim(outname, 1, 1.0f, false);

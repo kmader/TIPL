@@ -80,7 +80,7 @@ public class GrayVoxels {
 		labelType = 0;
 	}
 
-	public GrayVoxels(double cLabel) {
+	public GrayVoxels(final double cLabel) {
 		voxelCount = 0;
 		curValSum = 0.0;
 		curSqSum = 0.0;
@@ -88,7 +88,7 @@ public class GrayVoxels {
 		labelType = 2;
 	}
 
-	public GrayVoxels(int cLabel) {
+	public GrayVoxels(final int cLabel) {
 		voxelCount = 0;
 		curValSum = 0.0;
 		curSqSum = 0.0;
@@ -100,7 +100,7 @@ public class GrayVoxels {
 	 * Method to add two grayvoxels elements together A+=B -> A.add(B),
 	 * non-communative as properties are inheritied from A
 	 */
-	public void add(GrayVoxels gvAdd) {
+	public void add(final GrayVoxels gvAdd) {
 		cx += gvAdd.cx;
 		cy += gvAdd.cy;
 		cz += gvAdd.cz;
@@ -116,7 +116,7 @@ public class GrayVoxels {
 
 	/** Function which ignores weights **/
 
-	public int addCovVox(double x, double y, double z) {
+	public int addCovVox(final double x, final double y, final double z) {
 		if (useWeights)
 			return addCovVox(x, y, z, 1.0);
 		calcCOV();
@@ -138,7 +138,8 @@ public class GrayVoxels {
 	}
 
 	/** Function which uses the weights to calculate the covariances **/
-	public int addCovVox(double x, double y, double z, double pixVal) {
+	public int addCovVox(final double x, final double y, final double z,
+			final double pixVal) {
 		if (!useWeights)
 			return addCovVox(x, y, z);
 
@@ -161,7 +162,7 @@ public class GrayVoxels {
 		return 1;
 	}
 
-	public void addVox(double pixVal) {
+	public void addVox(final double pixVal) {
 		voxelCount++;
 		curValSum += pixVal;
 		curSqSum += Math.pow(pixVal, 2);
@@ -175,7 +176,8 @@ public class GrayVoxels {
 			minVal = pixVal;
 	}
 
-	public void addVox(double x, double y, double z, double pixVal) {
+	public void addVox(final double x, final double y, final double z,
+			final double pixVal) {
 		cx += x;
 		cy += y;
 		cz += z;
@@ -190,7 +192,7 @@ public class GrayVoxels {
 		addVox(pixVal);
 	}
 
-	public double angVec(double v1, double v2, double v3) {
+	public double angVec(final double v1, final double v2, final double v3) {
 		// Correct the distance map orientation factor
 		// Now using correct factor which is : 2 w_x (w_x+1) /
 
@@ -208,7 +210,7 @@ public class GrayVoxels {
 		return Math.toDegrees(Math.min(Math.acos(sVal1), Math.acos(-sVal1)));
 	}
 
-	public double angVec(int compNum) {
+	public double angVec(final int compNum) {
 		if (diagRun) {
 			return angVec(getComp(compNum)[0], getComp(compNum)[1],
 					getComp(compNum)[2]);
@@ -238,8 +240,9 @@ public class GrayVoxels {
 		}
 	}
 
-	public void calculateBoxDist(double minX, double minY, double minZ,
-			double maxX, double maxY, double maxZ) {
+	public void calculateBoxDist(final double minX, final double minY,
+			final double minZ, final double maxX, final double maxY,
+			final double maxZ) {
 		// Calculate the distance away from the edge of the region of interest
 		// (much faster than distance transform when object occupies the
 		// entire field of view)
@@ -283,7 +286,7 @@ public class GrayVoxels {
 	 * Perform the inertial tensor calculations and diagnolization and calculate
 	 * eigenvectors and values
 	 **/
-	public String diag(boolean printResults) {
+	public String diag(final boolean printResults) {
 
 		// Create Inertial Tensor
 		final double[][] IT = getTensor(); // inertial tensor
@@ -330,7 +333,7 @@ public class GrayVoxels {
 
 	}
 
-	public double[] getComp(int compNum) {
+	public double[] getComp(final int compNum) {
 		return U[compNum];
 	}
 
@@ -338,7 +341,7 @@ public class GrayVoxels {
 		return label;
 	}
 
-	public double getScore(int compNum) {
+	public double getScore(final int compNum) {
 		return info[compNum];
 	}
 
@@ -374,7 +377,7 @@ public class GrayVoxels {
 		return getTensorString(", ");
 	}
 
-	public String getTensorString(String dlmChar) {
+	public String getTensorString(final String dlmChar) {
 		final double[][] IT = getTensor();
 		String outString = "";
 		if (IT == null)
@@ -473,7 +476,7 @@ public class GrayVoxels {
 		return maxZ - minZ;
 	}
 
-	public void setExtentsVoxel(double x, double y, double z) {
+	public void setExtentsVoxel(final double x, final double y, final double z) {
 
 		double p1 = 0;
 		double p2 = 0;
@@ -586,7 +589,7 @@ public class GrayVoxels {
 		return toString(", ");
 	}
 
-	public String toString(String curDLM) {
+	public String toString(final String curDLM) {
 		String outString = "";
 
 		if (labelType > 0) {

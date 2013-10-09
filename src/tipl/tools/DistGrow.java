@@ -13,7 +13,7 @@ import tipl.util.TImgTools;
  */
 public class DistGrow extends BaseTIPLPluginIO {
 	/** Command line accessible program interface */
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final String kVer = "130913_002";
 		System.out.println(" DistGrow Script v" + kVer);
 		System.out.println(" Gradient Guided Watershed and  v" + kVer);
@@ -105,7 +105,8 @@ public class DistGrow extends BaseTIPLPluginIO {
 	volatile double filledVoxels = 0;
 
 	@Deprecated
-	public DistGrow(short[] inputmap, D3int idim, D3int ioffset) {
+	public DistGrow(final short[] inputmap, final D3int idim,
+			final D3int ioffset) {
 		aimLength = inputmap.length;
 		distmap = new int[aimLength];
 		mask = new boolean[aimLength];
@@ -124,7 +125,7 @@ public class DistGrow extends BaseTIPLPluginIO {
 	 * @param ilabels
 	 *            Starting labels
 	 */
-	public DistGrow(TImgRO imap, TImgRO ilabels) {
+	public DistGrow(final TImgRO imap, final TImgRO ilabels) {
 		LoadAimData(imap, ilabels);
 	}
 
@@ -138,16 +139,17 @@ public class DistGrow extends BaseTIPLPluginIO {
 	 * @param imask
 	 *            Mask to be filld and identified
 	 */
-	public DistGrow(TImgRO imap, TImgRO ilabels, TImgRO imask) {
+	public DistGrow(final TImgRO imap, final TImgRO ilabels, final TImgRO imask) {
 		LoadAimData(imap, ilabels, imask);
 	}
 
-	protected D3float checkNeighborhood(int x, int y, int z, int off) {
+	protected D3float checkNeighborhood(final int x, final int y, final int z,
+			final int off) {
 		return checkNeighborhood(x, y, z, off, distScalar * distmap[off], 0);
 	}
 
-	protected D3float checkNeighborhood(int x, int y, int z, int off,
-			double inDist, int depth) {
+	protected D3float checkNeighborhood(final int x, final int y, final int z,
+			final int off, final double inDist, final int depth) {
 		if (depth > chkNbrIter)
 			chkNbrIter = depth;
 
@@ -217,7 +219,7 @@ public class DistGrow extends BaseTIPLPluginIO {
 
 	/** Write the labeled bubbles to an image based on the template */
 	@Override
-	public TImg ExportAim(TImgRO.CanExport templateAim) {
+	public TImg ExportAim(final TImgRO.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				final TImg outAimData = templateAim.inheritedAim(labels, dim,
@@ -246,7 +248,7 @@ public class DistGrow extends BaseTIPLPluginIO {
 		return "DistGrow";
 	}
 
-	protected void Init(D3int idim, D3int ioffset) {
+	protected void Init(final D3int idim, final D3int ioffset) {
 		if (distmap.length != mask.length) {
 			System.out.println("SIZES DO NOT MATCH!!!!!!!!");
 			return;
@@ -259,7 +261,8 @@ public class DistGrow extends BaseTIPLPluginIO {
 
 	}
 
-	protected boolean labNeighbors(int x, int y, int z, int off) {
+	protected boolean labNeighbors(final int x, final int y, final int z,
+			final int off) {
 		for (int z2 = max(z - neighborSize.z, lowz); z2 <= min(z
 				+ neighborSize.z, uppz - 1); z2++) {
 			for (int y2 = max(y - neighborSize.y, lowy); y2 <= min(y
@@ -282,7 +285,7 @@ public class DistGrow extends BaseTIPLPluginIO {
 
 	/** The real constructor functions */
 
-	protected void LoadAimData(TImgRO distImg, TImgRO labImg) {
+	protected void LoadAimData(final TImgRO distImg, final TImgRO labImg) {
 		final int[] inputmap = TImgTools.makeTImgFullReadable(distImg)
 				.getIntAim();
 		final int[] clabels = TImgTools.makeTImgFullReadable(labImg)
@@ -295,7 +298,8 @@ public class DistGrow extends BaseTIPLPluginIO {
 		Init(distImg.getDim(), distImg.getOffset());
 	}
 
-	protected void LoadAimData(TImgRO distImg, TImgRO labImg, TImgRO maskImg) {
+	protected void LoadAimData(final TImgRO distImg, final TImgRO labImg,
+			final TImgRO maskImg) {
 		final int[] inputmap = TImgTools.makeTImgFullReadable(distImg)
 				.getIntAim();
 		final int[] clabels = TImgTools.makeTImgFullReadable(labImg)
@@ -314,7 +318,7 @@ public class DistGrow extends BaseTIPLPluginIO {
 	 * is the label image the third is the mask image (if present)
 	 */
 	@Override
-	public void LoadImages(TImgRO[] inImages) {
+	public void LoadImages(final TImgRO[] inImages) {
 		// TODO Auto-generated method stub
 		if (inImages.length < 2)
 			throw new IllegalArgumentException(
@@ -328,7 +332,7 @@ public class DistGrow extends BaseTIPLPluginIO {
 	}
 
 	@Override
-	protected void processWork(Object currentWork) {
+	protected void processWork(final Object currentWork) {
 		final int[] range = (int[]) currentWork;
 		final int bSlice = range[0];
 		final int tSlice = range[1];
@@ -383,7 +387,7 @@ public class DistGrow extends BaseTIPLPluginIO {
 		}
 	}
 
-	public void runSection(int bSlice, int tSlice) {
+	public void runSection(final int bSlice, final int tSlice) {
 		// Run loop to roll all voxels down
 		int off = 0;
 
@@ -407,7 +411,7 @@ public class DistGrow extends BaseTIPLPluginIO {
 		} // End z
 	}
 
-	protected synchronized void setLabel(int off, int val) {
+	protected synchronized void setLabel(final int off, final int val) {
 		labels[off] = val;
 		filledVoxels++;
 	}

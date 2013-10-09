@@ -25,7 +25,7 @@ abstract public class BaseTIPLPluginBW extends BaseTIPLPluginIO {
 
 	/** initializer function taking an aim-file */
 	@Override
-	public TImg ExportAim(TImgRO.CanExport templateAim) {
+	public TImg ExportAim(final TImgRO.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				final TImg outAimData = templateAim.inheritedAim(outAim, dim,
@@ -54,7 +54,8 @@ abstract public class BaseTIPLPluginBW extends BaseTIPLPluginIO {
 	 * array first) linear array and the dimensions
 	 */
 	@Deprecated
-	public void ImportAim(boolean[] inputmap, D3int idim, D3int ioffset) {
+	public void ImportAim(final boolean[] inputmap, final D3int idim,
+			final D3int ioffset) {
 		aimLength = inputmap.length;
 		inAim = new boolean[aimLength];
 		for (int i = 0; i < aimLength; i++)
@@ -67,7 +68,8 @@ abstract public class BaseTIPLPluginBW extends BaseTIPLPluginIO {
 	 * dimensions
 	 */
 	@Deprecated
-	public void ImportAim(float[] inputmap, D3int idim, D3int ioffset) {
+	public void ImportAim(final float[] inputmap, final D3int idim,
+			final D3int ioffset) {
 		aimLength = inputmap.length;
 		inAim = new boolean[aimLength];
 		for (int i = 0; i < aimLength; i++)
@@ -80,7 +82,8 @@ abstract public class BaseTIPLPluginBW extends BaseTIPLPluginIO {
 	 * dimensions
 	 */
 	@Deprecated
-	public void ImportAim(int[] inputmap, D3int idim, D3int ioffset) {
+	public void ImportAim(final int[] inputmap, final D3int idim,
+			final D3int ioffset) {
 		aimLength = inputmap.length;
 		inAim = new boolean[aimLength];
 		for (int i = 0; i < aimLength; i++)
@@ -93,7 +96,8 @@ abstract public class BaseTIPLPluginBW extends BaseTIPLPluginIO {
 	 * dimensions
 	 */
 	@Deprecated
-	public void ImportAim(short[] inputmap, D3int idim, D3int ioffset) {
+	public void ImportAim(final short[] inputmap, final D3int idim,
+			final D3int ioffset) {
 		aimLength = inputmap.length;
 		inAim = new boolean[aimLength];
 		for (int i = 0; i < aimLength; i++)
@@ -102,19 +106,19 @@ abstract public class BaseTIPLPluginBW extends BaseTIPLPluginIO {
 	}
 
 	/** initializer function taking an aim-file */
-	public void ImportAim(TImgRO inImg) {
+	public void ImportAim(final TImgRO inImg) {
 		ImportAim(TImgTools.makeTImgFullReadable(inImg).getBoolAim(),
 				inImg.getDim(), inImg.getOffset());
 	}
 
-	protected void InitLabels(D3int idim, D3int ioffset) {
+	protected void InitLabels(final D3int idim, final D3int ioffset) {
 		outAim = new boolean[aimLength];
 		InitDims(idim, ioffset);
 		isInitialized = true;
 	}
 
 	@Override
-	public void LoadImages(TImgRO[] inImages) {
+	public void LoadImages(final TImgRO[] inImages) {
 		// TODO Auto-generated method stub
 		if (inImages.length < 1)
 			throw new IllegalArgumentException(

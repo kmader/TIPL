@@ -8,7 +8,7 @@ import tipl.util.TImgTools;
 
 /** Performs voronoi dilation on objects into a mask and shrinks based on usage */
 public class kVoronoiShrink extends kVoronoi {
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final String kVer = "120105_002";
 		System.out.println(" kVoronoi-Shrink Script v" + kVer);
 		System.out.println(" Dilates and  v" + kVer);
@@ -95,7 +95,7 @@ public class kVoronoiShrink extends kVoronoi {
 			maxActz;
 	protected volatile int tlowx, tuppx, tlowy, tuppy, tlowz, tuppz;
 
-	public kVoronoiShrink(TImg labelAim) {
+	public kVoronoiShrink(final TImg labelAim) {
 		super(labelAim);
 	}
 
@@ -109,11 +109,11 @@ public class kVoronoiShrink extends kVoronoi {
 	 *            Whether or not regions where the image touches the boundary
 	 *            should be included as edges
 	 **/
-	public kVoronoiShrink(TImg maskAim, boolean includeEdges) {
+	public kVoronoiShrink(final TImg maskAim, final boolean includeEdges) {
 		super(maskAim, includeEdges);
 	}
 
-	public kVoronoiShrink(TImg labelAim, TImg maskAim) {
+	public kVoronoiShrink(final TImg labelAim, final TImg maskAim) {
 		super(labelAim, maskAim);
 	}
 
@@ -122,7 +122,7 @@ public class kVoronoiShrink extends kVoronoi {
 	 * is z-slices
 	 */
 	@Override
-	public Object divideThreadWork(int cThread, int maxCores) {
+	public Object divideThreadWork(final int cThread, final int maxCores) {
 		final int minSlice = tlowz;
 		final int maxSlice = tuppz;
 
@@ -191,7 +191,8 @@ public class kVoronoiShrink extends kVoronoi {
 	}
 
 	@Override
-	protected synchronized void ichanges(int nchangescnt, boolean nchanges) {
+	protected synchronized void ichanges(final int nchangescnt,
+			final boolean nchanges) {
 		changescnt += nchangescnt;
 		if (nchanges)
 			changes = true;
@@ -202,7 +203,7 @@ public class kVoronoiShrink extends kVoronoi {
 		runTransform(MAXDIST);
 	}
 
-	public void runTransform(double maxIterDist) {
+	public void runTransform(final double maxIterDist) {
 		maxUsuableDistance = maxIterDist;
 		if (!preScanDone)
 			runPreScan();
@@ -364,38 +365,38 @@ public class kVoronoiShrink extends kVoronoi {
 
 	}
 
-	protected synchronized void setMaxActx(int a) {
+	protected synchronized void setMaxActx(final int a) {
 		if (a > maxActx)
 			maxActx = a;
 	}
 
-	protected synchronized void setMaxActy(int a) {
+	protected synchronized void setMaxActy(final int a) {
 		if (a > maxActy)
 			maxActy = a;
 	}
 
-	protected synchronized void setMaxActz(int a) {
+	protected synchronized void setMaxActz(final int a) {
 		if (a > maxActz)
 			maxActz = a;
 	}
 
-	protected synchronized void setMinActx(int a) {
+	protected synchronized void setMinActx(final int a) {
 		if (a < minActx)
 			minActx = a;
 	}
 
-	protected synchronized void setMinActy(int a) {
+	protected synchronized void setMinActy(final int a) {
 		if (a < minActy)
 			minActy = a;
 	}
 
-	protected synchronized void setMinActz(int a) {
+	protected synchronized void setMinActz(final int a) {
 		if (a < minActz)
 			minActz = a;
 	}
 
 	@Override
-	public void subGrow(int ibSlice, int itSlice) {
+	public void subGrow(final int ibSlice, final int itSlice) {
 		int off = 0;
 		// Code for stationaryKernel
 		BaseTIPLPluginIn.stationaryKernel curKernel;
@@ -630,7 +631,7 @@ public class kVoronoiShrink extends kVoronoi {
 	}
 
 	@Override
-	protected void subSwap(int ibSlice, int itSlice) {
+	protected void subSwap(final int ibSlice, final int itSlice) {
 		int off;
 		boolean nchanges = false;
 		int nchangescnt = 0;
@@ -738,7 +739,8 @@ public class kVoronoiShrink extends kVoronoi {
 	 *            distance to be putinto the distance map at off2
 	 */
 	@Override
-	public synchronized void synSetVoxel(int off2, int off, int ikDist) {
+	public synchronized void synSetVoxel(final int off2, final int off,
+			final int ikDist) {
 		outlabels[off2] = outlabels[off];
 		distmap[off2] = ikDist;
 	}
@@ -754,7 +756,7 @@ public class kVoronoiShrink extends kVoronoi {
 	 *            distance to be putinto the distance map at off2
 	 */
 	@Override
-	public void usSetVoxel(int off2, int off, int ikDist) {
+	public void usSetVoxel(final int off2, final int off, final int ikDist) {
 		outlabels[off2] = outlabels[off];
 		distmap[off2] = ikDist;
 

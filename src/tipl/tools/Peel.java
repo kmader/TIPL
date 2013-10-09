@@ -29,7 +29,7 @@ public class Peel extends BaseTIPLPluginMult {
 	 *      <li>outputAim.WriteAim(outputFile,1,(float) cPeel.probScalar());
 	 * </pre>
 	 */
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final String kVer = "120105_001";
 		System.out.println("Peel v" + kVer);
 		System.out.println(" Counts Peel for given images v" + kVer);
@@ -94,15 +94,16 @@ public class Peel extends BaseTIPLPluginMult {
 	public long gBorderVoxels = 0;
 
 	@Deprecated
-	public Peel(boolean[] inputmap, boolean[] inMask, D3int idim,
-			D3int ioffset, D3int peelS) {
+	public Peel(final boolean[] inputmap, final boolean[] inMask,
+			final D3int idim, final D3int ioffset, final D3int peelS) {
 		ImportAim(inputmap, idim, ioffset);
 		peelMask = inMask;
 		InitPeel(peelS);
 	}
 
 	@Deprecated
-	public Peel(boolean[] inputmap, D3int idim, D3int ioffset, D3int peelS) {
+	public Peel(final boolean[] inputmap, final D3int idim,
+			final D3int ioffset, final D3int peelS) {
 		ImportAim(inputmap, idim, ioffset);
 		selfMask = true;
 		InitPeel(peelS);
@@ -110,23 +111,24 @@ public class Peel extends BaseTIPLPluginMult {
 	}
 
 	@Deprecated
-	public Peel(float[] inputmap, boolean[] inMask, D3int idim, D3int ioffset,
-			D3int peelS) {
+	public Peel(final float[] inputmap, final boolean[] inMask,
+			final D3int idim, final D3int ioffset, final D3int peelS) {
 		ImportAim(inputmap, idim, ioffset);
 		peelMask = inMask;
 		InitPeel(peelS);
 	}
 
 	@Deprecated
-	public Peel(float[] inputmap, D3int idim, D3int ioffset, D3int peelS) {
+	public Peel(final float[] inputmap, final D3int idim, final D3int ioffset,
+			final D3int peelS) {
 		ImportAim(inputmap, idim, ioffset);
 		selfMask = true;
 		InitPeel(peelS);
 	}
 
 	@Deprecated
-	public Peel(int[] inputmap, boolean[] inMask, D3int idim, D3int ioffset,
-			D3int peelS) {
+	public Peel(final int[] inputmap, final boolean[] inMask, final D3int idim,
+			final D3int ioffset, final D3int peelS) {
 
 		ImportAim(inputmap, idim, ioffset);
 		peelMask = inMask;
@@ -135,7 +137,8 @@ public class Peel extends BaseTIPLPluginMult {
 	}
 
 	@Deprecated
-	public Peel(int[] inputmap, D3int idim, D3int ioffset, D3int peelS) {
+	public Peel(final int[] inputmap, final D3int idim, final D3int ioffset,
+			final D3int peelS) {
 		ImportAim(inputmap, idim, ioffset);
 		selfMask = true;
 		InitPeel(peelS);
@@ -143,8 +146,8 @@ public class Peel extends BaseTIPLPluginMult {
 	}
 
 	@Deprecated
-	public Peel(short[] inputmap, boolean[] inMask, D3int idim, D3int ioffset,
-			D3int peelS) {
+	public Peel(final short[] inputmap, final boolean[] inMask,
+			final D3int idim, final D3int ioffset, final D3int peelS) {
 		ImportAim(inputmap, idim, ioffset);
 		peelMask = inMask;
 		InitPeel(peelS);
@@ -152,7 +155,8 @@ public class Peel extends BaseTIPLPluginMult {
 	}
 
 	@Deprecated
-	public Peel(short[] inputmap, D3int idim, D3int ioffset, D3int peelS) {
+	public Peel(final short[] inputmap, final D3int idim, final D3int ioffset,
+			final D3int peelS) {
 		ImportAim(inputmap, idim, ioffset);
 		selfMask = true;
 		InitPeel(peelS);
@@ -172,18 +176,19 @@ public class Peel extends BaseTIPLPluginMult {
 	 * procLog+=rsAim.procLog+"\n"; } else { peelMask=maskAim.getBoolAim(); }
 	 * ImportAim(inAim,-1); InitPeel(new D3int(peelS)); }
 	 */
-	public Peel(TImgRO inAim, D3int peelS) {
+	public Peel(final TImgRO inAim, final D3int peelS) {
 		ImportAim(inAim, -1);
 		selfMask = true;
 		InitPeel(peelS);
 	}
 
-	public Peel(TImgRO inAim, TImgRO maskAim, D3int peelS) {
+	public Peel(final TImgRO inAim, final TImgRO maskAim, final D3int peelS) {
 		LoadImages(new TImgRO[] { inAim, maskAim });
 		InitPeel(peelS);
 	}
 
-	public Peel(TImgRO inAim, TImgRO maskAim, D3int peelS, boolean IisMask) {
+	public Peel(final TImgRO inAim, final TImgRO maskAim, final D3int peelS,
+			final boolean IisMask) {
 		isMask = IisMask;
 		LoadImages(new TImgRO[] { inAim, maskAim });
 		InitPeel(peelS);
@@ -212,7 +217,7 @@ public class Peel extends BaseTIPLPluginMult {
 	 *            input template aim file
 	 */
 	@Override
-	public TImg ExportAim(TImg.CanExport templateAim) {
+	public TImg ExportAim(final TImg.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				TImg outVirtualAim;
@@ -286,7 +291,7 @@ public class Peel extends BaseTIPLPluginMult {
 		return;
 	}
 
-	private void InitPeel(D3int peelS) {
+	private void InitPeel(final D3int peelS) {
 		runCount = 0;
 		neighborSize = peelS;
 
@@ -353,7 +358,7 @@ public class Peel extends BaseTIPLPluginMult {
 	 * 
 	 */
 	@Override
-	public void LoadImages(TImgRO[] inImages) {
+	public void LoadImages(final TImgRO[] inImages) {
 		final TImgRO inAim = inImages[0];
 		final TImgRO maskAim = inImages[1];
 		TImgRO tempMask;
@@ -378,7 +383,7 @@ public class Peel extends BaseTIPLPluginMult {
 	}
 
 	@Override
-	public void processWork(Object currentWork) {
+	public void processWork(final Object currentWork) {
 		final int[] range = (int[]) currentWork;
 		final int bSlice = range[0];
 		final int tSlice = range[1];
@@ -412,7 +417,7 @@ public class Peel extends BaseTIPLPluginMult {
 	}
 
 	/** run the peeling code on a section of slices **/
-	protected void runSection(int startSlice, int endSlice) {
+	protected void runSection(final int startSlice, final int endSlice) {
 		double keptVoxels = 0;
 		double startingVoxels = 0.0;
 		double borderVoxels = 0.0;

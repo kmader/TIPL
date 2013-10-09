@@ -37,13 +37,13 @@ public class FractalDimension extends BaseTIPLPluginInExecutor {
 		final D3int runBoxSize;
 		final D3int runImgSize;
 
-		public boxScanner(ConcurrentReader inImg, D3int inBoxSize) {
+		public boxScanner(final ConcurrentReader inImg, final D3int inBoxSize) {
 			runImg = inImg;
 			runBoxSize = inBoxSize;
 			runImgSize = inImg.getDim();
 		}
 
-		public boxScanner(ConcurrentReader inImg, int inBoxSize) {
+		public boxScanner(final ConcurrentReader inImg, final int inBoxSize) {
 			runImg = inImg;
 			runBoxSize = new D3int(inBoxSize);
 			runImgSize = inImg.getDim();
@@ -121,7 +121,7 @@ public class FractalDimension extends BaseTIPLPluginInExecutor {
 
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final String kVer = "130527_001";
 		System.out.println("FractalDimension v" + kVer);
 		System.out.println(" Analyzes the fractal dimension of an image");
@@ -167,7 +167,7 @@ public class FractalDimension extends BaseTIPLPluginInExecutor {
 
 	final String dlm = ", ";
 
-	public FractalDimension(final TImgRO inputImage, String inOutFileName) {
+	public FractalDimension(final TImgRO inputImage, final String inOutFileName) {
 		LoadImages(new TImgRO[] { inputImage });
 		outFileName = inOutFileName;
 	}
@@ -187,7 +187,7 @@ public class FractalDimension extends BaseTIPLPluginInExecutor {
 	 * 
 	 */
 	@Override
-	public void LoadImages(TImgRO[] inImages) {
+	public void LoadImages(final TImgRO[] inImages) {
 		// TODO Auto-generated method stub
 		if (inImages.length < 1)
 			throw new IllegalArgumentException(

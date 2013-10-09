@@ -23,7 +23,7 @@ public abstract class BaseTIPLPluginInExecutor extends BaseTIPLPluginIn {
 		final BaseTIPLPluginIn runObj;
 		final Object runWork;
 
-		public jobRunner(BaseTIPLPluginIn inObj, Object inWork) {
+		public jobRunner(final BaseTIPLPluginIn inObj, final Object inWork) {
 			runObj = inObj;
 			runWork = inWork;
 		}
@@ -50,7 +50,7 @@ public abstract class BaseTIPLPluginInExecutor extends BaseTIPLPluginIn {
 	 * @param idim
 	 * @param ioffset
 	 */
-	public BaseTIPLPluginInExecutor(D3int idim, D3int ioffset) {
+	public BaseTIPLPluginInExecutor(final D3int idim, final D3int ioffset) {
 		super(idim, ioffset);
 		myPool = Executors.newFixedThreadPool(supportedCores,
 				TIPLGlobal.daemonFactory);
@@ -77,7 +77,7 @@ public abstract class BaseTIPLPluginInExecutor extends BaseTIPLPluginIn {
 	 *            the given thread
 	 */
 	@Override
-	protected void processWork(Object myWork) {
+	protected void processWork(final Object myWork) {
 		System.out
 				.println("THIS IS AN pseudo-ABSTRACT FUNCTION AND DOES NOTHING, PLEASE EITHER TURN OFF MULTICORE SUPPORT OR REWRITE YOUR PLUGIN!!!!");
 		return; // nothing to do

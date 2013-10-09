@@ -64,13 +64,14 @@ public class Curvature extends BaseTIPLPluginIO {
 		public int width = 0;
 		public int height = 0;
 
-		public FloatArray2D(float[] data, int width, int height) {
+		public FloatArray2D(final float[] data, final int width,
+				final int height) {
 			this.data = data;
 			this.width = width;
 			this.height = height;
 		}
 
-		public FloatArray2D(int width, int height) {
+		public FloatArray2D(final int width, final int height) {
 			data = new float[width * height];
 			this.width = width;
 			this.height = height;
@@ -83,7 +84,7 @@ public class Curvature extends BaseTIPLPluginIO {
 			return clone;
 		}
 
-		public float get(int x, int y) {
+		public float get(final int x, final int y) {
 			return data[getPos(x, y)];
 		}
 
@@ -123,11 +124,11 @@ public class Curvature extends BaseTIPLPluginIO {
 			return data[getPos(x, y)];
 		}
 
-		public int getPos(int x, int y) {
+		public int getPos(final int x, final int y) {
 			return x + width * y;
 		}
 
-		public float getZero(int x, int y) {
+		public float getZero(final int x, final int y) {
 			if (x >= width)
 				return 0;
 
@@ -143,7 +144,7 @@ public class Curvature extends BaseTIPLPluginIO {
 			return data[getPos(x, y)];
 		}
 
-		public void set(float value, int x, int y) {
+		public void set(final float value, final int x, final int y) {
 			data[getPos(x, y)] = value;
 		}
 	}
@@ -159,14 +160,15 @@ public class Curvature extends BaseTIPLPluginIO {
 		public int height = 0;
 		public int depth = 0;
 
-		public FloatArray3D(float[] data, int width, int height, int depth) {
+		public FloatArray3D(final float[] data, final int width,
+				final int height, final int depth) {
 			this.data = data;
 			this.width = width;
 			this.height = height;
 			this.depth = depth;
 		}
 
-		public FloatArray3D(int width, int height, int depth) {
+		public FloatArray3D(final int width, final int height, final int depth) {
 			data = new float[width * height * depth];
 			this.width = width;
 			this.height = height;
@@ -180,7 +182,7 @@ public class Curvature extends BaseTIPLPluginIO {
 			return clone;
 		}
 
-		public float get(int x, int y, int z) {
+		public float get(final int x, final int y, final int z) {
 			return data[getPos(x, y, z)];
 		}
 
@@ -236,11 +238,11 @@ public class Curvature extends BaseTIPLPluginIO {
 			return data[getPos(x, y, z)];
 		}
 
-		public int getPos(int x, int y, int z) {
+		public int getPos(final int x, final int y, final int z) {
 			return x + width * (y + z * height);
 		}
 
-		public FloatArray2D getXPlane(int x) {
+		public FloatArray2D getXPlane(final int x) {
 			final FloatArray2D plane = new FloatArray2D(height, depth);
 
 			for (int y = 0; y < height; y++)
@@ -250,7 +252,7 @@ public class Curvature extends BaseTIPLPluginIO {
 			return plane;
 		}
 
-		public float[][] getXPlane_float(int x) {
+		public float[][] getXPlane_float(final int x) {
 			final float[][] plane = new float[height][depth];
 
 			for (int y = 0; y < height; y++)
@@ -260,7 +262,7 @@ public class Curvature extends BaseTIPLPluginIO {
 			return plane;
 		}
 
-		public FloatArray2D getYPlane(int y) {
+		public FloatArray2D getYPlane(final int y) {
 			final FloatArray2D plane = new FloatArray2D(width, depth);
 
 			for (int x = 0; x < width; x++)
@@ -270,7 +272,7 @@ public class Curvature extends BaseTIPLPluginIO {
 			return plane;
 		}
 
-		public float[][] getYPlane_float(int y) {
+		public float[][] getYPlane_float(final int y) {
 			final float[][] plane = new float[width][depth];
 
 			for (int x = 0; x < width; x++)
@@ -280,7 +282,7 @@ public class Curvature extends BaseTIPLPluginIO {
 			return plane;
 		}
 
-		public FloatArray2D getZPlane(int z) {
+		public FloatArray2D getZPlane(final int z) {
 			final FloatArray2D plane = new FloatArray2D(width, height);
 
 			for (int x = 0; x < width; x++)
@@ -290,7 +292,7 @@ public class Curvature extends BaseTIPLPluginIO {
 			return plane;
 		}
 
-		public float[][] getZPlane_float(int z) {
+		public float[][] getZPlane_float(final int z) {
 			final float[][] plane = new float[width][height];
 
 			for (int x = 0; x < width; x++)
@@ -300,41 +302,41 @@ public class Curvature extends BaseTIPLPluginIO {
 			return plane;
 		}
 
-		public void set(float value, int x, int y, int z) {
+		public void set(final float value, final int x, final int y, final int z) {
 			data[getPos(x, y, z)] = value;
 		}
 
-		public void setXPlane(float[][] plane, int x) {
+		public void setXPlane(final float[][] plane, final int x) {
 			for (int y = 0; y < height; y++)
 				for (int z = 0; z < depth; z++)
 					this.set(plane[y][z], x, y, z);
 		}
 
-		public void setXPlane(FloatArray2D plane, int x) {
+		public void setXPlane(final FloatArray2D plane, final int x) {
 			for (int y = 0; y < height; y++)
 				for (int z = 0; z < depth; z++)
 					this.set(plane.get(y, z), x, y, z);
 		}
 
-		public void setYPlane(float[][] plane, int y) {
+		public void setYPlane(final float[][] plane, final int y) {
 			for (int x = 0; x < width; x++)
 				for (int z = 0; z < depth; z++)
 					this.set(plane[x][z], x, y, z);
 		}
 
-		public void setYPlane(FloatArray2D plane, int y) {
+		public void setYPlane(final FloatArray2D plane, final int y) {
 			for (int x = 0; x < width; x++)
 				for (int z = 0; z < depth; z++)
 					this.set(plane.get(x, z), x, y, z);
 		}
 
-		public void setZPlane(float[][] plane, int z) {
+		public void setZPlane(final float[][] plane, final int z) {
 			for (int x = 0; x < width; x++)
 				for (int y = 0; y < height; y++)
 					this.set(plane[x][y], x, y, z);
 		}
 
-		public void setZPlane(FloatArray2D plane, int z) {
+		public void setZPlane(final FloatArray2D plane, final int z) {
 			for (int x = 0; x < width; x++)
 				for (int y = 0; y < height; y++)
 					this.set(plane.get(x, y), x, y, z);
@@ -353,7 +355,8 @@ public class Curvature extends BaseTIPLPluginIO {
 	 * 
 	 * @author Stephan Saalfeld
 	 */
-	public static float[] createGaussianKernel1D(float sigma, boolean normalize) {
+	public static float[] createGaussianKernel1D(final float sigma,
+			final boolean normalize) {
 		int size = 3;
 		float[] gaussianKernel;
 
@@ -392,7 +395,7 @@ public class Curvature extends BaseTIPLPluginIO {
 		return gaussianKernel;
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final String kVer = "120326_002";
 		System.out.println("Curvature (filter/voxel-based) v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
@@ -456,8 +459,8 @@ public class Curvature extends BaseTIPLPluginIO {
 	 *            original image (object rather than background curvature)
 	 * @author Kevin Mader
 	 */
-	public static TImg RunCC(TImg inputAim, double isig, int upV, int dnV,
-			float processThresh) {
+	public static TImg RunCC(final TImg inputAim, final double isig,
+			final int upV, final int dnV, final float processThresh) {
 		final TImgRO.FullReadable finputAim = TImgTools
 				.makeTImgFullReadable(inputAim);
 
@@ -497,7 +500,7 @@ public class Curvature extends BaseTIPLPluginIO {
 	boolean internalGaussian = false;
 
 	/** This function only works with aim data */
-	public Curvature(TImgRO inImg, float iprocessThresh) {
+	public Curvature(final TImgRO inImg, final float iprocessThresh) {
 		ImportData(inImg);
 		processThresh = iprocessThresh;
 	}
@@ -516,7 +519,7 @@ public class Curvature extends BaseTIPLPluginIO {
 	 * 
 	 * @author Stephan Preibisch
 	 */
-	public double[] computeEigenValues(double[][] matrix) {
+	public double[] computeEigenValues(final double[][] matrix) {
 		final Matrix M = new Matrix(matrix);
 		final EigenvalueDecomposition E = new EigenvalueDecomposition(M);
 
@@ -534,7 +537,7 @@ public class Curvature extends BaseTIPLPluginIO {
 			return E.getRealEigenvalues();
 	}
 
-	public double[][] computeEigenVectors(double[][] matrix) {
+	public double[][] computeEigenVectors(final double[][] matrix) {
 		final Matrix M = new Matrix(matrix);
 		final EigenvalueDecomposition E = new EigenvalueDecomposition(M);
 
@@ -556,8 +559,8 @@ public class Curvature extends BaseTIPLPluginIO {
 	 * 
 	 * @author Stephan Preibisch
 	 */
-	public FloatArray2D computeGaussianFastMirror(FloatArray2D input,
-			float sigma) {
+	public FloatArray2D computeGaussianFastMirror(final FloatArray2D input,
+			final float sigma) {
 		final FloatArray2D output = new FloatArray2D(input.width, input.height);
 
 		float avg, kernelsum = 0;
@@ -628,8 +631,8 @@ public class Curvature extends BaseTIPLPluginIO {
 	 * 
 	 * @author Stephan Preibisch
 	 */
-	public FloatArray3D computeGaussianFastMirror(FloatArray3D input,
-			float sigma) {
+	public FloatArray3D computeGaussianFastMirror(final FloatArray3D input,
+			final float sigma) {
 		final FloatArray3D output = new FloatArray3D(input.width, input.height,
 				input.depth);
 
@@ -736,8 +739,8 @@ public class Curvature extends BaseTIPLPluginIO {
 	 * 
 	 * @author Stephan Preibisch
 	 */
-	public double[][] computeHessianMatrix2D(FloatArray2D laPlace, int x,
-			int y, double sigma) {
+	public double[][] computeHessianMatrix2D(final FloatArray2D laPlace,
+			final int x, final int y, final double sigma) {
 		final double[][] hessianMatrix = new double[2][2]; // zeile, spalte
 
 		final double temp = 2 * laPlace.get(x, y);
@@ -784,8 +787,8 @@ public class Curvature extends BaseTIPLPluginIO {
 	 * 
 	 * @author Stephan Preibisch
 	 */
-	public double[][] computeHessianMatrix3D(FloatArray3D img, int x, int y,
-			int z, double sigma) {
+	public double[][] computeHessianMatrix3D(final FloatArray3D img,
+			final int x, final int y, final int z, final double sigma) {
 		final double[][] hessianMatrix = new double[3][3]; // zeile, spalte
 
 		final double temp = 2 * img.get(x, y, z);
@@ -824,7 +827,7 @@ public class Curvature extends BaseTIPLPluginIO {
 		return hessianMatrix;
 	}
 
-	public double[] computeTraceAndDeterminant(double[][] matrix) {
+	public double[] computeTraceAndDeterminant(final double[][] matrix) {
 		final Matrix M = new Matrix(matrix);
 		final double[] result = new double[2];
 		result[0] = M.trace();
@@ -832,7 +835,7 @@ public class Curvature extends BaseTIPLPluginIO {
 		return result;
 	}
 
-	protected void curvature(int startSlice, int lastSlice) {
+	protected void curvature(final int startSlice, final int lastSlice) {
 		for (int z = startSlice; z < lastSlice; z++) {
 			for (int y = 1; y < data3D.height - 1; y++)
 				for (int x = 1; x < data3D.width - 1; x++) {
@@ -908,7 +911,7 @@ public class Curvature extends BaseTIPLPluginIO {
 	 * floatarray tool
 	 */
 	@Override
-	public Object divideThreadWork(int cThread) {
+	public Object divideThreadWork(final int cThread) {
 		final int minSlice = 1;
 		final int maxSlice = data3D.depth - 1;
 		int myNeededCores = neededCores();
@@ -962,7 +965,7 @@ public class Curvature extends BaseTIPLPluginIO {
 
 	/** export result to an aim structure **/
 	@Override
-	public TImg ExportAim(TImgRO.CanExport templateAim) {
+	public TImg ExportAim(final TImgRO.CanExport templateAim) {
 		return ExportAim(templateAim, 0);
 	}
 
@@ -974,7 +977,8 @@ public class Curvature extends BaseTIPLPluginIO {
 	 *            determinant / gaussian curvature, 2 = principal curvature
 	 *            eigenvalue 1)
 	 * **/
-	public TImg ExportAim(TImgRO.CanExport templateAim, int exportType) {
+	public TImg ExportAim(final TImgRO.CanExport templateAim,
+			final int exportType) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				TImg outAimData;
@@ -1032,7 +1036,7 @@ public class Curvature extends BaseTIPLPluginIO {
 		return "ComputeCurvature";
 	}
 
-	protected void ImportData(TImgRO inImg) {
+	protected void ImportData(final TImgRO inImg) {
 		final D3int idim = inImg.getDim();
 		final D3int ioffset = inImg.getOffset();
 		final TImgRO.FullReadable inAim = TImgTools.makeTImgFullReadable(inImg);
@@ -1072,7 +1076,7 @@ public class Curvature extends BaseTIPLPluginIO {
 	}
 
 	@Override
-	public void LoadImages(TImgRO[] inImages) {
+	public void LoadImages(final TImgRO[] inImages) {
 		if (inImages.length < 1)
 			throw new IllegalArgumentException(
 					"Too few arguments for LoadImages in:" + getPluginName());
@@ -1093,7 +1097,7 @@ public class Curvature extends BaseTIPLPluginIO {
 	}
 
 	@Override
-	public void processWork(Object currentWork) {
+	public void processWork(final Object currentWork) {
 		final int[] range = (int[]) currentWork;
 		final int bSlice = range[0];
 		final int tSlice = range[1];

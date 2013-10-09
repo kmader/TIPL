@@ -51,7 +51,7 @@ public class IJPluginRunner extends BaseTIPLPluginMult {
 	/**
 	 * Display an error message, telling the allowed image types
 	 */
-	static void wrongType(int flags, String cmd) {
+	static void wrongType(final int flags, final String cmd) {
 		String s = "\"" + cmd + "\" requires an image of type:\n \n";
 		if ((flags & PlugInFilter.DOES_8G) != 0)
 			s += "    8-bit grayscale\n";
@@ -80,7 +80,7 @@ public class IJPluginRunner extends BaseTIPLPluginMult {
 	public boolean unloadStack = false;
 	protected boolean doStack;
 
-	public IJPluginRunner(Object theFilter, VirtualAim inAim) {
+	public IJPluginRunner(final Object theFilter, final VirtualAim inAim) {
 		SetupImage(inAim);
 		SetupPlugin(theFilter, "", "");
 	}
@@ -99,8 +99,8 @@ public class IJPluginRunner extends BaseTIPLPluginMult {
 	 * @param arg
 	 *            IMAGEJ: Arg argument sent to the filter (this can be blank)
 	 */
-	public IJPluginRunner(Object theFilter, VirtualAim inAim, String command,
-			String arg) {
+	public IJPluginRunner(final Object theFilter, final VirtualAim inAim,
+			final String command, final String arg) {
 		SetupImage(inAim);
 		SetupPlugin(theFilter, command, arg);
 
@@ -110,7 +110,8 @@ public class IJPluginRunner extends BaseTIPLPluginMult {
 	 * test whether an ImagePlus can be processed based on the flags specified
 	 * and display an error message if not.
 	 */
-	private boolean checkImagePlus(ImagePlus imp, int flags, String cmd) {
+	private boolean checkImagePlus(final ImagePlus imp, final int flags,
+			final String cmd) {
 		final boolean imageRequired = (flags & PlugInFilter.NO_IMAGE_REQUIRED) == 0;
 		if (imageRequired && imp == null) {
 			IJ.noImage();
@@ -199,7 +200,7 @@ public class IJPluginRunner extends BaseTIPLPluginMult {
 
 	/** Export result as an Aim file */
 	@Override
-	public TImg ExportAim(TImgRO.CanExport templateAim) {
+	public TImg ExportAim(final TImgRO.CanExport templateAim) {
 
 		final TImg outImage = templateAim.inheritedAim(ipImg.getStack());
 		outImage.appendProcLog(procLog);
@@ -268,13 +269,14 @@ public class IJPluginRunner extends BaseTIPLPluginMult {
 		return;
 	}
 
-	protected void SetupImage(VirtualAim inAim) {
+	protected void SetupImage(final VirtualAim inAim) {
 		ipImg = inAim.getImagePlus();
 		if (unloadStack)
 			inAim.unloadStack();
 	}
 
-	protected void SetupPlugin(Object inFilter, String command, String arg) {
+	protected void SetupPlugin(final Object inFilter, final String command,
+			final String arg) {
 		if (theFilter instanceof String) {
 			final String cString = ((String) theFilter).toUpperCase();
 

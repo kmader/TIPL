@@ -28,8 +28,8 @@ public class MCThickness extends Thickness {
 	 * @param histoFile
 	 *            the name of the csv histogram file to write
 	 */
-	public static boolean DTO(String inAimFile, String outAimFile,
-			String histoFile) {
+	public static boolean DTO(final String inAimFile, final String outAimFile,
+			final String histoFile) {
 		final TImg thickmapAim = DTO(TImgTools.ReadTImg(inAimFile));
 		thickmapAim.WriteAim(outAimFile);
 		GrayAnalysis.StartHistogram(thickmapAim, histoFile + ".csv");
@@ -44,7 +44,7 @@ public class MCThickness extends Thickness {
 	 * @param bwObject
 	 *            The binary input image
 	 */
-	public static TImg DTO(TImg bwObject) {
+	public static TImg DTO(final TImg bwObject) {
 		VoronoiTransform KV = new kVoronoiShrink(bwObject, false);
 		KV.run();
 		final TImg distmapAim = KV.ExportDistanceAim(bwObject);
@@ -54,7 +54,7 @@ public class MCThickness extends Thickness {
 		return KT.ExportAim(distmapAim);
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final String kVer = "120322_006";
 		System.out.println("Thickness v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
@@ -111,7 +111,7 @@ public class MCThickness extends Thickness {
 
 	}
 
-	public MCThickness(TImg distmapAim) {
+	public MCThickness(final TImg distmapAim) {
 		LoadImages(new TImg[] { distmapAim });
 	}
 
@@ -120,7 +120,7 @@ public class MCThickness extends Thickness {
 	 * is z-slices, customized to include outershell and more slices per core
 	 */
 	@Override
-	public Object divideThreadWork(int cThread, int maxCores) {
+	public Object divideThreadWork(final int cThread, final int maxCores) {
 		final int minSlice = lowz + OUTERSHELL;
 		final int maxSlice = uppz - OUTERSHELL;
 		int myNeededCores = maxCores;
@@ -162,13 +162,13 @@ public class MCThickness extends Thickness {
 		return false;
 	}
 
-	public void execute(int numIterations) {
+	public void execute(final int numIterations) {
 		fillSpheres = numIterations;
 		execute();
 	}
 
 	/** get the best position in the current image */
-	protected int[] getBest(int startSlice, int endSlice) {
+	protected int[] getBest(final int startSlice, final int endSlice) {
 		int bigValue = -1;
 		final int[] outVar = new int[3];
 		for (int z = startSlice + OUTERSHELL; z < (endSlice + OUTERSHELL); z++) {
@@ -198,7 +198,7 @@ public class MCThickness extends Thickness {
 	}
 
 	/** get a random position in the current image */
-	protected int[] getRandom(int startSlice, int endSlice) {
+	protected int[] getRandom(final int startSlice, final int endSlice) {
 		final Random rgen = new Random();
 		final int x = rgen.nextInt(uppx - lowx - 2 * OUTERSHELL) + lowx
 				+ OUTERSHELL;
@@ -213,7 +213,7 @@ public class MCThickness extends Thickness {
 	}
 
 	@Override
-	protected void InitLabels(D3int idim, D3int ioffset) {
+	protected void InitLabels(final D3int idim, final D3int ioffset) {
 		outAim = new int[aimLength];
 		System.arraycopy(inAim, 0, outAim, 0, inAim.length);
 		InitDims(idim, ioffset);
@@ -221,7 +221,7 @@ public class MCThickness extends Thickness {
 	}
 
 	@Override
-	public void processWork(Object currentWork) {
+	public void processWork(final Object currentWork) {
 		final int[] range = (int[]) currentWork;
 		final int bSlice = range[0];
 		final int tSlice = range[1];
@@ -234,7 +234,7 @@ public class MCThickness extends Thickness {
 		execute();
 	}
 
-	public void runSection(int startSlice, int endSlice) {
+	public void runSection(final int startSlice, final int endSlice) {
 		int changedPos = 0;
 		int curChanges = 0;
 		double avgRadius = 0;
@@ -328,14 +328,15 @@ public class MCThickness extends Thickness {
 	}
 
 	@Override
-	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
+	public ArgumentParser setParameter(final ArgumentParser p,
+			final String prefix) {
 		final ArgumentParser args = super.setParameter(p, prefix);
 		fillSpheres = args.getOptionInt(prefix + "fillspheres", fillSpheres,
 				"Number of spheres to fill");
 		return args;
 	}
 
-	protected synchronized int upSpheres(boolean doUpp) {
+	protected synchronized int upSpheres(final boolean doUpp) {
 		if (doUpp)
 			spheresFilled++;
 		return spheresFilled;

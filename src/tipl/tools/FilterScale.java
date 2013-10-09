@@ -39,7 +39,8 @@ public class FilterScale extends BaseTIPLPluginMult {
 	 *      <li>outputAim.WriteAim(outputFile,0);
 	 * </pre>
 	 */
-	protected static void cmdLineFilter(FilterScale tFS, ArgumentParser p) {
+	protected static void cmdLineFilter(final FilterScale tFS,
+			final ArgumentParser p) {
 
 		final int filterType = p
 				.getOptionInt("filter", 0,
@@ -71,7 +72,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final String kVer = "120514_002";
 		System.out.println("FilterScale v" + kVer);
 		System.out.println(" FilterScales Aim files based on given criteria");
@@ -177,34 +178,34 @@ public class FilterScale extends BaseTIPLPluginMult {
 	}
 
 	@Deprecated
-	public FilterScale(boolean[] inputmap, D3int idim, D3int ioffset,
-			D3float ielSize) {
+	public FilterScale(final boolean[] inputmap, final D3int idim,
+			final D3int ioffset, final D3float ielSize) {
 		elSize = ielSize;
 		ImportAim(inputmap, idim, ioffset);
 	}
 
 	@Deprecated
-	public FilterScale(float[] inputmap, D3int idim, D3int ioffset,
-			D3float ielSize) {
+	public FilterScale(final float[] inputmap, final D3int idim,
+			final D3int ioffset, final D3float ielSize) {
 		elSize = ielSize;
 		ImportAim(inputmap, idim, ioffset);
 	}
 
 	@Deprecated
-	public FilterScale(int[] inputmap, D3int idim, D3int ioffset,
-			D3float ielSize) {
+	public FilterScale(final int[] inputmap, final D3int idim,
+			final D3int ioffset, final D3float ielSize) {
 		elSize = ielSize;
 		ImportAim(inputmap, idim, ioffset);
 	}
 
 	@Deprecated
-	public FilterScale(short[] inputmap, D3int idim, D3int ioffset,
-			D3float ielSize) {
+	public FilterScale(final short[] inputmap, final D3int idim,
+			final D3int ioffset, final D3float ielSize) {
 		elSize = ielSize;
 		ImportAim(inputmap, idim, ioffset);
 	}
 
-	public FilterScale(TImgRO inAim) {
+	public FilterScale(final TImgRO inAim) {
 		LoadImages(new TImgRO[] { inAim });
 	}
 
@@ -271,7 +272,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 	 * is z-slices
 	 */
 	@Override
-	public Object divideThreadWork(int cThread, final int maxCores) {
+	public Object divideThreadWork(final int cThread, final int maxCores) {
 		final int minSlice = olowz;
 		final int maxSlice = ouppz;
 		final int range = (maxSlice - minSlice) / maxCores;
@@ -303,7 +304,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 	 *            input template aim file
 	 */
 	@Override
-	public TImg ExportAim(TImgRO.CanExport templateAim) {
+	public TImg ExportAim(final TImgRO.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				TImg outVirtualAim;
@@ -395,7 +396,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 	}
 
 	@Override
-	public void LoadImages(TImgRO[] inImages) {
+	public void LoadImages(final TImgRO[] inImages) {
 		// TODO Auto-generated method stub
 		if (inImages.length < 1)
 			throw new IllegalArgumentException(
@@ -407,7 +408,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 	}
 
 	@Override
-	public void processWork(Object currentWork) {
+	public void processWork(final Object currentWork) {
 		final int[] range = (int[]) currentWork;
 		final int bSlice = range[0];
 		final int tSlice = range[1];
@@ -444,7 +445,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 	}
 
 	/** Code to actually run the filter code on a portion of the image */
-	protected boolean runFilter(int bSlice, int tSlice) {
+	protected boolean runFilter(final int bSlice, final int tSlice) {
 		int ooff, inoff;
 		// Loop through new image
 		if (supportsThreading)
@@ -741,7 +742,8 @@ public class FilterScale extends BaseTIPLPluginMult {
 	}
 
 	@Override
-	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
+	public ArgumentParser setParameter(final ArgumentParser p,
+			final String prefix) {
 		// p=super.setParameter(p,prefix);
 		final int filterType = p
 				.getOptionInt(prefix + "filter", 0,
@@ -784,7 +786,8 @@ public class FilterScale extends BaseTIPLPluginMult {
 	}
 
 	@Deprecated
-	public void SetScale(int ux, int uy, int uz, int dx, int dy, int dz) {
+	public void SetScale(final int ux, final int uy, final int uz,
+			final int dx, final int dy, final int dz) {
 		upX = ux;
 		upY = uy;
 		upZ = uz;

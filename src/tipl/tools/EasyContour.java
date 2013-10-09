@@ -47,7 +47,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 		}
 
 		@Override
-		public boolean isInside(int x, int y) {
+		public boolean isInside(final int x, final int y) {
 			if (points.size() < 1)
 				return false;
 			final double cx = x - xc;
@@ -82,12 +82,12 @@ public class EasyContour extends BaseTIPLPluginBW {
 		public boolean innerContourMode = false;
 
 		/** Add a given voxel to the contour */
-		public void addVox(int x, int y) {
+		public void addVox(final int x, final int y) {
 			points.add(new Point(x, y));
 		}
 
 		/** Add a given voxel to the contour */
-		public void addVox(Point t) {
+		public void addVox(final Point t) {
 			points.add(t);
 		}
 
@@ -105,7 +105,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 		 * Calculate the radius from the center to a point t conversely when the
 		 * program is operating in inner contour mode, calculate
 		 */
-		protected double getRad(Point t) {
+		protected double getRad(final Point t) {
 			final double cRadius = Math.sqrt(Math.pow(t.x - xc, 2)
 					+ Math.pow(t.y - yc, 2));
 			if (innerContourMode)
@@ -121,12 +121,12 @@ public class EasyContour extends BaseTIPLPluginBW {
 		public abstract boolean isInside(int x, int y);
 
 		/** Is a given voxel inside the contour */
-		public boolean isInside(Point t) {
+		public boolean isInside(final Point t) {
 			return isInside(t.x, t.y);
 		}
 
 		/** The distance to the nearest voxel in the points list in voxels */
-		public double minDist(int x, int y) {
+		public double minDist(final int x, final int y) {
 			if (points.size() > 0) {
 				Point cPoint = points.get(0);
 				double mDist = Math.pow(x - cPoint.x, 2)
@@ -187,7 +187,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 		}
 
 		/** Is the object inside of the minimum distance */
-		public boolean withinVacuumDistance(int x, int y) {
+		public boolean withinVacuumDistance(final int x, final int y) {
 			if (points.size() > 0) {
 				for (int i = 0; i < points.size(); i++) {
 					final Point cPoint = points.get(i);
@@ -259,7 +259,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 		}
 
 		@Override
-		public boolean isInside(int x, int y) {
+		public boolean isInside(final int x, final int y) {
 			if (points.size() < 1)
 				return false;
 			final double cx = x - xc;
@@ -269,7 +269,8 @@ public class EasyContour extends BaseTIPLPluginBW {
 			return (Math.pow(t.x / a, 2) + Math.pow(t.y / b, 2)) < 1;
 		}
 
-		private Point2D.Double rot(double ix, double iy, boolean forwards) {
+		private Point2D.Double rot(final double ix, final double iy,
+				final boolean forwards) {
 			double rx;
 			double ry;
 			if (forwards) {
@@ -294,14 +295,14 @@ public class EasyContour extends BaseTIPLPluginBW {
 	public static class fixCircContour extends circContour {
 		protected final double fx, fy, fa;
 
-		public fixCircContour(double ix, double iy, double ia) {
+		public fixCircContour(final double ix, final double iy, final double ia) {
 			fx = ix;
 			fy = iy;
 			fa = ia;
 		}
 
 		@Override
-		public boolean isInside(int x, int y) {
+		public boolean isInside(final int x, final int y) {
 			final double cx = x - fx;
 			final double cy = y - fy;
 			return (Math.pow(cx, 2) + Math.pow(cy, 2)) < Math.pow(fa, 2);
@@ -336,43 +337,43 @@ public class EasyContour extends BaseTIPLPluginBW {
 		public Integer zero = new Integer(0);
 		public Double zeroD = new Double(0);
 
-		public polyContour(int npts) {
+		public polyContour(final int npts) {
 			cpts = npts;
 			edge = new ArrayList<Double>(cpts);
 			edgeCount = new ArrayList<Integer>(cpts);
 		}
 
-		protected void bumpBinCount(Point t) {
+		protected void bumpBinCount(final Point t) {
 			final int rBin = getBin(t);
 			edgeCount.set(rBin, new Integer(getBinCount(rBin) + 1));
 		}
 
-		protected double getAng(double cBin) {
+		protected double getAng(final double cBin) {
 			return (cBin % cpts) / (cpts) * (2 * Math.PI);
 		}
 
-		protected double getAng(int cBin) {
+		protected double getAng(final int cBin) {
 			return getAng((double) cBin);
 		}
 
-		protected int getBin(Point t) {
+		protected int getBin(final Point t) {
 			final int cBin = (int) Math.round(getBinD(t));
 			if (cBin == cpts)
 				return 0;
 			return cBin;
 		}
 
-		protected int getBinCount(int whichBin) {
+		protected int getBinCount(final int whichBin) {
 			return edgeCount.get(whichBin).intValue();
 		}
 
-		protected double getBinD(Point t) {
+		protected double getBinD(final Point t) {
 			final double cAng = Math.atan2(t.y - yc, t.x - xc) + Math.PI;
 			final double cBin = cAng / (2 * Math.PI) * (cpts);
 			return cBin;
 		}
 
-		protected double getBinVal(Point t) {
+		protected double getBinVal(final Point t) {
 			if (interpolate) {
 				final double cBin = getBinD(t);
 				double weights = 0.0;
@@ -397,14 +398,14 @@ public class EasyContour extends BaseTIPLPluginBW {
 				return getVal(getBin(t));
 		}
 
-		protected Point2D.Double getPoint(int cBin) {
+		protected Point2D.Double getPoint(final int cBin) {
 			final double cAng = getAng(cBin) - Math.PI;
 			final double cx = Math.cos(cAng) * getVal(cBin) + xc;
 			final double cy = Math.sin(cAng) * getVal(cBin) + yc;
 			return new Point2D.Double(cx, cy);
 		}
 
-		protected double getVal(int index) {
+		protected double getVal(final int index) {
 			return edge.get(index).doubleValue();
 		}
 
@@ -444,7 +445,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 		}
 
 		@Override
-		public boolean isInside(int x, int y) {
+		public boolean isInside(final int x, final int y) {
 			if (points.size() < 1)
 				return false;
 			final Point cpt = new Point(x, y);
@@ -469,11 +470,11 @@ public class EasyContour extends BaseTIPLPluginBW {
 			}
 		}
 
-		protected void resetBinCount(Point t) {
+		protected void resetBinCount(final Point t) {
 			edgeCount.set(getBin(t), zero);
 		}
 
-		protected void setBinVal(Point t, double value) {
+		protected void setBinVal(final Point t, final double value) {
 			edge.set(getBin(t), new Double(value));
 		}
 
@@ -498,12 +499,12 @@ public class EasyContour extends BaseTIPLPluginBW {
 	 * the initialization.
 	 */
 	public static class polygonContour extends polyContour {
-		public polygonContour(int npts) {
+		public polygonContour(final int npts) {
 			super(npts);
 		}
 
 		@Override
-		public boolean isInside(int x, int y) {
+		public boolean isInside(final int x, final int y) {
 			if (points.size() < 1)
 				return false;
 			final Point cpt = new Point(x, y);
@@ -546,7 +547,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 	 *      <li>outputAim.WriteAim(outputFile,1,(float) cPeel.probScalar());
 	 * </pre>
 	 */
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final String kVer = "120105_001";
 		System.out.println("Peel v" + kVer);
 		System.out.println(" Contours (and peels) given images v" + kVer);
@@ -612,7 +613,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 	public int zGroup = 0;
 
 	/** constructor function using TIPLPluginBW standard classes */
-	public EasyContour(TImgRO inputAim) {
+	public EasyContour(final TImgRO inputAim) {
 		ImportAim(inputAim);
 	}
 
@@ -640,7 +641,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 	}
 
 	@Override
-	public void processWork(Object currentWork) {
+	public void processWork(final Object currentWork) {
 		final int[] range = (int[]) currentWork;
 		final int bSlice = range[0];
 		final int tSlice = range[1];
@@ -658,7 +659,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 		execute();
 	}
 
-	public void runContouring(int bSlice, int tSlice) {
+	public void runContouring(final int bSlice, final int tSlice) {
 		Contour2D cContour;
 		if (cContourGenerator == null)
 			cContour = new ellipseContour();
@@ -766,7 +767,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 	 * @param scaleRad
 	 *            scale radius by mean side length (1.0= 100%)
 	 */
-	public void useFixedCirc(double scaleRad) {
+	public void useFixedCirc(final double scaleRad) {
 		final double cx1 = (uppx - lowx) / 2.0;
 		final double cy1 = (uppy - lowy) / 2.0;
 		final double mrad = scaleRad
@@ -781,7 +782,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 	};
 
 	/** Use the polyellipsoid mask intead of the ellipsoid */
-	public void usePoly(int sides) {
+	public void usePoly(final int sides) {
 		final int fsides = sides;
 		cContourGenerator = new ContourGenerator() {
 			@Override
@@ -800,7 +801,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 	 * @param wid
 	 *            smoothing distance (in units of steps)
 	 */
-	public void usePoly(int sides, double wid) {
+	public void usePoly(final int sides, final double wid) {
 		final int fsides = sides;
 		final double fwid = wid;
 		cContourGenerator = new ContourGenerator() {
@@ -815,7 +816,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 	}
 
 	/** Use the polygonal mask intead of the ellipsoid */
-	public void usePolygon(int sides) {
+	public void usePolygon(final int sides) {
 		final int fsides = sides;
 		cContourGenerator = new ContourGenerator() {
 			@Override

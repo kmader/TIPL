@@ -10,7 +10,7 @@ import tipl.util.TImgTools;
 // and communication with webservices (potentially?)
 /** Performs voronoi dilation on objects into a mask */
 public class kVoronoi extends VoronoiTransform {
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final String kVer = "120105_002";
 		System.out.println(" kVoronoi Script v" + kVer);
 		System.out.println(" Dilates and  v" + kVer);
@@ -97,7 +97,7 @@ public class kVoronoi extends VoronoiTransform {
 
 	protected volatile int changescnt, gtBlocks = 0, validVoxels = 0;
 
-	public kVoronoi(TImg labelAim) {
+	public kVoronoi(final TImg labelAim) {
 		super(labelAim);
 	}
 
@@ -111,16 +111,16 @@ public class kVoronoi extends VoronoiTransform {
 	 *            Whether or not regions where the image touches the boundary
 	 *            should be included as edges
 	 **/
-	public kVoronoi(TImg maskAim, boolean includeEdges) {
+	public kVoronoi(final TImg maskAim, final boolean includeEdges) {
 		super(1);
 		EdgeMask(maskAim, includeEdges);
 	}
 
-	public kVoronoi(TImg labelAim, TImg maskAim) {
+	public kVoronoi(final TImg labelAim, final TImg maskAim) {
 		super(labelAim, maskAim);
 	}
 
-	protected void EdgeMask(TImg maskAim, boolean includeEdges) {
+	protected void EdgeMask(final TImg maskAim, final boolean includeEdges) {
 		mask = TImgTools.makeTImgFullReadable(maskAim).getBoolAim();
 		aimLength = mask.length;
 		labels = new int[aimLength];
@@ -181,7 +181,7 @@ public class kVoronoi extends VoronoiTransform {
 		return execute(MAXDIST);
 	}
 
-	public boolean execute(double maxIterDist) {
+	public boolean execute(final double maxIterDist) {
 		maxUsuableDistance = maxIterDist;
 		switch (curOperation) {
 		case 1:
@@ -206,7 +206,8 @@ public class kVoronoi extends VoronoiTransform {
 		return "kVoronoi";
 	}
 
-	protected synchronized void ichanges(int nchangescnt, boolean nchanges) {
+	protected synchronized void ichanges(final int nchangescnt,
+			final boolean nchanges) {
 		changescnt += nchangescnt;
 		if (nchanges)
 			changes = true;
@@ -214,7 +215,7 @@ public class kVoronoi extends VoronoiTransform {
 
 	/** Command each sub thread should run */
 	@Override
-	protected void processWork(Object currentWork) {
+	protected void processWork(final Object currentWork) {
 		final int[] range = (int[]) currentWork;
 		final int bSlice = range[0];
 		final int tSlice = range[1];
@@ -370,7 +371,7 @@ public class kVoronoi extends VoronoiTransform {
 
 	}
 
-	public void subGrow(int bSlice, int tSlice) {
+	public void subGrow(final int bSlice, final int tSlice) {
 		int off = 0;
 		// Code for stationaryKernel
 		BaseTIPLPluginIn.stationaryKernel curKernel;
@@ -543,7 +544,7 @@ public class kVoronoi extends VoronoiTransform {
 
 	}
 
-	protected void subSwap(int bSlice, int tSlice) {
+	protected void subSwap(final int bSlice, final int tSlice) {
 		int off;
 		boolean nchanges = false;
 		int nchangescnt = 0;
@@ -622,7 +623,8 @@ public class kVoronoi extends VoronoiTransform {
 	 * @param ikDist
 	 *            distance to be putinto the distance map at off2
 	 */
-	public synchronized void synSetVoxel(int off2, int off, int ikDist) {
+	public synchronized void synSetVoxel(final int off2, final int off,
+			final int ikDist) {
 		outlabels[off2] = outlabels[off];
 		distmap[off2] = ikDist;
 
@@ -638,7 +640,7 @@ public class kVoronoi extends VoronoiTransform {
 	 * @param ikDist
 	 *            distance to be putinto the distance map at off2
 	 */
-	public void usSetVoxel(int off2, int off, int ikDist) {
+	public void usSetVoxel(final int off2, final int off, final int ikDist) {
 		outlabels[off2] = outlabels[off];
 		distmap[off2] = ikDist;
 

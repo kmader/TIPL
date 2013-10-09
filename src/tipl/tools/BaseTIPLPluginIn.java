@@ -21,7 +21,8 @@ import tipl.util.TIPLPluginIn;
  * must have an ExportAim function for writing its output into a
  * TImgTools.ReadTImg memory object
  * **/
-abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPluginIn {
+abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
+		TIPLPluginIn {
 	/** The kernel used for filtering operations */
 	public static interface filterKernel {
 		/**
@@ -90,19 +91,19 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 			isFullKernel = true;
 		}
 
-		public stationaryKernel(morphKernel inKernel) {
+		public stationaryKernel(final morphKernel inKernel) {
 			myKernel = inKernel;
 			isFullKernel = false;
 		}
 
-		public stationaryKernel(morphKernel inKernel, String kName) {
+		public stationaryKernel(final morphKernel inKernel, final String kName) {
 			myKernel = inKernel;
 			kernelName = kName;
 			isFullKernel = false;
 		}
 
-		public stationaryKernel(morphKernel inKernel, String kName,
-				boolean inIsStationary) {
+		public stationaryKernel(final morphKernel inKernel, final String kName,
+				final boolean inIsStationary) {
 			myKernel = inKernel;
 			kernelName = kName;
 			isStationary = inIsStationary;
@@ -110,8 +111,9 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 		}
 
 		@Override
-		public boolean inside(int off, int off2, int x, int x2, int y, int y2,
-				int z, int z2) {
+		public boolean inside(final int off, final int off2, final int x,
+				final int x2, final int y, final int y2, final int z,
+				final int z2) {
 			if (isFullKernel)
 				return true;
 			final int offD = off2 - off;
@@ -157,12 +159,13 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 	}
 
 	/** Gaussian spatial filter (smoothing), isotrpic radii radr */
-	public static filterKernel gaussFilter(double radr) {
+	public static filterKernel gaussFilter(final double radr) {
 		return gaussFilter(radr, radr, radr);
 	}
 
 	/** Gaussian spatial filter (smoothing), radii in each direction in voxels */
-	public static filterKernel gaussFilter(double radx, double rady, double radz) {
+	public static filterKernel gaussFilter(final double radx,
+			final double rady, final double radz) {
 		final double fRadX = radx;
 		final double fRadY = rady;
 		final double fRadZ = radz;
@@ -172,8 +175,9 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 									// the field
 
 			@Override
-			public void addpt(double oposx, double ox, double oposy, double oy,
-					double oposz, double oz, double dcVox) {
+			public void addpt(final double oposx, final double ox,
+					final double oposy, final double oy, final double oposz,
+					final double oz, final double dcVox) {
 				double cDist = Math.sqrt(Math.pow((oposx - ox + 0.0) / fRadX,
 						2.0)
 						+ Math.pow((oposy - oy + 0.0) / fRadY, 2.0)
@@ -217,8 +221,9 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 			double gz = 0.0;
 
 			@Override
-			public void addpt(double oposx, double ox, double oposy, double oy,
-					double oposz, double oz, double dcVox) {
+			public void addpt(final double oposx, final double ox,
+					final double oposy, final double oy, final double oposz,
+					final double oz, final double dcVox) {
 				final double cDistXY = Math.max(
 						4 - Math.sqrt(Math.pow((oposx - ox + 0.0), 2.0)
 								+ Math.pow((oposy - oy + 0.0), 2.0)), 0.0);
@@ -273,8 +278,9 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 			int cVoxCentCnt = 0;
 
 			@Override
-			public void addpt(double oposx, double ox, double oposy, double oy,
-					double oposz, double oz, double dcVox) {
+			public void addpt(final double oposx, final double ox,
+					final double oposy, final double oy, final double oposz,
+					final double oz, final double dcVox) {
 				final double cDist = Math.sqrt(Math
 						.pow((oposx - ox + 0.0), 2.0)
 						+ Math.pow((oposy - oy + 0.0), 2.0)
@@ -314,14 +320,14 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 		};
 	}
 
-	public static int max(double a, int b) {
+	public static int max(final double a, final int b) {
 		if (a > b)
 			return ((int) a);
 		else
 			return b;
 	}
 
-	public static int max(int a, int b) {
+	public static int max(final int a, final int b) {
 		if (a > b)
 			return a;
 		else
@@ -339,8 +345,9 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 			ArrayList<Double> fvals = new ArrayList<Double>(sx * sy * sz);
 
 			@Override
-			public void addpt(double oposx, double ox, double oposy, double oy,
-					double oposz, double oz, double dcVox) {
+			public void addpt(final double oposx, final double ox,
+					final double oposy, final double oy, final double oposz,
+					final double oz, final double dcVox) {
 				fvals.add(new Double(dcVox));
 			}
 
@@ -370,14 +377,14 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 		};
 	}
 
-	public static int min(double a, int b) {
+	public static int min(final double a, final int b) {
 		if (a > b)
 			return b;
 		else
 			return ((int) a);
 	}
 
-	public static int min(int a, int b) {
+	public static int min(final int a, final int b) {
 		if (a > b)
 			return b;
 		else
@@ -389,7 +396,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 	 * 
 	 * @param ik
 	 */
-	public static String printKernel(BaseTIPLPluginIn.morphKernel ik) {
+	public static String printKernel(final BaseTIPLPluginIn.morphKernel ik) {
 		String outStr = "";
 
 		for (int k = 0; k < 3; k++)
@@ -411,7 +418,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 	}
 
 	/** A ellipsoidal kernel radius rad */
-	public static BaseTIPLPluginIn.morphKernel sphKernel(double rad) {
+	public static BaseTIPLPluginIn.morphKernel sphKernel(final double rad) {
 		return sphKernel(rad, rad, rad);
 	}
 
@@ -421,8 +428,9 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 
 		return new BaseTIPLPluginIn.morphKernel() {// Semi-axes radx,rady, radz
 			@Override
-			public boolean inside(int off, int off2, int x1, int x2, int y1,
-					int y2, int z1, int z2) {
+			public boolean inside(final int off, final int off2, final int x1,
+					final int x2, final int y1, final int y2, final int z1,
+					final int z2) {
 				return (Math.pow((x1 - x2) / radx, 2)
 						+ Math.pow((y1 - y2) / rady, 2) + Math.pow((z1 - z2)
 						/ radz, 2)) <= 1;
@@ -431,17 +439,17 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 	}
 
 	/** Provides a series of useful log and screen writing functions */
-	public static String StrMvx(double a) {
+	public static String StrMvx(final double a) {
 		return String.format("%.2f", ((a) / (1.0e6))) + " MVx";
 	}
 
 	/** Provides a series of useful log and screen writing functions */
-	public static String StrPctRatio(double a, double b) {
+	public static String StrPctRatio(final double a, final double b) {
 		return String.format("%.2f", ((a * 100) / (b))) + "%";
 	}
 
 	/** Provides a series of useful log and screen writing functions */
-	public static String StrRatio(double a, double b) {
+	public static String StrRatio(final double a, final double b) {
 		return String.format("%.2f", ((a) / (b)));
 	}
 
@@ -501,8 +509,9 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 	// in most text editors
 	public static morphKernel fullKernel = new morphKernel() {
 		@Override
-		public boolean inside(int off, int off2, int x1, int x2, int y1,
-				int y2, int z1, int z2) {
+		public boolean inside(final int off, final int off2, final int x1,
+				final int x2, final int y1, final int y2, final int z1,
+				final int z2) {
 			return true;
 		}
 	};
@@ -512,8 +521,9 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 	 */
 	public static morphKernel dKernel = new morphKernel() {
 		@Override
-		public boolean inside(int off, int off2, int x1, int x2, int y1,
-				int y2, int z1, int z2) {
+		public boolean inside(final int off, final int off2, final int x1,
+				final int x2, final int y1, final int y2, final int z1,
+				final int z2) {
 			if (((x1 == x2 ? 0 : 1) + (y1 == y2 ? 0 : 1) + (z1 == z2 ? 0 : 1)) <= 1)
 				return true;
 			else
@@ -532,7 +542,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 	 * constructor function taking boolean (other castings just convert the
 	 * array first) linear array and the dimensions
 	 */
-	public BaseTIPLPluginIn(D3int idim, D3int ioffset) {
+	public BaseTIPLPluginIn(final D3int idim, final D3int ioffset) {
 		InitDims(idim, ioffset);
 		Verify();
 	}
@@ -621,7 +631,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 	 * implemented on a case by case basis
 	 */
 	@Override
-	public boolean execute(String action) {
+	public boolean execute(final String action) {
 		if (!action.equals(""))
 			throw new IllegalArgumentException(
 					"Execute Does not offer any control in this plugins"
@@ -634,7 +644,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 	 * implemented on a case by case basis
 	 */
 	@Override
-	public boolean execute(String action, Object objectToExecute) {
+	public boolean execute(final String action, final Object objectToExecute) {
 		if (!action.equals(""))
 			throw new IllegalArgumentException(
 					"Execute Does not offer any control in this plugins"
@@ -646,7 +656,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 	 * if this function has not been overridden, it will cause an error
 	 */
 	@Override
-	public Object getInfo(String request) {
+	public Object getInfo(final String request) {
 		throw new IllegalArgumentException(
 				"getInfo does not offer any information in this plugin:"
 						+ getPluginName());
@@ -660,7 +670,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 		return procLog;
 	}
 
-	protected void InitDims(D3int idim, D3int ioffset) {
+	protected void InitDims(final D3int idim, final D3int ioffset) {
 		dim = new D3int(idim.x, idim.y, idim.z);
 		offset = new D3int(ioffset.x, ioffset.y, ioffset.z);
 
@@ -696,7 +706,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 	 *            object which contains the work which needs to be processed by
 	 *            the given thread
 	 */
-	protected void processWork(Object myWork) {
+	protected void processWork(final Object myWork) {
 		System.out
 				.println("THIS IS AN pseudo-ABSTRACT FUNCTION AND DOES NOTHING, PLEASE EITHER TURN OFF MULTICORE SUPPORT OR REWRITE YOUR PLUGIN!!!!");
 		return; // nothing to do
@@ -769,14 +779,13 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 		return (myThread == launchThread);
 	}
 
-
-
 	/**
 	 * The default action is to return in the input argumentparser and write a
 	 * small message that nothing was done
 	 */
 	@Override
-	public ArgumentParser setParameter(ArgumentParser p, String cPrefix) {
+	public ArgumentParser setParameter(final ArgumentParser p,
+			final String cPrefix) {
 		System.out
 				.println("setParameter with arguments has not yet been implemented for "
 						+ getPluginName());
@@ -805,12 +814,6 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 		return p;
 	}
 
-
-
-
-
-
-
 	/** use a direct kernel (face sharing definition) **/
 	public void useDKernel() {
 		neighborKernel = BaseTIPLPluginIn.dKernel;
@@ -823,7 +826,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 		procLog += "TP-neighborKernel: Full Kernel, Face-Sharing\n";
 	}
 
-	public void useSphKernel(D3float rad) {
+	public void useSphKernel(final D3float rad) {
 		neighborKernel = sphKernel(rad.x, rad.y, rad.z);
 		procLog += "TP-neighborKernel: Spherical Kernel, Radius : " + rad
 				+ "\n";
@@ -834,7 +837,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements TIPLPlu
 	 * use a spherical kernel radius (rad) for neighborhood operations --vertex
 	 * sharing- is sqrt(3)*r --edge sharing is sqrt(2)*r --face sharing is 1*r
 	 **/
-	public void useSphKernel(double rad) {
+	public void useSphKernel(final double rad) {
 		neighborKernel = sphKernel(rad);
 		procLog += "TP-neighborKernel: Spherical Kernel, Radius : " + rad
 				+ "\n";

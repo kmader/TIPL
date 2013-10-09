@@ -27,35 +27,38 @@ public class cVoronoi extends VoronoiTransform {
 			mp = new HashMap<Integer, cVorObj>();
 		}
 
-		public void addvox(int ilabel, int x, int y, int z) {
+		public void addvox(final int ilabel, final int x, final int y,
+				final int z) {
 			final Integer nlabel = new Integer(ilabel);
 			if (!mp.containsKey(nlabel))
 				mp.put(nlabel, new cVorObj());
 			mp.get(nlabel).addvox(x, y, z);
 		}
 
-		public int count(Integer nlabel) { // number of neighbors
+		public int count(final Integer nlabel) { // number of neighbors
 			if (mp.containsKey(nlabel))
 				return mp.get(nlabel).count();
 			else
 				return 0;
 		}
 
-		public double dist(int ilabel, int x, int y, int z) { // number of
-																// neighbors
+		public double dist(final int ilabel, final int x, final int y,
+				final int z) { // number of
+			// neighbors
 			final Integer nlabel = new Integer(ilabel);
 			return dist(nlabel, x, y, z);
 		}
 
-		public double dist(Integer nlabel, int x, int y, int z) { // number of
-																	// neighbors
+		public double dist(final Integer nlabel, final int x, final int y,
+				final int z) { // number of
+			// neighbors
 			if (mp.containsKey(nlabel))
 				return mp.get(nlabel).dist(scaleddist, x, y, z);
 			else
 				return 0;
 		}
 
-		public cVorObj get(Integer nlabel) {
+		public cVorObj get(final Integer nlabel) {
 			if (mp.containsKey(nlabel))
 				return mp.get(nlabel);
 			else
@@ -106,7 +109,7 @@ public class cVoronoi extends VoronoiTransform {
 			voxcnt = 0.0f;
 		}
 
-		synchronized public void addvox(int x, int y, int z) {
+		synchronized public void addvox(final int x, final int y, final int z) {
 			sumx += x;
 			sumy += y;
 			sumz += z;
@@ -150,7 +153,8 @@ public class cVoronoi extends VoronoiTransform {
 			return (int) voxcnt;
 		}
 
-		public double dist(boolean scaleddist, float x, float y, float z) {
+		public double dist(final boolean scaleddist, final float x,
+				final float y, final float z) {
 			if (!calcdcov)
 				calccov();
 			if (!scaleddist)
@@ -162,7 +166,8 @@ public class cVoronoi extends VoronoiTransform {
 						+ Math.pow((z - cz) / sz, 2));
 		}
 
-		public double dist(boolean scaleddist, int x, int y, int z) {
+		public double dist(final boolean scaleddist, final int x, final int y,
+				final int z) {
 			return dist(scaleddist, (float) x, (float) y, (float) z);
 		}
 
@@ -175,7 +180,7 @@ public class cVoronoi extends VoronoiTransform {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final String kVer = "120105_002";
 		System.out
 				.println(" cVoronoi (Centroid-based voronoi) Script v" + kVer);
@@ -256,14 +261,14 @@ public class cVoronoi extends VoronoiTransform {
 	protected volatile cVorList nvlist;
 	double emptyVoxels = 0;
 
-	public cVoronoi(TImgRO labelAim, boolean ileaveOriginalLabels) {
+	public cVoronoi(final TImgRO labelAim, final boolean ileaveOriginalLabels) {
 		super(labelAim);
 		leaveOriginalLabels = ileaveOriginalLabels;
 		prerun();
 	}
 
-	public cVoronoi(TImgRO bubblelabelsAim, TImgRO bubblesAim,
-			boolean ileaveOriginalLabels) {
+	public cVoronoi(final TImgRO bubblelabelsAim, final TImgRO bubblesAim,
+			final boolean ileaveOriginalLabels) {
 		super(bubblelabelsAim, bubblesAim);
 		leaveOriginalLabels = ileaveOriginalLabels;
 		prerun();
@@ -322,7 +327,7 @@ public class cVoronoi extends VoronoiTransform {
 	}
 
 	@Override
-	public void processWork(Object currentWork) {
+	public void processWork(final Object currentWork) {
 		final int[] range = (int[]) currentWork;
 		final int bSlice = range[0];
 		final int tSlice = range[1];
@@ -335,7 +340,7 @@ public class cVoronoi extends VoronoiTransform {
 		execute();
 	}
 
-	protected void runSection(int startSlice, int finalSlice) {
+	protected void runSection(final int startSlice, final int finalSlice) {
 
 		final boolean limitDist = (maxUsuableDistance > 0);
 		final Iterator<Integer> it = nvlist.kiterator();

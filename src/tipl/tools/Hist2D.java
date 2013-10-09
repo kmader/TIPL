@@ -4,6 +4,7 @@ package tipl.tools;
 //import java.awt.image.*;
 //import java.awt.image.ColorModel.*;
 import java.io.FileWriter;
+
 import tipl.util.D3float;
 import tipl.util.D3int;
 
@@ -41,7 +42,7 @@ public class Hist2D {
 	protected static BinExtract bneSimple() {
 		return new BinExtract() {
 			@Override
-			public String get(int binNum) {
+			public String get(final int binNum) {
 				return "" + binNum + "";
 			}
 
@@ -62,7 +63,7 @@ public class Hist2D {
 	protected static GrayVoxExtract gvCount() {
 		return new GrayVoxExtract() {
 			@Override
-			public String get(GrayVoxels ivoxel) {
+			public String get(final GrayVoxels ivoxel) {
 				return "" + ivoxel.count();
 			}
 
@@ -76,7 +77,7 @@ public class Hist2D {
 	protected static GrayVoxExtract gvMax() {
 		return new GrayVoxExtract() {
 			@Override
-			public String get(GrayVoxels ivoxel) {
+			public String get(final GrayVoxels ivoxel) {
 				if (ivoxel.count() > 0)
 					return "" + ivoxel.max();
 				else
@@ -93,7 +94,7 @@ public class Hist2D {
 	protected static GrayVoxExtract gvMean() {
 		return new GrayVoxExtract() {
 			@Override
-			public String get(GrayVoxels ivoxel) {
+			public String get(final GrayVoxels ivoxel) {
 				if (ivoxel.count() > 0)
 					return "" + ivoxel.mean();
 				else
@@ -110,7 +111,7 @@ public class Hist2D {
 	protected static GrayVoxExtract gvMin() {
 		return new GrayVoxExtract() {
 			@Override
-			public String get(GrayVoxels ivoxel) {
+			public String get(final GrayVoxels ivoxel) {
 				if (ivoxel.count() > 0)
 					return "" + ivoxel.min();
 				else
@@ -164,7 +165,7 @@ public class Hist2D {
 	}
 
 	/** Simple initializer */
-	public Hist2D(boolean iSparse) {
+	public Hist2D(final boolean iSparse) {
 	}
 
 	/**
@@ -180,7 +181,8 @@ public class Hist2D {
 	 *            path and name of output file
 	 */
 	/** the second to calculate the covariances **/
-	public boolean addCovVox(int xBin, int yBin, double x, double y, double z) {
+	public boolean addCovVox(final int xBin, final int yBin, final double x,
+			final double y, final double z) {
 		try {
 			gvArray[yBin][xBin].addCovVox(x, y, z);
 			return true;
@@ -200,8 +202,8 @@ public class Hist2D {
 	 * @param yF
 	 *            the y float value which needs to be assigned a bin
 	 **/
-	public boolean addFVox(float xF, float yF, double x, double y, double z,
-			double cVal) {
+	public boolean addFVox(final float xF, final float yF, final double x,
+			final double y, final double z, final double cVal) {
 		final int xBin = transXbin(xF);
 		final int yBin = transXbin(yF);
 		return addVox(xBin, yBin, x, y, z, cVal);
@@ -215,8 +217,8 @@ public class Hist2D {
 	 * @param yBin
 	 *            is the y-bin value to use
 	 **/
-	public boolean addVox(int xBin, int yBin, double x, double y, double z,
-			double cVal) {
+	public boolean addVox(final int xBin, final int yBin, final double x,
+			final double y, final double z, final double cVal) {
 		try {
 			gvArray[yBin][xBin].addVox(x, y, z, cVal);
 			return true;
@@ -228,7 +230,7 @@ public class Hist2D {
 		}
 	}
 
-	protected void initHistogram(int xBins, int yBins) {
+	protected void initHistogram(final int xBins, final int yBins) {
 		System.currentTimeMillis();
 		// Initialize the output
 		System.out.println("Setting up output data :[" + yBins + " - ( "
@@ -251,8 +253,8 @@ public class Hist2D {
 	 * the third round (for matching extents based on the eigenvectors of the
 	 * shape tensor
 	 **/
-	public boolean setExtentsVoxel(int xBin, int yBin, double x, double y,
-			double z) {
+	public boolean setExtentsVoxel(final int xBin, final int yBin,
+			final double x, final double y, final double z) {
 		try {
 			gvArray[yBin][xBin].setExtentsVoxel(x, y, z);
 			return true;
@@ -264,7 +266,7 @@ public class Hist2D {
 		}
 	}
 
-	private int transXbin(float xF) {
+	private int transXbin(final float xF) {
 		final int xBin = xBNE.getBin(xF);
 		if ((xBin < 0) | (xBin >= gvArray[0].length))
 			System.out.println("HistogramBinTranslationProblem-X@(" + xF + "->"
@@ -276,15 +278,15 @@ public class Hist2D {
 	 * Actually runs the GrayAnalysis2D code on the dataset, can be run inside
 	 * of a thread
 	 */
-	protected boolean writeHeader(String sampName, String sampPath,
-			String greyName) {
+	protected boolean writeHeader(final String sampName, final String sampPath,
+			final String greyName) {
 		return writeHeader(sampName, sampPath, greyName, new D3int(-1),
 				new D3int(-1), new D3int(-1), new D3float(0, 0, 0));
 	}
 
-	protected boolean writeHeader(String sampName, String sampPath,
-			String greyName, D3int imDim, D3int imOffset, D3int imPos,
-			D3float imElSize) {
+	protected boolean writeHeader(final String sampName, final String sampPath,
+			final String greyName, final D3int imDim, final D3int imOffset,
+			final D3int imPos, final D3float imElSize) {
 		try {
 			headerStr += analysisName + " Histogram2D \n";
 			headerStr += "Sample Name:        	" + sampName + "\n";
@@ -310,7 +312,7 @@ public class Hist2D {
 		}
 	}
 
-	protected boolean writeHistogram(String extraInfo) {
+	protected boolean writeHistogram(final String extraInfo) {
 		try {
 
 			final FileWriter out = new FileWriter(csvName, true);

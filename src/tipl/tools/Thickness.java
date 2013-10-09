@@ -40,7 +40,7 @@ public abstract class Thickness extends BaseTIPLPluginIO {
 
 	// Multithreading functions
 	@Override
-	public TImg ExportAim(TImgRO.CanExport templateAim) {
+	public TImg ExportAim(final TImgRO.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				final TImg outAimData = templateAim.inheritedAim(outAim, dim,
@@ -62,8 +62,8 @@ public abstract class Thickness extends BaseTIPLPluginIO {
 		}
 	}
 
-	protected void fillBubble(int x, int y, int z, double cMaxVal,
-			final boolean useSync) {
+	protected void fillBubble(final int x, final int y, final int z,
+			final double cMaxVal, final boolean useSync) {
 		// Fill in the bubble based on the distance map
 
 		final int tlowx = max(x - cMaxVal, lowx);
@@ -146,7 +146,7 @@ public abstract class Thickness extends BaseTIPLPluginIO {
 	@Override
 	public abstract String getPluginName();
 
-	protected void ImportData(TImgRO inImg) {
+	protected void ImportData(final TImgRO inImg) {
 		final int[] inputmap = TImgTools.makeTImgFullReadable(inImg)
 				.getIntAim();
 		aimLength = inputmap.length;
@@ -166,7 +166,7 @@ public abstract class Thickness extends BaseTIPLPluginIO {
 	 * 
 	 */
 	@Override
-	public void LoadImages(TImgRO[] inImages) {
+	public void LoadImages(final TImgRO[] inImages) {
 		// TODO Auto-generated method stub
 		if (inImages.length < 1)
 			throw new IllegalArgumentException(
@@ -176,7 +176,8 @@ public abstract class Thickness extends BaseTIPLPluginIO {
 	}
 
 	@Override
-	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
+	public ArgumentParser setParameter(final ArgumentParser p,
+			final String prefix) {
 		MINTHICKNESS = p.getOptionInt(prefix + "minthickness", OUTERSHELL,
 				"Minimum thickness to calculate");
 
@@ -189,7 +190,7 @@ public abstract class Thickness extends BaseTIPLPluginIO {
 	 * @param off2
 	 * @param val
 	 */
-	protected synchronized void synWriteIn(int off2, int val) {
+	protected synchronized void synWriteIn(final int off2, final int val) {
 		inAim[off2] = val;
 	}
 
@@ -199,7 +200,7 @@ public abstract class Thickness extends BaseTIPLPluginIO {
 	 * @param off2
 	 * @param val
 	 */
-	protected synchronized void synWriteOut(int off2, int val) {
+	protected synchronized void synWriteOut(final int off2, final int val) {
 		outAim[off2] = val;
 	}
 }

@@ -66,7 +66,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	/** the filter to use when executing **/
 	protected CLFilter objFilter = new CLFilter() {
 		@Override
-		public boolean accept(int labelNumber, int voxCount) {
+		public boolean accept(final int labelNumber, final int voxCount) {
 			return (voxCount > 0);
 		}
 
@@ -76,7 +76,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 		}
 
 		@Override
-		public void prescan(int labelNumber, int voxCount) {
+		public void prescan(final int labelNumber, final int voxCount) {
 			return;
 		};
 	};
@@ -85,7 +85,8 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	}
 
 	@Deprecated
-	public ComponentLabel(boolean[] inputmap, D3int idim, D3int ioffset) {
+	public ComponentLabel(final boolean[] inputmap, final D3int idim,
+			final D3int ioffset) {
 		aimLength = inputmap.length;
 		scdat = inputmap;
 		if (invert) {
@@ -96,11 +97,11 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 		InitLabels(idim, ioffset);
 	}
 
-	public ComponentLabel(TImg bubblesAim) {
+	public ComponentLabel(final TImg bubblesAim) {
 		LoadImages(new TImgRO[] { bubblesAim });
 	}
 
-	private Integer chase_up(int clab) {
+	private Integer chase_up(final int clab) {
 		// Follow a trail of remaps recursively
 		// if (jumps>3) cout+"J"+jumps+", ";
 		final Integer cval = labelremap.get(clab);
@@ -311,7 +312,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	}
 
 	@Override
-	public boolean execute(String action) {
+	public boolean execute(final String action) {
 		if (!action.equals(""))
 			throw new IllegalArgumentException(
 					"Execute Does not offer any control in this plugins"
@@ -320,7 +321,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	}
 
 	@Override
-	public boolean execute(String command, Object cObj) {
+	public boolean execute(final String command, final Object cObj) {
 		if (command.equalsIgnoreCase("runVoxels")) {
 			if (cObj instanceof Integer)
 				return runVoxels(((Integer) cObj).intValue());
@@ -336,7 +337,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	 *            input template aim file
 	 */
 	@Override
-	public TImg ExportAim(TImgRO.CanExport templateAim) {
+	public TImg ExportAim(final TImgRO.CanExport templateAim) {
 		return ExportLabelsAim(templateAim);
 	}
 
@@ -344,7 +345,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	 * This implementation exports the labels image and then the mask image
 	 */
 	@Override
-	public TImg[] ExportImages(TImgRO templateImage) {
+	public TImg[] ExportImages(final TImgRO templateImage) {
 		// TODO Auto-generated method stub
 		final TImgRO.CanExport cImg = TImgTools
 				.makeTImgExportable(templateImage);
@@ -357,7 +358,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	 * @param templateAim
 	 *            input template aim file
 	 */
-	public TImg ExportLabelsAim(TImgRO.CanExport templateAim) {
+	public TImg ExportLabelsAim(final TImgRO.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				final TImg outVirtualAim = templateAim.inheritedAim(labels,
@@ -388,7 +389,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	 * @param templateAim
 	 *            input template aim file
 	 */
-	public TImg ExportMaskAim(TImgRO.CanExport templateAim) {
+	public TImg ExportMaskAim(final TImgRO.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				final boolean[] outputMask = new boolean[labels.length];
@@ -426,8 +427,8 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	 *            filter to use for masking
 	 */
 	@Deprecated
-	public TImg ExportMaskAim(TImgRO.CanExport templateAim,
-			CLFilter inMaskFilter) {
+	public TImg ExportMaskAim(final TImgRO.CanExport templateAim,
+			final CLFilter inMaskFilter) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				// Prescan the list
@@ -478,13 +479,13 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	 * @param templateAim
 	 *            input template aim file
 	 */
-	public TImg ExportMaskAimFirstComponent(TImgRO.CanExport templateAim) {
+	public TImg ExportMaskAimFirstComponent(final TImgRO.CanExport templateAim) {
 		final CLFilter maskObjFilter = new CLFilter() {
 			int maxComp = -1;
 			int maxVol = -1;
 
 			@Override
-			public boolean accept(int labelNumber, int voxCount) {
+			public boolean accept(final int labelNumber, final int voxCount) {
 				return (labelNumber == maxComp);
 			}
 
@@ -494,7 +495,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 			}
 
 			@Override
-			public void prescan(int labelNumber, int voxCount) {
+			public void prescan(final int labelNumber, final int voxCount) {
 				if ((voxCount > maxVol) | (maxComp == -1)) {
 					maxComp = labelNumber;
 					maxVol = voxCount;
@@ -517,7 +518,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	 * @param maxPct
 	 *            the voxel count of the largest object to be accepted
 	 */
-	public TImg ExportMaskAimRelativeVolume(TImgRO.CanExport templateAim,
+	public TImg ExportMaskAimRelativeVolume(final TImgRO.CanExport templateAim,
 			final double minPct, final double maxPct) {
 		final double fMinPct = minPct;
 		final double fMaxPct = maxPct;
@@ -525,7 +526,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 			double totalVolume = 0.0;
 
 			@Override
-			public boolean accept(int labelNumber, int voxCount) {
+			public boolean accept(final int labelNumber, final int voxCount) {
 				final double cPct = (voxCount) / totalVolume * 100;
 				return ((cPct > fMinPct) & (cPct < fMaxPct));
 			}
@@ -537,7 +538,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 			}
 
 			@Override
-			public void prescan(int labelNumber, int voxCount) {
+			public void prescan(final int labelNumber, final int voxCount) {
 				totalVolume += voxCount;
 			}
 		};
@@ -558,8 +559,8 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	 * @param minVolume
 	 *            the volume of the smallest object to be accepted
 	 */
-	public TImg ExportMaskAimVolume(TImgRO.CanExport templateAim,
-			D3float elSize, double minVolume) {
+	public TImg ExportMaskAimVolume(final TImgRO.CanExport templateAim,
+			final D3float elSize, final double minVolume) {
 		return ExportMaskAimVoxels(templateAim,
 				(int) (minVolume / (elSize.prod())));
 	}
@@ -578,8 +579,8 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	 * @param maxVolume
 	 *            the volume of the largest object to be accepted
 	 */
-	public TImg ExportMaskAimVolume(TImgRO.CanExport templateAim,
-			D3float elSize, double minVolume, double maxVolume) {
+	public TImg ExportMaskAimVolume(final TImgRO.CanExport templateAim,
+			final D3float elSize, final double minVolume, final double maxVolume) {
 		return ExportMaskAimVoxels(templateAim,
 				(int) (minVolume / (elSize.prod())),
 				(int) (maxVolume / (elSize.prod())));
@@ -596,12 +597,12 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	 *            the voxel count of the smallest object to be accepted
 	 */
 	@Deprecated
-	public TImg ExportMaskAimVoxels(TImgRO.CanExport templateAim,
+	public TImg ExportMaskAimVoxels(final TImgRO.CanExport templateAim,
 			final int minVolume) {
 		final int realMinVolume = minVolume;
 		final CLFilter inObjFilter = new CLFilter() {
 			@Override
-			public boolean accept(int labelNumber, int voxCount) {
+			public boolean accept(final int labelNumber, final int voxCount) {
 				return (voxCount > realMinVolume);
 			}
 
@@ -611,7 +612,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 			}
 
 			@Override
-			public void prescan(int labelNumber, int voxCount) {
+			public void prescan(final int labelNumber, final int voxCount) {
 				return;
 			}
 		};
@@ -632,13 +633,13 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	 * @param maxVolume
 	 *            the voxel count of the largest object to be accepted
 	 */
-	public TImg ExportMaskAimVoxels(TImgRO.CanExport templateAim,
+	public TImg ExportMaskAimVoxels(final TImgRO.CanExport templateAim,
 			final int minVolume, final int maxVolume) {
 		final int realMinVolume = minVolume;
 		final int realMaxVolume = maxVolume;
 		objFilter = new CLFilter() {
 			@Override
-			public boolean accept(int labelNumber, int voxCount) {
+			public boolean accept(final int labelNumber, final int voxCount) {
 				return ((voxCount > realMinVolume) & (voxCount < realMaxVolume));
 			}
 
@@ -649,7 +650,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 			}
 
 			@Override
-			public void prescan(int labelNumber, int voxCount) {
+			public void prescan(final int labelNumber, final int voxCount) {
 				return;
 			}
 		};
@@ -669,7 +670,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 		return -1;
 	}
 
-	private int get_next_label(int lastlabel) {
+	private int get_next_label(final int lastlabel) {
 		// Check from lastlabel and then restart at the beginning in case
 		// any were missed
 		final int clabel = get_next_free_label(lastlabel);
@@ -727,7 +728,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 		return "ComponentLabel";
 	}
 
-	private void InitLabels(D3int idim, D3int ioffset) {
+	private void InitLabels(final D3int idim, final D3int ioffset) {
 		labels = new int[aimLength];
 		labelcounts = new ArrayList<Integer>(10000);
 		for (int ir = 0; ir <= (10000); ir++) {
@@ -739,7 +740,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	}
 
 	@Override
-	public void LoadImages(TImgRO[] inImages) {
+	public void LoadImages(final TImgRO[] inImages) {
 		if (inImages.length < 1)
 			throw new IllegalArgumentException("Too few input images given!");
 		final boolean[] inputmap = TImgTools.makeTImgFullReadable(inImages[0])
@@ -793,7 +794,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 		remap_merge_combine(merges);
 	}
 
-	private void remap_merge_combine(int merges) {
+	private void remap_merge_combine(final int merges) {
 		maxlabel = 0;
 
 		int delVox = 0;
@@ -834,7 +835,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 		final BaseTIPLPluginIn.TIPLFilter finObjFilter = inObjFilter;
 		objFilter = new CLFilter() {
 			@Override
-			public boolean accept(int labelNumber, int voxCount) {
+			public boolean accept(final int labelNumber, final int voxCount) {
 				return finObjFilter.accept(labelNumber, voxCount);
 			}
 
@@ -844,7 +845,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 			}
 
 			@Override
-			public void prescan(int labelNumber, int voxCount) {
+			public void prescan(final int labelNumber, final int voxCount) {
 				return;
 			}
 		};
@@ -860,7 +861,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 			int maxVol = -1;
 
 			@Override
-			public boolean accept(int labelNumber, int voxCount) {
+			public boolean accept(final int labelNumber, final int voxCount) {
 				return (labelNumber == maxComp);
 			}
 
@@ -870,7 +871,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 			}
 
 			@Override
-			public void prescan(int labelNumber, int voxCount) {
+			public void prescan(final int labelNumber, final int voxCount) {
 				if ((voxCount > maxVol) | (maxComp == -1)) {
 					maxComp = labelNumber;
 					maxVol = voxCount;
@@ -896,7 +897,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 			double totalVolume = 0.0;
 
 			@Override
-			public boolean accept(int labelNumber, int voxCount) {
+			public boolean accept(final int labelNumber, final int voxCount) {
 				final double cPct = (voxCount) / totalVolume * 100;
 				return ((cPct > fMinPct) & (cPct < fMaxPct));
 			}
@@ -908,7 +909,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 			}
 
 			@Override
-			public void prescan(int labelNumber, int voxCount) {
+			public void prescan(final int labelNumber, final int voxCount) {
 				totalVolume += voxCount;
 			}
 		};
@@ -923,7 +924,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	 * @param minVolume
 	 *            the volume of the smallest object to be accepted
 	 */
-	public void runVolume(D3float elSize, double minVolume) {
+	public void runVolume(final D3float elSize, final double minVolume) {
 		procLog += "CL: Using Scaled Volume Filter :" + minVolume
 				+ ",  VoxelSize:" + elSize + "\n";
 		runVoxels((int) (minVolume / (elSize.prod())));
@@ -939,7 +940,8 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	 * @param maxVolume
 	 *            the volume of the largest object to be accepted
 	 */
-	public void runVolume(D3float elSize, double minVolume, double maxVolume) {
+	public void runVolume(final D3float elSize, final double minVolume,
+			final double maxVolume) {
 		procLog += "CL: Using Scaled Volume Filter :" + minVolume + "-"
 				+ maxVolume + ", VoxelSize:" + elSize + "\n";
 		runVoxels((int) (minVolume / (elSize.prod())),
@@ -956,7 +958,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 		final int realMinVolume = minVolume;
 		objFilter = new CLFilter() {
 			@Override
-			public boolean accept(int labelNumber, int voxCount) {
+			public boolean accept(final int labelNumber, final int voxCount) {
 				return (voxCount > realMinVolume);
 			}
 
@@ -966,7 +968,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 			}
 
 			@Override
-			public void prescan(int labelNumber, int voxCount) {
+			public void prescan(final int labelNumber, final int voxCount) {
 				return;
 			}
 		};
@@ -987,7 +989,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 		final int realMaxVolume = maxVolume;
 		objFilter = new CLFilter() {
 			@Override
-			public boolean accept(int labelNumber, int voxCount) {
+			public boolean accept(final int labelNumber, final int voxCount) {
 				return ((voxCount > realMinVolume) & (voxCount < realMaxVolume));
 			}
 
@@ -998,7 +1000,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 			}
 
 			@Override
-			public void prescan(int labelNumber, int voxCount) {
+			public void prescan(final int labelNumber, final int voxCount) {
 				return;
 			}
 		};
@@ -1006,7 +1008,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 
 	}
 
-	private void set_label(int pt, int applyLabel) {
+	private void set_label(final int pt, final int applyLabel) {
 		labelcounts.set(applyLabel, new Integer(labelcounts.get(applyLabel)
 				.intValue() + 1));
 		if (labels[pt] != 0)

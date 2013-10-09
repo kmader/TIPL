@@ -38,7 +38,7 @@ public class GrayAnalysis2D extends Hist2D {
 			public double voxCnt = 0;
 			public boolean firstIn = false;
 
-			public prescanRunner(TImgRO iImg) {
+			public prescanRunner(final TImgRO iImg) {
 				img = iImg;
 			}
 
@@ -95,7 +95,7 @@ public class GrayAnalysis2D extends Hist2D {
 			exec = new ScheduledThreadPoolExecutor(4);
 		}
 
-		public DiscreteReader(ExecutorService iexec) {
+		public DiscreteReader(final ExecutorService iexec) {
 			exec = iexec;
 		}
 
@@ -125,7 +125,7 @@ public class GrayAnalysis2D extends Hist2D {
 		}
 
 		/** convert a float value into an index **/
-		public int f2ind(double val) {
+		public int f2ind(final double val) {
 			checkVals();
 			if (val <= fmin)
 				return 0;
@@ -134,7 +134,8 @@ public class GrayAnalysis2D extends Hist2D {
 			return (int) (((val - fmin) / (fmax - fmin) * fbins));
 		}
 
-		public void getArguments(ArgumentParser p, String prefix, String suffix) {
+		public void getArguments(final ArgumentParser p, final String prefix,
+				final String suffix) {
 			ObjName = p.getOptionString(prefix + "_file", "",
 					"Name of map aim file to open," + suffix);
 			fmin = p.getOptionDouble(prefix + "_fmin", 0,
@@ -184,7 +185,7 @@ public class GrayAnalysis2D extends Hist2D {
 			return img.getSampleName();
 		}
 
-		public int[] getSliceIndices(int sliceNumber) {
+		public int[] getSliceIndices(final int sliceNumber) {
 			int[] outslice = null;
 			final TImg.TImgFull fullImg = new TImg.TImgFull(img);
 			if (asFloat) {
@@ -200,7 +201,7 @@ public class GrayAnalysis2D extends Hist2D {
 			return outslice;
 		}
 
-		public Double[] getXYZVec(int cIndex, int cSlice) {
+		public Double[] getXYZVec(final int cIndex, final int cSlice) {
 			return TImgTools.getXYZVecFromVec(img, cIndex, cSlice);
 		}
 
@@ -213,7 +214,7 @@ public class GrayAnalysis2D extends Hist2D {
 		}
 
 		/** convert an integer value into an index, fbins is ignored **/
-		public int i2ind(int val) {
+		public int i2ind(final int val) {
 			checkVals();
 			if (val < fmin)
 				return 0;
@@ -223,7 +224,7 @@ public class GrayAnalysis2D extends Hist2D {
 		}
 
 		/** convert an index into an float **/
-		public float ind2f(int val) {
+		public float ind2f(final int val) {
 			checkVals();
 			if (val <= 0)
 				return (float) fmin;
@@ -233,7 +234,7 @@ public class GrayAnalysis2D extends Hist2D {
 		}
 
 		/** convert an index value into an integer value, fbins is ignored **/
-		public int ind2i(int val) {
+		public int ind2i(final int val) {
 			checkVals();
 			if (val < 0)
 				return (int) fmin;
@@ -246,12 +247,12 @@ public class GrayAnalysis2D extends Hist2D {
 			return img.isGood();
 		}
 
-		public void LoadData(TImgRO iImg) {
+		public void LoadData(final TImgRO iImg) {
 			img = iImg;
 			prescan();
 		}
 
-		public void LoadData(TImgRO iImg, int ibins) {
+		public void LoadData(final TImgRO iImg, final int ibins) {
 			img = iImg;
 			fbins = ibins;
 			prescan();
@@ -296,7 +297,7 @@ public class GrayAnalysis2D extends Hist2D {
 	/** how many cores does the plugin want (-1 = as many as possible) */
 	public static int neededCores = -1;
 
-	private static void checkHelp(ArgumentParser p) {
+	private static void checkHelp(final ArgumentParser p) {
 		if (p.hasOption("?")) {
 			System.out.println(" GrayAnalysis2D Processing Help");
 			System.out.println(" 2D Histograms...");
@@ -310,7 +311,7 @@ public class GrayAnalysis2D extends Hist2D {
 	/**
 	 * The standard version of GrayAnalysis2D which is run from the command line
 	 */
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final String kVer = "120607_005";
 		System.out.println(" Gray Value and Lacuna Analysis v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
@@ -357,7 +358,7 @@ public class GrayAnalysis2D extends Hist2D {
 
 	}
 
-	private static void main_stdhist(ArgumentParser p) {
+	private static void main_stdhist(final ArgumentParser p) {
 		final GrayAnalysis2D myga = new GrayAnalysis2D();
 		GrayAnalysis2D.doPreload = p
 				.getOptionBoolean("preload", "preload data");
@@ -411,9 +412,10 @@ public class GrayAnalysis2D extends Hist2D {
 	 * @param fbinsB
 	 *            the number of bins to use for the y map
 	 */
-	public static void StartFProfile(TImg inGfilt, FImage profImageA,
-			FImage profImageB, String outFile, float threshVal, int fbinsA,
-			int fbinsB) {
+	public static void StartFProfile(final TImg inGfilt,
+			final FImage profImageA, final FImage profImageB,
+			final String outFile, final float threshVal, final int fbinsA,
+			final int fbinsB) {
 		final GrayAnalysis2D newGray = new GrayAnalysis2D();
 		GrayAnalysis2D.doPreload = false;
 
@@ -455,9 +457,10 @@ public class GrayAnalysis2D extends Hist2D {
 	 * @param fbinsB
 	 *            the number of bins to use for the y map
 	 */
-	public static void StartFProfile(TImg inGfilt, PureFImage profImageA,
-			PureFImage profImageB, String outFile, float threshVal, int fbinsA,
-			int fbinsB) {
+	public static void StartFProfile(final TImg inGfilt,
+			final PureFImage profImageA, final PureFImage profImageB,
+			final String outFile, final float threshVal, final int fbinsA,
+			final int fbinsB) {
 		final GrayAnalysis2D newGray = new GrayAnalysis2D();
 		GrayAnalysis2D.doPreload = false;
 
@@ -493,8 +496,8 @@ public class GrayAnalysis2D extends Hist2D {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartHistogram(TImg mapA, TImg mapB, TImg gfiltAim,
-			String outFile) {
+	public static void StartHistogram(final TImg mapA, final TImg mapB,
+			final TImg gfiltAim, final String outFile) {
 		final GrayAnalysis2D newGray = new GrayAnalysis2D();
 
 		newGray.dmapA.LoadData(mapA);
@@ -515,8 +518,8 @@ public class GrayAnalysis2D extends Hist2D {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartPolePlot(TImg inGfilt, String outFile,
-			float threshVal, int fbins) {
+	public static void StartPolePlot(final TImg inGfilt, final String outFile,
+			final float threshVal, final int fbins) {
 		final TImg cachedGfilt = TImgTools.WrapTImgRO(TImgTools
 				.CacheImage(inGfilt));
 		final PureFImage cFImgA = new PureFImage.PhiImageSph(cachedGfilt, 3);
@@ -534,8 +537,8 @@ public class GrayAnalysis2D extends Hist2D {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartRThProfile(TImg inGfilt, String outFile,
-			float threshVal, int fbins) {
+	public static void StartRThProfile(final TImg inGfilt,
+			final String outFile, final float threshVal, final int fbins) {
 		final TImg cachedGfilt = TImgTools.WrapTImgRO(TImgTools
 				.CacheImage(inGfilt));
 		final PureFImage cFImgA = new PureFImage.RImageCyl(cachedGfilt, 3);
@@ -554,8 +557,8 @@ public class GrayAnalysis2D extends Hist2D {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartRZProfile(TImg inGfilt, String outFile,
-			float threshVal, int fbins) {
+	public static void StartRZProfile(final TImg inGfilt, final String outFile,
+			final float threshVal, final int fbins) {
 		final TImg cachedGfilt = TImgTools.WrapTImgRO(TImgTools
 				.CacheImage(inGfilt));
 
@@ -574,8 +577,8 @@ public class GrayAnalysis2D extends Hist2D {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartThZProfile(TImg inGfilt, String outFile,
-			float threshVal, int fbins) {
+	public static void StartThZProfile(final TImg inGfilt,
+			final String outFile, final float threshVal, final int fbins) {
 		final TImg cachedGfilt = TImgTools.WrapTImgRO(TImgTools
 				.CacheImage(inGfilt));
 		final PureFImage cFImgA = new PureFImage.ThetaImageCyl(cachedGfilt, 3);
@@ -599,8 +602,8 @@ public class GrayAnalysis2D extends Hist2D {
 
 	}
 
-	private void AnalyzeSlice(int sliceNumber, boolean noThresh,
-			int operationMode) {
+	private void AnalyzeSlice(final int sliceNumber, final boolean noThresh,
+			final int operationMode) {
 		// Operation Mode -> 0- find COM/COV, 1- find covariance matrix, 2- find
 		// extents
 		if (debugMode)
@@ -709,7 +712,7 @@ public class GrayAnalysis2D extends Hist2D {
 			run(gvCount());
 	}
 
-	public void run(GrayVoxExtract gve) {
+	public void run(final GrayVoxExtract gve) {
 		curGVE = gve;
 		long start = System.currentTimeMillis();
 		boolean gfiltGood = true;
@@ -720,12 +723,12 @@ public class GrayAnalysis2D extends Hist2D {
 			// Setup Bin Translators
 			xBNE = new BinExtract() {
 				@Override
-				public String get(int binNum) {
+				public String get(final int binNum) {
 					return "" + dmapB.ind2f(binNum) + "";
 				}
 
 				@Override
-				public int getBin(float fval) {
+				public int getBin(final float fval) {
 					return dmapB.f2ind(fval);
 				}
 
@@ -736,12 +739,12 @@ public class GrayAnalysis2D extends Hist2D {
 			};
 			yBNE = new BinExtract() {
 				@Override
-				public String get(int binNum) {
+				public String get(final int binNum) {
 					return "" + dmapA.ind2f(binNum) + "";
 				}
 
 				@Override
-				public int getBin(float fval) {
+				public int getBin(final float fval) {
 					return dmapB.f2ind(fval);
 				}
 
@@ -812,7 +815,7 @@ public class GrayAnalysis2D extends Hist2D {
 
 	}
 
-	public void SetupGA(TImg mapA, TImg mapB) {
+	public void SetupGA(final TImg mapA, final TImg mapB) {
 		dmapA.LoadData(mapA);
 		dmapB.LoadData(mapB);
 	}

@@ -2,7 +2,6 @@ package tipl.tools;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.TIPLPluginIO;
 import tipl.util.TIPLPluginOut;
@@ -27,13 +26,10 @@ abstract public class BaseTIPLPluginIO extends BaseTIPLPluginIn implements
 	 * constructor function taking boolean (other castings just convert the
 	 * array first) linear array and the dimensions
 	 */
-	public BaseTIPLPluginIO(D3int idim, D3int ioffset) {
+	public BaseTIPLPluginIO(final D3int idim, final D3int ioffset) {
 		super(idim, ioffset);
 	}
 
-	
-
-	
 	/**
 	 * All plug-ins have an interface for exporting the main result to an Aim
 	 * class based on a template aim, many have other methods for exporting the
@@ -53,7 +49,7 @@ abstract public class BaseTIPLPluginIO extends BaseTIPLPluginIn implements
 	 * array
 	 */
 	@Override
-	public TImg[] ExportImages(TImgRO templateImage) {
+	public TImg[] ExportImages(final TImgRO templateImage) {
 		// TODO Auto-generated method stub
 		final TImg cImg = TImgTools.WrapTImgRO(templateImage);
 		return new TImg[] { ExportAim(cImg) };

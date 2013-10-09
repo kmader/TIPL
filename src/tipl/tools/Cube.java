@@ -298,7 +298,7 @@ public class Cube {
 			{ 0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },
 			{ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 } };
 
-	public Cube(boolean[] vertices, int i, int j, int k) {
+	public Cube(final boolean[] vertices, final int i, final int j, final int k) {
 		cubeValues = vertices;
 		VolPoints[0] = new kPoint3i(i, j, k);
 		VolPoints[1] = new kPoint3i(i, j + 1, k);
@@ -313,13 +313,13 @@ public class Cube {
 		voxel = k;
 	} // constructor
 
-	public int createIndex(boolean iso) {
+	public int createIndex(final boolean iso) {
 		// return createIndexLT(iso);
 		// Values that are positive
 		return createIndexGT(iso);
 	} // createIndex
 
-	public int createIndexGT(boolean iso) {
+	public int createIndexGT(final boolean iso) {
 		int index = 0;
 		if (cubeValues[0] == iso)
 			index |= 1;
@@ -340,7 +340,7 @@ public class Cube {
 		return index;
 	} // createIndexGT
 
-	public int createIndexLT(boolean iso) {
+	public int createIndexLT(final boolean iso) {
 		int index = 0;
 		if (cubeValues[0] != iso)
 			index |= 1;
@@ -361,7 +361,8 @@ public class Cube {
 		return index;
 	} // createIndexLT
 
-	public void createIterpolatedPointsList(boolean iso, int cubeIndex) {
+	public void createIterpolatedPointsList(final boolean iso,
+			final int cubeIndex) {
 		// Find the vertices where the surface intersects the cube
 		if ((edgeTable[cubeIndex] & 1) == 1)
 			IPList[0] = generateInterpolatedPoint(iso, VolPoints[0],
@@ -401,7 +402,8 @@ public class Cube {
 					VolPoints[7], cubeValues[3], cubeValues[7]);
 	} // createIterpolatedPointsList
 
-	public LinkedList<kPoint3d> createTriangleList(int cubeIndex, int[] dim) {
+	public LinkedList<kPoint3d> createTriangleList(final int cubeIndex,
+			final int[] dim) {
 		triList = new LinkedList<kPoint3d>();
 		// Cube is entirely in/out of the surface
 		if (edgeTable[cubeIndex] != 0) {
@@ -417,8 +419,8 @@ public class Cube {
 		return triList;
 	} // createTriangleList
 
-	public kPoint3d generateInterpolatedPoint(boolean iso, kPoint3i i,
-			kPoint3i j, boolean k, boolean m) {
+	public kPoint3d generateInterpolatedPoint(final boolean iso,
+			final kPoint3i i, final kPoint3i j, final boolean k, final boolean m) {
 		int[] p1 = new int[3];
 		int[] p2 = new int[3];
 		final double[] p = new double[3];
@@ -489,19 +491,19 @@ class kPoint3d {
 		k = 0;
 	}
 
-	public kPoint3d(double ii, double ij, double ik) {
+	public kPoint3d(final double ii, final double ij, final double ik) {
 		i = ii;
 		j = ij;
 		k = ik;
 	}
 
-	public void sub(kPoint3d spt) {
+	public void sub(final kPoint3d spt) {
 		i -= spt.i;
 		j -= spt.j;
 		k -= spt.k;
 	}
 
-	public void sub(kPoint3d spt, kPoint3d bpt) {
+	public void sub(final kPoint3d spt, final kPoint3d bpt) {
 		i = spt.i - bpt.i;
 		j = spt.j - bpt.j;
 		k = spt.k - bpt.k;
@@ -517,7 +519,7 @@ class kPoint3i {
 
 	public int i, j, k;
 
-	public kPoint3i(int ii, int ij, int ik) {
+	public kPoint3i(final int ii, final int ij, final int ik) {
 		i = ii;
 		j = ij;
 		k = ik;
@@ -538,13 +540,13 @@ class kPoint3i {
 		out[2] = k;
 	}
 
-	public void sub(kPoint3i spt) {
+	public void sub(final kPoint3i spt) {
 		i -= spt.i;
 		j -= spt.j;
 		k -= spt.k;
 	}
 
-	public void sub(kPoint3i spt, kPoint3i bpt) {
+	public void sub(final kPoint3i spt, final kPoint3i bpt) {
 		i = spt.i - bpt.i;
 		j = spt.j - bpt.j;
 		k = spt.k - bpt.k;

@@ -111,7 +111,7 @@ public class Resize extends BaseTIPLPluginMult {
 	 *      <li>outputAim.WriteAim(outputFile,0);
 	 * </pre>
 	 */
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 
 		System.out.println("Resize v" + kVer);
 		System.out.println(" Resizes Aim files based on given criteria");
@@ -164,25 +164,29 @@ public class Resize extends BaseTIPLPluginMult {
 	}
 
 	@Deprecated
-	public Resize(boolean[] inputmap, D3int idim, D3int ioffset, D3int ipos) {
+	public Resize(final boolean[] inputmap, final D3int idim,
+			final D3int ioffset, final D3int ipos) {
 		ImportAim(inputmap, idim, ioffset);
 		pos = ipos;
 	}
 
 	@Deprecated
-	public Resize(float[] inputmap, D3int idim, D3int ioffset, D3int ipos) {
+	public Resize(final float[] inputmap, final D3int idim,
+			final D3int ioffset, final D3int ipos) {
 		ImportAim(inputmap, idim, ioffset);
 		pos = ipos;
 	}
 
 	@Deprecated
-	public Resize(int[] inputmap, D3int idim, D3int ioffset, D3int ipos) {
+	public Resize(final int[] inputmap, final D3int idim, final D3int ioffset,
+			final D3int ipos) {
 		ImportAim(inputmap, idim, ioffset);
 		pos = ipos;
 	}
 
 	@Deprecated
-	public Resize(short[] inputmap, D3int idim, D3int ioffset, D3int ipos) {
+	public Resize(final short[] inputmap, final D3int idim,
+			final D3int ioffset, final D3int ipos) {
 		ImportAim(inputmap, idim, ioffset);
 		pos = ipos;
 	}
@@ -192,7 +196,7 @@ public class Resize extends BaseTIPLPluginMult {
 	 * program will load one slice at a time allowing the user to take ROIs from
 	 * much bigger aims
 	 */
-	public Resize(TImg inputAim, boolean isMask) {
+	public Resize(final TImg inputAim, final boolean isMask) {
 		forceMask = isMask;
 		if (inputAim instanceof TImgRO.FullReadable)
 			LoadedAim(TImgTools.makeTImgFullReadable(inputAim), isMask);
@@ -221,7 +225,7 @@ public class Resize extends BaseTIPLPluginMult {
 	//
 	//
 	// }
-	public Resize(TImgRO inAim) {
+	public Resize(final TImgRO inAim) {
 		LoadImages(new TImgRO[] { inAim });
 	}
 
@@ -241,7 +245,7 @@ public class Resize extends BaseTIPLPluginMult {
 
 	}
 
-	public void cutROI(D3int cpos) {
+	public void cutROI(final D3int cpos) {
 		itLowx = cpos.x - pos.x;
 		itLowy = cpos.y - pos.y;
 		itLowz = cpos.z - pos.z;
@@ -260,7 +264,7 @@ public class Resize extends BaseTIPLPluginMult {
 	 * @param cdim
 	 *            The dimension to cut from this position
 	 */
-	public void cutROI(D3int cpos, D3int cdim) {
+	public void cutROI(final D3int cpos, final D3int cdim) {
 
 		itLowx = cpos.x - pos.x;
 		itLowy = cpos.y - pos.y;
@@ -278,7 +282,7 @@ public class Resize extends BaseTIPLPluginMult {
 	 * @param boundingBoxAim
 	 *            Given aim to match when cutting
 	 */
-	public void cutROI(TImgRO boundingBoxAim) {
+	public void cutROI(final TImgRO boundingBoxAim) {
 		cutROI(boundingBoxAim.getPos(), boundingBoxAim.getDim());
 		printSize();
 	}
@@ -307,7 +311,7 @@ public class Resize extends BaseTIPLPluginMult {
 	}
 
 	@Override
-	public boolean execute(String command, Object cObj) {
+	public boolean execute(final String command, final Object cObj) {
 		if (command.equalsIgnoreCase("cutroitimg")) {
 			if (cObj instanceof TImgRO) {
 				cutROI((TImgRO) cObj);
@@ -325,7 +329,7 @@ public class Resize extends BaseTIPLPluginMult {
 	 *            input template aim file
 	 */
 	@Override
-	public TImg ExportAim(TImgRO.CanExport templateAim) {
+	public TImg ExportAim(final TImgRO.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				TImg outVirtualAim;
@@ -379,27 +383,27 @@ public class Resize extends BaseTIPLPluginMult {
 	public void find_edges() {
 		final BaseTIPLPluginIn.TIPLFilter curFilter = new BaseTIPLPluginIn.TIPLFilter() {
 			@Override
-			public boolean accept(boolean a) {
+			public boolean accept(final boolean a) {
 				return a;
 			}
 
 			@Override
-			public boolean accept(float a) {
+			public boolean accept(final float a) {
 				return (a > 0);
 			}
 
 			@Override
-			public boolean accept(int a) {
+			public boolean accept(final int a) {
 				return (a > 0);
 			}
 
 			@Override
-			public boolean accept(int a, int b) {
+			public boolean accept(final int a, final int b) {
 				return (a > 0) & (b > 0);
 			}
 
 			@Override
-			public boolean accept(int a, int b, int c) {
+			public boolean accept(final int a, final int b, final int c) {
 				return ((a > 0) & (b > 0) & (c > 0));
 			}
 		};
@@ -428,7 +432,7 @@ public class Resize extends BaseTIPLPluginMult {
 	 *            boolean accept(int a,int b, int c) {return ((a>0) & (b>0) &
 	 *            (c>0)); } <li>;
 	 */
-	public void find_edges(BaseTIPLPluginIn.TIPLFilter curFilter) {
+	public void find_edges(final BaseTIPLPluginIn.TIPLFilter curFilter) {
 		boolean firstPoint = true;
 		double validVoxels = 0.0;
 
@@ -627,27 +631,27 @@ public class Resize extends BaseTIPLPluginMult {
 	public void find_edges(final double threshValue) {
 		final BaseTIPLPluginIn.TIPLFilter curFilter = new BaseTIPLPluginIn.TIPLFilter() {
 			@Override
-			public boolean accept(boolean a) {
+			public boolean accept(final boolean a) {
 				return a;
 			}
 
 			@Override
-			public boolean accept(float a) {
+			public boolean accept(final float a) {
 				return (a > (float) threshValue);
 			}
 
 			@Override
-			public boolean accept(int a) {
+			public boolean accept(final int a) {
 				return (a > (int) threshValue);
 			}
 
 			@Override
-			public boolean accept(int a, int b) {
+			public boolean accept(final int a, final int b) {
 				return (a > (int) threshValue) & (b > (int) threshValue);
 			}
 
 			@Override
-			public boolean accept(int a, int b, int c) {
+			public boolean accept(final int a, final int b, final int c) {
 				return ((a > (int) threshValue) & (b > (int) threshValue) & (c > (int) threshValue));
 			}
 		};
@@ -662,27 +666,27 @@ public class Resize extends BaseTIPLPluginMult {
 	public void find_edges(final int threshValue) {
 		final BaseTIPLPluginIn.TIPLFilter curFilter = new BaseTIPLPluginIn.TIPLFilter() {
 			@Override
-			public boolean accept(boolean a) {
+			public boolean accept(final boolean a) {
 				return a;
 			}
 
 			@Override
-			public boolean accept(float a) {
+			public boolean accept(final float a) {
 				return (a > threshValue);
 			}
 
 			@Override
-			public boolean accept(int a) {
+			public boolean accept(final int a) {
 				return (a > threshValue);
 			}
 
 			@Override
-			public boolean accept(int a, int b) {
+			public boolean accept(final int a, final int b) {
 				return (a > threshValue) & (b > threshValue);
 			}
 
 			@Override
-			public boolean accept(int a, int b, int c) {
+			public boolean accept(final int a, final int b, final int c) {
 				return ((a > threshValue) & (b > threshValue) & (c > threshValue));
 			}
 		};
@@ -727,7 +731,8 @@ public class Resize extends BaseTIPLPluginMult {
 		InitMask();
 	}
 
-	protected void LoadedAim(TImgRO.FullReadable inAim, boolean isMask) {
+	protected void LoadedAim(final TImgRO.FullReadable inAim,
+			final boolean isMask) {
 		if (makeToMask)
 			ImportAim(inAim, 10);
 		else
@@ -737,7 +742,7 @@ public class Resize extends BaseTIPLPluginMult {
 	}
 
 	@Override
-	public void LoadImages(TImgRO[] inImages) {
+	public void LoadImages(final TImgRO[] inImages) {
 		if (inImages.length < 1)
 			throw new IllegalArgumentException("Too few input images given!");
 		final TImgRO inAim = inImages[0];
@@ -1037,7 +1042,8 @@ public class Resize extends BaseTIPLPluginMult {
 	}
 
 	@Override
-	public ArgumentParser setParameter(ArgumentParser p, String cPrefix) {
+	public ArgumentParser setParameter(final ArgumentParser p,
+			final String cPrefix) {
 		pFindEdge = p.getOptionBoolean(cPrefix + "find_edges",
 				"Find borders by scanning image");
 		pOutDim = p.getOptionD3int(cPrefix + "dim", pOutDim,

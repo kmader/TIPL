@@ -28,19 +28,19 @@ public class DistLabel extends BaseTIPLPluginIO {
 		public int completedBubbles = 0;
 		private final int core;
 
-		public bubbleFiller(DistLabel iparent, int icore) {
+		public bubbleFiller(final DistLabel iparent, final int icore) {
 			super("BubbleFiller[" + icore + "]");
 			parent = iparent;
 			core = icore;
 		}
 
-		public synchronized void addBubble(SeedLabel nBubble) {
+		public synchronized void addBubble(final SeedLabel nBubble) {
 			bubList.append(nBubble);
 			completedBubbles++;
 		}
 
 		/** does the current bubble overlap one of the existing seeds **/
-		public boolean doesOverlap(SeedLabel nBubble) {
+		public boolean doesOverlap(final SeedLabel nBubble) {
 			return bubList.doesBubbleOverlap(nBubble);
 		}
 
@@ -94,7 +94,8 @@ public class DistLabel extends BaseTIPLPluginIO {
 		volatile DistLabel parent;
 		public SeedList threadSeedList = null;
 
-		public dlRunner(DistLabel iparent, int isslice, int ifslice) {
+		public dlRunner(final DistLabel iparent, final int isslice,
+				final int ifslice) {
 			super("dlRunner:<" + isslice + ", " + ifslice + ">");
 			sslice = isslice;
 			fslice = ifslice;
@@ -126,7 +127,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 		public int label = 0;
 
 		// Scale distance by STD
-		public SeedLabel(int x, int y, int z, float irad) {
+		public SeedLabel(final int x, final int y, final int z, final float irad) {
 			cx = x;
 			cy = y;
 			cz = z;
@@ -134,7 +135,8 @@ public class DistLabel extends BaseTIPLPluginIO {
 			valid = true;
 		}
 
-		public SeedLabel(int x, int y, int z, float irad, int ilabel) {
+		public SeedLabel(final int x, final int y, final int z,
+				final float irad, final int ilabel) {
 			cx = x;
 			cy = y;
 			cz = z;
@@ -144,9 +146,10 @@ public class DistLabel extends BaseTIPLPluginIO {
 		}
 
 		@Override
-		public int compareTo(SeedLabel otherBubble) // must be defined if we are
-													// implementing //Comparable
-													// interface
+		public int compareTo(final SeedLabel otherBubble) // must be defined if
+															// we are
+		// implementing //Comparable
+		// interface
 		{
 			if (!(otherBubble instanceof SeedLabel)) {
 				throw new ClassCastException("Not valid SeedLabel object");
@@ -162,13 +165,13 @@ public class DistLabel extends BaseTIPLPluginIO {
 			}
 		}
 
-		public double dist(float x, float y, float z) {
+		public double dist(final float x, final float y, final float z) {
 			return Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2)
 					+ Math.pow(z - cz, 2));
 
 		}
 
-		public double dist(int x, int y, int z) {
+		public double dist(final int x, final int y, final int z) {
 			return dist((float) x, (float) y, (float) z);
 		}
 
@@ -181,7 +184,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 		}
 
 		/** percentage the bubble nseed overlaps with this bubble (roughly) **/
-		public double overlap(SeedLabel nSeed) {
+		public double overlap(final SeedLabel nSeed) {
 			final double cdist = nSeed.dist(cx, cy, cz);
 			if (cdist > (rad + nSeed.rad))
 				return 0;
@@ -189,7 +192,8 @@ public class DistLabel extends BaseTIPLPluginIO {
 				return 100 * (rad + nSeed.rad - cdist) / nSeed.rad;
 		}
 
-		public void superSeed(int x, int y, int z, float nrad) {
+		public void superSeed(final int x, final int y, final int z,
+				final float nrad) {
 			final String curString = toString();
 			cx = x;
 			cy = y;
@@ -213,13 +217,14 @@ public class DistLabel extends BaseTIPLPluginIO {
 		public float overlapLimit;
 		public boolean scaleddist = false;
 
-		public SeedList(float ioverlapLimit) {
+		public SeedList(final float ioverlapLimit) {
 			sl = new ArrayList<SeedLabel>();
 
 			overlapLimit = ioverlapLimit;
 		}
 
-		public void addbubble(int x, int y, int z, float rad) {
+		public void addbubble(final int x, final int y, final int z,
+				final float rad) {
 			final SeedLabel newSeed = new SeedLabel(x, y, z, rad);
 			boolean keepSeed = true;
 			boolean hasReplaced = false;
@@ -265,7 +270,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 			return newOut;
 		}
 
-		protected void append(SeedLabel newSeed) {
+		protected void append(final SeedLabel newSeed) {
 			sl.add(newSeed);
 		}
 
@@ -273,7 +278,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 		 * checks whether the given seed overlaps with any bubbles already on
 		 * the list, false if it does, true if not
 		 **/
-		public synchronized boolean doesBubbleOverlap(SeedLabel newSeed) {
+		public synchronized boolean doesBubbleOverlap(final SeedLabel newSeed) {
 			for (final SeedLabel curSeed : sl) {
 				if (curSeed.isValid()) {
 					if (newSeed.overlap(curSeed) >= overlapLimit) {
@@ -367,7 +372,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 	 * @param imap
 	 *            Distance map image
 	 */
-	public DistLabel(TImgRO imap) {
+	public DistLabel(final TImgRO imap) {
 		LoadAimData(imap);
 	}
 
@@ -379,7 +384,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 	 * @param imask
 	 *            Mask to be filld and identified
 	 */
-	public DistLabel(TImgRO imap, TImgRO imask) {
+	public DistLabel(final TImgRO imap, final TImgRO imask) {
 		LoadAimData(imap, imask);
 	}
 
@@ -387,7 +392,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 	 * Object to divide the thread work into supportCores equal parts, default
 	 * is z-slices
 	 */
-	public int[] divideSlices(int cThread) {
+	public int[] divideSlices(final int cThread) {
 		final int minSlice = lowz + OUTERSHELL;
 		final int maxSlice = (uppz - OUTERSHELL);
 
@@ -413,7 +418,8 @@ public class DistLabel extends BaseTIPLPluginIO {
 	 * integrated, since java cannot handle more than 8e9 array elements AIM
 	 * style referencing from IPL will not work
 	 **/
-	private int[][][] dmapGet(int x, int y, int z, D3int nSize) {
+	private int[][][] dmapGet(final int x, final int y, final int z,
+			final D3int nSize) {
 		final int[][][] outMap = new int[nSize.x * 2 + 1][nSize.z * 2 + 1][nSize.z * 2 + 1];
 		int dz = 0;
 		for (int z2 = max(z - nSize.z, lowz); z2 <= min(z + nSize.z, uppz - 1); z2++, dz++) {
@@ -526,7 +532,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 
 	/** Write the labeled bubbles to an image based on the template */
 	@Override
-	public TImg ExportAim(TImgRO.CanExport templateAim) {
+	public TImg ExportAim(final TImgRO.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				final TImg outAimData = templateAim.inheritedAim(labels, dim,
@@ -549,7 +555,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 	}
 
 	/** export the bubble seeds if anyone actually wants them */
-	public TImg ExportBubbleseedsAim(TImgRO.CanExport templateAim) {
+	public TImg ExportBubbleseedsAim(final TImgRO.CanExport templateAim) {
 		if (isInitialized) {
 			final TImg outAimData = templateAim.inheritedAim(diffmask, dim,
 					offset);
@@ -565,7 +571,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 		}
 	}
 
-	protected void fillBubble(int clabel, int xmax, int ymax, int zmax,
+	protected void fillBubble(final int clabel, int xmax, int ymax, int zmax,
 			double cMaxVal) {
 
 		int off;
@@ -875,7 +881,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 	}
 
 	/** create the needed variables for the function **/
-	private void Init(D3int idim, D3int ioffset) {
+	private void Init(final D3int idim, final D3int ioffset) {
 		if (distmap.length != mask.length) {
 			System.out.println("SIZES DO NOT MATCH!!!!!!!!");
 			return;
@@ -933,7 +939,8 @@ public class DistLabel extends BaseTIPLPluginIO {
 
 	/** depreciated scheme for old threading **/
 	@Deprecated
-	protected boolean isCoreFree(bubbleFiller[] coreArray, int coreIndex) {
+	protected boolean isCoreFree(final bubbleFiller[] coreArray,
+			final int coreIndex) {
 		if (coreArray[coreIndex] != null) {
 			return (coreArray[coreIndex].isFinished);
 		} else
@@ -941,12 +948,12 @@ public class DistLabel extends BaseTIPLPluginIO {
 	}
 
 	@Deprecated
-	protected int lightestCore(bubbleFiller[] coreArray) {
+	protected int lightestCore(final bubbleFiller[] coreArray) {
 		return lightestCore(coreArray, false);
 	}
 
 	@Deprecated
-	protected int lightestCore(bubbleFiller[] coreArray,
+	protected int lightestCore(final bubbleFiller[] coreArray,
 			final boolean printStatus) {
 		int lcore = -1;
 		int ljobs = 0;
@@ -985,7 +992,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 	 * variables
 	 * **/
 
-	protected void LoadAimData(TImgRO labelImg) {
+	protected void LoadAimData(final TImgRO labelImg) {
 		final int[] inputmap = TImgTools.makeTImgFullReadable(labelImg)
 				.getIntAim();
 		aimLength = inputmap.length;
@@ -1000,7 +1007,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 		Init(labelImg.getDim(), labelImg.getOffset());
 	}
 
-	protected void LoadAimData(TImgRO labelImg, TImgRO maskImg) {
+	protected void LoadAimData(final TImgRO labelImg, final TImgRO maskImg) {
 		final int[] inputmap = TImgTools.makeTImgFullReadable(labelImg)
 				.getIntAim();
 		final boolean[] inputmask = TImgTools.makeTImgFullReadable(maskImg)
@@ -1024,7 +1031,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 	 * the mask image (if present)
 	 */
 	@Override
-	public void LoadImages(TImgRO[] inImages) {
+	public void LoadImages(final TImgRO[] inImages) {
 		// TODO Auto-generated method stub
 		if (inImages.length < 1)
 			throw new IllegalArgumentException(
@@ -1036,7 +1043,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 		LoadAimData(labelImg, maskImg);
 	}
 
-	private SeedList locateSeeds(int startSlice, int finalSlice) {
+	private SeedList locateSeeds(final int startSlice, final int finalSlice) {
 		final SeedList tempSeedList = new SeedList(MAXOVERLAP);
 		final D3int iNeighborSize = new D3int(2);
 		int off = 0;
@@ -1209,7 +1216,8 @@ public class DistLabel extends BaseTIPLPluginIO {
 	}
 
 	@Deprecated
-	protected int matchCore(bubbleFiller[] coreArray, SeedLabel nBubble) {
+	protected int matchCore(final bubbleFiller[] coreArray,
+			final SeedLabel nBubble) {
 		// lightestCore(coreArray);
 		for (int i = 0; i < coreArray.length; i++) {
 			if (coreArray[i] != null)

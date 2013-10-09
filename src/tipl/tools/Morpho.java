@@ -39,30 +39,31 @@ public class Morpho extends BaseTIPLPluginBW {
 
 	/** constructor function using TIPLPluginBW standard classes */
 	@Deprecated
-	public Morpho(boolean[] inputmap, D3int idim, D3int ioffset) {
+	public Morpho(final boolean[] inputmap, final D3int idim,
+			final D3int ioffset) {
 		ImportAim(inputmap, idim, ioffset);
 	}
 
 	/** constructor function using TIPLPluginBW standard classes */
 	@Deprecated
-	public Morpho(float[] inputmap, D3int idim, D3int ioffset) {
+	public Morpho(final float[] inputmap, final D3int idim, final D3int ioffset) {
 		ImportAim(inputmap, idim, ioffset);
 	}
 
 	/** constructor function using TIPLPluginBW standard classes */
 	@Deprecated
-	public Morpho(int[] inputmap, D3int idim, D3int ioffset) {
+	public Morpho(final int[] inputmap, final D3int idim, final D3int ioffset) {
 		ImportAim(inputmap, idim, ioffset);
 	}
 
 	/** constructor function using TIPLPluginBW standard classes */
 	@Deprecated
-	public Morpho(short[] inputmap, D3int idim, D3int ioffset) {
+	public Morpho(final short[] inputmap, final D3int idim, final D3int ioffset) {
 		ImportAim(inputmap, idim, ioffset);
 	}
 
 	/** constructor function using TIPLPluginBW standard classes */
-	public Morpho(TImgRO inputAim) {
+	public Morpho(final TImgRO inputAim) {
 		LoadImages(new TImgRO[] { inputAim });
 	}
 
@@ -72,17 +73,17 @@ public class Morpho extends BaseTIPLPluginBW {
 	}
 
 	@Deprecated
-	public void close(D3int neighborSizeI, double neighborOccupancyI) {
+	public void close(final D3int neighborSizeI, final double neighborOccupancyI) {
 		closeMany(1, neighborSizeI, neighborOccupancy);
 	}
 
 	@Deprecated
-	public void close(int neighborSizeI, double neighborOccupancyI) {
+	public void close(final int neighborSizeI, final double neighborOccupancyI) {
 		closeMany(1, neighborSizeI, neighborOccupancy);
 	}
 
 	@Deprecated
-	public void closeMany(int iterations) {
+	public void closeMany(final int iterations) {
 		System.out.println("CloseOperation-" + iterations);
 		for (int i = 0; i < iterations; i++) {
 			dilate();
@@ -91,16 +92,16 @@ public class Morpho extends BaseTIPLPluginBW {
 	}
 
 	@Deprecated
-	public void closeMany(int iterations, D3int neighborSizeI,
-			double neighborOccupancyI) {
+	public void closeMany(final int iterations, final D3int neighborSizeI,
+			final double neighborOccupancyI) {
 		neighborSize = neighborSizeI;
 		neighborOccupancy = neighborOccupancyI;
 		closeMany(iterations);
 	}
 
 	@Deprecated
-	public void closeMany(int iterations, int neighborSizeI,
-			double neighborOccupancyI) {
+	public void closeMany(final int iterations, final int neighborSizeI,
+			final double neighborOccupancyI) {
 		neighborSize = null;
 		neighborSize = new D3int(neighborSizeI);
 		neighborOccupancy = neighborOccupancyI;
@@ -125,14 +126,15 @@ public class Morpho extends BaseTIPLPluginBW {
 	}
 
 	@Deprecated
-	public void dilate(D3int neighborSizeI, double neighborOccupancyI) {
+	public void dilate(final D3int neighborSizeI,
+			final double neighborOccupancyI) {
 		neighborSize = neighborSizeI;
 		neighborOccupancy = neighborOccupancyI;
 		dilate();
 	}
 
 	@Deprecated
-	public void dilate(int neighborSizeI, double neighborOccupancyI) {
+	public void dilate(final int neighborSizeI, final double neighborOccupancyI) {
 		neighborSize = null;
 		neighborSize = new D3int(neighborSizeI);
 		neighborOccupancy = neighborOccupancyI;
@@ -140,22 +142,22 @@ public class Morpho extends BaseTIPLPluginBW {
 	}
 
 	@Deprecated
-	public void dilateMany(int iterations) {
+	public void dilateMany(final int iterations) {
 		for (int i = 0; i < iterations; i++)
 			dilate();
 	}
 
 	@Deprecated
-	public void dilateMany(int iterations, D3int neighborSizeI,
-			double neighborOccupancyI) {
+	public void dilateMany(final int iterations, final D3int neighborSizeI,
+			final double neighborOccupancyI) {
 		neighborSize = neighborSizeI;
 		neighborOccupancy = neighborOccupancyI;
 		dilateMany(iterations);
 	}
 
 	@Deprecated
-	public void dilateMany(int iterations, int neighborSizeI,
-			double neighborOccupancyI) {
+	public void dilateMany(final int iterations, final int neighborSizeI,
+			final double neighborOccupancyI) {
 		neighborSize = null;
 		neighborSize = new D3int(neighborSizeI);
 		neighborOccupancy = neighborOccupancyI;
@@ -163,7 +165,7 @@ public class Morpho extends BaseTIPLPluginBW {
 	}
 
 	/** Dilate code, not suitable for external use! */
-	protected void dilateSection(int bSlice, int tSlice) {
+	protected void dilateSection(final int bSlice, final int tSlice) {
 		int cVox = 0;
 		int sVox = 0;
 		int off = 0;
@@ -260,43 +262,43 @@ public class Morpho extends BaseTIPLPluginBW {
 	}
 
 	@Deprecated
-	public void erode(D3int neighborSizeI, double neighborOccupancyI) {
+	public void erode(final D3int neighborSizeI, final double neighborOccupancyI) {
 		neighborSize = neighborSizeI;
 		neighborOccupancy = neighborOccupancyI;
 		erode();
 	}
 
 	@Deprecated
-	public void erode(int neighborSizeI, double neighborOccupancyI) {
+	public void erode(final int neighborSizeI, final double neighborOccupancyI) {
 		neighborSize = new D3int(neighborSizeI);
 		neighborOccupancy = neighborOccupancyI;
 		erode();
 	}
 
 	@Deprecated
-	public void erodeMany(int iterations) {
+	public void erodeMany(final int iterations) {
 		for (int i = 0; i < iterations; i++)
 			erode();
 	}
 
 	@Deprecated
-	public void erodeMany(int iterations, D3int neighborSizeI,
-			double neighborOccupancyI) {
+	public void erodeMany(final int iterations, final D3int neighborSizeI,
+			final double neighborOccupancyI) {
 		neighborSize = neighborSizeI;
 		neighborOccupancy = neighborOccupancyI;
 		erodeMany(iterations);
 	}
 
 	@Deprecated
-	public void erodeMany(int iterations, int neighborSizeI,
-			double neighborOccupancyI) {
+	public void erodeMany(final int iterations, final int neighborSizeI,
+			final double neighborOccupancyI) {
 		neighborSize = new D3int(neighborSizeI);
 		neighborOccupancy = neighborOccupancyI;
 		erodeMany(iterations);
 	}
 
 	/** only erode specific slices */
-	protected void erodeSection(int bSlice, int tSlice) {
+	protected void erodeSection(final int bSlice, final int tSlice) {
 		int cVox = 0;
 		int sVox = 0;
 		int off = 0;
@@ -399,7 +401,7 @@ public class Morpho extends BaseTIPLPluginBW {
 	 * implemented on a case by case basis
 	 */
 	@Override
-	public boolean execute(String curAction) {
+	public boolean execute(final String curAction) {
 		if (curAction.equals("erode"))
 			erode();
 		else if (curAction.equals("dilate"))
@@ -420,7 +422,7 @@ public class Morpho extends BaseTIPLPluginBW {
 	 * implemented on a case by case basis
 	 */
 	@Override
-	public boolean execute(String curAction, Object objectToExecute) {
+	public boolean execute(final String curAction, final Object objectToExecute) {
 		final int iters = ((Integer) objectToExecute).intValue();
 		if (curAction.equals("erodeMany"))
 			erodeMany(iters);
@@ -454,7 +456,7 @@ public class Morpho extends BaseTIPLPluginBW {
 	 * neighborOccupancyI
 	 */
 	@Deprecated
-	public void open(D3int neighborSizeI, double neighborOccupancyI) {
+	public void open(final D3int neighborSizeI, final double neighborOccupancyI) {
 		openMany(1, neighborSizeI, neighborOccupancy);
 	}
 
@@ -464,13 +466,13 @@ public class Morpho extends BaseTIPLPluginBW {
 	 * neighborOccupancyI
 	 */
 	@Deprecated
-	public void open(int neighborSizeI, double neighborOccupancyI) {
+	public void open(final int neighborSizeI, final double neighborOccupancyI) {
 		openMany(1, neighborSizeI, neighborOccupancy);
 	}
 
 	/** Perform open operation repeatedly iterations times */
 	@Deprecated
-	public void openMany(int iterations) {
+	public void openMany(final int iterations) {
 		System.out.println("OpenOperation-" + iterations);
 		for (int i = 0; i < iterations; i++) {
 			erode();
@@ -484,8 +486,8 @@ public class Morpho extends BaseTIPLPluginBW {
 	 * occupancy neighborOccupancyI
 	 */
 	@Deprecated
-	public void openMany(int iterations, D3int neighborSizeI,
-			double neighborOccupancyI) {
+	public void openMany(final int iterations, final D3int neighborSizeI,
+			final double neighborOccupancyI) {
 		neighborSize = neighborSizeI;
 		neighborOccupancy = neighborOccupancyI;
 		openMany(iterations);
@@ -497,8 +499,8 @@ public class Morpho extends BaseTIPLPluginBW {
 	 * occupancy neighborOccupancyI
 	 */
 	@Deprecated
-	public void openMany(int iterations, int neighborSizeI,
-			double neighborOccupancyI) {
+	public void openMany(final int iterations, final int neighborSizeI,
+			final double neighborOccupancyI) {
 		neighborSize = null;
 		neighborSize = new D3int(neighborSizeI);
 		neighborOccupancy = neighborOccupancyI;
@@ -506,7 +508,7 @@ public class Morpho extends BaseTIPLPluginBW {
 	}
 
 	@Override
-	protected void processWork(Object currentWork) {
+	protected void processWork(final Object currentWork) {
 		final int[] range = (int[]) currentWork;
 		final int bSlice = range[0];
 		final int tSlice = range[1];
@@ -543,7 +545,7 @@ public class Morpho extends BaseTIPLPluginBW {
 		execute();
 	}
 
-	public ArgumentParser setParameters(ArgumentParser p) {
+	public ArgumentParser setParameters(final ArgumentParser p) {
 		return super.setParameter(p, getPluginName() + ":");
 	}
 

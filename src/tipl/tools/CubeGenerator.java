@@ -7,7 +7,8 @@ public class CubeGenerator {
 	private int voxel;
 	private final boolean[][] highSlice, lowSlice;
 
-	public CubeGenerator(boolean[][] hiSlice, boolean[][] loSlice, int it) {
+	public CubeGenerator(final boolean[][] hiSlice, final boolean[][] loSlice,
+			final int it) {
 		highSlice = hiSlice;
 		lowSlice = loSlice;
 		slice = it;

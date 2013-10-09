@@ -17,7 +17,8 @@ public class HildThickness extends Thickness {
 		volatile HildThickness parent;
 		long bcount = 0;
 
-		public dlRunner(HildThickness iparent, int isslice, int ifslice) {
+		public dlRunner(final HildThickness iparent, final int isslice,
+				final int ifslice) {
 			super("dlRunner:<" + isslice + ", " + ifslice + ">");
 			sslice = isslice;
 			fslice = ifslice;
@@ -52,8 +53,8 @@ public class HildThickness extends Thickness {
 	 * @param histoFile
 	 *            the name of the csv histogram file to write
 	 */
-	public static boolean DTO(String inAimFile, String outAimFile,
-			String histoFile) {
+	public static boolean DTO(final String inAimFile, final String outAimFile,
+			final String histoFile) {
 		final TImg thickmapAim = DTO(TImgTools.ReadTImg(inAimFile));
 		thickmapAim.WriteAim(outAimFile);
 		GrayAnalysis.StartHistogram(thickmapAim, histoFile + ".csv");
@@ -77,8 +78,9 @@ public class HildThickness extends Thickness {
 	 * @param profileFile
 	 *            the name of the file to write with the profile information
 	 */
-	public static boolean DTO(String inAimFile, String outDistFile,
-			String outAimFile, String histoFile, String profileFile) {
+	public static boolean DTO(final String inAimFile, final String outDistFile,
+			final String outAimFile, final String histoFile,
+			final String profileFile) {
 		final TImg maskAim = TImgTools.ReadTImg(inAimFile);
 		final TImg[] mapAims = DTOD(maskAim);
 		if (outDistFile.length() > 0)
@@ -106,7 +108,7 @@ public class HildThickness extends Thickness {
 	 * @param bwObject
 	 *            The binary input image
 	 */
-	public static TImg DTO(TImg bwObject) {
+	public static TImg DTO(final TImg bwObject) {
 		final TImg[] outImgs = DTOD(bwObject);
 		return outImgs[1];
 	}
@@ -119,7 +121,7 @@ public class HildThickness extends Thickness {
 	 * @param bwObject
 	 *            The binary input image
 	 */
-	public static TImg[] DTOD(TImg bwObject) {
+	public static TImg[] DTOD(final TImg bwObject) {
 		VoronoiTransform KV = new kVoronoiShrink(bwObject, false);
 		KV.run();
 		final TImg distAim = KV.ExportDistanceAim(bwObject);
@@ -129,7 +131,7 @@ public class HildThickness extends Thickness {
 		return new TImg[] { distAim, KT.ExportAim(distAim) };
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		System.out.println("Hildebrand-based Thickness Map v"
 				+ HildThickness.kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
@@ -182,7 +184,7 @@ public class HildThickness extends Thickness {
 
 	}
 
-	public HildThickness(TImg distmapAim) {
+	public HildThickness(final TImg distmapAim) {
 		LoadImages(new TImg[] { distmapAim });
 	}
 
@@ -190,7 +192,7 @@ public class HildThickness extends Thickness {
 	 * Object to divide the thread work into supportCores equal parts, default
 	 * is z-slices
 	 */
-	public int[] divideSlices(int cThread) {
+	public int[] divideSlices(final int cThread) {
 		final int minSlice = lowz + OUTERSHELL;
 		final int maxSlice = (uppz - OUTERSHELL);
 
@@ -231,7 +233,7 @@ public class HildThickness extends Thickness {
 	}
 
 	/** export the bubble seeds if anyone actually wants them */
-	public TImg ExportRidgeAim(TImgRO.CanExport templateAim) {
+	public TImg ExportRidgeAim(final TImgRO.CanExport templateAim) {
 		if (isDiffMaskReady) {
 			final TImg outAimData = templateAim.inheritedAim(diffmask, dim,
 					offset);
@@ -252,7 +254,7 @@ public class HildThickness extends Thickness {
 		return "Hildebrand Thickness";
 	}
 
-	protected void Init(D3int idim, D3int ioffset) {
+	protected void Init(final D3int idim, final D3int ioffset) {
 		outAim = new int[aimLength];
 		System.arraycopy(inAim, 0, outAim, 0, inAim.length);
 		diffmask = new boolean[aimLength];
@@ -295,7 +297,7 @@ public class HildThickness extends Thickness {
 	}
 
 	@Override
-	protected void InitLabels(D3int idim, D3int ioffset) {
+	protected void InitLabels(final D3int idim, final D3int ioffset) {
 
 	}
 
@@ -304,7 +306,7 @@ public class HildThickness extends Thickness {
 	 * 
 	 */
 	@Override
-	public void LoadImages(TImgRO[] inImages) {
+	public void LoadImages(final TImgRO[] inImages) {
 		// TODO Auto-generated method stub
 		if (inImages.length < 1)
 			throw new IllegalArgumentException(
@@ -322,7 +324,7 @@ public class HildThickness extends Thickness {
 		Init(inImg.getDim(), inImg.getOffset());
 	}
 
-	private int locateSeeds(int startSlice, int finalSlice) {
+	private int locateSeeds(final int startSlice, final int finalSlice) {
 		final D3int iNeighborSize = new D3int(2);
 		int off = 0;
 		double avgGrad = 0;
@@ -343,7 +345,6 @@ public class HildThickness extends Thickness {
 					if (((cVDist) > MINWALLDIST)) {
 						unfilledVox++;
 						double gradX = 0.0, gradY = 0.0, gradZ = 0.0;
-						int lapCount = 0;
 						int gradCount = 0;
 						for (int z2 = max(z - iNeighborSize.z, lowz); z2 <= min(
 								z + iNeighborSize.z, uppz - 1); z2++) {
@@ -367,7 +368,7 @@ public class HildThickness extends Thickness {
 										if (((x2 != x) ? 1 : 0)
 												+ ((y2 != y) ? 1 : 0)
 												+ ((z2 != z) ? 1 : 0) <= 1) { // slightly
-																				lapCount++;
+
 										}
 
 										// First derivative is 0 and second
@@ -415,7 +416,7 @@ public class HildThickness extends Thickness {
 	}
 
 	@Override
-	protected void processWork(Object currentWork) {
+	protected void processWork(final Object currentWork) {
 		final int[] range = (int[]) currentWork;
 		final int bSlice = range[0];
 		final int tSlice = range[1];
@@ -428,7 +429,7 @@ public class HildThickness extends Thickness {
 		execute();
 	}
 
-	protected void runSection(int startSlice, int endSlice) {
+	protected void runSection(final int startSlice, final int endSlice) {
 		System.out.println("RidgeGrow Started:, <" + startSlice + ", "
 				+ endSlice + ">");
 		int cBubbleCount = 0;
@@ -461,7 +462,8 @@ public class HildThickness extends Thickness {
 	}
 
 	@Override
-	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
+	public ArgumentParser setParameter(final ArgumentParser p,
+			final String prefix) {
 		final ArgumentParser args = super.setParameter(p, prefix);
 		FLATCRIT = args
 				.getOptionDouble(prefix + "flatcrit", FLATCRIT,

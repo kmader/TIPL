@@ -12,7 +12,7 @@ import tipl.util.TImgTools;
  */
 public class DistGrowT extends DistGrow {
 	/** Command line accessible program interface */
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final String kVer = "120215_001";
 		System.out.println(" DistGrow Script v" + kVer);
 		System.out.println(" Gradient Guided Watershed and  v" + kVer);
@@ -74,7 +74,7 @@ public class DistGrowT extends DistGrow {
 	 * @param ilabels
 	 *            Starting labels
 	 */
-	public DistGrowT(TImgRO imap, TImgRO ilabels) {
+	public DistGrowT(final TImgRO imap, final TImgRO ilabels) {
 		super(imap, ilabels);
 	}
 
@@ -88,13 +88,14 @@ public class DistGrowT extends DistGrow {
 	 * @param imask
 	 *            Mask to be filld and identified
 	 */
-	public DistGrowT(TImgRO imap, TImgRO ilabels, TImgRO imask) {
+	public DistGrowT(final TImgRO imap, final TImgRO ilabels, final TImgRO imask) {
 		super(imap, ilabels, imask);
 	}
 
 	/** the nonrecurvsive version of this function */
 	@Override
-	protected D3float checkNeighborhood(int x, int y, int z, int off) {
+	protected D3float checkNeighborhood(final int x, final int y, final int z,
+			final int off) {
 
 		chkNbrCalls++;
 		final double sDist = distScalar * distmap[off];
@@ -139,7 +140,8 @@ public class DistGrowT extends DistGrow {
 	}
 
 	@Override
-	protected boolean labNeighbors(int x, int y, int z, int off) {
+	protected boolean labNeighbors(final int x, final int y, final int z,
+			final int off) {
 		return (distmap[off] <= iterations);
 	}
 

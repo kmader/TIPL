@@ -6,6 +6,7 @@ package tipl.tools;
 import java.io.FileWriter;
 import java.util.Date;
 import java.util.Hashtable;
+
 import tipl.formats.FImage;
 import tipl.formats.PureFImage;
 import tipl.formats.TImg;
@@ -34,8 +35,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param aName
 	 *            name of analysis in the output file (header column prefix)
 	 */
-	public static void AddDensityColumn(TImg inDMap, String inName,
-			String outName, String aName) {
+	public static void AddDensityColumn(final TImg inDMap, final String inName,
+			final String outName, final String aName) {
 		final GrayAnalysis newGray = new GrayAnalysis(inDMap, inName, outName,
 				aName);
 		newGray.run();
@@ -56,8 +57,8 @@ public class GrayAnalysis implements Runnable {
 	 *            name of analysis in the output file (header column prefix,
 	 *            _distance will be appended)
 	 */
-	public static void AddDistanceColumn(TImg inMap, TImg inGfilt,
-			String inName, String outName, String aName) {
+	public static void AddDistanceColumn(final TImg inMap, final TImg inGfilt,
+			final String inName, final String outName, final String aName) {
 		final GrayAnalysis newGray = new GrayAnalysis(inMap, inGfilt, inName,
 				outName, aName);
 		newGray.useAname = true;
@@ -99,8 +100,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param aName
 	 *            name of analysis in the output file (header column prefix)
 	 */
-	public static void AddFixedColumn(TImg inMap, TImg inGfilt, String inName,
-			String outName, String aName) {
+	public static void AddFixedColumn(final TImg inMap, final TImg inGfilt,
+			final String inName, final String outName, final String aName) {
 		final GrayAnalysis newGray = new GrayAnalysis(inMap, inGfilt, inName,
 				outName, aName);
 		newGray.run();
@@ -121,8 +122,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param aName
 	 *            name of analysis in the output file (header column prefix)
 	 */
-	public static void AddRegionColumn(TImg inMap, TImg inGfilt, String inName,
-			String outName, String aName) {
+	public static void AddRegionColumn(final TImg inMap, final TImg inGfilt,
+			final String inName, final String outName, final String aName) {
 
 		final GrayAnalysis newGray = new GrayAnalysis(inMap, inGfilt, inName,
 				outName, aName);
@@ -137,7 +138,7 @@ public class GrayAnalysis implements Runnable {
 	}
 
 	/** The standard version of grayanalysis which is run from the command line */
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 
 		System.out.println(" Gray Value and Lacuna Analysis v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
@@ -214,8 +215,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartFProfile(TImg inGfilt, FImage profImage,
-			String outFile, float threshVal) {
+	public static void StartFProfile(final TImg inGfilt,
+			final FImage profImage, final String outFile, final float threshVal) {
 		StartFProfile(inGfilt, profImage, outFile, threshVal, PROFILEPOINTS); // err
 		// on
 		// the
@@ -233,8 +234,9 @@ public class GrayAnalysis implements Runnable {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartFProfile(TImg inGfilt, FImage profImage,
-			String outFile, float threshVal, int fbins) {
+	public static void StartFProfile(final TImg inGfilt,
+			final FImage profImage, final String outFile,
+			final float threshVal, final int fbins) {
 		final GrayAnalysis newGray = new GrayAnalysis();
 		newGray.mapA = profImage;
 		newGray.csvName = outFile;
@@ -270,8 +272,9 @@ public class GrayAnalysis implements Runnable {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartFProfile(TImg inGfilt, PureFImage profImage,
-			String outFile, float threshVal) {
+	public static void StartFProfile(final TImg inGfilt,
+			final PureFImage profImage, final String outFile,
+			final float threshVal) {
 		StartFProfile(inGfilt, profImage, outFile, threshVal, PROFILEPOINTS); // err
 		// on
 		// the
@@ -289,8 +292,9 @@ public class GrayAnalysis implements Runnable {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartFProfile(TImg inGfilt, PureFImage profImage,
-			String outFile, float threshVal, int fbins) {
+	public static void StartFProfile(final TImg inGfilt,
+			final PureFImage profImage, final String outFile,
+			final float threshVal, final int fbins) {
 		final GrayAnalysis newGray = new GrayAnalysis();
 		newGray.mapA = profImage;
 		newGray.csvName = outFile;
@@ -324,7 +328,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static GrayVoxels[] StartHistogram(TImg inGfilt, String outFile) {
+	public static GrayVoxels[] StartHistogram(final TImg inGfilt,
+			final String outFile) {
 		return StartHistogram(inGfilt, outFile, false);
 	}
 
@@ -336,8 +341,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static GrayVoxels[] StartHistogram(TImg inGfilt, String outFile,
-			boolean removeBlanks) {
+	public static GrayVoxels[] StartHistogram(final TImg inGfilt,
+			final String outFile, final boolean removeBlanks) {
 		final GrayAnalysis newGray = new GrayAnalysis();
 		newGray.mapA = inGfilt;
 		newGray.csvName = outFile;
@@ -364,8 +369,9 @@ public class GrayAnalysis implements Runnable {
 	 * @param steps
 	 *            the number of bins to use
 	 */
-	public static GrayVoxels[] StartHistogram(TImg inGfilt, String outFile,
-			float minVal, float maxVal, int steps) {
+	public static GrayVoxels[] StartHistogram(final TImg inGfilt,
+			final String outFile, final float minVal, final float maxVal,
+			final int steps) {
 		return StartHistogram(inGfilt, outFile, minVal, maxVal, steps, false);
 	}
 
@@ -383,8 +389,9 @@ public class GrayAnalysis implements Runnable {
 	 * @param steps
 	 *            the number of bins to use
 	 */
-	public static GrayVoxels[] StartHistogram(TImg inGfilt, String outFile,
-			float minVal, float maxVal, int steps, boolean removeBlanks) {
+	public static GrayVoxels[] StartHistogram(final TImg inGfilt,
+			final String outFile, final float minVal, final float maxVal,
+			final int steps, final boolean removeBlanks) {
 		final GrayAnalysis newGray = new GrayAnalysis();
 		newGray.mapA = inGfilt;
 		newGray.csvName = outFile;
@@ -401,13 +408,14 @@ public class GrayAnalysis implements Runnable {
 		return newGray.gvArray;
 	}
 
-	public static void StartLacunaAnalysis(TImg inMap, String outName,
-			String aName) {
+	public static void StartLacunaAnalysis(final TImg inMap,
+			final String outName, final String aName) {
 		StartLacunaAnalysis(inMap, outName, aName, false);
 	}
 
-	public static void StartLacunaAnalysis(TImg inMap, String outName,
-			String aName, boolean includeShapeT) {
+	public static void StartLacunaAnalysis(final TImg inMap,
+			final String outName, final String aName,
+			final boolean includeShapeT) {
 		final GrayAnalysis newGray = new GrayAnalysis(inMap, (TImg) null,
 				outName, aName);
 		newGray.includeShapeTensor = includeShapeT;
@@ -427,8 +435,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param aName
 	 *            name of the analysis in the output file (header column prefix)
 	 */
-	public static void StartLacunaAnalysis(TImg inMap, TImg inGfilt,
-			String outName, String aName) {
+	public static void StartLacunaAnalysis(final TImg inMap,
+			final TImg inGfilt, final String outName, final String aName) {
 		StartLacunaAnalysis(inMap, inGfilt, outName, aName, false);
 	}
 
@@ -448,8 +456,9 @@ public class GrayAnalysis implements Runnable {
 	 *            include the entire shape tensor in the output (for paraview
 	 *            visualization and analysis)
 	 */
-	public static void StartLacunaAnalysis(TImg inMap, TImg inGfilt,
-			String outName, String aName, boolean includeShapeT) {
+	public static void StartLacunaAnalysis(final TImg inMap,
+			final TImg inGfilt, final String outName, final String aName,
+			final boolean includeShapeT) {
 		final GrayAnalysis newGray = new GrayAnalysis(inMap, inGfilt, outName,
 				aName);
 		newGray.includeShapeTensor = includeShapeT;
@@ -465,8 +474,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartRCylProfile(TImg inGfilt, String outFile,
-			float threshVal) {
+	public static void StartRCylProfile(final TImg inGfilt,
+			final String outFile, final float threshVal) {
 		final PureFImage cFImg = new PureFImage.RImageCyl(inGfilt, 3);
 		final double[] rng = cFImg.getRange();
 		StartFProfile(inGfilt, cFImg, outFile, threshVal,
@@ -484,8 +493,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartRCylProfile(TImg inGfilt, TImg inMask,
-			String outFile, float threshVal) {
+	public static void StartRCylProfile(final TImg inGfilt, final TImg inMask,
+			final String outFile, final float threshVal) {
 		final FImage maskedF = new FImage.MaskablePFImage(inMask,
 				new PureFImage.RImageCyl(inMask, 3));
 		maskedF.useMask = true;
@@ -503,8 +512,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartRProfile(TImg inGfilt, String outFile,
-			float threshVal) {
+	public static void StartRProfile(final TImg inGfilt, final String outFile,
+			final float threshVal) {
 		final PureFImage cFImg = new PureFImage.RImage(inGfilt, 3);
 		final double[] rng = cFImg.getRange();
 		StartFProfile(inGfilt, cFImg, outFile, threshVal,
@@ -522,8 +531,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartRProfile(TImg inGfilt, TImg inMask, String outFile,
-			float threshVal) {
+	public static void StartRProfile(final TImg inGfilt, final TImg inMask,
+			final String outFile, final float threshVal) {
 		final FImage maskedF = new FImage.MaskablePFImage(inMask,
 				new PureFImage.RImage(inMask, 3));
 		maskedF.useMask = true;
@@ -541,8 +550,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartThetaCylProfile(TImg inGfilt, String outFile,
-			float threshVal) {
+	public static void StartThetaCylProfile(final TImg inGfilt,
+			final String outFile, final float threshVal) {
 		final PureFImage cFImg = new PureFImage.ThetaImageCyl(inGfilt, 3);
 		StartFProfile(inGfilt, cFImg, outFile, threshVal, 1000);
 	}
@@ -558,8 +567,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartThetaCylProfile(TImg inGfilt, TImg inMask,
-			String outFile, float threshVal) {
+	public static void StartThetaCylProfile(final TImg inGfilt,
+			final TImg inMask, final String outFile, final float threshVal) {
 		final FImage maskedF = new FImage.MaskablePFImage(inMask,
 				new PureFImage.ThetaImageCyl(inMask, 3));
 		maskedF.useMask = true;
@@ -575,8 +584,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartZProfile(TImg inGfilt, String outFile,
-			float threshVal) {
+	public static void StartZProfile(final TImg inGfilt, final String outFile,
+			final float threshVal) {
 		StartFProfile(inGfilt, new PureFImage.ZImage(inGfilt, 1), outFile,
 				threshVal);
 	}
@@ -592,8 +601,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static void StartZProfile(TImg inGfilt, TImg inMask, String outFile,
-			float threshVal) {
+	public static void StartZProfile(final TImg inGfilt, final TImg inMask,
+			final String outFile, final float threshVal) {
 		final PureFImage maskedF = new PureFImage.ZImage(inMask, 1);
 		// maskedF.useMask=true;
 
@@ -710,7 +719,7 @@ public class GrayAnalysis implements Runnable {
 	public GrayAnalysis() {
 	}
 
-	public GrayAnalysis(ArgumentParser p) {
+	public GrayAnalysis(final ArgumentParser p) {
 		debugMode = p.hasOption("debug");
 		useComma = p.hasOption("usecsv");
 		useThresh = p.hasOption("thresh");
@@ -828,7 +837,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param aName
 	 *            name of the analysis in the output file (header column prefix)
 	 */
-	public GrayAnalysis(TImg inMap, String outName, String aName) {
+	public GrayAnalysis(final TImg inMap, final String outName,
+			final String aName) {
 		mapA = inMap;
 		useGFILT = false;
 		gfiltA = null;
@@ -850,7 +860,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param aName
 	 *            name of analysis in the output file (header column prefix)
 	 */
-	public GrayAnalysis(TImg inDMap, String inName, String outName, String aName) {
+	public GrayAnalysis(final TImg inDMap, final String inName,
+			final String outName, final String aName) {
 		useAname = true;
 		analysisName = aName;
 		mapA = inDMap;
@@ -885,7 +896,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param aName
 	 *            name of the analysis in the output file (header column prefix)
 	 */
-	public GrayAnalysis(TImg inMap, TImg inGfilt, String outName, String aName) {
+	public GrayAnalysis(final TImg inMap, final TImg inGfilt,
+			final String outName, final String aName) {
 		mapA = inMap;
 		useGFILT = true;
 		gfiltA = inGfilt;
@@ -913,8 +925,8 @@ public class GrayAnalysis implements Runnable {
 	 * @param aName
 	 *            name of analysis in the output file (header column prefix)
 	 */
-	public GrayAnalysis(TImg inMap, TImg inGfilt, String inName,
-			String outName, String aName) {
+	public GrayAnalysis(final TImg inMap, final TImg inGfilt,
+			final String inName, final String outName, final String aName) {
 		useAname = true;
 		analysisName = aName;
 		mapA = inMap;
@@ -947,8 +959,9 @@ public class GrayAnalysis implements Runnable {
 	 *            Force distance map (can be empty just ensures that the
 	 *            constructor uses the right property
 	 */
-	public GrayAnalysis(TImg inMap, TImg inGfilt, String inName,
-			String outName, String aName, boolean makemedist) {
+	public GrayAnalysis(final TImg inMap, final TImg inGfilt,
+			final String inName, final String outName, final String aName,
+			final boolean makemedist) {
 		useAname = true;
 		analysisName = aName + "_Distance";
 		mapA = inMap;
@@ -973,8 +986,8 @@ public class GrayAnalysis implements Runnable {
 
 	}
 
-	private void AnalyzeSlice(int sliceNumber, boolean noThresh,
-			int operationMode) {
+	private void AnalyzeSlice(final int sliceNumber, final boolean noThresh,
+			final int operationMode) {
 		// Operation Mode -> 0- find COM/COV, 1- find covariance matrix, 2- find
 		// extents
 		if (debugMode)
@@ -1110,7 +1123,7 @@ public class GrayAnalysis implements Runnable {
 			System.out.println("Done Reading Points " + mapSlice.length);
 	}
 
-	private int f2i(double val) {
+	private int f2i(final double val) {
 		if (val < fmin)
 			return 0;
 		if (val > fmax)
@@ -1118,7 +1131,7 @@ public class GrayAnalysis implements Runnable {
 		return (int) (((val - fmin) / (fmax - fmin) * fbins));
 	}
 
-	private float i2f(int val) {
+	private float i2f(final int val) {
 		if (val < 0)
 			return (float) fmin;
 		if (val > fbins)

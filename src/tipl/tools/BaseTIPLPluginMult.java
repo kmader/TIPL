@@ -37,7 +37,8 @@ abstract public class BaseTIPLPluginMult extends BaseTIPLPluginIO {
 	 * array first) linear array and the dimensions
 	 */
 	@Deprecated
-	public void ImportAim(boolean[] inputmap, D3int idim, D3int ioffset) {
+	public void ImportAim(final boolean[] inputmap, final D3int idim,
+			final D3int ioffset) {
 		aimLength = inputmap.length;
 
 		imageType = 10;
@@ -48,7 +49,8 @@ abstract public class BaseTIPLPluginMult extends BaseTIPLPluginIO {
 
 	/** initializer function taking a float linear array and the dimensions */
 	@Deprecated
-	public void ImportAim(float[] inputmap, D3int idim, D3int ioffset) {
+	public void ImportAim(final float[] inputmap, final D3int idim,
+			final D3int ioffset) {
 		aimLength = inputmap.length;
 
 		imageType = 3;
@@ -59,7 +61,8 @@ abstract public class BaseTIPLPluginMult extends BaseTIPLPluginIO {
 
 	/** initializer function taking int linear array and the dimensions */
 	@Deprecated
-	public void ImportAim(int[] inputmap, D3int idim, D3int ioffset) {
+	public void ImportAim(final int[] inputmap, final D3int idim,
+			final D3int ioffset) {
 		aimLength = inputmap.length;
 
 		imageType = 2;
@@ -70,7 +73,8 @@ abstract public class BaseTIPLPluginMult extends BaseTIPLPluginIO {
 
 	/** initializer function taking short linear array and the dimensions */
 	@Deprecated
-	public void ImportAim(short[] inputmap, D3int idim, D3int ioffset) {
+	public void ImportAim(final short[] inputmap, final D3int idim,
+			final D3int ioffset) {
 		aimLength = inputmap.length;
 		imageType = 1;
 		inAimShort = inputmap;
@@ -79,13 +83,13 @@ abstract public class BaseTIPLPluginMult extends BaseTIPLPluginIO {
 
 	/** initializer function taking an aim-file */
 	@Deprecated
-	public void ImportAim(TImgRO inAim) {
+	public void ImportAim(final TImgRO inAim) {
 		ImportAim(inAim, inAim.getImageType());
 	}
 
 	/** initializer function taking an aim-file, specify type */
 	@Deprecated
-	public void ImportAim(TImgRO inImg, int inType) {
+	public void ImportAim(final TImgRO inImg, final int inType) {
 		final TImgRO.FullReadable inAim = TImgTools.makeTImgFullReadable(inImg);
 		int cType = inType;
 		if (inType < 0)
@@ -125,7 +129,7 @@ abstract public class BaseTIPLPluginMult extends BaseTIPLPluginIO {
 
 	abstract protected void InitInt();
 
-	protected void InitLabels(D3int idim, D3int ioffset) {
+	protected void InitLabels(final D3int idim, final D3int ioffset) {
 		InitDims(idim, ioffset);
 		isInitialized = true;
 		switch (imageType) {
@@ -157,7 +161,7 @@ abstract public class BaseTIPLPluginMult extends BaseTIPLPluginIO {
 	abstract protected void InitShort();
 
 	@Override
-	public void LoadImages(TImgRO[] inImages) {
+	public void LoadImages(final TImgRO[] inImages) {
 		// TODO Auto-generated method stub
 		if (inImages.length < 1)
 			throw new IllegalArgumentException(
