@@ -196,6 +196,48 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 			return (ix == x) & (iy == y) & (iz == z);
 		}
 	}
+	
+	
+	/**
+	 * single ellipsoid at (5,5,5) with a radius 5 or whatever is given in the constructor
+	 * 
+	 * @author mader
+	 * 
+	 */
+	public static class EllipsoidFunction extends TestFImages {
+		protected final int x, y, z;
+		protected final float rx,ry,rz;
+		public EllipsoidFunction() {
+			x = 5;
+			y = 5;
+			z = 5;
+			rx=5.0f;
+			ry=5.0f;
+			rz=5.0f;
+		}
+
+		public EllipsoidFunction(int ix, int iy, int iz,float ir) {
+			x = ix;
+			y = iy;
+			z = iz;
+			rx=ir;
+			ry=ir;
+			rz=ir;
+		}
+		public EllipsoidFunction(int ix, int iy, int iz,float irx,float iry, float irz) {
+			x = ix;
+			y = iy;
+			z = iz;
+			rx=irx;
+			ry=iry;
+			rz=irz;
+		}
+
+		@Override
+		public boolean tget(long ix, long iy, long iz) {
+			return (Math.pow(ix-x,2)/Math.pow(rx,2)+Math.pow(iy-y,2)/Math.pow(ry,2)+Math.pow(iz-z,2)/Math.pow(rz,2))<=1;
+		}
+	}
 
 	/**
 	 * count voxels in an entire image

@@ -888,10 +888,11 @@ public class UFOAM {
 				bubblesAim = TImgTools.ReadTImg(bubblesAimFile);
 			if (maskAim == null)
 				maskAim = TImgTools.ReadTImg(maskAimFile);
-			final XDF cXDF = new XDF(bubblesAim, 10, maskAim,
-					new D3int(rdfSize));
+			final XDF cXDF = new XDF();
+			cXDF.setParameter("-rdfsize="+rdfSize+", -iterations="+rdfIter);
+			cXDF.LoadImages(new TImgRO[] {bubblesAim,maskAim});
 			cXDF.milMode = rdfMILmode; // for volanic rock this makes sense
-			cXDF.run(rdfIter);
+			cXDF.execute();
 			rdfAim = cXDF.ExportAim(bubblesAim);
 			rdfAim.WriteAim(rdfAimFile);
 			break;

@@ -574,7 +574,7 @@ public class XDF extends BaseTIPLPluginMult {
 		}
 
 		protected void runFloatSub(int x, int y, int z) {
-
+			final boolean useMask=parent.hasMask;
 			final int off = (z * dim.y + y) * dim.x + x;
 			int off2;
 			for (int z2 = max(z - neighborSize.z, lowz); z2 <= min(z
@@ -586,7 +586,7 @@ public class XDF extends BaseTIPLPluginMult {
 					for (int x2 = max(x - neighborSize.x, lowx); x2 <= min(x
 							+ neighborSize.x, uppx - 1); x2 += parent.xStep, off2++) {
 						boolean validInside = true;
-						if (parent.useMask)
+						if (useMask)
 							validInside = ((parent.xdfMask[off2]));
 						if (validInside) {
 							if (curKernel
@@ -606,7 +606,7 @@ public class XDF extends BaseTIPLPluginMult {
 
 		/** for labeled/segmented images **/
 		protected void runLabeledSub(int x, int y, int z) {
-
+			final boolean useMask=parent.hasMask;
 			final int off = (z * parent.dim.y + y) * parent.dim.x + x;
 			int off2;
 			// Store just the current iteration (allows pruning of disconnected
@@ -626,7 +626,7 @@ public class XDF extends BaseTIPLPluginMult {
 					for (int x2 = max(x - neighborSize.x, lowx); x2 <= min(x
 							+ neighborSize.x, uppx - 1); x2 += parent.xStep, off2++) {
 						boolean validInside = true;
-						if (parent.useMask)
+						if (useMask)
 							validInside = ((parent.xdfMask[off2]));
 						if (validInside & parent.useSurface) { // make sure it
 																// is not inside
@@ -697,10 +697,13 @@ public class XDF extends BaseTIPLPluginMult {
 			return curName;
 		}
 	}
-
+	/** type for input image (-1 means automatic) **/
+	protected int inputType=-1; 
+	/** size of the image to use **/
+	protected D3int rdfSize=new D3int(20,20,20);
 	radDistFun rdf;
-	/** Not quite implemented yet */
-	final boolean useMask;
+	/** should a mask be used in the image */
+	protected boolean hasMask;
 	public boolean useSurface;
 	/** xdfMask is the background mask */
 	boolean[] xdfMask = null;
@@ -769,7 +772,7 @@ public class XDF extends BaseTIPLPluginMult {
 	 *      <li>outputAim.WriteAim(outputFile,1,(float) cXDF.probScalar());
 	 * </pre>
 	 */
-	public static final String kVer = "120601_012";
+	public static final String kVer = "131009_013";
 
 	/**
 	 * function for creating an two point correlation using a labeled image and
@@ -777,43 +780,62 @@ public class XDF extends BaseTIPLPluginMult {
 	 **/
 	public static XDF CreateLabeledXDF(VirtualAim labImg, VirtualAim maskImg,
 			D3int rdfS, int inPhase, int outPhase) {
-		final XDF cXDF = new XDF(labImg, 2, maskImg, rdfS);
-		cXDF.inPhase = inPhase;
-		cXDF.outPhase = outPhase;
+		final XDF cXDF = new XDF();
+		cXDF.setParameter("-rdfsize="+rdfS+", -inphase="+inPhase+", -outphase="+outPhase+" -asint");
+		cXDF.LoadImages(new TImgRO[] {labImg,maskImg});
 		return cXDF;
 	}
-
+	@Override
+	public ArgumentParser setParameter(ArgumentParser p,String cPrefix) {
+		int rdfs = p.getOptionInt(cPrefix + "rdfs", -1, "RDF Size (-1 leaves the value as default)");
+		if (rdfs>0) rdfSize=new D3int(rdfs); // if it is greater than 0 recreate it
+		rdfSize = p.getOptionD3int(cPrefix + "rdfsize", new D3int(rdfs),
+				"RDF Size");
+		mcIter = p.getOptionInt(cPrefix + "iter", mcIter, "iterations");
+		tensorCutOff = (float) p.getOptionDouble(cPrefix + "tensorthresh",
+				tensorCutOff, "Threshold for RDF tensor");
+		final boolean asFloat = p.getOptionBoolean(cPrefix + "asfloat",
+				"Load data as float");
+		final boolean asInt = p.getOptionBoolean(cPrefix + "asint",
+				"Load data as Int (specify inPhase and outPhase)");
+		final boolean asNative = p.getOptionBoolean(cPrefix + "asnative",
+				"Load data as native type");
+		if (asFloat) {
+			inputType = 3;
+		} else if (asInt) {
+			inputType = 2;
+		} else if (asNative) {
+			inputType=-1;
+		} else {
+			inputType = 10;
+		}
+		useSurface = p.getOptionBoolean(cPrefix + "usesurface",
+				"Calculate from object surface");
+		inPhase = p.getOptionInt(cPrefix + "inphase", inPhase,
+				"Input phase to use as starting points for the analysis");
+		outPhase = p.getOptionInt(cPrefix + "outphase", outPhase,
+				"Out phase to use as landing points for the analysis");
+		fullScan = p.getOptionBoolean(cPrefix + "fullscan",
+				"Scan the entire image");
+		skipFactor = p.getOptionD3int(cPrefix + "skipfactor", skipFactor,
+				"Skip factor");
+		InitRDF(rdfSize);
+		return p;
+	}
 	public static void main(String[] args) {
 
 		System.out.println("XDF v" + kVer);
 		System.out.println(" Counts XDF for given images v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final ArgumentParser p = new ArgumentParser(args);
+		XDF cXDF = new XDF();
+		ArgumentParser p = new ArgumentParser(args);
+		
 		TIPLGlobal.availableCores = p.getOptionInt("maxcores",
 				TIPLGlobal.availableCores,
 				"Number of cores/threads to use for processing");
 		final String inputFile = p.getOptionString("input", "", "Input image");
 		final String maskFile = p.getOptionString("mask", "", "Mask image");
-		final int rdfs = p.getOptionInt("rdfs", 20, "RDF Size");
-		final D3int rdfSize = p.getOptionD3int("rdfsize", new D3int(rdfs),
-				"RDF Size (3D0 ");
-		final int rdfIter = p.getOptionInt("iter", 20000, "Iterations");
-		final float tensorThreshold = (float) p.getOptionDouble("tensorthresh",
-				0.5, "Threshold for RDF tensor");
-		final boolean asFloat = p.getOptionBoolean("asfloat",
-				"Load data as float");
-		final boolean asInt = p.getOptionBoolean("asint",
-				"Load data as Int (specify inPhase and outPhase)");
-		final boolean useSurface = p.getOptionBoolean("usesurface",
-				"Calculate from object surface");
-		final int inPhase = p.getOptionInt("inphase", -1,
-				"Input phase to use as starting points for the analysis");
-		final int outPhase = p.getOptionInt("outphase", -1,
-				"Out phase to use as landing points for the analysis");
-		final boolean fullScan = p.getOptionBoolean("fullscan",
-				"Scan the entire image");
-		final D3int skipFactor = p.getOptionD3int("skipfactor", new D3int(4),
-				"Skip factor");
+		p=cXDF.setParameter(p);
 		final String outputFile = p.getOptionString("output", "rdf.tif",
 				"Output rdf image");
 		if (p.hasOption("?")) {
@@ -829,31 +851,17 @@ public class XDF extends BaseTIPLPluginMult {
 		if (inputFile.length() > 0) { // Read in labels
 			System.out.println("Loading " + inputFile + " ...");
 			final TImg inputAim = TImgTools.ReadTImg(inputFile);
-			int inputType; // default is float
-			if (asFloat) {
-				inputType = 3;
-			} else if (asInt) {
-				// inputAim.getIntAim();
-				inputType = 2;
-			} else {
-				// inputAim.getBoolAim();
-				inputType = 10;
-			}
-			XDF cXDF;
+			
+			TImgRO[] inImgs;
 			if (maskFile.length() > 0) {
-				cXDF = new XDF(inputAim, inputType,
-						TImgTools.ReadTImg(maskFile), rdfSize);
+				inImgs=new TImgRO[] {inputAim,TImgTools.ReadTImg(maskFile)};
 			} else {
-				cXDF = new XDF(inputAim, inputType, rdfSize);
+				inImgs=new TImgRO[] {inputAim};
 			}
-			cXDF.tensorCutOff = tensorThreshold;
-			cXDF.fullScan = fullScan;
-			cXDF.useSurface = useSurface;
-			cXDF.skipFactor = skipFactor;
-			cXDF.inPhase = inPhase;
-			cXDF.outPhase = outPhase;
+			cXDF.LoadImages(inImgs);
+			
 			System.out.println("Calculating XDF " + inputFile + " ...");
-			cXDF.run(rdfIter);
+			cXDF.execute();
 			final TImg outputAim = XDF.WriteHistograms(cXDF, inputAim,
 					outputFile);
 
@@ -878,47 +886,30 @@ public class XDF extends BaseTIPLPluginMult {
 		return outAim;
 	}
 
-	public XDF(boolean[] inputmap, D3int idim, D3int ioffset, D3int rdfS) {
-		InitRDF(rdfS);
-		useMask = false;
-		ImportAim(inputmap, idim, ioffset);
+	
+	public XDF() {
+		hasMask=false;
 	}
-
-	public XDF(float[] inputmap, D3int idim, D3int ioffset, D3int rdfS) {
-		InitRDF(rdfS);
-		useMask = false;
-		ImportAim(inputmap, idim, ioffset);
-	}
-
-	public XDF(int[] inputmap, D3int idim, D3int ioffset, D3int rdfS) {
-		InitRDF(rdfS);
-		useMask = false;
-		ImportAim(inputmap, idim, ioffset);
-	}
-
-	public XDF(short[] inputmap, D3int idim, D3int ioffset, D3int rdfS) {
-		InitRDF(rdfS);
-		useMask = false;
-		ImportAim(inputmap, idim, ioffset);
-	}
-
-	public XDF(TImg inputAim, int datType, D3int rdfS) {
-		InitRDF(rdfS);
-		useMask = false;
-		ImportAim(inputAim, datType);
-	}
-
-	public XDF(TImg bubblesAim, int datType, TImg maskAim, D3int rdfS) {
-		InitRDF(rdfS);
-		useMask = true;
-		xdfMask = TImgTools.makeTImgFullReadable(maskAim).getBoolAim();
-		ImportAim(bubblesAim, datType);
+	//protected TImgRO inAim;
+	@Override
+	public void LoadImages(TImgRO[] inImages) {
+		if (inImages.length < 1)
+			throw new IllegalArgumentException("Too few input images given!");
+		TImgRO inAim = inImages[0];
+		if (inputType<0) inputType = inAim.getImageType();
+		if (inImages.length>1) {
+			System.out.println("Evidently a mask is also present, so it will be used:"+inImages[1]);
+			hasMask=true;
+			xdfMask = TImgTools.makeTImgFullReadable(inImages[0]).getBoolAim();
+		}
+		ImportAim(inAim,inputType);
 
 	}
-
+	
 	protected synchronized void addToResult(radDistFun crdf) {
 		rdf.add(crdf);
 	}
+	
 
 	protected boolean checkNeighborSurface(int x, int y, int z, int off) {
 		final int cImgTyp = imageType;
@@ -975,6 +966,7 @@ public class XDF extends BaseTIPLPluginMult {
 		final xdfScanner[] bfArray = new xdfScanner[neededCores()];
 
 		// Call the other threads
+		final boolean useMask=hasMask;
 		int curCore = 0;
 		if (useMask) {
 			if (aimLength != xdfMask.length) {
@@ -1249,6 +1241,7 @@ public class XDF extends BaseTIPLPluginMult {
 
 	@Override
 	protected void InitByte() {
+		final boolean useMask=hasMask;
 		vCount = 0;
 		meanVal = 0.0f;
 		varVal = 0.0f;
@@ -1280,6 +1273,7 @@ public class XDF extends BaseTIPLPluginMult {
 
 	@Override
 	protected void InitFloat() {
+		final boolean useMask=hasMask;
 		vCount = 0;
 		meanVal = 0.0f;
 		varVal = 0.0f;
@@ -1308,6 +1302,7 @@ public class XDF extends BaseTIPLPluginMult {
 
 	@Override
 	protected void InitInt() {
+		final boolean useMask=hasMask;
 		vCount = 0;
 		meanVal = 0.0f;
 		varVal = 0.0f;
@@ -1339,6 +1334,7 @@ public class XDF extends BaseTIPLPluginMult {
 
 	@Override
 	protected void InitMask() {
+		final boolean useMask=hasMask;
 		vCount = 0;
 		meanVal = 0.0f;
 		varVal = 0.0f;
@@ -1370,19 +1366,14 @@ public class XDF extends BaseTIPLPluginMult {
 		System.out.println(cMsg);
 	}
 
-	private void InitRDF(D3int rdfS) {
-		InitRDF(rdfS, 20000);
-	}
 
-	private void InitRDF(D3int rdfS, int iters) {
+	private void InitRDF(D3int rdfS) {
 		runCount = 0;
 		rdf = new radDistFun(rdfS);
 		neighborSize = rdfS;
-		mcIter = iters;
 		curIter = 0;
 		missedIter = 0;
 		rgen = new Random();
-
 	}
 
 	@Override
@@ -1392,6 +1383,7 @@ public class XDF extends BaseTIPLPluginMult {
 		varVal = 0.0f;
 		int off = 0;
 		isSigned = true;
+		final boolean useMask=hasMask;
 		for (int z = lowz; z < uppz; z++) {
 			for (int y = lowy; y < uppy; y++) {
 				off = (z * dim.y + y) * dim.x + lowx;
@@ -1440,6 +1432,7 @@ public class XDF extends BaseTIPLPluginMult {
 	 * @param iters
 	 *            The number of iterations to run the simulation for
 	 */
+	@Deprecated
 	public void run(int iters) {
 		mcIter = iters;
 		run();
