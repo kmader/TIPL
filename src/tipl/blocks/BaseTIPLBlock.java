@@ -26,7 +26,7 @@ public abstract class BaseTIPLBlock implements TIPLBlock {
 	final protected LinkedHashMap<String, String> ioParameters = new LinkedHashMap<String, String>();
 	public final static String kVer = "130819_003";
 
-	protected static void checkHelp(ArgumentParser p) {
+	protected static void checkHelp(final ArgumentParser p) {
 		if (p.hasOption("?")) {
 			System.out.println(" BlockRunner");
 			System.out.println(" Runs TIPLBlocks and parse arguments");
@@ -49,7 +49,7 @@ public abstract class BaseTIPLBlock implements TIPLBlock {
 	 * @param parFunc
 	 * @return TIPLBlock to be run later
 	 */
-	public static TIPLBlock InlineBlock(String name, String prefix,
+	public static TIPLBlock InlineBlock(final String name, final String prefix,
 			final String[] earlierPathArgs, final String[] outArgs,
 			final Runnable job, final ArgumentParser.IsetParameter parFunc) {
 		return InlineBlock(name, prefix, new TIPLBlock[] {}, earlierPathArgs,
@@ -71,7 +71,7 @@ public abstract class BaseTIPLBlock implements TIPLBlock {
 	 * @param parFunc
 	 * @return TIPLBlock to be run later
 	 */
-	public static TIPLBlock InlineBlock(String name, final String prefix,
+	public static TIPLBlock InlineBlock(final String name, final String prefix,
 			final TIPLBlock[] earlierBlocks, final String[] earlierPathArgs,
 			final String[] outputArgs, final Runnable job,
 			final ArgumentParser.IsetParameter parFunc) {
@@ -123,7 +123,7 @@ public abstract class BaseTIPLBlock implements TIPLBlock {
 			}
 
 			@Override
-			public ArgumentParser setParameterBlock(ArgumentParser p) {
+			public ArgumentParser setParameterBlock(final ArgumentParser p) {
 				return parFunc.setParameter(p, prefix);
 			}
 
@@ -131,7 +131,7 @@ public abstract class BaseTIPLBlock implements TIPLBlock {
 		return cBlock;
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 
 		System.out.println("BlockRunner v" + kVer);
 		System.out.println("Runs a block by its name");
@@ -197,7 +197,7 @@ public abstract class BaseTIPLBlock implements TIPLBlock {
 	 * @param filename
 	 *            Path and name of the file/directory to open
 	 */
-	public static boolean tryOpenImagePath(String filename) {
+	public static boolean tryOpenImagePath(final String filename) {
 
 		TImg tempAim = null;
 		if (filename.length() > 0) {
@@ -221,11 +221,11 @@ public abstract class BaseTIPLBlock implements TIPLBlock {
 
 	}
 
-	public BaseTIPLBlock(String inName) {
+	public BaseTIPLBlock(final String inName) {
 		blockName = inName;
 	}
 
-	public BaseTIPLBlock(String inName, TIPLBlock[] earlierBlocks) {
+	public BaseTIPLBlock(final String inName, final TIPLBlock[] earlierBlocks) {
 		blockName = inName;
 		prereqBlocks = earlierBlocks;
 	}
@@ -235,8 +235,8 @@ public abstract class BaseTIPLBlock implements TIPLBlock {
 	protected abstract IBlockImage[] bGetOutputNames();
 
 	@Override
-	public void connectInput(String inputName, TIPLBlock outputBlock,
-			String outputName) {
+	public void connectInput(final String inputName,
+			final TIPLBlock outputBlock, final String outputName) {
 		blockConnections.put(inputName, outputBlock.getPrefix() + outputName);
 	}
 
@@ -264,7 +264,7 @@ public abstract class BaseTIPLBlock implements TIPLBlock {
 	protected abstract String getDescription();
 
 	@Override
-	public String getFileParameter(String argument) {
+	public String getFileParameter(final String argument) {
 		return ioParameters.get(argument);
 	}
 

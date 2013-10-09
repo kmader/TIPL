@@ -31,7 +31,7 @@ public class MappedImage extends FuncImage {
 		 * FloatThreshold simply returns data from the template file whenever
 		 * any resource except slice data is requested
 		 */
-		public FloatThreshold(TImg dummyDataset, int iimageType,
+		public FloatThreshold(final TImg dummyDataset, final int iimageType,
 				final float threshValA, final float threshValB) {
 
 			super(dummyDataset, iimageType, new StationaryVoxelFunction() {
@@ -39,7 +39,7 @@ public class MappedImage extends FuncImage {
 				final float mxVal = Math.max(threshValA, threshValB);
 
 				@Override
-				public double get(double voxval) {
+				public double get(final double voxval) {
 					if ((voxval >= mnVal) && (voxval <= mxVal))
 						return 127;
 					return 0;
@@ -80,12 +80,12 @@ public class MappedImage extends FuncImage {
 		 * Zimage simply returns data from the template file whenever any
 		 * resource except slice data is requested
 		 */
-		public IntThreshold(TImg dummyDataset, int iimageType,
+		public IntThreshold(final TImg dummyDataset, final int iimageType,
 				final int threshVal) {
 
 			super(dummyDataset, iimageType, new StationaryVoxelFunction() {
 				@Override
-				public double get(double voxval) {
+				public double get(final double voxval) {
 					if (((int) voxval) == threshVal)
 						return 127;
 					return 0;
@@ -120,8 +120,9 @@ public class MappedImage extends FuncImage {
 		protected TImg templateData;
 		protected int imageType;
 
-		public SimpleMapImage(TImg dummyDataset, int iimageType,
-				final String arrayBlob, boolean passThrough, double defValue) {
+		public SimpleMapImage(final TImg dummyDataset, final int iimageType,
+				final String arrayBlob, final boolean passThrough,
+				final double defValue) {
 			super(dummyDataset, iimageType, StringToSVF(arrayBlob, passThrough,
 					defValue));
 		}
@@ -177,7 +178,7 @@ public class MappedImage extends FuncImage {
 		return new StationaryVoxelFunction() {
 
 			@Override
-			public double get(double v) {
+			public double get(final double v) {
 				final int index = (int) (v - minValue);
 				if ((index < valueArray.length) & (index >= 0))
 					return valueArray[index];
@@ -203,8 +204,8 @@ public class MappedImage extends FuncImage {
 	}
 
 	protected static StationaryVoxelFunction cacheVoxelFunction(
-			final StationaryVoxelFunction isvf, int imageType,
-			double outsideValue) {
+			final StationaryVoxelFunction isvf, final int imageType,
+			final double outsideValue) {
 		final int minValue, maxValue;
 		switch (imageType) {
 		case 0: // char
@@ -244,7 +245,7 @@ public class MappedImage extends FuncImage {
 				false, outsideValue);
 	}
 
-	protected static void checkHelp(ArgumentParser p) {
+	protected static void checkHelp(final ArgumentParser p) {
 		if (p.hasOption("?")) {
 			System.out.println(" MappedImage");
 			System.out.println(" Remaps images using command line arguments");
@@ -256,7 +257,7 @@ public class MappedImage extends FuncImage {
 		p.checkForInvalid();
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 
 		System.out.println("MappedImage v" + kVer);
 		System.out.println("Maps an Image");
@@ -299,8 +300,8 @@ public class MappedImage extends FuncImage {
 
 	}
 
-	public static StationaryVoxelFunction StringToSVF(String invalues,
-			boolean passThrough, double defValue) {
+	public static StationaryVoxelFunction StringToSVF(final String invalues,
+			final boolean passThrough, final double defValue) {
 		final String[] subValues = invalues.split(",");
 		final HashMap<Integer, Float> cMap = new HashMap<Integer, Float>();
 		boolean isEmpty = true;
@@ -346,7 +347,7 @@ public class MappedImage extends FuncImage {
 	/**
 	 * @param useFloatInput
 	 */
-	public MappedImage(boolean useFloatInput) {
+	public MappedImage(final boolean useFloatInput) {
 		super(useFloatInput);
 		// TODO Auto-generated constructor stub
 	}
@@ -356,8 +357,8 @@ public class MappedImage extends FuncImage {
 	 * @param iimageType
 	 * @param ivf
 	 */
-	public MappedImage(TImg dummyDataset, int iimageType,
-			StationaryVoxelFunction isvf) {
+	public MappedImage(final TImg dummyDataset, final int iimageType,
+			final StationaryVoxelFunction isvf) {
 		super(dummyDataset, iimageType);
 		svf = isvf;
 	}
@@ -368,8 +369,8 @@ public class MappedImage extends FuncImage {
 	 * @param ivf
 	 * @param useFloatInput
 	 */
-	public MappedImage(TImg dummyDataset, int iimageType,
-			StationaryVoxelFunction isvf, boolean useFloatInput) {
+	public MappedImage(final TImg dummyDataset, final int iimageType,
+			final StationaryVoxelFunction isvf, final boolean useFloatInput) {
 		super(dummyDataset, iimageType, useFloatInput);
 		svf = isvf;
 	}
@@ -385,7 +386,7 @@ public class MappedImage extends FuncImage {
 	 *            default value (outside of range)
 	 * @return MappedImage backed by an array instead of a function
 	 */
-	public MappedImage cache(int cacheType, double defValue) {
+	public MappedImage cache(final int cacheType, final double defValue) {
 		return new MappedImage(templateData, getImageType(),
 				cacheVoxelFunction(svf, cacheType, defValue), useFloat);
 	}
@@ -402,7 +403,8 @@ public class MappedImage extends FuncImage {
 	 *            default value (outside of range)
 	 * @return MappedImage backed by an array instead of a function
 	 */
-	public MappedImage cache(int minValue, int maxValue, double defValue) {
+	public MappedImage cache(final int minValue, final int maxValue,
+			final double defValue) {
 		return new MappedImage(templateData, getImageType(),
 				cacheVoxelFunction(svf, minValue, maxValue, defValue), useFloat);
 	}
@@ -428,7 +430,8 @@ public class MappedImage extends FuncImage {
 	}
 
 	@Override
-	public double getVFvalue(int cIndex, int sliceNumber, double v) {
+	public double getVFvalue(final int cIndex, final int sliceNumber,
+			final double v) {
 		return svf.get(v);
 	}
 

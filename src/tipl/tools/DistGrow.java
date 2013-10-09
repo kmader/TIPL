@@ -11,7 +11,7 @@ import tipl.util.TImgTools;
  * DistGrow is the class used for labeling bubbles based on a distance map and a
  * mask
  */
-public class DistGrow extends BaseTIPLPlugin {
+public class DistGrow extends BaseTIPLPluginIO {
 	/** Command line accessible program interface */
 	public static void main(String[] args) {
 		final String kVer = "130913_002";

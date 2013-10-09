@@ -1,6 +1,5 @@
 package tipl.util;
 
-import tipl.util.ArgumentList;
 
 // to make a dialog from the arguments
 
@@ -45,7 +44,7 @@ public class ArgumentParser extends ArgumentList {
 
 	public static String kVer = "14-08-2013 v4";
 
-	protected ArgumentParser(ArgumentList inArgs) {
+	protected ArgumentParser(final ArgumentList inArgs) {
 		super(inArgs);
 	}
 
@@ -58,7 +57,7 @@ public class ArgumentParser extends ArgumentList {
 	 * Creates a new arguments parser class from the standard string array input
 	 * to the static main function in a Java Class
 	 **/
-	public ArgumentParser(String[] args) {
+	public ArgumentParser(final String[] args) {
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].startsWith("-") || args[i].startsWith("/")) {
 				final int loc = args[i].indexOf("=");
@@ -118,12 +117,12 @@ public class ArgumentParser extends ArgumentList {
 		return getOption(opt).getValueAsString();
 	}
 
-	public boolean getOptionBoolean(String inOpt, String helpString) {
+	public boolean getOptionBoolean(final String inOpt, final String helpString) {
 		return getOptionBoolean(inOpt, helpString, emptyCallback);
 	}
 
-	public boolean getOptionBoolean(String inOpt, String helpString,
-			ArgumentCallback inCallback) {
+	public boolean getOptionBoolean(final String inOpt,
+			final String helpString, final ArgumentCallback inCallback) {
 		final String opt = formatKey(inOpt);
 		ArgumentList.TypedArgument<Boolean> cArg;
 		final Boolean bF = new Boolean(false);
@@ -138,8 +137,8 @@ public class ArgumentParser extends ArgumentList {
 		return cArg.getValue().booleanValue();
 	}
 
-	public D3float getOptionD3float(String inOpt, D3float defVal,
-			String helpString) {
+	public D3float getOptionD3float(final String inOpt, final D3float defVal,
+			final String helpString) {
 		final String opt = formatKey(inOpt);
 		ArgumentList.TypedArgument<D3float> cArg;
 
@@ -154,7 +153,8 @@ public class ArgumentParser extends ArgumentList {
 		return cArg.getValue();
 	}
 
-	public D3int getOptionD3int(String inOpt, D3int defVal, String helpString) {
+	public D3int getOptionD3int(final String inOpt, final D3int defVal,
+			final String helpString) {
 		final String opt = formatKey(inOpt);
 		ArgumentList.TypedArgument<D3int> cArg;
 		if (hasOption(opt)) {
@@ -180,8 +180,8 @@ public class ArgumentParser extends ArgumentList {
 	 *            is the associated help string
 	 * @return the value from the arguments or the default value
 	 */
-	public double getOptionDouble(String inOpt, double inDefValue,
-			String helpString) {
+	public double getOptionDouble(final String inOpt, final double inDefValue,
+			final String helpString) {
 		final String opt = formatKey(inOpt);
 		ArgumentList.TypedArgument<Double> cArg;
 
@@ -213,8 +213,8 @@ public class ArgumentParser extends ArgumentList {
 	 *            is the maximum value
 	 * @return the value from the arguments or the default value
 	 */
-	public double getOptionDouble(String inOpt, double inDefValue,
-			String helpString, final double minVal, final double maxVal) {
+	public double getOptionDouble(final String inOpt, final double inDefValue,
+			final String helpString, final double minVal, final double maxVal) {
 		final String opt = formatKey(inOpt);
 
 		final Double defValue = new Double(inDefValue);
@@ -235,8 +235,8 @@ public class ArgumentParser extends ArgumentList {
 		return dArg.getValue().doubleValue();
 	}
 
-	public float getOptionFloat(String inOpt, float inDefValue,
-			String helpString) {
+	public float getOptionFloat(final String inOpt, final float inDefValue,
+			final String helpString) {
 		final String opt = formatKey(inOpt);
 		ArgumentList.TypedArgument<Float> cArg;
 
@@ -252,8 +252,8 @@ public class ArgumentParser extends ArgumentList {
 		return cArg.getValue().floatValue();
 	}
 
-	public float getOptionFloat(String inOpt, float inDefValue,
-			String helpString, final float minVal, final float maxVal) {
+	public float getOptionFloat(final String inOpt, final float inDefValue,
+			final String helpString, final float minVal, final float maxVal) {
 		final String opt = formatKey(inOpt);
 		final Float defValue = new Float(inDefValue);
 		final Float minValue = new Float(minVal);
@@ -272,7 +272,8 @@ public class ArgumentParser extends ArgumentList {
 		return dArg.getValue().floatValue();
 	}
 
-	public int getOptionInt(String inOpt, int inDefValue, String helpString) {
+	public int getOptionInt(final String inOpt, final int inDefValue,
+			final String helpString) {
 		final String opt = formatKey(inOpt);
 		ArgumentList.TypedArgument<Integer> cArg;
 
@@ -304,8 +305,8 @@ public class ArgumentParser extends ArgumentList {
 	 *            is the maximum value
 	 * @return the value from the arguments or the default value
 	 */
-	public int getOptionInt(String inOpt, int inDefValue, String helpString,
-			final int minVal, final int maxVal) {
+	public int getOptionInt(final String inOpt, final int inDefValue,
+			final String helpString, final int minVal, final int maxVal) {
 		final String opt = formatKey(inOpt);
 
 		final Integer defValue = new Integer(inDefValue);
@@ -327,8 +328,8 @@ public class ArgumentParser extends ArgumentList {
 		return dArg.getValue().intValue();
 	}
 
-	public String getOptionPath(String inOpt, String defFilename,
-			String helpString) {
+	public String getOptionPath(final String inOpt, final String defFilename,
+			final String helpString) {
 		final String opt = formatKey(inOpt);
 		ArgumentList.TypedArgument<String> cArg;
 		if (hasOption(opt)) {
@@ -348,7 +349,8 @@ public class ArgumentParser extends ArgumentList {
 		return cArg.getValue();
 	}
 
-	public String getOptionString(String inOpt, String defVal, String helpString) {
+	public String getOptionString(final String inOpt, final String defVal,
+			final String helpString) {
 		final String opt = formatKey(inOpt);
 		ArgumentList.TypedArgument<String> cArg;
 		if (hasOption(opt)) {
@@ -363,7 +365,7 @@ public class ArgumentParser extends ArgumentList {
 	}
 
 	@Override
-	public ArgumentParser subArguments(String withoutText) {
+	public ArgumentParser subArguments(final String withoutText) {
 		return new ArgumentParser(super.subArguments(withoutText));
 	}
 

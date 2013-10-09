@@ -14,11 +14,11 @@ public class D3float {
 		setVals(0.0, 0.0, 0.0);
 	}
 
-	public D3float(D3float xi) {
+	public D3float(final D3float xi) {
 		setVals(xi.x, xi.y, xi.z);
 	}
 
-	public D3float(double xi, double yi, double zi) {
+	public D3float(final double xi, final double yi, final double zi) {
 		setVals(xi, yi, zi);
 	}
 
@@ -29,7 +29,7 @@ public class D3float {
 		return out;
 	}
 
-	public void setVals(double xi, double yi, double zi) {
+	public void setVals(final double xi, final double yi, final double zi) {
 		x = xi;
 		y = yi;
 		z = zi;

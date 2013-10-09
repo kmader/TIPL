@@ -53,7 +53,7 @@ public class ArgumentList {
 	}
 
 	protected static class EmptyArgument extends GenericArgument {
-		public EmptyArgument(String inValue) {
+		public EmptyArgument(final String inValue) {
 			super("", inValue);
 		}
 
@@ -68,7 +68,7 @@ public class ArgumentList {
 		public final String name;
 		public ArgumentCallback curCallback = emptyCallback;
 
-		public GenericArgument(String inName, String inValue) {
+		public GenericArgument(final String inName, final String inValue) {
 			name = inName;
 			value = inValue;
 		}
@@ -105,7 +105,7 @@ public class ArgumentList {
 		}
 
 		@Override
-		public void setCallback(ArgumentCallback inCallback) {
+		public void setCallback(final ArgumentCallback inCallback) {
 			curCallback = inCallback;
 		}
 
@@ -149,7 +149,7 @@ public class ArgumentList {
 				}
 
 				@Override
-				public boolean isValid(T inValue) {
+				public boolean isValid(final T inValue) {
 					return (inValue.compareTo(minVal) >= 0);
 				}
 			});
@@ -160,7 +160,7 @@ public class ArgumentList {
 				}
 
 				@Override
-				public boolean isValid(T inValue) {
+				public boolean isValid(final T inValue) {
 					return (inValue.compareTo(maxVal) <= 0);
 				}
 			});
@@ -195,8 +195,8 @@ public class ArgumentList {
 		public final String helpText;
 		protected ArgumentCallback curCallback = emptyCallback;
 
-		public TypedArgument(Argument inArg, String inHelpText, T defValue,
-				ArgumentParser.strParse<T> tParse) {
+		public TypedArgument(final Argument inArg, final String inHelpText,
+				final T defValue, final ArgumentParser.strParse<T> tParse) {
 			name = inArg.getName();
 			helpText = inHelpText;
 			value = tParse.valueOf(inArg.getValueAsString());
@@ -205,7 +205,8 @@ public class ArgumentList {
 		}
 
 		// private final Class<T> mClass=T.class;
-		public TypedArgument(String inName, String inHelpText, T defValue) {
+		public TypedArgument(final String inName, final String inHelpText,
+				final T defValue) {
 			name = inName;
 			helpText = inHelpText;
 			value = defValue;
@@ -213,7 +214,7 @@ public class ArgumentList {
 			usedDefault = true;
 		}
 
-		protected TypedArgument(TypedArgument<T> dumbClass) {
+		protected TypedArgument(final TypedArgument<T> dumbClass) {
 			value = dumbClass.value;
 			name = dumbClass.name;
 			helpText = dumbClass.helpText;
@@ -256,7 +257,7 @@ public class ArgumentList {
 		}
 
 		@Override
-		public void setCallback(ArgumentCallback inCallback) {
+		public void setCallback(final ArgumentCallback inCallback) {
 			curCallback = inCallback;
 		}
 
@@ -318,7 +319,7 @@ public class ArgumentList {
 
 	public final static ArgumentCallback emptyCallback = new ArgumentCallback() {
 		@Override
-		public Object valueSet(Object value) {
+		public Object valueSet(final Object value) {
 			return value;
 		}
 	};
@@ -340,7 +341,7 @@ public class ArgumentList {
 	 */
 	protected strParse<Boolean> boolParse = new strParse<Boolean>() {
 		@Override
-		public Boolean valueOf(String inStr) {
+		public Boolean valueOf(final String inStr) {
 			if (inStr.toLowerCase().trim().contains("false"))
 				return new Boolean(false);
 			return new Boolean(true);
@@ -348,7 +349,7 @@ public class ArgumentList {
 	};
 	protected strParse<D3float> d3fparse = new strParse<D3float>() {
 		@Override
-		public D3float valueOf(String inStr) {
+		public D3float valueOf(final String inStr) {
 			String sStr = inStr.trim();
 			final int sPos = sStr.indexOf("(");
 			final int fPos = sStr.lastIndexOf(")");
@@ -366,7 +367,7 @@ public class ArgumentList {
 	};
 	protected strParse<D3int> d3iparse = new strParse<D3int>() {
 		@Override
-		public D3int valueOf(String inStr) {
+		public D3int valueOf(final String inStr) {
 			String sStr = inStr.trim();
 			final int sPos = sStr.indexOf("(");
 			final int fPos = sStr.lastIndexOf(")");
@@ -384,25 +385,25 @@ public class ArgumentList {
 	};
 	protected strParse<Double> dblParse = new strParse<Double>() {
 		@Override
-		public Double valueOf(String inStr) {
+		public Double valueOf(final String inStr) {
 			return Double.valueOf(inStr);
 		}
 	};
 	protected strParse<Float> floatParse = new strParse<Float>() {
 		@Override
-		public Float valueOf(String inStr) {
+		public Float valueOf(final String inStr) {
 			return Float.valueOf(inStr);
 		}
 	};
 	protected strParse<Integer> intParse = new strParse<Integer>() {
 		@Override
-		public Integer valueOf(String inStr) {
+		public Integer valueOf(final String inStr) {
 			return Integer.valueOf(inStr);
 		}
 	};
 	protected strParse<String> stringParse = new strParse<String>() {
 		@Override
-		public String valueOf(String inStr) {
+		public String valueOf(final String inStr) {
 			return inStr;
 		}
 	};
@@ -410,14 +411,14 @@ public class ArgumentList {
 	public ArgumentList() {
 	}
 
-	protected ArgumentList(ArgumentList inArgumentList) {
+	protected ArgumentList(final ArgumentList inArgumentList) {
 		options = inArgumentList.sneakyGetOptions();
 		forwards = inArgumentList.sneakyGetForwards();
 	}
 
 	protected ArgumentList(
-			LinkedHashMap<String, ArgumentList.Argument> inOptions,
-			LinkedHashMap<String, String> inForwards) {
+			final LinkedHashMap<String, ArgumentList.Argument> inOptions,
+			final LinkedHashMap<String, String> inForwards) {
 		options = inOptions;
 		forwards = inForwards;
 	}
@@ -444,11 +445,12 @@ public class ArgumentList {
 	 * @param inOption
 	 * @param outOption
 	 */
-	public void forceMatchingValues(String inOption, String outOption) {
+	public void forceMatchingValues(final String inOption,
+			final String outOption) {
 		forwards.put(outOption, inOption);
 	}
 
-	protected String getByType(int type) {
+	protected String getByType(final int type) {
 		String outText = "";
 		for (final ArgumentList.Argument value : options.values()) {
 			if (value.getType() == type)
@@ -503,7 +505,7 @@ public class ArgumentList {
 		return options.get(keyName);
 	}
 
-	public boolean hasOption(String opt) {
+	public boolean hasOption(final String opt) {
 		String keyName = formatKey(opt);
 		if (forwards.containsKey(keyName))
 			keyName = forwards.get(keyName);
@@ -546,7 +548,7 @@ public class ArgumentList {
 	 * @param cProc
 	 *            the procedure to execute
 	 */
-	public void processOptions(optionProcessor cProc) {
+	public void processOptions(final optionProcessor cProc) {
 		for (final ArgumentList.Argument cArgument : options.values())
 			cProc.process(cArgument);
 	}
@@ -557,7 +559,7 @@ public class ArgumentList {
 	 * @param opt
 	 * @param curObj
 	 */
-	protected void putArg(String opt, ArgumentList.Argument curObj) {
+	protected void putArg(final String opt, final ArgumentList.Argument curObj) {
 		if (hasOption(opt) & (!canOverwrite())) {
 			// only complain if it isn't genericargument
 			if (!(getOption(opt) instanceof ArgumentList.GenericArgument)) {
@@ -588,7 +590,7 @@ public class ArgumentList {
 	 * @param withoutText
 	 * @return an argumentlist with just the filtered arguments
 	 */
-	public ArgumentList subArguments(String withoutText) {
+	public ArgumentList subArguments(final String withoutText) {
 		final LinkedHashMap<String, ArgumentList.Argument> newOptions = new LinkedHashMap<String, ArgumentList.Argument>();
 		for (final ArgumentList.Argument value : options.values()) {
 			if (!value.getName().contains(withoutText))
@@ -612,7 +614,7 @@ public class ArgumentList {
 	 *            combination with SGEJob it should be &
 	 * @return all arguments as a single string
 	 */
-	public String toString(String delimChar) {
+	public String toString(final String delimChar) {
 		String outText = "";
 		for (final ArgumentList.Argument value : options.values()) {
 			outText += delimChar + "-" + value.getName() + "="

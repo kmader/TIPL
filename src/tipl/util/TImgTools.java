@@ -126,7 +126,7 @@ public class TImgTools {
 	 */
 	protected static LinkedHashMap<String, TImg> cachedImages = new LinkedHashMap<String, TImg>();
 
-	public static String appendProcLog(String curLog, String appText) {
+	public static String appendProcLog(final String curLog, final String appText) {
 		return curLog + "\n" + new Date() + "\t" + appText;
 	}
 
@@ -135,7 +135,7 @@ public class TImgTools {
 	 * fast and there is enough memory (not yet implemented), than cache it
 	 */
 	@Deprecated
-	public static TImgRO CacheImage(TImgRO inImage) {
+	public static TImgRO CacheImage(final TImgRO inImage) {
 		if (inImage.isFast() > FAST_TIFF_BASED)
 			return inImage;
 		else
@@ -146,7 +146,7 @@ public class TImgTools {
 	 * The general function for comparing the dimensions of two TImg class
 	 * images
 	 **/
-	public static boolean CheckSizes2(TImgRO inVA, TImgRO otherVA) {
+	public static boolean CheckSizes2(final TImgRO inVA, final TImgRO otherVA) {
 
 		boolean isMatch = true;
 		isMatch = isMatch & (inVA.getDim().x == otherVA.getDim().x);
@@ -245,8 +245,9 @@ public class TImgTools {
 	}
 
 	@Deprecated
-	private static Object convertCharArray(char[] gs, final int asType,
-			final boolean isSigned, final float shortScaleFactor, int maxVal) {
+	private static Object convertCharArray(final char[] gs, final int asType,
+			final boolean isSigned, final float shortScaleFactor,
+			final int maxVal) {
 		final int sliceSize = gs.length;
 		switch (asType) {
 		case IMAGETYPE_CHAR: // Char
@@ -324,14 +325,15 @@ public class TImgTools {
 	}
 
 	@Deprecated
-	public static Object convertIntArray(int[] gi, final int asType,
+	public static Object convertIntArray(final int[] gi, final int asType,
 			final boolean isSigned, final float ShortScaleFactor) {
 		return convertIntArray(gi, asType, isSigned, ShortScaleFactor, 65536);
 	}
 
 	@Deprecated
-	public static Object convertIntArray(int[] gi, final int asType,
-			final boolean isSigned, final float ShortScaleFactor, int maxVal) {
+	public static Object convertIntArray(final int[] gi, final int asType,
+			final boolean isSigned, final float ShortScaleFactor,
+			final int maxVal) {
 		final int sliceSize = gi.length;
 		switch (asType) {
 		case IMAGETYPE_CHAR: // Char
@@ -375,8 +377,9 @@ public class TImgTools {
 	}
 
 	@Deprecated
-	public static Object convertShortArray(short[] gs, final int asType,
-			final boolean isSigned, final float ShortScaleFactor, int maxVal) {
+	public static Object convertShortArray(final short[] gs, final int asType,
+			final boolean isSigned, final float ShortScaleFactor,
+			final int maxVal) {
 		final int sliceSize = gs.length;
 		switch (asType) {
 		case IMAGETYPE_CHAR: // Char
@@ -419,7 +422,8 @@ public class TImgTools {
 		}
 	}
 
-	public static D3int getDXYZFromVec(D3int vecDim, int pixVal, int slicen) {
+	public static D3int getDXYZFromVec(final D3int vecDim, final int pixVal,
+			final int slicen) {
 		// int x,y,z;
 		final D3int oPos = new D3int();
 		oPos.x = pixVal % vecDim.getWidth();
@@ -428,12 +432,13 @@ public class TImgTools {
 		return oPos;
 	}
 
-	public static int getJFromVec(D3int vecPos, D3int vecDim, int x, int y) {
+	public static int getJFromVec(final D3int vecPos, final D3int vecDim,
+			final int x, final int y) {
 		return getJFromVec(vecPos, vecDim, x, y, true);
 	}
 
-	public static int getJFromVec(D3int vecPos, D3int vecDim, int x, int y,
-			boolean relCoord) {
+	public static int getJFromVec(final D3int vecPos, final D3int vecDim,
+			final int x, final int y, final boolean relCoord) {
 		int curX = x;
 		int curY = y;
 		if (relCoord) {
@@ -444,8 +449,8 @@ public class TImgTools {
 
 	}
 
-	public static D3float getRXYZFromVec(D3int vecPos, D3float vecSize,
-			D3int iPos, boolean asMeasure) {
+	public static D3float getRXYZFromVec(final D3int vecPos,
+			final D3float vecSize, final D3int iPos, final boolean asMeasure) {
 		final D3float oPos = new D3float();
 		if (asMeasure) {
 			oPos.x = ((float) iPos.x + (float) vecPos.x) * vecSize.x;
@@ -459,13 +464,13 @@ public class TImgTools {
 		return oPos;
 	}
 
-	public static D3float getRXYZFromVec(D3int vecPos, D3int iPos) {
+	public static D3float getRXYZFromVec(final D3int vecPos, final D3int iPos) {
 		final D3float oPos = new D3float();
 		return getRXYZFromVec(vecPos, oPos, iPos, false);
 	}
 
-	public static D3float getRXYZFromVec(D3int vecPos, D3int vecDim,
-			int pixVal, int slicen) {
+	public static D3float getRXYZFromVec(final D3int vecPos,
+			final D3int vecDim, final int pixVal, final int slicen) {
 		final D3int iPos = getDXYZFromVec(vecDim, pixVal, slicen);
 		return getRXYZFromVec(vecPos, iPos);
 	}
@@ -474,8 +479,8 @@ public class TImgTools {
 	 * Get a double array of the x,y,z position given a current slice index and
 	 * current slice
 	 **/
-	public static Double[] getXYZVecFromVec(D3int vecPos, D3int vecDim,
-			int cIndex, int cSlice) {
+	public static Double[] getXYZVecFromVec(final D3int vecPos,
+			final D3int vecDim, final int cIndex, final int cSlice) {
 		final D3float npos = getRXYZFromVec(vecPos, vecDim, cIndex, cSlice);
 		final Double[] cPos = new Double[3];
 		cPos[0] = new Double(npos.x);
@@ -488,7 +493,8 @@ public class TImgTools {
 	 * Get a double array of the x,y,z position given a current slice index and
 	 * current slice
 	 **/
-	public static Double[] getXYZVecFromVec(TImgRO inImg, int cIndex, int cSlice) {
+	public static Double[] getXYZVecFromVec(final TImgRO inImg,
+			final int cIndex, final int cSlice) {
 		return getXYZVecFromVec(inImg.getPos(), inImg.getDim(), cIndex, cSlice);
 	}
 
@@ -500,7 +506,7 @@ public class TImgTools {
 	 *            a slice from the image (usually an array)
 	 * @return the type of the object
 	 */
-	public static int identifySliceType(Object iData) {
+	public static int identifySliceType(final Object iData) {
 		if (iData instanceof boolean[])
 			return TImgTools.IMAGETYPE_BOOL;
 		if (iData instanceof char[])
@@ -524,7 +530,7 @@ public class TImgTools {
 	 *            the type to check
 	 * @return true if valid otherwise false
 	 */
-	public static boolean isValidType(int asType) {
+	public static boolean isValidType(final int asType) {
 		return (asType >= 0 && asType <= 3) || asType == 10;
 	}
 
@@ -535,7 +541,7 @@ public class TImgTools {
 	 * @param inImg
 	 * @return an exportable version of inImg
 	 */
-	public static TImgRO.CanExport makeTImgExportable(TImgRO inImg) {
+	public static TImgRO.CanExport makeTImgExportable(final TImgRO inImg) {
 		return VirtualAim.TImgToVirtualAim(inImg);
 	}
 
@@ -547,13 +553,13 @@ public class TImgTools {
 	 * @return a fullreadable version of inImg
 	 */
 	@Deprecated
-	public static FullReadable makeTImgFullReadable(TImgRO inImg) {
+	public static FullReadable makeTImgFullReadable(final TImgRO inImg) {
 		return VirtualAim.TImgToVirtualAim(inImg);
 	}
 
 	/** Copy the size of one TImg to another **/
-	public static void mirrorImage(HasDimensions inData,
-			ChangesDimensions outData) {
+	public static void mirrorImage(final HasDimensions inData,
+			final ChangesDimensions outData) {
 		outData.setPos(inData.getPos());
 		outData.setOffset(inData.getOffset());
 		outData.setDim(inData.getDim());
@@ -562,7 +568,7 @@ public class TImgTools {
 		outData.setShortScaleFactor(inData.getShortScaleFactor());
 	}
 
-	public static TImg ReadTImg(String path) {
+	public static TImg ReadTImg(final String path) {
 		return ReadTImg(path, false, false);
 	}
 
@@ -577,8 +583,8 @@ public class TImgTools {
 	 *            put the image into the cache after it has been read
 	 * @return loaded image
 	 */
-	public static TImg ReadTImg(String path, boolean readFromCache,
-			boolean saveToCache) {
+	public static TImg ReadTImg(final String path, final boolean readFromCache,
+			final boolean saveToCache) {
 		if (readFromCache)
 			if (cachedImages.containsKey(path))
 				return cachedImages.get(path);
@@ -588,7 +594,7 @@ public class TImgTools {
 		return curImg;
 	}
 
-	public static void RemoveTImgFromCache(String path) {
+	public static void RemoveTImgFromCache(final String path) {
 		try {
 			cachedImages.remove(path);
 			System.gc();
@@ -604,7 +610,7 @@ public class TImgTools {
 	 * @param inType
 	 * @return size in bytes
 	 */
-	public static long typeSize(int inType) {
+	public static long typeSize(final int inType) {
 		assert isValidType(inType);
 		switch (inType) {
 		case IMAGETYPE_CHAR:
@@ -619,7 +625,7 @@ public class TImgTools {
 		return -1;
 	}
 
-	public static TImg WrapTImgRO(TImgRO inImage) {
+	public static TImg WrapTImgRO(final TImgRO inImage) {
 		return new VirtualAim(inImage);
 		// return new TImgFromTImgRO(inImage);
 	}
@@ -654,7 +660,7 @@ public class TImgTools {
 	 * @param path
 	 * @return success
 	 */
-	public static boolean WriteTImg(TImgRO curImg, String path) {
+	public static boolean WriteTImg(final TImgRO curImg, final String path) {
 		return WriteTImg(curImg, path, false);
 	}
 
@@ -667,8 +673,8 @@ public class TImgTools {
 	 * @param saveToCache
 	 * @return success
 	 */
-	public static boolean WriteTImg(TImgRO curImg, String path,
-			boolean saveToCache) {
+	public static boolean WriteTImg(final TImgRO curImg, final String path,
+			final boolean saveToCache) {
 
 		try {
 			if (curImg instanceof VirtualAim)
@@ -694,8 +700,8 @@ public class TImgTools {
 	 * @param IisSigned
 	 */
 	@Deprecated
-	public static void WriteTImg(TImgRO inImg, String outpath, int outType,
-			float scaleVal, boolean IisSigned) {
+	public static void WriteTImg(final TImgRO inImg, final String outpath,
+			final int outType, final float scaleVal, final boolean IisSigned) {
 		VirtualAim.TImgToVirtualAim(inImg).WriteAim(outpath, outType, scaleVal,
 				IisSigned);
 	}

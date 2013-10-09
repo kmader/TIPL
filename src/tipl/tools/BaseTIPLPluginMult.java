@@ -10,7 +10,7 @@ import tipl.util.TImgTools;
  * Class for plugins with multiple input types, has abstract function for every
  * possible datatype
  */
-abstract public class BaseTIPLPluginMult extends BaseTIPLPlugin {
+abstract public class BaseTIPLPluginMult extends BaseTIPLPluginIO {
 	/** First input aim */
 	public volatile boolean[] inAimMask;
 	/** First input aim */
@@ -36,6 +36,7 @@ abstract public class BaseTIPLPluginMult extends BaseTIPLPlugin {
 	 * initializer function taking boolean (other castings just convert the
 	 * array first) linear array and the dimensions
 	 */
+	@Deprecated
 	public void ImportAim(boolean[] inputmap, D3int idim, D3int ioffset) {
 		aimLength = inputmap.length;
 
@@ -46,6 +47,7 @@ abstract public class BaseTIPLPluginMult extends BaseTIPLPlugin {
 	}
 
 	/** initializer function taking a float linear array and the dimensions */
+	@Deprecated
 	public void ImportAim(float[] inputmap, D3int idim, D3int ioffset) {
 		aimLength = inputmap.length;
 
@@ -56,6 +58,7 @@ abstract public class BaseTIPLPluginMult extends BaseTIPLPlugin {
 	}
 
 	/** initializer function taking int linear array and the dimensions */
+	@Deprecated
 	public void ImportAim(int[] inputmap, D3int idim, D3int ioffset) {
 		aimLength = inputmap.length;
 
@@ -66,6 +69,7 @@ abstract public class BaseTIPLPluginMult extends BaseTIPLPlugin {
 	}
 
 	/** initializer function taking short linear array and the dimensions */
+	@Deprecated
 	public void ImportAim(short[] inputmap, D3int idim, D3int ioffset) {
 		aimLength = inputmap.length;
 		imageType = 1;
@@ -74,11 +78,13 @@ abstract public class BaseTIPLPluginMult extends BaseTIPLPlugin {
 	}
 
 	/** initializer function taking an aim-file */
+	@Deprecated
 	public void ImportAim(TImgRO inAim) {
 		ImportAim(inAim, inAim.getImageType());
 	}
 
 	/** initializer function taking an aim-file, specify type */
+	@Deprecated
 	public void ImportAim(TImgRO inImg, int inType) {
 		final TImgRO.FullReadable inAim = TImgTools.makeTImgFullReadable(inImg);
 		int cType = inType;

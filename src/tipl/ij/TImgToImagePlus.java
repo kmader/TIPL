@@ -3,15 +3,16 @@
  */
 package tipl.ij;
 
-import java.awt.Image;
-
-import tipl.formats.TImgRO;
-import tipl.formats.VirtualAim;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.HistogramWindow;
 import ij.measure.Calibration;
 import ij.process.ImageProcessor;
+
+import java.awt.Image;
+
+import tipl.formats.TImgRO;
+import tipl.formats.VirtualAim;
 
 /**
  * @author mader
@@ -36,8 +37,8 @@ public class TImgToImagePlus extends ImagePlus {
 		int mode;
 		HistogramWindow chw;
 
-		public autoRanger(ImageProcessor outIm, HistogramWindow ichw,
-				char[] ipixels) {
+		public autoRanger(final ImageProcessor outIm,
+				final HistogramWindow ichw, final char[] ipixels) {
 			super("Charer");
 			ip = outIm;
 			bpixels = ipixels;
@@ -46,8 +47,8 @@ public class TImgToImagePlus extends ImagePlus {
 
 		}
 
-		public autoRanger(ImageProcessor outIm, HistogramWindow ichw,
-				float[] ipixels) {
+		public autoRanger(final ImageProcessor outIm,
+				final HistogramWindow ichw, final float[] ipixels) {
 			super("Floater");
 			ip = outIm;
 			fpixels = ipixels;
@@ -56,8 +57,8 @@ public class TImgToImagePlus extends ImagePlus {
 
 		}
 
-		public autoRanger(ImageProcessor outIm, HistogramWindow ichw,
-				short[] ipixels) {
+		public autoRanger(final ImageProcessor outIm,
+				final HistogramWindow ichw, final short[] ipixels) {
 			super("Shorter");
 			ip = outIm;
 			spixels = ipixels;
@@ -153,7 +154,7 @@ public class TImgToImagePlus extends ImagePlus {
 	 * @param curImg
 	 * @return
 	 */
-	public static ImagePlus MakeImagePlus(TImgRO curImg) {
+	public static ImagePlus MakeImagePlus(final TImgRO curImg) {
 		final ImageStack curImStack = new TImgToImageStack(curImg);
 
 		final ImagePlus curImPlus = new ImagePlus(curImg.getSampleName(),
@@ -178,7 +179,7 @@ public class TImgToImagePlus extends ImagePlus {
 	/**
 	 * @param pathOrURL
 	 */
-	public TImgToImagePlus(String pathOrURL) {
+	public TImgToImagePlus(final String pathOrURL) {
 		super(pathOrURL);
 		// TODO Auto-generated constructor stub
 	}
@@ -187,7 +188,7 @@ public class TImgToImagePlus extends ImagePlus {
 	 * @param title
 	 * @param img
 	 */
-	public TImgToImagePlus(String title, Image img) {
+	public TImgToImagePlus(final String title, final Image img) {
 		super(title, img);
 		// TODO Auto-generated constructor stub
 	}
@@ -196,7 +197,7 @@ public class TImgToImagePlus extends ImagePlus {
 	 * @param title
 	 * @param ip
 	 */
-	public TImgToImagePlus(String title, ImageProcessor ip) {
+	public TImgToImagePlus(final String title, final ImageProcessor ip) {
 		super(title, ip);
 		// TODO Auto-generated constructor stub
 	}
@@ -205,7 +206,7 @@ public class TImgToImagePlus extends ImagePlus {
 	 * @param title
 	 * @param stack
 	 */
-	public TImgToImagePlus(String title, ImageStack stack) {
+	public TImgToImagePlus(final String title, final ImageStack stack) {
 		super(title, stack);
 		// TODO Auto-generated constructor stub
 	}

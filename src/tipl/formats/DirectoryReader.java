@@ -64,7 +64,7 @@ public abstract class DirectoryReader implements TReader {
 	 *            folder path name
 	 * @return best suited directory reader
 	 */
-	public static DirectoryReader ChooseBest(String path) {
+	public static DirectoryReader ChooseBest(final String path) {
 		HashMap<FileFilter, DRFactory> allFacts;
 		try {
 			allFacts = getAllFactories();
@@ -94,12 +94,12 @@ public abstract class DirectoryReader implements TReader {
 	 * ChooseBest chosses the directory reader plugin which has the highest
 	 * number of matches in the given directory using the FileFilter
 	 **/
-	public static DirectoryReader ChooseBest_OLD(String path) {
+	public static DirectoryReader ChooseBest_OLD(final String path) {
 		final FileFilter tFilter = EvaluateDirectory(path);
 		return RegisteredReaders.get(tFilter).get(path);
 	}
 
-	public static FileFilter EvaluateDirectory(String path) {
+	public static FileFilter EvaluateDirectory(final String path) {
 
 		System.out.println("Loaded DirectoryReader Plugins:");
 		FileFilter bestFilter = null;
@@ -122,7 +122,7 @@ public abstract class DirectoryReader implements TReader {
 	 * the number of matches for each filter. The filter with the most matches
 	 * is then returned or an exception is thrown
 	 **/
-	public static int FilterCount(String path, FileFilter cFilter) {
+	public static int FilterCount(final String path, final FileFilter cFilter) {
 		final File dir = new File(path);
 		final File[] imglist = dir.listFiles(cFilter);
 		final int zlen = imglist.length;
@@ -148,7 +148,7 @@ public abstract class DirectoryReader implements TReader {
 		return current;
 	}
 
-	public static void main(ArgumentParser p) {
+	public static void main(final ArgumentParser p) {
 		System.out.println("DirectoryReader Tool v" + version);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 		final String inputFile = p.getOptionString("input", "",
@@ -166,7 +166,7 @@ public abstract class DirectoryReader implements TReader {
 
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		main(new ArgumentParser(args));
 	}
 
@@ -187,7 +187,8 @@ public abstract class DirectoryReader implements TReader {
 	private static HashMap<FileFilter, DRFactory> RegisteredReaders = new HashMap<FileFilter, DRFactory>();
 
 	@Deprecated
-	public static void Register(FileFilter cFilter, DRFactory dFactory) {
+	public static void Register(final FileFilter cFilter,
+			final DRFactory dFactory) {
 		RegisteredReaders.put(cFilter, dFactory);
 	}
 
@@ -202,7 +203,7 @@ public abstract class DirectoryReader implements TReader {
 		// handle this automatically
 		Arrays.sort(imglist, new Comparator<File>() {
 			@Override
-			public int compare(File f1, File f2) {
+			public int compare(final File f1, final File f2) {
 				return f1.getAbsolutePath().compareTo(f2.getAbsolutePath());
 			}
 		});
@@ -357,7 +358,7 @@ public abstract class DirectoryReader implements TReader {
 	 * factory function to read the filename
 	 */
 	@Override
-	public TReader.TSliceReader ReadSlice(int slice) throws IOException {
+	public TReader.TSliceReader ReadSlice(final int slice) throws IOException {
 		// TODO Auto-generated method stub
 		if (slice >= imglist.length) {
 			throw new IOException("Exceeds bound!!!" + slice + " of "
@@ -371,7 +372,7 @@ public abstract class DirectoryReader implements TReader {
 	 * 
 	 * @see tipl.formats.TImg#setDim()
 	 */
-	protected void setDim(D3int inDim) {
+	protected void setDim(final D3int inDim) {
 		dim = inDim;
 	}
 
@@ -380,7 +381,7 @@ public abstract class DirectoryReader implements TReader {
 	 * 
 	 * @see tipl.formats.TImg#setElSize()
 	 */
-	protected void setElSize(D3float inDim) {
+	protected void setElSize(final D3float inDim) {
 		elSize = inDim;
 	}
 
@@ -389,7 +390,7 @@ public abstract class DirectoryReader implements TReader {
 	 * 
 	 * @see tipl.formats.TImg#setOffset()
 	 */
-	protected void setOffset(D3int inDim) {
+	protected void setOffset(final D3int inDim) {
 		offset = inDim;
 	}
 
@@ -398,7 +399,7 @@ public abstract class DirectoryReader implements TReader {
 	 * 
 	 * @see tipl.formats.TImg#setPos()
 	 */
-	protected void setPos(D3int inDim) {
+	protected void setPos(final D3int inDim) {
 		pos = inDim;
 	}
 
@@ -408,7 +409,7 @@ public abstract class DirectoryReader implements TReader {
 	 * @see tipl.formats.TReader#SetupReader(java.lang.String)
 	 */
 	@Override
-	public void SetupReader(String inPath) {
+	public void SetupReader(final String inPath) {
 		// TODO Auto-generated method stub
 
 	}

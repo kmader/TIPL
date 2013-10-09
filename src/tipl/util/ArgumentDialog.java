@@ -27,7 +27,7 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
 	 *            the intialized block
 	 * @return the block with setParameter run
 	 */
-	public static TIPLBlock GUIBlock(TIPLBlock blockToRun) {
+	public static TIPLBlock GUIBlock(final TIPLBlock blockToRun) {
 		ArgumentParser args = new ArgumentParser(new String[] {});
 		args = blockToRun.setParameter(args);
 		final ArgumentDialog guiArgs = new ArgumentDialog(args,
@@ -55,20 +55,20 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
 
 	}
 
-	protected GUIControl addD3Control(String cName, D3float cStat,
-			String helpText) {
+	protected GUIControl addD3Control(final String cName, final D3float cStat,
+			final String helpText) {
 		addTextControl(helpText + ": " + cName + ".x", cStat.x, "help");
 		addTextControl(cName + ".y", cStat.y, "");
 		return addTextControl(cName + ".z", cStat.z, "");
 	}
 
-	protected GUIControl addTextControl(String cName, Object cValue,
-			String helpText) {
+	protected GUIControl addTextControl(final String cName,
+			final Object cValue, final String helpText) {
 		final GUIControl f = g.appendStringField(cName, cValue.toString());
 		return f;
 	}
 
-	protected GUIControl getControl(ArgumentList.Argument cArgument) {
+	protected GUIControl getControl(final ArgumentList.Argument cArgument) {
 		final String cName = cArgument.getName();
 		final String cHelp = cArgument.getHelpText();
 		final String fName = cName + " [" + cHelp + "]:";
@@ -105,7 +105,7 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
 	}
 
 	@Override
-	public void process(ArgumentList.Argument cArgument) {
+	public void process(final ArgumentList.Argument cArgument) {
 		final String cName = cArgument.getName();
 		controls.put(cName, getControl(cArgument));
 	}

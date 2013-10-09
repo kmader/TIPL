@@ -19,7 +19,7 @@ import tipl.util.TImgTools;
  */
 public class IJGlue {
 
-	public static void run(TImg inImg, String cmd, String opts) {
+	public static void run(final TImg inImg, final String cmd, final String opts) {
 		final VirtualAim vaImg = new VirtualAim(inImg);
 		IJ.run(vaImg.getImagePlus(), cmd, opts);
 	}
@@ -28,7 +28,7 @@ public class IJGlue {
 
 	public static final String kVer = "121106_001";
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 
 		System.out
 				.println("IJGlue Provides Access to ImageJ Functions and Scripting  v"

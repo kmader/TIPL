@@ -21,15 +21,16 @@ public interface TIPLBlock {
 		protected final boolean isess;
 		protected final String dname;
 
-		public BlockImage(String iName, String iDesc, boolean essential) {
+		public BlockImage(final String iName, final String iDesc,
+				final boolean essential) {
 			name = iName;
 			desc = iDesc;
 			isess = essential;
 			dname = "";
 		}
 
-		public BlockImage(String iName, String defName, String iDesc,
-				boolean essential) {
+		public BlockImage(final String iName, final String defName,
+				final String iDesc, final boolean essential) {
 			name = iName;
 			desc = iDesc;
 			isess = essential;

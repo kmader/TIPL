@@ -12,7 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class TomcatDB {
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final TomcatDB myDB = new TomcatDB();
 		System.out.println(" Kevin's SLS DUO Database Interface v" + myDB.kVer);
 
@@ -77,7 +77,7 @@ public class TomcatDB {
 
 	}
 
-	public int CheckResults(int[] LogIds) {
+	public int CheckResults(final int[] LogIds) {
 		int output = 0;
 		for (final int cResult : LogIds)
 			if (cResult > -1)
@@ -85,11 +85,12 @@ public class TomcatDB {
 		return output;
 	}
 
-	public void CreateEntry(String title, String text) {
+	public void CreateEntry(final String title, final String text) {
 		CreateEntry(title, text, "N");
 	}
 
-	public void CreateEntry(String title, String text, String priority) {
+	public void CreateEntry(final String title, final String text,
+			final String priority) {
 		try {
 			final SimpleDateFormat tomcatdate = new SimpleDateFormat(
 					"dd/MM/yyyy H:m");
@@ -105,23 +106,24 @@ public class TomcatDB {
 		}
 	}
 
-	public void DeleteEntry(int LogId) {
+	public void DeleteEntry(final int LogId) {
 		final String[] bloed = ExecCommand("DEL&LOGID=" + LogId, "");
 		for (final String mud : bloed)
 			System.out.println(mud);
 	}
 
-	public void EditEntry(int LogId, String text) {
+	public void EditEntry(final int LogId, final String text) {
 		EditEntry(LogId, text, "N");
 	}
 
-	public void EditEntry(int LogId, String text, String priority) {
+	public void EditEntry(final int LogId, final String text,
+			final String priority) {
 		final String[] probStr = ExecCommand("VIEW&LOGID=" + LogId, "");
 		DeleteEntry(LogId);
 		CreateEntry(probStr[4], probStr[5] + text, priority);
 	}
 
-	public String[] ExecCommand(String action, String poschti) {
+	public String[] ExecCommand(final String action, final String poschti) {
 		String output = "";
 		String postContent = poschti;
 		new URLDecoder();
@@ -176,15 +178,16 @@ public class TomcatDB {
 		System.out.println("\tUPDATE\t Update a record with the given name");
 	}
 
-	public int[] Search(String searchstr) {
+	public int[] Search(final String searchstr) {
 		return Search(searchstr, false);
 	}
 
-	public int[] Search(String searchstr, boolean isStrict) {
+	public int[] Search(final String searchstr, final boolean isStrict) {
 		return Search(searchstr, isStrict, false);
 	}
 
-	public int[] Search(String searchstr, boolean isStrict, boolean verbose) {
+	public int[] Search(final String searchstr, final boolean isStrict,
+			final boolean verbose) {
 		// URLEncoder bob=new URLEncoder();
 		String myStr;
 		try {
@@ -226,11 +229,11 @@ public class TomcatDB {
 		return output;
 	}
 
-	public String[] ShowResult(int LogId) {
+	public String[] ShowResult(final int LogId) {
 		return ShowResult(LogId, true);
 	}
 
-	public String[] ShowResult(int LogId, boolean printAlles) {
+	public String[] ShowResult(final int LogId, final boolean printAlles) {
 		if (LogId > 0) {
 			final String[] probStr = ExecCommand("VIEW&LOGID=" + LogId, "");
 			int cDex = 0;
@@ -246,17 +249,17 @@ public class TomcatDB {
 		}
 	}
 
-	public void UpdateRecord(String searchName, String newText) {
+	public void UpdateRecord(final String searchName, final String newText) {
 		UpdateRecord(searchName, newText, true);
 	}
 
-	public void UpdateRecord(String searchName, String newText,
-			boolean preserveOld) {
+	public void UpdateRecord(final String searchName, final String newText,
+			final boolean preserveOld) {
 		UpdateRecord(searchName, newText, preserveOld, "N");
 	}
 
-	public void UpdateRecord(String searchName, String newText,
-			boolean preserveOld, String priority) {
+	public void UpdateRecord(final String searchName, final String newText,
+			final boolean preserveOld, final String priority) {
 		try {
 			final int[] sresults = Search(searchName, true);
 			final int nresults = CheckResults(sresults);
@@ -292,11 +295,12 @@ public class TomcatDB {
 	}
 
 	// public void AddFile(int LogId,String FileName,String
-	public void UpdateRecord(String searchName, String newText, String priority) {
+	public void UpdateRecord(final String searchName, final String newText,
+			final String priority) {
 		UpdateRecord(searchName, newText, true, priority);
 	}
 
-	public String VMSCleanName(String filename) {
+	public String VMSCleanName(final String filename) {
 		// Cleans out the garbage in the filename
 		String outname = filename.toUpperCase();
 		int startVal = outname.lastIndexOf('/');

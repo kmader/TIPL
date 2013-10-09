@@ -7,11 +7,12 @@ import java.io.InputStreamReader;
 import java.util.Date;
 
 public class ExecTask {
-	public ExecTask(String cmds) {
+	public ExecTask(final String cmds) {
 		RunTask(cmds, true, "EvalService_KMNT.com");
 	}
 
-	public ExecTask(String cmds, String batchFileName, boolean useQueue) {
+	public ExecTask(final String cmds, final String batchFileName,
+			final boolean useQueue) {
 		if (useQueue) {
 			RunTask("$ DEF DK1 'P1'\n$ CD 'P2'\n" + cmds, false, batchFileName);
 			RunTask("$ SUBMIT/PARAMETERS=('F$TRNLNM(\"DK1\")','F$ENVIRONMENT(\"DEFAULT\")')/NOPRINT/QUE=SYS$EVAL/LOG=SYS$SCRATCH: "
@@ -22,7 +23,8 @@ public class ExecTask {
 		}
 	}
 
-	public void RunTask(String cmds, boolean dRun, String submitterFilename) {
+	public void RunTask(final String cmds, final boolean dRun,
+			final String submitterFilename) {
 		final File submitterFile = new File(submitterFilename);
 		FileOutputStream fos;
 		String submitCommand = "$! Submitted file created by a java tool\n";

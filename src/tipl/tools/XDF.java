@@ -480,7 +480,7 @@ public class XDF extends BaseTIPLPluginMult {
 		public boolean isFinished = false; // needs a new position
 		private int ix, iy, iz;
 		public radDistFun crdf = null;
-		public final int imageType;
+		public final int inputType;
 		public long runningTime;
 		public long iters;
 		public Thread myThread = null;
@@ -491,12 +491,12 @@ public class XDF extends BaseTIPLPluginMult {
 		protected final int lowx, uppx, lowy, uppy, lowz, uppz;
 		protected final D3int neighborSize;
 
-		public xdfScanner(XDF iparent, int iimageType, int core) {
+		public xdfScanner(XDF iparent, int iinputType, int core) {
 			baseName = ("xdfScanner[" + core + "]:<>");
 			curName = baseName;
 			isFinished = true;
 			parent = iparent;
-			imageType = iimageType;
+			inputType = iinputType;
 			runningTime = 0;
 			iters = 0;
 
@@ -541,16 +541,12 @@ public class XDF extends BaseTIPLPluginMult {
 			curName = baseName + " <" + x + "," + y + "," + z + ">";
 		}
 
-		/**
-		 * Distribute (using divideThreadWork) and process (using processWork)
-		 * the work across the various threads
-		 */
 		@Override
 		public void run() {
 			isFinished = false;
 			final long ist = System.currentTimeMillis();
 			try {
-				switch (imageType) {
+				switch (inputType) {
 				case 3:
 					runFloatSub(ix, iy, iz);
 					break;
@@ -632,7 +628,7 @@ public class XDF extends BaseTIPLPluginMult {
 																// is not inside
 																// the old
 																// object
-							switch (imageType) {
+							switch (inputType) {
 							case 0:
 								validInside = (parent.inAimByte[off2] != parent.inPhase);
 								break;
@@ -647,7 +643,7 @@ public class XDF extends BaseTIPLPluginMult {
 						}
 						if (validInside) {
 							boolean pointMatch = false;
-							switch (imageType) {
+							switch (inputType) {
 							case 0:
 								pointMatch = (parent.inAimByte[off2] == parent.outPhase);
 								break;
@@ -890,19 +886,21 @@ public class XDF extends BaseTIPLPluginMult {
 	public XDF() {
 		hasMask=false;
 	}
-	//protected TImgRO inAim;
+	protected TImgRO internalImageReference=null;
 	@Override
 	public void LoadImages(TImgRO[] inImages) {
 		if (inImages.length < 1)
 			throw new IllegalArgumentException("Too few input images given!");
-		TImgRO inAim = inImages[0];
-		if (inputType<0) inputType = inAim.getImageType();
+		internalImageReference = inImages[0];
+		if (inputType<0) inputType = internalImageReference.getImageType();
 		if (inImages.length>1) {
 			System.out.println("Evidently a mask is also present, so it will be used:"+inImages[1]);
 			hasMask=true;
-			xdfMask = TImgTools.makeTImgFullReadable(inImages[0]).getBoolAim();
+			xdfMask = TImgTools.makeTImgFullReadable(inImages[1]).getBoolAim();
+		} else {
+			hasMask=false;
 		}
-		ImportAim(inAim,inputType);
+		
 
 	}
 	
@@ -910,9 +908,8 @@ public class XDF extends BaseTIPLPluginMult {
 		rdf.add(crdf);
 	}
 	
-
 	protected boolean checkNeighborSurface(int x, int y, int z, int off) {
-		final int cImgTyp = imageType;
+		final int cImgTyp = inputType;
 		for (int z2 = max(z - surfNeighborSize.z, lowz); z2 <= min(z
 				+ surfNeighborSize.z, uppz - 1); z2++) {
 			for (int y2 = max(y - surfNeighborSize.y, lowy); y2 <= min(y
@@ -954,9 +951,187 @@ public class XDF extends BaseTIPLPluginMult {
 		return new int[2];
 
 	}
+	/**
+	 * prepares the surface mask to be used for the rest of the analysis
+	 */
+	protected void prepareSurfaceMask() {
+		
+		boolean[] xdfSurfMask = new boolean[aimLength];
+		
+		if (neighborKernel == null)
+			curKernel = new BaseTIPLPluginIn.stationaryKernel();
+		else
+			curKernel = new BaseTIPLPluginIn.stationaryKernel(
+					neighborKernel);
+		System.out.println("Calculating Surface Voxels ... (" + inPhase
+				+ ")");
+		final int cImgTyp = inputType;
+		long totVox = 0;
+		long surfVox = 0;
+		for (int z = lowz; z < (uppz); z++) {
+			for (int y = (lowy); y < (uppy); y++) {
+				int off = (z * dim.y + y) * dim.x + lowx;
+				for (int x = (lowx); x < (uppx); x++, off++) {
+					boolean validStart = true;
+					switch (cImgTyp) {
+					case 0:
+						validStart = (inAimByte[off] == inPhase);
+						break;
+					case 1:
+						validStart = (inAimShort[off] == inPhase);
+						break;
+					case 2:
+						validStart = (inAimInt[off] == inPhase);
+						break;
+					case 10:
+						validStart = inAimMask[off];
+						break;
+					}
+					if (validStart) {
+						totVox++;
+						xdfSurfMask[off] = checkNeighborSurface(x, y, z,
+								off);
+						if (xdfSurfMask[off])
+							surfVox++;
+					}
+				}
+			}
 
+		}
+		System.out.println("Surface Calculation finished  : "
+				+ StrPctRatio(surfVox, totVox) + " , " + StrMvx(surfVox)
+				+ " vox");
+		hasMask=true;
+	}
+	protected void runFullScan(final xdfScanner[] bfArray,final boolean useMask) {
+		int curCore = 0;
+		mcIter = (int) (vCount / skipFactor.prod());
+		for (int z = lowz + OUTERSHELL; z < (uppz - OUTERSHELL); z += skipFactor.z) {
+			for (int y = (lowy + OUTERSHELL); y < (uppy - OUTERSHELL); y += skipFactor.y) {
+				int off = (z * dim.y + y) * dim.x + lowx + OUTERSHELL;
+				for (int x = (lowx + OUTERSHELL); x < (uppx - OUTERSHELL); x += skipFactor.x, off += skipFactor.x) {
+					boolean validStart = true;
+					if (useMask)
+						validStart = xdfMask[off];
+					if (validStart) {
+						if (useSurface)
+							validStart = xdfSurfMask[off];
+						else {
+
+							switch (inputType) {
+							case 0:
+								validStart = (inAimByte[off] == inPhase);
+								break;
+							case 1:
+								validStart = (inAimShort[off] == inPhase);
+								break;
+							case 2:
+								validStart = (inAimInt[off] == inPhase);
+								break;
+							case 3:
+								// All points are valid
+								break;
+							case 10:
+								validStart = inAimMask[off];
+								break;
+							}
+
+						}
+					}
+
+					if (validStart) {
+
+						curCore = 0; // always start at 0
+						while (!isCoreFree(bfArray, curCore)) {
+							curCore++;
+							if (curCore >= neededCores()) {
+								curCore = 0;
+								Thread.yield();
+							}
+						}
+						bfArray[curCore].spawn(x, y, z);
+
+						curIter++;
+						if ((curIter) % printStep == 0) {
+
+							System.out.println(curCore + ":"
+									+ StrPctRatio(off, dim.prod()) + " - "
+									+ toString(bfArray[curCore].crdf));
+						}
+					}
+				}
+			}
+		}
+	}
+	protected void runIterativeScan(xdfScanner[] bfArray,final boolean useMask) {
+		int curCore = 0;
+		for (curIter = 0; curIter < mcIter; curIter++) {
+			boolean validStart = false;
+			int x = 0, y = 0, z = 0, noff = 0;
+
+			while (!validStart) {
+				x = rgen.nextInt(uppx - lowx - 2 * OUTERSHELL) + lowx
+						+ OUTERSHELL;
+				y = rgen.nextInt(uppy - lowy - 2 * OUTERSHELL) + lowy
+						+ OUTERSHELL;
+				z = rgen.nextInt(uppz - lowz - 2 * OUTERSHELL) + lowz
+						+ OUTERSHELL;
+				noff = (z * dim.y + y) * dim.x + x;
+
+				if (useMask)
+					validStart = xdfMask[noff];
+				else
+					validStart = true;
+				if (validStart) {
+					if (useSurface)
+						validStart = xdfSurfMask[noff];
+					else {
+						switch (inputType) {
+						case 0:
+							validStart = (inAimByte[noff] == inPhase);
+							break;
+						case 1:
+							validStart = (inAimShort[noff] == inPhase);
+							break;
+						case 2:
+							validStart = (inAimInt[noff] == inPhase);
+							break;
+						case 3:
+							validStart = true;
+							break;
+						case 10:
+							validStart = inAimMask[noff];
+							break;
+						}
+					}
+				}
+				if (!validStart) {
+				}
+			}
+			curCore = 0; // always start at 0
+			while (!isCoreFree(bfArray, curCore)) {
+				curCore++;
+				if (curCore >= neededCores()) {
+					curCore = 0;
+					Thread.yield();
+				}
+			}
+			bfArray[curCore].spawn(x, y, z);
+
+			if ((curIter) % printStep == 0)
+				System.out.println(curCore + ":"
+						+ toString(bfArray[curCore].crdf));
+			else if (((missedIter + 1) % (5 * printStep)) == 0) {
+				System.out.println(curCore + ": M" + missedIter + "-"
+						+ toString(bfArray[curCore].crdf));
+			}
+		}
+	}
 	@Override
 	public boolean execute() {
+		// first import the image
+		ImportAim(internalImageReference,inputType);
+		
 		printStep = (new Integer(mcIter / 10)).intValue();
 
 		// Run loop to make bubbles
@@ -964,11 +1139,14 @@ public class XDF extends BaseTIPLPluginMult {
 		Thread.currentThread();
 		jStartTime = System.currentTimeMillis();
 		final xdfScanner[] bfArray = new xdfScanner[neededCores()];
-
+		if (inputType == 3)
+			useSurface = false;
+		
+		if (useSurface) prepareSurfaceMask();
+		
 		// Call the other threads
-		final boolean useMask=hasMask;
-		int curCore = 0;
-		if (useMask) {
+		
+		if (hasMask) {
 			if (aimLength != xdfMask.length) {
 				System.out.println("SIZES DO NOT MATCH  !!!!!!!!");
 				return false;
@@ -976,182 +1154,15 @@ public class XDF extends BaseTIPLPluginMult {
 		}
 		// Wind up
 		for (int i = 0; i < neededCores(); i++) {
-			bfArray[i] = new xdfScanner(this, imageType, i);
+			bfArray[i] = new xdfScanner(this, inputType, i);
 		}
 		curIter = 0;
-		if (imageType == 3)
-			useSurface = false;
-		if (useSurface) {
-			xdfSurfMask = null;
-			System.gc();
-			xdfSurfMask = new boolean[aimLength];
-			if (neighborKernel == null)
-				curKernel = new BaseTIPLPluginIn.stationaryKernel();
-			else
-				curKernel = new BaseTIPLPluginIn.stationaryKernel(
-						neighborKernel);
-			System.out.println("Calculating Surface Voxels ... (" + inPhase
-					+ ")");
-			final int cImgTyp = imageType;
-			long totVox = 0;
-			long surfVox = 0;
-			for (int z = lowz; z < (uppz); z++) {
-				for (int y = (lowy); y < (uppy); y++) {
-					int off = (z * dim.y + y) * dim.x + lowx;
-					for (int x = (lowx); x < (uppx); x++, off++) {
-						boolean validStart = true;
-						switch (cImgTyp) {
-						case 0:
-							validStart = (inAimByte[off] == inPhase);
-							break;
-						case 1:
-							validStart = (inAimShort[off] == inPhase);
-							break;
-						case 2:
-							validStart = (inAimInt[off] == inPhase);
-							break;
-						case 10:
-							validStart = inAimMask[off];
-							break;
-						}
-						if (validStart) {
-							totVox++;
-							xdfSurfMask[off] = checkNeighborSurface(x, y, z,
-									off);
-							if (xdfSurfMask[off])
-								surfVox++;
-						}
-					}
-				}
-
-			}
-			System.out.println("Surface Calculation finished  : "
-					+ StrPctRatio(surfVox, totVox) + " , " + StrMvx(surfVox)
-					+ " vox");
-
-		}
-		System.out.println("Calculating XDF ... (" + outPhase + ")");
+		
+		System.out.println("Calculating XDF ...Type:("+inputType+"), Phase:(" + outPhase + ")");
 		if (fullScan) {
-			mcIter = (int) (vCount / skipFactor.prod());
-			for (int z = lowz + OUTERSHELL; z < (uppz - OUTERSHELL); z += skipFactor.z) {
-				for (int y = (lowy + OUTERSHELL); y < (uppy - OUTERSHELL); y += skipFactor.y) {
-					int off = (z * dim.y + y) * dim.x + lowx + OUTERSHELL;
-					for (int x = (lowx + OUTERSHELL); x < (uppx - OUTERSHELL); x += skipFactor.x, off += skipFactor.x) {
-						boolean validStart = true;
-						if (useMask)
-							validStart = xdfMask[off];
-						if (validStart) {
-							if (useSurface)
-								validStart = xdfSurfMask[off];
-							else {
-
-								switch (imageType) {
-								case 0:
-									validStart = (inAimByte[off] == inPhase);
-									break;
-								case 1:
-									validStart = (inAimShort[off] == inPhase);
-									break;
-								case 2:
-									validStart = (inAimInt[off] == inPhase);
-									break;
-								case 3:
-									// All points are valid
-									break;
-								case 10:
-									validStart = inAimMask[off];
-									break;
-								}
-
-							}
-						}
-
-						if (validStart) {
-
-							curCore = 0; // always start at 0
-							while (!isCoreFree(bfArray, curCore)) {
-								curCore++;
-								if (curCore >= neededCores()) {
-									curCore = 0;
-									Thread.yield();
-								}
-							}
-							bfArray[curCore].spawn(x, y, z);
-
-							curIter++;
-							if ((curIter) % printStep == 0) {
-
-								System.out.println(curCore + ":"
-										+ StrPctRatio(off, dim.prod()) + " - "
-										+ toString(bfArray[curCore].crdf));
-							}
-						}
-					}
-				}
-			}
+			runFullScan(bfArray,hasMask);
 		} else { // Iterative Approach
-			for (curIter = 0; curIter < mcIter; curIter++) {
-				boolean validStart = false;
-				int x = 0, y = 0, z = 0, noff = 0;
-
-				while (!validStart) {
-					x = rgen.nextInt(uppx - lowx - 2 * OUTERSHELL) + lowx
-							+ OUTERSHELL;
-					y = rgen.nextInt(uppy - lowy - 2 * OUTERSHELL) + lowy
-							+ OUTERSHELL;
-					z = rgen.nextInt(uppz - lowz - 2 * OUTERSHELL) + lowz
-							+ OUTERSHELL;
-					noff = (z * dim.y + y) * dim.x + x;
-
-					if (useMask)
-						validStart = xdfMask[noff];
-					else
-						validStart = true;
-					if (validStart) {
-						if (useSurface)
-							validStart = xdfSurfMask[noff];
-						else {
-							switch (imageType) {
-							case 0:
-								validStart = (inAimByte[noff] == inPhase);
-								break;
-							case 1:
-								validStart = (inAimShort[noff] == inPhase);
-								break;
-							case 2:
-								validStart = (inAimInt[noff] == inPhase);
-								break;
-							case 3:
-								validStart = true;
-								break;
-							case 10:
-								validStart = inAimMask[noff];
-								break;
-							}
-						}
-					}
-					if (!validStart) {
-					}
-				}
-				curCore = 0; // always start at 0
-				while (!isCoreFree(bfArray, curCore)) {
-					curCore++;
-					if (curCore >= neededCores()) {
-						curCore = 0;
-						// myThread.sleep(10);
-						Thread.yield();
-					}
-				}
-				bfArray[curCore].spawn(x, y, z);
-
-				if ((curIter) % printStep == 0)
-					System.out.println(curCore + ":"
-							+ toString(bfArray[curCore].crdf));
-				else if (((missedIter + 1) % (5 * printStep)) == 0) {
-					System.out.println(curCore + ": M" + missedIter + "-"
-							+ toString(bfArray[curCore].crdf));
-				}
-			}
+			runIterativeScan(bfArray,hasMask);
 		}
 
 		// Wind down
@@ -1178,7 +1189,7 @@ public class XDF extends BaseTIPLPluginMult {
 		procLog += "XDF : " + toString() + "\n";
 		if (milMode)
 			procLog += "MIL Mode Enabled\n";
-		if (imageType < 3)
+		if (inputType < 3)
 			procLog += "Two Phase Analysis:(" + inPhase + ", " + outPhase
 					+ ")\n";
 		System.out.println(toString());
@@ -1440,31 +1451,31 @@ public class XDF extends BaseTIPLPluginMult {
 
 	@Override
 	protected void runByte() {
-		System.err.println("Input type" + imageType + " not supported");
+		System.err.println("Input type" + inputType + " not supported");
 		return;
 	}
 
 	@Override
 	protected void runFloat() {
-		System.err.println("Input type" + imageType + " not supported");
+		System.err.println("Input type" + inputType + " not supported");
 		return;
 	}
 
 	@Override
 	protected void runInt() {
-		System.err.println("Input type" + imageType + " not supported");
+		System.err.println("Input type" + inputType + " not supported");
 		return;
 	}
 
 	@Override
 	protected void runMask() {
-		System.err.println("Input type" + imageType + " not supported");
+		System.err.println("Input type" + inputType + " not supported");
 		return;
 	};
 
 	@Override
 	protected void runShort() {
-		System.err.println("Input type" + imageType + " not supported");
+		System.err.println("Input type" + inputType + " not supported");
 		return;
 	}
 

@@ -31,8 +31,8 @@ public class ConcurrentReader implements TImgRO {
 		final List<Future<Object>> slices;
 		final int type;
 
-		public CachedConcurrentReader(TImgRO inImage,
-				List<Future<Object>> inSlices, int inType) {
+		public CachedConcurrentReader(final TImgRO inImage,
+				final List<Future<Object>> inSlices, final int inType) {
 			super(inImage);
 			slices = inSlices;
 			type = inType;
@@ -84,13 +84,13 @@ public class ConcurrentReader implements TImgRO {
 	protected final TImgRO templateData;
 	protected final ExecutorService readRunner;
 
-	public ConcurrentReader(TImgRO inImage) {
+	public ConcurrentReader(final TImgRO inImage) {
 		templateData = inImage;
 		readRunner = TIPLGlobal.getIOExecutor();
 	}
 
 	@Override
-	public String appendProcLog(String inData) {
+	public String appendProcLog(final String inData) {
 		return templateData.appendProcLog(inData);
 	}
 
@@ -107,7 +107,7 @@ public class ConcurrentReader implements TImgRO {
 				getDim().z, asType), asType);
 	}
 
-	public boolean CheckSizes(TImg otherTImg) {
+	public boolean CheckSizes(final TImg otherTImg) {
 		return TImgTools.CheckSizes2(this, otherTImg);
 	}
 
@@ -184,8 +184,8 @@ public class ConcurrentReader implements TImgRO {
 		});
 	}
 
-	public List<Future<Object>> getPolyImageSlices(int iStart, int iFinish,
-			int asType) {
+	public List<Future<Object>> getPolyImageSlices(final int iStart,
+			final int iFinish, final int asType) {
 		final List<Future<Object>> slices = new ArrayList<Future<Object>>(
 				iFinish - iStart + 1);
 		final int rStart = BaseTIPLPluginIn.max(iStart, 0);
@@ -229,12 +229,12 @@ public class ConcurrentReader implements TImgRO {
 		return templateData.getSigned();
 	}
 
-	public Double[] getXYZVec(int cIndex, int sliceNumber) {
+	public Double[] getXYZVec(final int cIndex, final int sliceNumber) {
 		return TImgTools.getXYZVecFromVec(this, cIndex, sliceNumber);
 	}
 
-	public boolean InitializeImage(D3int iPos, D3int iDim, D3int iOff,
-			D3float iSize, int iType) {
+	public boolean InitializeImage(final D3int iPos, final D3int iDim,
+			final D3int iOff, final D3float iSize, final int iType) {
 		return false;
 	}
 
@@ -249,13 +249,13 @@ public class ConcurrentReader implements TImgRO {
 	}
 
 	@Override
-	public void WriteAim(String path) {
+	public void WriteAim(final String path) {
 		TImgTools.WriteTImg(this, path);
 	}
 
 	@Override
-	public void WriteAim(String outpath, int outType, float scaleVal,
-			boolean IisSigned) {
+	public void WriteAim(final String outpath, final int outType,
+			final float scaleVal, final boolean IisSigned) {
 		TImgTools.WriteTImg(this, outpath, outType, scaleVal, IisSigned);
 	}
 }

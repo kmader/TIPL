@@ -21,7 +21,7 @@ public abstract class FuncImage implements TImg {
 	public static final double[] floatRange = { 0, 1 };
 	public static final double[] boolRange = { 0, 1 };
 
-	public static double[] typeRange(int cType) {
+	public static double[] typeRange(final int cType) {
 		switch (cType) {
 		case 0:
 			return byteRange;
@@ -45,7 +45,7 @@ public abstract class FuncImage implements TImg {
 	 **/
 	public final boolean useFloat;
 
-	protected FuncImage(boolean useFloatInput) {
+	protected FuncImage(final boolean useFloatInput) {
 		useFloat = useFloatInput;
 	}
 
@@ -53,7 +53,7 @@ public abstract class FuncImage implements TImg {
 	 * Fimage simply returns data from the template file whenever any resource
 	 * except slice data is requested
 	 */
-	public FuncImage(TImg dummyDataset, int iimageType) {
+	public FuncImage(final TImg dummyDataset, final int iimageType) {
 		templateData = dummyDataset;
 
 		imageType = iimageType;
@@ -69,18 +69,19 @@ public abstract class FuncImage implements TImg {
 	 *            asks if integers or floats are given as input to the
 	 *            voxelfunction
 	 **/
-	public FuncImage(TImg dummyDataset, int iimageType, boolean useFloatInput) {
+	public FuncImage(final TImg dummyDataset, final int iimageType,
+			final boolean useFloatInput) {
 		templateData = dummyDataset;
 		imageType = iimageType;
 		useFloat = useFloatInput;
 	}
 
 	@Override
-	public String appendProcLog(String inData) {
+	public String appendProcLog(final String inData) {
 		return templateData.getProcLog() + inData;
 	}
 
-	public boolean CheckSizes(TImg otherTImg) {
+	public boolean CheckSizes(final TImg otherTImg) {
 		return TImgTools.CheckSizes2(this, otherTImg);
 	}
 
@@ -118,7 +119,7 @@ public abstract class FuncImage implements TImg {
 	public abstract String getPath();
 
 	@Override
-	public Object getPolyImage(int isliceNumber, int asType) {
+	public Object getPolyImage(final int isliceNumber, final int asType) {
 		final boolean[] maskSlice = (boolean[]) templateData.getPolyImage(
 				isliceNumber, 10);
 		if (useFloat) {
@@ -257,36 +258,41 @@ public abstract class FuncImage implements TImg {
 	public abstract double getVFvalue(int cIndex, int sliceNumber, double v);
 
 	@Override
-	public TImg inheritedAim(boolean[] imgArray, D3int dim, D3int offset) {
+	public TImg inheritedAim(final boolean[] imgArray, final D3int dim,
+			final D3int offset) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
 				offset);
 	}
 
 	@Override
-	public TImg inheritedAim(char[] imgArray, D3int dim, D3int offset) {
+	public TImg inheritedAim(final char[] imgArray, final D3int dim,
+			final D3int offset) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
 				offset);
 	}
 
 	@Override
-	public TImg inheritedAim(float[] imgArray, D3int dim, D3int offset) {
+	public TImg inheritedAim(final float[] imgArray, final D3int dim,
+			final D3int offset) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
 				offset);
 	}
 
 	@Override
-	public TImg inheritedAim(ImageStack iStack) {
+	public TImg inheritedAim(final ImageStack iStack) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(iStack);
 	}
 
 	@Override
-	public TImg inheritedAim(int[] imgArray, D3int dim, D3int offset) {
+	public TImg inheritedAim(final int[] imgArray, final D3int dim,
+			final D3int offset) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
 				offset);
 	}
 
 	@Override
-	public TImg inheritedAim(short[] imgArray, D3int dim, D3int offset) {
+	public TImg inheritedAim(final short[] imgArray, final D3int dim,
+			final D3int offset) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
 				offset);
 	}
@@ -294,13 +300,13 @@ public abstract class FuncImage implements TImg {
 	// Temporary solution, here it would probably even be better to use
 	// templateAim.inherited but that can be figured out later
 	@Override
-	public TImg inheritedAim(TImgRO inAim) {
+	public TImg inheritedAim(final TImgRO inAim) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(inAim);
 	}
 
 	@Override
-	public boolean InitializeImage(D3int iPos, D3int iDim, D3int iOff,
-			D3float iSize, int iType) {
+	public boolean InitializeImage(final D3int iPos, final D3int iDim,
+			final D3int iOff, final D3float iSize, final int iType) {
 		return false;
 	}
 
@@ -314,30 +320,30 @@ public abstract class FuncImage implements TImg {
 		return templateData.isGood();
 	}
 
-	public boolean setBoolArray(int iSlice, boolean[] junk) {
+	public boolean setBoolArray(final int iSlice, final boolean[] junk) {
 		System.out.println("NOT IMPLEMENTED FOR :" + this);
 		return false;
 	}
 
-	public boolean setByteArray(int iSlice, char[] junk) {
+	public boolean setByteArray(final int iSlice, final char[] junk) {
 		System.out.println("NOT IMPLEMENTED FOR :" + this);
 		return false;
 	}
 
 	@Override
-	public void setCompression(boolean inData) {
+	public void setCompression(final boolean inData) {
 	}
 
 	/** The size of the image */
 	@Override
-	public void setDim(D3int inData) {
+	public void setDim(final D3int inData) {
 	}
 
 	@Override
-	public void setElSize(D3float inData) {
+	public void setElSize(final D3float inData) {
 	}
 
-	public boolean setFloatArray(int iSlice, float[] junk) {
+	public boolean setFloatArray(final int iSlice, final float[] junk) {
 		System.out.println("NOT IMPLEMENTED FOR :" + this);
 		return false;
 	}
@@ -347,10 +353,10 @@ public abstract class FuncImage implements TImg {
 	 * same as input)
 	 */
 	@Override
-	public void setImageType(int inData) {
+	public void setImageType(final int inData) {
 	}
 
-	public boolean setIntArray(int iSlice, int[] junk) {
+	public boolean setIntArray(final int iSlice, final int[] junk) {
 		System.out.println("NOT IMPLEMENTED FOR :" + this);
 		return false;
 	}
@@ -360,7 +366,7 @@ public abstract class FuncImage implements TImg {
 	 * voxel data
 	 */
 	@Override
-	public void setOffset(D3int inData) {
+	public void setOffset(final D3int inData) {
 	}
 
 	/**
@@ -368,30 +374,30 @@ public abstract class FuncImage implements TImg {
 	 * only needed for ROIs
 	 */
 	@Override
-	public void setPos(D3int inData) {
+	public void setPos(final D3int inData) {
 	}
 
-	public boolean setShortArray(int iSlice, short[] junk) {
+	public boolean setShortArray(final int iSlice, final short[] junk) {
 		System.out.println("NOT IMPLEMENTED FOR :" + this);
 		return false;
 	}
 
 	@Override
-	public void setShortScaleFactor(float ssf) {
+	public void setShortScaleFactor(final float ssf) {
 	}
 
 	@Override
-	public void setSigned(boolean inData) {
+	public void setSigned(final boolean inData) {
 	}
 
 	@Override
-	public void WriteAim(String path) {
+	public void WriteAim(final String path) {
 		TImgTools.WriteTImg(this, path);
 	}
 
 	@Override
-	public void WriteAim(String outpath, int outType, float scaleVal,
-			boolean IisSigned) {
+	public void WriteAim(final String outpath, final int outType,
+			final float scaleVal, final boolean IisSigned) {
 		TImgTools.WriteTImg(this, outpath, outType, scaleVal, IisSigned);
 	}
 

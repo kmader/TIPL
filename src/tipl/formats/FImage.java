@@ -11,13 +11,13 @@ public class FImage extends FuncImage {
 		protected TImg templateData;
 		protected int imageType;
 
-		public MaskablePFImage(TImg dummyDataset, int iimageType,
+		public MaskablePFImage(final TImg dummyDataset, final int iimageType,
 				final PureFImage.PositionFunction ipf) {
 
 			super(dummyDataset, iimageType, new FImage.VoxelFunction() {
 
 				@Override
-				public double get(Double[] ipos, double voxval) {
+				public double get(final Double[] ipos, final double voxval) {
 					return ipf.get(ipos);
 				}
 
@@ -38,12 +38,13 @@ public class FImage extends FuncImage {
 			}, true);
 		}
 
-		public MaskablePFImage(TImg dummyDataset, final PureFImage iPFImage) {
+		public MaskablePFImage(final TImg dummyDataset,
+				final PureFImage iPFImage) {
 
 			super(dummyDataset, iPFImage.imageType, new FImage.VoxelFunction() {
 
 				@Override
-				public double get(Double[] ipos, double voxval) {
+				public double get(final Double[] ipos, final double voxval) {
 					return iPFImage.pf.get(ipos);
 				}
 
@@ -84,7 +85,7 @@ public class FImage extends FuncImage {
 
 	protected VoxelFunction vf;
 
-	protected FImage(boolean useFloatInput) {
+	protected FImage(final boolean useFloatInput) {
 		super(useFloatInput);
 	}
 
@@ -92,7 +93,8 @@ public class FImage extends FuncImage {
 	 * Fimage simply returns data from the template file whenever any resource
 	 * except slice data is requested
 	 */
-	public FImage(TImg dummyDataset, int iimageType, VoxelFunction ivf) {
+	public FImage(final TImg dummyDataset, final int iimageType,
+			final VoxelFunction ivf) {
 		super(dummyDataset, iimageType, false);
 		vf = ivf;
 
@@ -107,8 +109,8 @@ public class FImage extends FuncImage {
 	 *            asks if integers or floats are given as input to the
 	 *            voxelfunction
 	 **/
-	public FImage(TImg dummyDataset, int iimageType, VoxelFunction ivf,
-			boolean useFloatInput) {
+	public FImage(final TImg dummyDataset, final int iimageType,
+			final VoxelFunction ivf, final boolean useFloatInput) {
 		super(dummyDataset, iimageType, useFloatInput);
 		vf = ivf;
 	}
@@ -141,7 +143,8 @@ public class FImage extends FuncImage {
 	 * @return value
 	 */
 	@Override
-	public double getVFvalue(int cIndex, int sliceNumber, double v) {
+	public double getVFvalue(final int cIndex, final int sliceNumber,
+			final double v) {
 		final Double[] xyzPos = TImgTools.getXYZVecFromVec(this, cIndex,
 				sliceNumber);
 		return vf.get(xyzPos, v);

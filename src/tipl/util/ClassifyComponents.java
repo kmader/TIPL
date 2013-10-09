@@ -11,7 +11,7 @@ class CCRule {
 	public boolean valid = false;
 	private final String oprList[] = { "eq", "neq", "gt", "geq", "lt", "leq" };
 
-	public CCRule(String cond) {
+	public CCRule(final String cond) {
 		valid = false;
 		final String[] curRule = cond.split(",");
 		if (curRule.length == 3) {
@@ -23,7 +23,7 @@ class CCRule {
 		}
 	}
 
-	public boolean Apply(Hashtable<String, String> values) {
+	public boolean Apply(final Hashtable<String, String> values) {
 		if (valid) {
 			if (values.containsKey(lhs)) {
 				final double curVal = (new Float(values.get(lhs)))
@@ -49,7 +49,7 @@ class CCRule {
 		return false;
 	}
 
-	private int parseOpr(String cOpr) {
+	private int parseOpr(final String cOpr) {
 		for (int i = 0; i < oprList.length; i++) {
 			if (cOpr.compareToIgnoreCase(oprList[i]) == 0)
 				return i;
@@ -70,7 +70,7 @@ public class ClassifyComponents {
 	 * 
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		// TODO Auto-generated method stub
 		// Arguments Component Labeled File (LACUN,CANLB,CANBK,..), CSV file,
 		// Rules, ...

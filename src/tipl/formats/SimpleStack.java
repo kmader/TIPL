@@ -18,8 +18,8 @@ import tipl.util.TImgTools;
  * 
  */
 public class SimpleStack<T> extends TImgStack {
-	public static SimpleStack<boolean[]> BoolStack(D3int cDim, D3int cPos,
-			D3float cEl) {
+	public static SimpleStack<boolean[]> BoolStack(final D3int cDim,
+			final D3int cPos, final D3float cEl) {
 		final int sliceDim = cDim.x * cDim.y;
 		final ArrayList<boolean[]> newStack = new ArrayList<boolean[]>();
 		for (int z = 0; z <= cDim.z; z++)
@@ -27,12 +27,13 @@ public class SimpleStack<T> extends TImgStack {
 		return new SimpleStack<boolean[]>(cDim, cPos, cEl, "", newStack, false);
 	}
 
-	public static SimpleStack<boolean[]> BoolStack(TImgTools.HasDimensions cDims) {
+	public static SimpleStack<boolean[]> BoolStack(
+			final TImgTools.HasDimensions cDims) {
 		return BoolStack(cDims.getDim(), cDims.getPos(), cDims.getElSize());
 	}
 
-	public static SimpleStack<float[]> FloatStack(D3int cDim, D3int cPos,
-			D3float cEl) {
+	public static SimpleStack<float[]> FloatStack(final D3int cDim,
+			final D3int cPos, final D3float cEl) {
 		final int sliceDim = cDim.x * cDim.y;
 		final ArrayList<float[]> newStack = new ArrayList<float[]>();
 		for (int z = 0; z <= cDim.z; z++)
@@ -40,12 +41,13 @@ public class SimpleStack<T> extends TImgStack {
 		return new SimpleStack<float[]>(cDim, cPos, cEl, "", newStack, false);
 	}
 
-	public static SimpleStack<float[]> FloatStack(TImgTools.HasDimensions cDims) {
+	public static SimpleStack<float[]> FloatStack(
+			final TImgTools.HasDimensions cDims) {
 		return FloatStack(cDims.getDim(), cDims.getPos(), cDims.getElSize());
 	}
 
-	public static SimpleStack<int[]> IntStack(D3int cDim, D3int cPos,
-			D3float cEl) {
+	public static SimpleStack<int[]> IntStack(final D3int cDim,
+			final D3int cPos, final D3float cEl) {
 		final int sliceDim = cDim.x * cDim.y;
 		final ArrayList<int[]> newStack = new ArrayList<int[]>();
 		for (int z = 0; z <= cDim.z; z++)
@@ -53,7 +55,8 @@ public class SimpleStack<T> extends TImgStack {
 		return new SimpleStack<int[]>(cDim, cPos, cEl, "", newStack, false);
 	}
 
-	public static SimpleStack<int[]> IntStack(TImgTools.HasDimensions cDims) {
+	public static SimpleStack<int[]> IntStack(
+			final TImgTools.HasDimensions cDims) {
 		return IntStack(cDims.getDim(), cDims.getPos(), cDims.getElSize());
 	}
 
@@ -67,8 +70,9 @@ public class SimpleStack<T> extends TImgStack {
 	/**
 	 * Create a new SimpleStack from a dimension and an existing stack
 	 */
-	protected SimpleStack(D3int cDim, D3int cPos, D3float cEl, String log,
-			ArrayList<T> istack, boolean makeCopy) {
+	protected SimpleStack(final D3int cDim, final D3int cPos,
+			final D3float cEl, final String log, final ArrayList<T> istack,
+			final boolean makeCopy) {
 		myDim = cDim;
 		myPos = cPos;
 		myElSize = cEl;
@@ -89,7 +93,7 @@ public class SimpleStack<T> extends TImgStack {
 	 * @see tipl.formats.TImgRO#appendProcLog(java.lang.String)
 	 */
 	@Override
-	public String appendProcLog(String inData) {
+	public String appendProcLog(final String inData) {
 		procLog += inData;
 		return procLog;
 	}
@@ -161,7 +165,7 @@ public class SimpleStack<T> extends TImgStack {
 	 * @see tipl.formats.TImgRO#getPolyImage(int, int)
 	 */
 	@Override
-	public Object getPolyImage(int sliceNumber, int asType) {
+	public Object getPolyImage(final int sliceNumber, final int asType) {
 		// TODO Auto-generated method stub
 		return TImgTools.convertArrayType(getSlice(sliceNumber), imageType,
 				asType, false, 1.0f, 128);
@@ -226,7 +230,7 @@ public class SimpleStack<T> extends TImgStack {
 	 * @param sliceNumber
 	 * @return slice as an object
 	 */
-	protected T getSlice(int sliceNumber) {
+	protected T getSlice(final int sliceNumber) {
 		return stack.get(sliceNumber);
 	}
 
@@ -256,7 +260,7 @@ public class SimpleStack<T> extends TImgStack {
 	 * @see tipl.formats.TImgRO#WriteAim(java.lang.String)
 	 */
 	@Override
-	public void WriteAim(String path) {
+	public void WriteAim(final String path) {
 		TImgTools.WriteTImg(this, path);
 	}
 
@@ -266,8 +270,8 @@ public class SimpleStack<T> extends TImgStack {
 	 * @see tipl.formats.TImgRO#WriteAim(java.lang.String, int, float, boolean)
 	 */
 	@Override
-	public void WriteAim(String outpath, int outType, float scaleVal,
-			boolean IisSigned) {
+	public void WriteAim(final String outpath, final int outType,
+			final float scaleVal, final boolean IisSigned) {
 		TImgTools.WriteTImg(this, outpath, outType, scaleVal, IisSigned);
 
 	}

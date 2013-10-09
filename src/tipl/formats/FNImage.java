@@ -16,7 +16,7 @@ public class FNImage extends FImage {
 				double cValue = 0.0;
 
 				@Override
-				public void add(Double[] ipos, double v) {
+				public void add(final Double[] ipos, final double v) {
 					cValue += v;
 				}
 
@@ -47,7 +47,7 @@ public class FNImage extends FImage {
 				long cCount = 0;
 
 				@Override
-				public void add(Double[] ipos, double v) {
+				public void add(final Double[] ipos, final double v) {
 					cValue += v;
 					cCount++;
 				}
@@ -78,7 +78,7 @@ public class FNImage extends FImage {
 				double cValue = 1.0;
 
 				@Override
-				public void add(Double[] ipos, double v) {
+				public void add(final Double[] ipos, final double v) {
 					cValue *= v;
 				}
 
@@ -104,7 +104,7 @@ public class FNImage extends FImage {
 	public static class PhaseImage implements VFNGenerator {
 		protected final double[] phaseVals;
 
-		public PhaseImage(double[] iphaseVals) {
+		public PhaseImage(final double[] iphaseVals) {
 			phaseVals = iphaseVals;
 		}
 
@@ -115,7 +115,7 @@ public class FNImage extends FImage {
 				int imgCount = 0;
 
 				@Override
-				public void add(Double[] ipos, double v) {
+				public void add(final Double[] ipos, final double v) {
 					if ((v > 0) && (imgCount < phaseVals.length))
 						oValue = phaseVals[imgCount];
 					imgCount++;
@@ -184,7 +184,8 @@ public class FNImage extends FImage {
 	 * Fimage simply returns data from the template file whenever any resource
 	 * except slice data is requested
 	 */
-	public FNImage(TImg[] dummyDataset, int iimageType, VFNGenerator ivfg) {
+	public FNImage(final TImg[] dummyDataset, final int iimageType,
+			final VFNGenerator ivfg) {
 		super(false);
 		templateDataArray = dummyDataset;
 		templateData = templateDataArray[0];
@@ -209,8 +210,8 @@ public class FNImage extends FImage {
 	 *            asks if integers or floats are given as input to the
 	 *            voxelfunction
 	 **/
-	public FNImage(TImg[] dummyDataset, int iimageType, VFNGenerator ivfg,
-			boolean useFloatInput) {
+	public FNImage(final TImg[] dummyDataset, final int iimageType,
+			final VFNGenerator ivfg, final boolean useFloatInput) {
 		super(useFloatInput);
 		templateDataArray = dummyDataset;
 		templateData = templateDataArray[0];
@@ -226,7 +227,7 @@ public class FNImage extends FImage {
 	}
 
 	@Override
-	public String appendProcLog(String inData) {
+	public String appendProcLog(final String inData) {
 		final String oName = templateData.getProcLog() + inData;
 		for (final TImg cImg : templateDataArray) {
 			cImg.appendProcLog(inData);
@@ -235,11 +236,11 @@ public class FNImage extends FImage {
 	}
 
 	@Override
-	public boolean CheckSizes(TImg otherTImg) {
+	public boolean CheckSizes(final TImg otherTImg) {
 		return TImgTools.CheckSizes2(this, otherTImg);
 	}
 
-	public boolean[] getBoolArray(int isliceNumber) {
+	public boolean[] getBoolArray(final int isliceNumber) {
 		final VoxelFunctionN[] cvf = VFNSpawn();
 		final boolean[] maskSlice = new boolean[sliceSize];
 		VFNIterate(cvf, isliceNumber);
@@ -249,7 +250,7 @@ public class FNImage extends FImage {
 		return maskSlice;
 	}
 
-	public char[] getByteArray(int isliceNumber) {
+	public char[] getByteArray(final int isliceNumber) {
 		final VoxelFunctionN[] cvf = VFNSpawn();
 		final char[] byteSlice = new char[sliceSize];
 		VFNIterate(cvf, isliceNumber);
@@ -258,7 +259,7 @@ public class FNImage extends FImage {
 		return byteSlice;
 	}
 
-	public float[] getFloatArray(int isliceNumber) {
+	public float[] getFloatArray(final int isliceNumber) {
 		final VoxelFunctionN[] cvf = VFNSpawn();
 		final float[] floatSlice = new float[sliceSize];
 		VFNIterate(cvf, isliceNumber);
@@ -267,7 +268,7 @@ public class FNImage extends FImage {
 		return floatSlice;
 	}
 
-	public int[] getIntArray(int isliceNumber) {
+	public int[] getIntArray(final int isliceNumber) {
 		final VoxelFunctionN[] cvf = VFNSpawn();
 		final int[] intSlice = new int[sliceSize];
 		VFNIterate(cvf, isliceNumber);
@@ -291,7 +292,7 @@ public class FNImage extends FImage {
 		return oName + ")";
 	}
 
-	public short[] getShortArray(int isliceNumber) {
+	public short[] getShortArray(final int isliceNumber) {
 		final VoxelFunctionN[] cvf = VFNSpawn();
 		final short[] shortSlice = new short[sliceSize];
 		VFNIterate(cvf, isliceNumber);
@@ -300,7 +301,7 @@ public class FNImage extends FImage {
 		return shortSlice;
 	}
 
-	public Double[] getXYZVec(int cIndex, int sliceNumber) {
+	public Double[] getXYZVec(final int cIndex, final int sliceNumber) {
 		return TImgTools.getXYZVecFromVec(this, cIndex, sliceNumber);
 	}
 
@@ -314,8 +315,8 @@ public class FNImage extends FImage {
 		return templateData.isGood();
 	}
 
-	protected final void VFGSetup(int iimageType, VFNGenerator ivfg,
-			boolean useFloatInput) {
+	protected final void VFGSetup(final int iimageType,
+			final VFNGenerator ivfg, final boolean useFloatInput) {
 
 		vfg = ivfg;
 		vfn = vfg.get();
@@ -324,7 +325,7 @@ public class FNImage extends FImage {
 		// vfN as VF
 		vf = new VoxelFunction() {
 			@Override
-			public double get(Double[] ipos, double v) {
+			public double get(final Double[] ipos, final double v) {
 				final VoxelFunctionN vfon = tvfg.get();
 				vfon.add(ipos, v);
 				return vfon.get();
@@ -342,7 +343,8 @@ public class FNImage extends FImage {
 		};
 	}
 
-	protected void VFNFloatIterate(VoxelFunctionN[] cvf, int isliceNumber) {
+	protected void VFNFloatIterate(final VoxelFunctionN[] cvf,
+			final int isliceNumber) {
 
 		for (final TImg cImg : templateDataArray) {
 			final TImg.TImgFull fullCImg = new TImg.TImgFull(cImg);
@@ -353,7 +355,8 @@ public class FNImage extends FImage {
 		}
 	}
 
-	protected void VFNIntIterate(VoxelFunctionN[] cvf, int isliceNumber) {
+	protected void VFNIntIterate(final VoxelFunctionN[] cvf,
+			final int isliceNumber) {
 		for (final TImg cImg : templateDataArray) {
 			final TImg.TImgFull fullCImg = new TImg.TImgFull(cImg);
 			final int[] tSlice = fullCImg.getIntArray(isliceNumber);
@@ -363,7 +366,7 @@ public class FNImage extends FImage {
 		}
 	}
 
-	protected void VFNIterate(VoxelFunctionN[] cvf, int isliceNumber) {
+	protected void VFNIterate(final VoxelFunctionN[] cvf, final int isliceNumber) {
 		if (useFloat)
 			VFNFloatIterate(cvf, isliceNumber);
 		else

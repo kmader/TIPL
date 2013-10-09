@@ -20,7 +20,7 @@ public class DMPFolder extends DirectoryReader {
 
 	private static class DMPSliceFactory implements TSliceFactory {
 		@Override
-		public TSliceReader ReadFile(File infile) throws IOException {
+		public TSliceReader ReadFile(final File infile) throws IOException {
 			return new DMPSliceReader(infile);
 		}
 	}
@@ -64,7 +64,7 @@ public class DMPFolder extends DirectoryReader {
 		}
 
 		@Override
-		public Object polyReadImage(int asType) throws IOException {
+		public Object polyReadImage(final int asType) throws IOException {
 			final float[] gf = new float[sliceSize];
 			final int bufferSize = sliceSize * 4;
 			final byte[] buffer = new byte[bufferSize];
@@ -102,7 +102,7 @@ public class DMPFolder extends DirectoryReader {
 	final static String version = "08-03-2013";
 	final static private FileFilter dmpFilter = new FileFilter() {
 		@Override
-		public boolean accept(File file) {
+		public boolean accept(final File file) {
 			if (file.getAbsolutePath().endsWith(".dmp"))
 				return true;
 			if (file.getAbsolutePath().endsWith(".DMP"))
@@ -116,7 +116,7 @@ public class DMPFolder extends DirectoryReader {
 	@DirectoryReader.DReader(name = "DMP")
 	final public static DRFactory myFactory = new DRFactory() {
 		@Override
-		public DirectoryReader get(String path) {
+		public DirectoryReader get(final String path) {
 			try {
 				return new DMPFolder(path);
 			} catch (final Exception e) {
@@ -138,7 +138,7 @@ public class DMPFolder extends DirectoryReader {
 		DirectoryReader.Register(dmpFilter, myFactory);
 	}
 
-	public static void main(ArgumentParser p) {
+	public static void main(final ArgumentParser p) {
 		System.out.println("DMPFolder Tool v" + VirtualAim.kVer);
 
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
@@ -158,11 +158,11 @@ public class DMPFolder extends DirectoryReader {
 
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		main(new ArgumentParser(args));
 	}
 
-	public DMPFolder(String path) throws IOException {
+	public DMPFolder(final String path) throws IOException {
 		super(path, dmpFilter, new DMPSliceFactory());
 
 	}
@@ -199,7 +199,7 @@ public class DMPFolder extends DirectoryReader {
 	 * 
 	 * @see tipl.formats.DirectoryReader#setImageType(int)
 	 */
-	public void setImageType(int inData) {
+	public void setImageType(final int inData) {
 		throw new IllegalArgumentException("Type Cannot Be Set");
 	}
 

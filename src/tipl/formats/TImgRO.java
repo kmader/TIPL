@@ -1,8 +1,9 @@
 package tipl.formats;
 
+import ij.ImageStack;
+
 import java.util.ArrayList;
 
-import ij.ImageStack;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
 
@@ -84,27 +85,27 @@ public interface TImgRO extends TImgTools.HasDimensions {
 		}
 
 		@Override
-		public boolean[] getBoolArray(int sliceNumber) {
+		public boolean[] getBoolArray(final int sliceNumber) {
 			return (boolean[]) myImg.getPolyImage(sliceNumber, 10);
 		}
 
 		@Override
-		public char[] getByteArray(int sliceNumber) {
+		public char[] getByteArray(final int sliceNumber) {
 			return (char[]) myImg.getPolyImage(sliceNumber, 0);
 		}
 
 		@Override
-		public float[] getFloatArray(int sliceNumber) {
+		public float[] getFloatArray(final int sliceNumber) {
 			return (float[]) myImg.getPolyImage(sliceNumber, 3);
 		}
 
 		@Override
-		public int[] getIntArray(int sliceNumber) {
+		public int[] getIntArray(final int sliceNumber) {
 			return (int[]) myImg.getPolyImage(sliceNumber, 2);
 		}
 
 		@Override
-		public short[] getShortArray(int sliceNumber) {
+		public short[] getShortArray(final int sliceNumber) {
 			return (short[]) myImg.getPolyImage(sliceNumber, 1);
 		}
 
@@ -132,7 +133,7 @@ public interface TImgRO extends TImgTools.HasDimensions {
 
 	public abstract static class TImgStack implements HasStack {
 		@Override
-		public Object[] getPolyStack(int asType) {
+		public Object[] getPolyStack(final int asType) {
 			final ArrayList<Object> cStack = new ArrayList<Object>();
 			for (int i = 0; i <= getDim().z; i++)
 				cStack.add(getPolyImage(i, asType));

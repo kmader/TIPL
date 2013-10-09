@@ -106,24 +106,24 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 				final ArgumentList.ArgumentCallback iv) {
 			return new MouseListener() {
 				@Override
-				public void mouseClicked(MouseEvent arg0) {
+				public void mouseClicked(final MouseEvent arg0) {
 					iv.valueSet(getValueAsString());
 				}
 
 				@Override
-				public void mouseEntered(MouseEvent arg0) {
+				public void mouseEntered(final MouseEvent arg0) {
 				}
 
 				@Override
-				public void mouseExited(MouseEvent arg0) {
+				public void mouseExited(final MouseEvent arg0) {
 				}
 
 				@Override
-				public void mousePressed(MouseEvent arg0) {
+				public void mousePressed(final MouseEvent arg0) {
 				}
 
 				@Override
-				public void mouseReleased(MouseEvent arg0) {
+				public void mouseReleased(final MouseEvent arg0) {
 				}
 			};
 		}
@@ -134,7 +134,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 		// curCallback=ArgumentList.emptyCallback;
 		// protected MouseListener curMouseListener=emptyMouseListener;
 		@Override
-		public void setValueCallback(ArgumentList.ArgumentCallback iv) {
+		public void setValueCallback(final ArgumentList.ArgumentCallback iv) {
 			pushMLToObject(getMouseListener(iv));
 
 		}
@@ -154,23 +154,23 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 
 	final protected static MouseListener emptyMouseListener = new MouseListener() {
 		@Override
-		public void mouseClicked(MouseEvent arg0) {
+		public void mouseClicked(final MouseEvent arg0) {
 		}
 
 		@Override
-		public void mouseEntered(MouseEvent arg0) {
+		public void mouseEntered(final MouseEvent arg0) {
 		}
 
 		@Override
-		public void mouseExited(MouseEvent arg0) {
+		public void mouseExited(final MouseEvent arg0) {
 		}
 
 		@Override
-		public void mousePressed(MouseEvent arg0) {
+		public void mousePressed(final MouseEvent arg0) {
 		}
 
 		@Override
-		public void mouseReleased(MouseEvent arg0) {
+		public void mouseReleased(final MouseEvent arg0) {
 		}
 
 	};
@@ -187,7 +187,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 			}
 
 			@Override
-			protected void pushMLToObject(MouseListener curListener) {
+			protected void pushMLToObject(final MouseListener curListener) {
 				f.addMouseListener(curListener);
 			}
 
@@ -202,7 +202,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 			}
 
 			@Override
-			protected void pushMLToObject(MouseListener curListener) {
+			protected void pushMLToObject(final MouseListener curListener) {
 				f.addMouseListener(curListener);
 			}
 		};
@@ -252,7 +252,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * are open. Dialog parameters are recorded by ImageJ's command recorder but
 	 * this requires that the first word of each label be unique.
 	 */
-	public TIPLDialog(String title) {
+	public TIPLDialog(final String title) {
 		this(title,
 				WindowManager.getCurrentImage() != null ? (Frame) WindowManager
 						.getCurrentImage().getWindow()
@@ -261,7 +261,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	}
 
 	/** Creates a new TIPLDialog using the specified title and parent frame. */
-	public TIPLDialog(String title, Frame parent) {
+	public TIPLDialog(final String title, final Frame parent) {
 		super(parent == null ? new Frame() : parent, title, true);
 		// super(title,parent);
 		if (Prefs.blackCanvas) {
@@ -291,7 +291,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent e) {
+	public void actionPerformed(final ActionEvent e) {
 		final Object source = e.getSource();
 		if (source == okay || source == cancel | source == no) {
 			wasCanceled = source == cancel;
@@ -324,8 +324,8 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * @param defaultValues
 	 *            the initial states
 	 */
-	public void addCheckboxGroup(int rows, int columns, String[] labels,
-			boolean[] defaultValues) {
+	public void addCheckboxGroup(final int rows, final int columns,
+			final String[] labels, final boolean[] defaultValues) {
 		addCheckboxGroup(rows, columns, labels, defaultValues, null);
 	}
 
@@ -345,8 +345,9 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 *            http://imagej.nih.gov/ij/plugins/multi
 	 *            -column-dialog/index.html
 	 */
-	public void addCheckboxGroup(int rows, int columns, String[] labels,
-			boolean[] defaultValues, String[] headings) {
+	public void addCheckboxGroup(final int rows, final int columns,
+			final String[] labels, final boolean[] defaultValues,
+			final String[] headings) {
 		final Panel panel = new Panel();
 		final int nRows = headings != null ? rows + 1 : rows;
 		panel.setLayout(new GridLayout(nRows, columns, 6, 0));
@@ -417,7 +418,8 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * @param defaultItem
 	 *            the menu item initially selected
 	 */
-	public void addChoice(String label, String[] items, String defaultItem) {
+	public void addChoice(final String label, final String[] items,
+			final String defaultItem) {
 		String label2 = label;
 		if (label2.indexOf('_') != -1)
 			label2 = label2.replace('_', ' ');
@@ -462,7 +464,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * @param dl
 	 *            the Object that wants to listen.
 	 */
-	public void addDialogListener(DialogListener dl) {
+	public void addDialogListener(final DialogListener dl) {
 		if (dialogListeners == null)
 			dialogListeners = new Vector();
 		dialogListeners.addElement(dl);
@@ -476,12 +478,12 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * with "<html>". There is an example at
 	 * http://imagej.nih.gov/ij/macros/js/DialogWithHelp.js
 	 */
-	public void addHelp(String url) {
+	public void addHelp(final String url) {
 		helpURL = url;
 	}
 
 	/** Adds a message consisting of one or more lines of text. */
-	public void addMessage(String text) {
+	public void addMessage(final String text) {
 		addMessage(text, null, null);
 	}
 
@@ -489,7 +491,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * Adds a message consisting of one or more lines of text, which will be
 	 * displayed using the specified font.
 	 */
-	public void addMessage(String text, Font font) {
+	public void addMessage(final String text, final Font font) {
 		addMessage(text, font, null);
 	}
 
@@ -497,7 +499,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * Adds a message consisting of one or more lines of text, which will be
 	 * displayed using the specified font and color.
 	 */
-	public void addMessage(String text, Font font, Color color) {
+	public void addMessage(final String text, final Font font, final Color color) {
 		theLabel = null;
 		if (text.indexOf('\n') >= 0)
 			theLabel = new MultiLineLabel(text);
@@ -521,7 +523,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	}
 
 	/** Adds a Panel to the dialog. */
-	public void addPanel(Panel panel) {
+	public void addPanel(final Panel panel) {
 		addPanel(panel, GridBagConstraints.WEST, new Insets(5, 0, 0, 0));
 	}
 
@@ -530,7 +532,8 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * are GridBagConstraints.WEST (left justified) and "new Insets(5, 0, 0, 0)"
 	 * (5 pixels of padding at the top).
 	 */
-	public void addPanel(Panel panel, int constraints, Insets insets) {
+	public void addPanel(final Panel panel, final int constraints,
+			final Insets insets) {
 		c.gridx = 0;
 		c.gridy = y;
 		c.gridwidth = 2;
@@ -555,8 +558,8 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * @param defaultItem
 	 *            button initially selected
 	 */
-	public void addRadioButtonGroup(String label, String[] items, int rows,
-			int columns, String defaultItem) {
+	public void addRadioButtonGroup(String label, final String[] items,
+			final int rows, final int columns, final String defaultItem) {
 		final Panel panel = new Panel();
 		final int n = items.length;
 		panel.setLayout(new GridLayout(rows, columns, 0, 0));
@@ -600,7 +603,8 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * @param rows
 	 *            the number of columns
 	 */
-	public void addTextAreas(String text1, String text2, int rows, int columns) {
+	public void addTextAreas(final String text1, final String text2,
+			final int rows, final int columns) {
 		if (textArea1 != null)
 			return;
 		final Panel panel = new Panel();
@@ -627,7 +631,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	}
 
 	@Override
-	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
+	public synchronized void adjustmentValueChanged(final AdjustmentEvent e) {
 		final Object source = e.getSource();
 		for (int i = 0; i < slider.size(); i++) {
 			if (source == slider.elementAt(i)) {
@@ -648,7 +652,8 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * @param defaultValue
 	 *            the initial state
 	 */
-	public GUIControl appendCheckbox(String label, boolean defaultValue) {
+	public GUIControl appendCheckbox(final String label,
+			final boolean defaultValue) {
 		return appendCheckbox(label, defaultValue, false);
 	}
 
@@ -657,8 +662,8 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * isPreview true, the checkbox can be referred to as previewCheckbox from
 	 * hereon.
 	 */
-	private GUIControl appendCheckbox(String label, boolean defaultValue,
-			boolean isPreview) {
+	private GUIControl appendCheckbox(final String label,
+			final boolean defaultValue, final boolean isPreview) {
 		String label2 = label;
 		if (label2.indexOf('_') != -1)
 			label2 = label2.replace('_', ' ');
@@ -699,8 +704,8 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * @param digits
 	 *            number of digits to right of decimal point
 	 */
-	public GUIControl appendNumericField(String label, double defaultValue,
-			int digits) {
+	public GUIControl appendNumericField(final String label,
+			final double defaultValue, final int digits) {
 		return appendNumericField(label, defaultValue, digits, 6, null);
 	}
 
@@ -719,8 +724,9 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * @param units
 	 *            a string displayed to the right of the field
 	 */
-	public GUIControl appendNumericField(String label, double defaultValue,
-			int digits, int columns, String units) {
+	public GUIControl appendNumericField(final String label,
+			final double defaultValue, final int digits, int columns,
+			final String units) {
 		String label2 = label;
 		if (label2.indexOf('_') != -1)
 			label2 = label2.replace('_', ' ');
@@ -792,7 +798,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * @param defaultValue
 	 *            the initial value of the slider
 	 */
-	public GUIControl appendSlider(String label, double minValue,
+	public GUIControl appendSlider(final String label, double minValue,
 			double maxValue, double defaultValue) {
 		int columns = 4;
 		int digits = 0;
@@ -902,7 +908,8 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * @param defaultText
 	 *            the text initially displayed
 	 */
-	public GUIControl appendStringField(String label, String defaultText) {
+	public GUIControl appendStringField(final String label,
+			final String defaultText) {
 		return appendStringField(label, defaultText, 8);
 	}
 
@@ -916,8 +923,8 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * @param columns
 	 *            width of the text field
 	 */
-	public GUIControl appendStringField(String label, String defaultText,
-			int columns) {
+	public GUIControl appendStringField(final String label,
+			final String defaultText, final int columns) {
 		String label2 = label;
 		if (label2.indexOf('_') != -1)
 			label2 = label2.replace('_', ' ');
@@ -963,7 +970,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	}
 
 	/** Display dialog centered on the primary screen? */
-	public void centerDialog(boolean b) {
+	public void centerDialog(final boolean b) {
 		centerDialog = b;
 	}
 
@@ -989,21 +996,21 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * 	IJ.log(&quot;User clicked 'No'&quot;);
 	 * </pre>
 	 */
-	public void enableYesNoCancel(String yesLabel, String noLabel) {
+	public void enableYesNoCancel(final String yesLabel, final String noLabel) {
 		this.yesLabel = yesLabel;
 		this.noLabel = noLabel;
 		yesNoCancel = true;
 	}
 
 	@Override
-	public void focusGained(FocusEvent e) {
+	public void focusGained(final FocusEvent e) {
 		final Component c = e.getComponent();
 		if (c instanceof TextField)
 			((TextField) c).selectAll();
 	}
 
 	@Override
-	public void focusLost(FocusEvent e) {
+	public void focusLost(final FocusEvent e) {
 		final Component c = e.getComponent();
 		if (c instanceof TextField)
 			((TextField) c).select(0, 0);
@@ -1054,7 +1061,8 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 		return new Insets(i.top + 10, i.left + 10, i.bottom + 10, i.right + 10);
 	}
 
-	Insets getInsets(int top, int left, int bottom, int right) {
+	Insets getInsets(final int top, final int left, final int bottom,
+			final int right) {
 		if (customInsets) {
 			customInsets = false;
 			return new Insets(topInset, leftInset, bottomInset, 0);
@@ -1313,7 +1321,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 		return textArea2;
 	}
 
-	protected Double getValue(String text) {
+	protected Double getValue(final String text) {
 		Double d;
 		try {
 			d = new Double(text);
@@ -1340,7 +1348,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 
 	// Returns true if s2 is in s1 and not in a bracketed literal (e.g.,
 	// "[literal]")
-	boolean isMatch(String s1, String s2) {
+	boolean isMatch(final String s1, String s2) {
 		if (s1.startsWith(s2))
 			return true;
 		s2 = " " + s2;
@@ -1371,12 +1379,12 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	}
 
 	@Override
-	public void itemStateChanged(ItemEvent e) {
+	public void itemStateChanged(final ItemEvent e) {
 		notifyListeners(e);
 	}
 
 	@Override
-	public void keyPressed(KeyEvent e) {
+	public void keyPressed(final KeyEvent e) {
 		final int keyCode = e.getKeyCode();
 		IJ.setKeyDown(keyCode);
 		if (keyCode == KeyEvent.VK_ENTER && textArea1 == null) {
@@ -1397,7 +1405,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	}
 
 	@Override
-	public void keyReleased(KeyEvent e) {
+	public void keyReleased(final KeyEvent e) {
 		final int keyCode = e.getKeyCode();
 		IJ.setKeyUp(keyCode);
 		final int flags = e.getModifiers();
@@ -1409,7 +1417,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	}
 
 	@Override
-	public void keyTyped(KeyEvent e) {
+	public void keyTyped(final KeyEvent e) {
 	}
 
 	private Label makeLabel(String label) {
@@ -1483,7 +1491,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * calling the run(ip) method of the PlugInFilter for preview is avoided in
 	 * that case.
 	 */
-	private void notifyListeners(AWTEvent e) {
+	private void notifyListeners(final AWTEvent e) {
 		if (dialogListeners == null)
 			return;
 		boolean everythingOk = true;
@@ -1515,7 +1523,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	}
 
 	@Override
-	public void paint(Graphics g) {
+	public void paint(final Graphics g) {
 		super.paint(g);
 		if (firstPaint) {
 			if (numberField != null && IJ.isMacOSX()) {
@@ -1548,7 +1556,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * Used by PlugInFilterRunner to provide visable feedback whether preview is
 	 * running or not by switching from "Preview" to "wait..."
 	 */
-	public void previewRunning(boolean isRunning) {
+	public void previewRunning(final boolean isRunning) {
 		if (previewCheckbox != null) {
 			previewCheckbox.setLabel(isRunning ? previewRunning : previewLabel);
 			if (IJ.isMacOSX())
@@ -1556,7 +1564,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 		}
 	}
 
-	private void recordCheckboxOption(Checkbox cb) {
+	private void recordCheckboxOption(final Checkbox cb) {
 		final String label = (String) labels.get(cb);
 		if (label != null) {
 			if (cb.getState()) // checked
@@ -1566,7 +1574,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 		}
 	}
 
-	private void recordOption(Object component, String value) {
+	private void recordOption(final Object component, String value) {
 		final String label = (String) labels.get(component);
 		if (value.equals(""))
 			value = "[]";
@@ -1583,7 +1591,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 		invalidNumber = false;
 	}
 
-	private void saveLabel(Object component, String label) {
+	private void saveLabel(final Object component, String label) {
 		if (labels == null)
 			labels = new Hashtable();
 		if (label.length() > 0) {
@@ -1594,17 +1602,17 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	}
 
 	/** Sets a replacement label for the "Cancel" button. */
-	public void setCancelLabel(String label) {
+	public void setCancelLabel(final String label) {
 		cancelLabel = label;
 	}
 
 	/** Sets the echo character for the next string field. */
-	public void setEchoChar(char echoChar) {
+	public void setEchoChar(final char echoChar) {
 		this.echoChar = echoChar;
 	}
 
 	/** Sets a replacement label for the "Help" button. */
-	public void setHelpLabel(String label) {
+	public void setHelpLabel(final String label) {
 		helpLabel = label;
 	}
 
@@ -1623,7 +1631,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 * 	        addChoice: 5,0,5 (first field) or 0,0,5
 	 * </pre>
 	 */
-	public void setInsets(int top, int left, int bottom) {
+	public void setInsets(final int top, final int left, final int bottom) {
 		topInset = top;
 		leftInset = left;
 		bottomInset = bottom;
@@ -1631,7 +1639,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	}
 
 	/** Sets a replacement label for the "OK" button. */
-	public void setOKLabel(String label) {
+	public void setOKLabel(final String label) {
 		okLabel = label;
 	}
 
@@ -1674,7 +1682,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	}
 
 	@Override
-	public void textValueChanged(TextEvent e) {
+	public void textValueChanged(final TextEvent e) {
 		notifyListeners(e);
 		if (slider == null)
 			return;
@@ -1714,33 +1722,33 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	}
 
 	@Override
-	public void windowActivated(WindowEvent e) {
+	public void windowActivated(final WindowEvent e) {
 	}
 
 	@Override
-	public void windowClosed(WindowEvent e) {
+	public void windowClosed(final WindowEvent e) {
 	}
 
 	@Override
-	public void windowClosing(WindowEvent e) {
+	public void windowClosing(final WindowEvent e) {
 		wasCanceled = true;
 		dispose();
 	}
 
 	@Override
-	public void windowDeactivated(WindowEvent e) {
+	public void windowDeactivated(final WindowEvent e) {
 	}
 
 	@Override
-	public void windowDeiconified(WindowEvent e) {
+	public void windowDeiconified(final WindowEvent e) {
 	}
 
 	@Override
-	public void windowIconified(WindowEvent e) {
+	public void windowIconified(final WindowEvent e) {
 	}
 
 	@Override
-	public void windowOpened(WindowEvent e) {
+	public void windowOpened(final WindowEvent e) {
 	}
 
 }

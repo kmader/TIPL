@@ -30,8 +30,8 @@ public class AnalyzePhase extends BaseTIPLBlock {
 		public final boolean useGrownLabel = false;
 		TIPLPluginIO myNH = new Neighbors();
 
-		public TImg[] execute(TImg labeledImage, TImg maskImage, String phName,
-				boolean writeShapeTensor) {
+		public TImg[] execute(final TImg labeledImage, final TImg maskImage,
+				final String phName, final boolean writeShapeTensor) {
 			// now make the dilation
 			final TIPLPluginIO vorn = getGrowingPlugin(labeledImage, maskImage);
 			vorn.execute();
@@ -59,7 +59,7 @@ public class AnalyzePhase extends BaseTIPLBlock {
 		 * @return a plugin object which when executed fills the mask with the
 		 *         obj (voronoi transform or something like that)
 		 */
-		public TIPLPluginIO getGrowingPlugin(TImg obj, TImg mask) {
+		public TIPLPluginIO getGrowingPlugin(final TImg obj, final TImg mask) {
 			return new kVoronoiShrink(obj, mask);
 		}
 
@@ -142,7 +142,7 @@ public class AnalyzePhase extends BaseTIPLBlock {
 	}
 
 	@Override
-	public ArgumentParser setParameterBlock(ArgumentParser p) {
+	public ArgumentParser setParameterBlock(final ArgumentParser p) {
 		minVoxCount = p.getOptionInt("minvoxcount", 1, "Minimum voxel count");
 		// sphKernelRadius=p.getOptionDouble("sphkernelradius",1.74,"Radius of spherical kernel to use for component labeling: vertex sharing is sqrt(3)*r, edge sharing is sqrt(2)*r,face sharing is 1*r ");
 		writeShapeTensor = p.getOptionBoolean("shapetensor",

@@ -36,7 +36,8 @@ public class MMapImage implements TImg, TReader, TWriter {
 		final int slice;
 		final int type;
 
-		public ByteBufferMaker(FileChannel inFc, long cOffset, long sliceSize) {
+		public ByteBufferMaker(final FileChannel inFc, final long cOffset,
+				final long sliceSize) {
 			offset = cOffset;
 			size = sliceSize;
 			fillSlice = false;
@@ -76,14 +77,14 @@ public class MMapImage implements TImg, TReader, TWriter {
 		}
 	}
 
-	public static MMapImage EmptyMap(String fileName, int x, int y, int z,
-			int asType) throws IOException {
+	public static MMapImage EmptyMap(final String fileName, final int x,
+			final int y, final int z, final int asType) throws IOException {
 		assert TImgTools.isValidType(asType);
 		final MMapImage mp = new MMapImage(fileName, new D3int(x, y, z), asType);
 		return mp;
 	}
 
-	private static void init(String filename) {
+	private static void init(final String filename) {
 		TIPLGlobal.DeleteTempAtFinish(filename);
 	}
 
@@ -95,8 +96,8 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * @return the MMap image
 	 * @throws IOException
 	 */
-	public static MMapImage MMapFromTImg(String fileName, TImgRO inImage)
-			throws IOException {
+	public static MMapImage MMapFromTImg(final String fileName,
+			final TImgRO inImage) throws IOException {
 		final MMapImage mp = new MMapImage(fileName, inImage);
 		mp.setPos(inImage.getPos());
 		mp.setOffset(inImage.getOffset());
@@ -105,7 +106,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 	}
 
 	protected static MappedByteBuffer putSlice(final MappedByteBuffer curMap,
-			final Object iSlice, int asType) {
+			final Object iSlice, final int asType) {
 		switch (asType) {
 		case TImgTools.IMAGETYPE_BOOL:
 			for (final boolean cVal : (boolean[]) iSlice)
@@ -144,7 +145,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 
 	private final int sliceElements;
 
-	private MMapImage(String filename, final D3int inDim, final int inType)
+	private MMapImage(final String filename, final D3int inDim, final int inType)
 			throws IOException {
 		this.raf = new RandomAccessFile(filename, "rw");
 		init(filename);
@@ -156,7 +157,8 @@ public class MMapImage implements TImg, TReader, TWriter {
 		makeSlices(sliceSize);
 	}
 
-	private MMapImage(String filename, final TImgRO inImage) throws IOException {
+	private MMapImage(final String filename, final TImgRO inImage)
+			throws IOException {
 		this.raf = new RandomAccessFile(filename, "rw");
 		dim = inImage.getDim();
 		type = inImage.getImageType();
@@ -173,12 +175,12 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * @see tipl.formats.TImg#appendProcLog(java.lang.String)
 	 */
 	@Override
-	public String appendProcLog(String inData) {
+	public String appendProcLog(final String inData) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	private boolean checkpos(int x, int y, int z) {
+	private boolean checkpos(final int x, final int y, final int z) {
 		return (x >= 0 && x < dim.x) && (y >= 0 && y < dim.y)
 				&& (z >= 0 && z < dim.z);
 	}
@@ -189,7 +191,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 		raf.close();
 	}
 
-	private void fillSlices(long sliceSize, TImgRO inImage) {
+	private void fillSlices(final long sliceSize, final TImgRO inImage) {
 		long offset = 0;
 		final ExecutorService es = TIPLGlobal.getIOExecutor();
 		for (int z = 0; z < dim.z; z++, offset += sliceSize)
@@ -280,7 +282,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * @see tipl.formats.TImg#getPolyImage(int, int)
 	 */
 	@Override
-	public Object getPolyImage(int iSliceNumber, int asType) {
+	public Object getPolyImage(final int iSliceNumber, final int asType) {
 		assert checkpos(0, 0, iSliceNumber);
 		assert TImgTools.isValidType(asType);
 		final MappedByteBuffer curMap = getSliceFromFuture(iSliceNumber);
@@ -388,43 +390,48 @@ public class MMapImage implements TImg, TReader, TWriter {
 	}
 
 	@Override
-	public TImg inheritedAim(boolean[] imgArray, D3int dim, D3int offset) {
+	public TImg inheritedAim(final boolean[] imgArray, final D3int dim,
+			final D3int offset) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
 				offset);
 	}
 
 	@Override
-	public TImg inheritedAim(char[] imgArray, D3int dim, D3int offset) {
+	public TImg inheritedAim(final char[] imgArray, final D3int dim,
+			final D3int offset) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
 				offset);
 	}
 
 	@Override
-	public TImg inheritedAim(float[] imgArray, D3int dim, D3int offset) {
+	public TImg inheritedAim(final float[] imgArray, final D3int dim,
+			final D3int offset) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
 				offset);
 	}
 
 	@Override
-	public TImg inheritedAim(ImageStack iStack) {
+	public TImg inheritedAim(final ImageStack iStack) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(iStack);
 	}
 
 	@Override
-	public TImg inheritedAim(int[] imgArray, D3int dim, D3int offset) {
+	public TImg inheritedAim(final int[] imgArray, final D3int dim,
+			final D3int offset) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
 				offset);
 	}
 
 	@Override
-	public TImg inheritedAim(short[] imgArray, D3int dim, D3int offset) {
+	public TImg inheritedAim(final short[] imgArray, final D3int dim,
+			final D3int offset) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
 				offset);
 	}
 
 	// Temporary solution,
 	@Override
-	public TImg inheritedAim(TImgRO inAim) {
+	public TImg inheritedAim(final TImgRO inAim) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(inAim);
 	}
 
@@ -435,8 +442,8 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * tipl.util.D3int, tipl.util.D3float, int)
 	 */
 	@Override
-	public boolean InitializeImage(D3int dPos, D3int cDim, D3int dOffset,
-			D3float elSize, int imageType) {
+	public boolean InitializeImage(final D3int dPos, final D3int cDim,
+			final D3int dOffset, final D3float elSize, final int imageType) {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -507,7 +514,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 		return false;
 	}
 
-	private void makeSlices(long sliceSize) {
+	private void makeSlices(final long sliceSize) {
 		long offset = 0;
 		final ExecutorService es = TIPLGlobal.getIOExecutor();
 		for (int z = 0; z < dim.z; z++, offset += sliceSize)
@@ -523,11 +530,11 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * @param y
 	 * @return
 	 */
-	protected long position(long x, long y) {
+	protected long position(final long x, final long y) {
 		return (y * dim.x + x) * typeSize;
 	}
 
-	protected long position(long x, long y, long z) {
+	protected long position(final long x, final long y, final long z) {
 		return ((z * dim.y + y) * dim.x + x) * typeSize;
 	}
 
@@ -559,7 +566,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * @see tipl.formats.TReader#ReadSlice(int)
 	 */
 	@Override
-	public TSliceReader ReadSlice(int n) throws IOException {
+	public TSliceReader ReadSlice(final int n) throws IOException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -570,7 +577,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * @see tipl.formats.TImg#setCompression(boolean)
 	 */
 	@Override
-	public void setCompression(boolean inData) {
+	public void setCompression(final boolean inData) {
 		// TODO Auto-generated method stub
 
 	}
@@ -581,7 +588,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * @see tipl.formats.TImg#setDim(tipl.util.D3int)
 	 */
 	@Override
-	public void setDim(D3int inData) {
+	public void setDim(final D3int inData) {
 		throw new IllegalArgumentException(
 				"Cannot set image type of a mmap after creation");
 	}
@@ -592,7 +599,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * @see tipl.formats.TImg#setElSize(tipl.util.D3float)
 	 */
 	@Override
-	public void setElSize(D3float inData) {
+	public void setElSize(final D3float inData) {
 		// TODO Auto-generated method stub
 		elSize = inData;
 	}
@@ -603,7 +610,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * @see tipl.formats.TImg#setImageType(int)
 	 */
 	@Override
-	public void setImageType(int inData) {
+	public void setImageType(final int inData) {
 		// TODO Auto-generated method stub
 		throw new IllegalArgumentException(
 				"Cannot set image type of a mmap after creation");
@@ -616,7 +623,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * @see tipl.formats.TImg#setOffset(tipl.util.D3int)
 	 */
 	@Override
-	public void setOffset(D3int inData) {
+	public void setOffset(final D3int inData) {
 		// TODO Auto-generated method stub
 		offset = inData;
 	}
@@ -627,7 +634,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * @see tipl.formats.TImg#setPos(tipl.util.D3int)
 	 */
 	@Override
-	public void setPos(D3int inData) {
+	public void setPos(final D3int inData) {
 		// TODO Auto-generated method stub
 		pos = inData;
 	}
@@ -638,7 +645,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * @see tipl.formats.TImg#setShortScaleFactor(float)
 	 */
 	@Override
-	public void setShortScaleFactor(float ssf) {
+	public void setShortScaleFactor(final float ssf) {
 		// TODO Auto-generated method stub
 
 	}
@@ -649,7 +656,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * @see tipl.formats.TImg#setSigned(boolean)
 	 */
 	@Override
-	public void setSigned(boolean inData) {
+	public void setSigned(final boolean inData) {
 		// TODO Auto-generated method stub
 
 	}
@@ -660,7 +667,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * @see tipl.formats.TReader#SetupReader(java.lang.String)
 	 */
 	@Override
-	public void SetupReader(String inPath) {
+	public void SetupReader(final String inPath) {
 		// TODO Auto-generated method stub
 
 	}
@@ -672,7 +679,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * java.lang.String)
 	 */
 	@Override
-	public void SetupWriter(TImg inputImage, String outputPath) {
+	public void SetupWriter(final TImg inputImage, final String outputPath) {
 		// TODO Auto-generated method stub
 
 	}
@@ -689,13 +696,13 @@ public class MMapImage implements TImg, TReader, TWriter {
 	}
 
 	@Override
-	public void WriteAim(String path) {
+	public void WriteAim(final String path) {
 		TImgTools.WriteTImg(this, path);
 	}
 
 	@Override
-	public void WriteAim(String outpath, int outType, float scaleVal,
-			boolean IisSigned) {
+	public void WriteAim(final String outpath, final int outType,
+			final float scaleVal, final boolean IisSigned) {
 		TImgTools.WriteTImg(this, outpath, outType, scaleVal, IisSigned);
 	}
 
@@ -727,7 +734,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 * @see tipl.formats.TWriter#WriteSlice(int)
 	 */
 	@Override
-	public void WriteSlice(int n) {
+	public void WriteSlice(final int n) {
 		// TODO Auto-generated method stub
 
 	}

@@ -1,13 +1,14 @@
 package tipl.blocks;
 
+import ij.ImagePlus;
+import ij.ImageStack;
+import ij.gui.StackWindow;
+
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
-import ij.ImagePlus;
-import ij.ImageStack;
-import ij.gui.StackWindow;
 import tipl.formats.TImg;
 import tipl.ij.TImgToImageStack;
 import tipl.tools.Resize;
@@ -74,13 +75,13 @@ public class ResizeBlock extends BaseTIPLBlock {
 		return prefix;
 	}
 
-	public void resizeGUI(ArgumentParser p) {
+	public void resizeGUI(final ArgumentParser p) {
 		p.getOptionBoolean("showslice",
 				"Show the slice and select the region using the ROI tool",
 				new ArgumentList.ArgumentCallback() {
 
 					@Override
-					public Object valueSet(Object value) {
+					public Object valueSet(final Object value) {
 						final String cValue = value.toString();
 						if (Boolean.parseBoolean(cValue))
 							showSlicePreview();
@@ -100,7 +101,7 @@ public class ResizeBlock extends BaseTIPLBlock {
 	}
 
 	@Override
-	public ArgumentParser setParameterBlock(ArgumentParser p) {
+	public ArgumentParser setParameterBlock(final ArgumentParser p) {
 		final ArgumentParser t = fs.setParameter(p, prefix);
 		if (t.getOptionBoolean("gui", "Use a GUI to set the parameters"))
 			resizeGUI(t);
@@ -125,31 +126,31 @@ public class ResizeBlock extends BaseTIPLBlock {
 		curWindow.addMouseListener(new MouseListener() {
 			// Only worry about the clicks everything else is a waste of time
 			@Override
-			public void mouseClicked(MouseEvent arg0) {
+			public void mouseClicked(final MouseEvent arg0) {
 				System.out.println("Mouse Clicked: x=" + arg0.getX() + ", y="
 						+ arg0.getY());
 				System.out.println("ROI:" + curImage.getRoi());
 			}
 
 			@Override
-			public void mouseEntered(MouseEvent arg0) {
+			public void mouseEntered(final MouseEvent arg0) {
 				// TODO Auto-generated method stub
 			}
 
 			@Override
-			public void mouseExited(MouseEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mousePressed(MouseEvent arg0) {
+			public void mouseExited(final MouseEvent arg0) {
 				// TODO Auto-generated method stub
 
 			}
 
 			@Override
-			public void mouseReleased(MouseEvent arg0) {
+			public void mousePressed(final MouseEvent arg0) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void mouseReleased(final MouseEvent arg0) {
 				// TODO Auto-generated method stub
 
 			}
@@ -175,19 +176,19 @@ public class ResizeBlock extends BaseTIPLBlock {
 		curWindow.addWindowListener(new WindowListener() {
 
 			@Override
-			public void windowActivated(WindowEvent arg0) {
+			public void windowActivated(final WindowEvent arg0) {
 				// TODO Auto-generated method stub
 
 			}
 
 			@Override
-			public void windowClosed(WindowEvent arg0) {
+			public void windowClosed(final WindowEvent arg0) {
 				// TODO Auto-generated method stub
 
 			}
 
 			@Override
-			public void windowClosing(WindowEvent arg0) {
+			public void windowClosing(final WindowEvent arg0) {
 				// TODO Auto-generated method stub
 
 				synchronized (lock) {
@@ -198,25 +199,25 @@ public class ResizeBlock extends BaseTIPLBlock {
 			}
 
 			@Override
-			public void windowDeactivated(WindowEvent arg0) {
+			public void windowDeactivated(final WindowEvent arg0) {
 				// TODO Auto-generated method stub
 
 			}
 
 			@Override
-			public void windowDeiconified(WindowEvent arg0) {
+			public void windowDeiconified(final WindowEvent arg0) {
 				// TODO Auto-generated method stub
 
 			}
 
 			@Override
-			public void windowIconified(WindowEvent arg0) {
+			public void windowIconified(final WindowEvent arg0) {
 				// TODO Auto-generated method stub
 
 			}
 
 			@Override
-			public void windowOpened(WindowEvent arg0) {
+			public void windowOpened(final WindowEvent arg0) {
 				// TODO Auto-generated method stub
 
 			}

@@ -31,7 +31,7 @@ import com.sun.media.jai.codec.SeekableStream;
 public class TiffFolder extends DirectoryReader {
 	private static class TiffSliceFactory implements TSliceFactory {
 		@Override
-		public TSliceReader ReadFile(File infile) throws IOException {
+		public TSliceReader ReadFile(final File infile) throws IOException {
 			return new TIFSliceReader(infile);
 		}
 	}
@@ -59,7 +59,7 @@ public class TiffFolder extends DirectoryReader {
 		}
 
 		@Override
-		public Object polyReadImage(int asType) throws IOException {
+		public Object polyReadImage(final int asType) throws IOException {
 
 			switch (imageType) {
 			case 0: // Char use the interface for short with a different max val
@@ -81,7 +81,8 @@ public class TiffFolder extends DirectoryReader {
 			}
 		}
 
-		private void SetupFromRenderImage(RenderedImage im) throws IOException {
+		private void SetupFromRenderImage(final RenderedImage im)
+				throws IOException {
 			switch (im.getColorModel().getPixelSize()) {
 			case 1: // Boolean
 				imageType = 10;
@@ -120,7 +121,7 @@ public class TiffFolder extends DirectoryReader {
 	final static String version = "08-03-2013";
 	final static public FileFilter tifFilter = new FileFilter() {
 		@Override
-		public boolean accept(File file) {
+		public boolean accept(final File file) {
 			if (file.getAbsolutePath().endsWith(".tif"))
 				return true;
 			if (file.getAbsolutePath().endsWith(".TIF"))
@@ -136,7 +137,7 @@ public class TiffFolder extends DirectoryReader {
 	@DirectoryReader.DReader(name = "tiff")
 	final public static DRFactory myFactory = new DRFactory() {
 		@Override
-		public DirectoryReader get(String path) {
+		public DirectoryReader get(final String path) {
 			try {
 				return new TiffFolder(path);
 			} catch (final Exception e) {
@@ -156,7 +157,7 @@ public class TiffFolder extends DirectoryReader {
 
 	}
 
-	public static void main(ArgumentParser p) {
+	public static void main(final ArgumentParser p) {
 		System.out.println("TiffFolder Tool v" + VirtualAim.kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 		final String inputFile = p.getOptionString("input", "",
@@ -174,11 +175,11 @@ public class TiffFolder extends DirectoryReader {
 
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		main(new ArgumentParser(args));
 	}
 
-	public TiffFolder(String path) throws IOException {
+	public TiffFolder(final String path) throws IOException {
 		super(path, tifFilter, new TiffSliceFactory());
 
 	}

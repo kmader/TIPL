@@ -14,7 +14,7 @@ package tipl.util;
  * @author mader
  * 
  */
-public interface TIPLPlugin extends ArgumentParser.IsetParameter {
+public interface TIPLPlugin extends ArgumentParser.IsetParameter, Runnable {
 	/**
 	 * forces the execution of the plugin otherwise lazy evaluation might be
 	 * used

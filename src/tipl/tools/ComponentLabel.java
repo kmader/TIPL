@@ -13,7 +13,7 @@ import tipl.util.TImgTools;
  * A class to label connected objects which meet a given criteria with different
  * values
  */
-public class ComponentLabel extends BaseTIPLPlugin {
+public class ComponentLabel extends BaseTIPLPluginIO {
 	/**
 	 * A generic interface for thresholding operations, typically only one
 	 * function is needed but the interface provides all anyways

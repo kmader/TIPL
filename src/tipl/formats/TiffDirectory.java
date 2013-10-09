@@ -29,7 +29,7 @@ import com.sun.media.jai.codec.TIFFField;
  * 
  */
 public class TiffDirectory implements TImg {
-	public static void main(ArgumentParser p) {
+	public static void main(final ArgumentParser p) {
 		System.out.println("TifDirectory Tool v" + VirtualAim.kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 		final String inputFile = p.getOptionString("input", "",
@@ -47,7 +47,7 @@ public class TiffDirectory implements TImg {
 
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		main(new ArgumentParser(args));
 	}
 
@@ -78,7 +78,7 @@ public class TiffDirectory implements TImg {
 	 */
 	public boolean useHighCompression = true;
 
-	public TiffDirectory(String path) throws IOException {
+	public TiffDirectory(final String path) throws IOException {
 		dirPath = path;
 		imgFile = new File(path);
 
@@ -117,7 +117,7 @@ public class TiffDirectory implements TImg {
 	 * @see tipl.formats.TImg#appendProcLog(java.lang.String)
 	 */
 	@Override
-	public String appendProcLog(String inData) {
+	public String appendProcLog(final String inData) {
 		// TODO Auto-generated method stub
 		procLog = TImgTools.appendProcLog(procLog, inData);
 		return procLog;
@@ -181,7 +181,7 @@ public class TiffDirectory implements TImg {
 	}
 
 	@Override
-	public Object getPolyImage(int sliceNumber, int asType) {
+	public Object getPolyImage(final int sliceNumber, final int asType) {
 		try {
 			return readSlice(sliceNumber, asType);
 		} catch (final Exception e) {
@@ -244,7 +244,7 @@ public class TiffDirectory implements TImg {
 		return signedValue;
 	}
 
-	public void getTIFFheader(TIFFField[] allfields) {
+	public void getTIFFheader(final TIFFField[] allfields) {
 
 		int skippedTag = 0;
 		int totalTag = 0;
@@ -344,49 +344,54 @@ public class TiffDirectory implements TImg {
 	}
 
 	@Override
-	public TImg inheritedAim(boolean[] imgArray, D3int dim, D3int offset) {
+	public TImg inheritedAim(final boolean[] imgArray, final D3int dim,
+			final D3int offset) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
 				offset);
 	}
 
 	@Override
-	public TImg inheritedAim(char[] imgArray, D3int dim, D3int offset) {
+	public TImg inheritedAim(final char[] imgArray, final D3int dim,
+			final D3int offset) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
 				offset);
 	}
 
 	@Override
-	public TImg inheritedAim(float[] imgArray, D3int dim, D3int offset) {
+	public TImg inheritedAim(final float[] imgArray, final D3int dim,
+			final D3int offset) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
 				offset);
 	}
 
 	@Override
-	public TImg inheritedAim(ImageStack iStack) {
+	public TImg inheritedAim(final ImageStack iStack) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(iStack);
 	}
 
 	@Override
-	public TImg inheritedAim(int[] imgArray, D3int dim, D3int offset) {
+	public TImg inheritedAim(final int[] imgArray, final D3int dim,
+			final D3int offset) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
 				offset);
 	}
 
 	@Override
-	public TImg inheritedAim(short[] imgArray, D3int dim, D3int offset) {
+	public TImg inheritedAim(final short[] imgArray, final D3int dim,
+			final D3int offset) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
 				offset);
 	}
 
 	// Temporary solution,
 	@Override
-	public TImg inheritedAim(TImgRO inAim) {
+	public TImg inheritedAim(final TImgRO inAim) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(inAim);
 	}
 
 	@Override
-	public boolean InitializeImage(D3int dPos, D3int cDim, D3int dOffset,
-			D3float elSize, int imageType) {
+	public boolean InitializeImage(final D3int dPos, final D3int cDim,
+			final D3int dOffset, final D3float elSize, final int imageType) {
 		throw new IllegalArgumentException(
 				" Cannot Be Initialized in this manner");
 	}
@@ -407,7 +412,8 @@ public class TiffDirectory implements TImg {
 		return false;
 	}
 
-	private Object readSlice(int slice, int asType) throws IOException {
+	private Object readSlice(final int slice, final int asType)
+			throws IOException {
 		// TODO Auto-generated method stub
 		if (slice >= dec.getNumPages()) {
 			throw new IOException("Exceeds bound!!! " + slice + " of "
@@ -425,7 +431,7 @@ public class TiffDirectory implements TImg {
 	 * @see tipl.formats.TImg#setCompression(boolean)
 	 */
 	@Override
-	public void setCompression(boolean inData) {
+	public void setCompression(final boolean inData) {
 		// TODO Auto-generated method stub
 		throw new IllegalArgumentException("Cannot Set Compression Yet!");
 	}
@@ -436,7 +442,7 @@ public class TiffDirectory implements TImg {
 	 * @see tipl.formats.TImg#setDim(tipl.util.D3int)
 	 */
 	@Override
-	public void setDim(D3int inData) {
+	public void setDim(final D3int inData) {
 		dim = inData;
 	}
 
@@ -446,7 +452,7 @@ public class TiffDirectory implements TImg {
 	 * @see tipl.formats.TImg#setElSize(tipl.util.D3float)
 	 */
 	@Override
-	public void setElSize(D3float inData) {
+	public void setElSize(final D3float inData) {
 		elSize = inData;
 
 	}
@@ -457,7 +463,7 @@ public class TiffDirectory implements TImg {
 	 * @see tipl.formats.TImg#setImageType(int)
 	 */
 	@Override
-	public void setImageType(int inData) {
+	public void setImageType(final int inData) {
 		imageType = inData;
 	}
 
@@ -467,7 +473,7 @@ public class TiffDirectory implements TImg {
 	 * @see tipl.formats.TImg#setOffset(tipl.util.D3int)
 	 */
 	@Override
-	public void setOffset(D3int inData) {
+	public void setOffset(final D3int inData) {
 		offset = inData;
 
 	}
@@ -478,7 +484,7 @@ public class TiffDirectory implements TImg {
 	 * @see tipl.formats.TImg#setPos(tipl.util.D3int)
 	 */
 	@Override
-	public void setPos(D3int inData) {
+	public void setPos(final D3int inData) {
 		pos = inData;
 	}
 
@@ -488,7 +494,7 @@ public class TiffDirectory implements TImg {
 	 * @see tipl.formats.TImg#setShortScaleFactor(float)
 	 */
 	@Override
-	public void setShortScaleFactor(float ssf) {
+	public void setShortScaleFactor(final float ssf) {
 		ShortScaleFactor = ssf;
 	}
 
@@ -498,11 +504,11 @@ public class TiffDirectory implements TImg {
 	 * @see tipl.formats.TImg#setSigned(boolean)
 	 */
 	@Override
-	public void setSigned(boolean inData) {
+	public void setSigned(final boolean inData) {
 		signedValue = inData;
 	}
 
-	public void setTIFFheader(TIFFEncodeParam tparam) {
+	public void setTIFFheader(final TIFFEncodeParam tparam) {
 		getProcLog().split("\n");
 		final TIFFField[] tiffProcLog = new TIFFField[6];
 		tiffProcLog[0] = new TIFFField(TAG_PROCLOGSTART, TIFFField.TIFF_ASCII,
@@ -524,13 +530,13 @@ public class TiffDirectory implements TImg {
 	}
 
 	@Override
-	public void WriteAim(String path) {
+	public void WriteAim(final String path) {
 		TImgTools.WriteTImg(this, path);
 	}
 
 	@Override
-	public void WriteAim(String outpath, int outType, float scaleVal,
-			boolean IisSigned) {
+	public void WriteAim(final String outpath, final int outType,
+			final float scaleVal, final boolean IisSigned) {
 		TImgTools.WriteTImg(this, outpath, outType, scaleVal, IisSigned);
 	}
 

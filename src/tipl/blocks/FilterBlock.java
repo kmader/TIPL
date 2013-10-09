@@ -64,7 +64,7 @@ public class FilterBlock extends BaseTIPLBlock {
 	}
 
 	@Override
-	public ArgumentParser setParameterBlock(ArgumentParser p) {
+	public ArgumentParser setParameterBlock(final ArgumentParser p) {
 		return fs.setParameter(p, prefix);
 	}
 

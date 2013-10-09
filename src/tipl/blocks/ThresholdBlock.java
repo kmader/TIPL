@@ -11,7 +11,7 @@ import tipl.util.TImgTools;
 /** perform a threshold on an input image and remove edges if needed **/
 public class ThresholdBlock extends BaseTIPLBlock {
 	/** A simple circular contour, edge removal, and peeling */
-	public static TImg removeEdges(TImg cAim, double remEdgesRadius) {
+	public static TImg removeEdges(final TImg cAim, final double remEdgesRadius) {
 		EasyContour myContour = new EasyContour(cAim);
 		myContour.useFixedCirc(remEdgesRadius);
 		myContour.run();
@@ -43,7 +43,7 @@ public class ThresholdBlock extends BaseTIPLBlock {
 		prefix = "";
 	}
 
-	public ThresholdBlock(String inPrefix) {
+	public ThresholdBlock(final String inPrefix) {
 		super("Threshold");
 		prefix = inPrefix;
 	}
@@ -94,7 +94,7 @@ public class ThresholdBlock extends BaseTIPLBlock {
 		return true;
 	}
 
-	protected void finishImages(TImg inImage, String inName) {
+	protected void finishImages(TImg inImage, final String inName) {
 		if (rmEdges)
 			inImage = removeEdges(inImage, remEdgesRadius);
 		TImgTools.WriteTImg(inImage, inName, true);
@@ -111,7 +111,7 @@ public class ThresholdBlock extends BaseTIPLBlock {
 	}
 
 	@Override
-	public ArgumentParser setParameterBlock(ArgumentParser p) {
+	public ArgumentParser setParameterBlock(final ArgumentParser p) {
 		threshVal = p.getOptionInt(prefix + "threshvalue", 2200,
 				"Value used to threshold image");
 		rmEdges = p.getOptionBoolean("removeedges",

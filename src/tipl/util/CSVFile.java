@@ -7,7 +7,8 @@ import java.util.Hashtable;
 
 /** Simple generic tool for reading and parsing csv files */
 public class CSVFile {
-	private static String join(CharSequence delimiter, String[] elements) {
+	private static String join(final CharSequence delimiter,
+			final String[] elements) {
 		final StringBuilder sb = new StringBuilder(4096); // 16 is most certanly
 															// not enough
 		boolean first = true;
@@ -40,7 +41,7 @@ public class CSVFile {
 	 * Read in the csv file at path _filename with _headerlines number of lines
 	 * of header, header will automatically be read upon creation
 	 */
-	public CSVFile(String _filename, int _headerlines) {
+	public CSVFile(final String _filename, final int _headerlines) {
 		filename = _filename;
 		try {
 			file = new File(_filename);

@@ -1,7 +1,6 @@
 package tipl.tests;
 
 import ij.ImagePlus;
-import ij.ImageStack;
 
 import org.junit.Test;
 
@@ -11,10 +10,11 @@ import tipl.ij.TImgToImageStack;
 
 public class ImagePlusTest {
 
-	//@Test
-	public void testMakeImagePlus() {
-		final TImgRO testImg = TestFImages.wrapIt(100,
-				new TestFImages.DiagonalPlaneFunction());
+	@Test
+	public void testMakeEllipsoidImagePlus() {
+		final TImgRO testImg = TestFImages
+				.wrapIt(400, new TestFImages.EllipsoidFunction(100, 200, 500,
+						100, 200, 500));
 		TImgToImageStack.MakeImageStack(testImg);
 
 		final ImagePlus curImg = TImgToImagePlus.MakeImagePlus(testImg);
@@ -26,10 +26,11 @@ public class ImagePlusTest {
 			e.printStackTrace();
 		}
 	}
-	@Test
-	public void testMakeEllipsoidImagePlus() {
-		final TImgRO testImg = TestFImages.wrapIt(400,
-				new TestFImages.EllipsoidFunction(100,200,500,100,200,500));
+
+	// @Test
+	public void testMakeImagePlus() {
+		final TImgRO testImg = TestFImages.wrapIt(100,
+				new TestFImages.DiagonalPlaneFunction());
 		TImgToImageStack.MakeImageStack(testImg);
 
 		final ImagePlus curImg = TImgToImagePlus.MakeImagePlus(testImg);

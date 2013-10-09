@@ -12,15 +12,15 @@ public class D3int {
 		setVals(0, 0, 0);
 	}
 
-	public D3int(D3int xi) {
+	public D3int(final D3int xi) {
 		setVals(xi.x, xi.y, xi.z);
 	}
 
-	public D3int(int xi) {
+	public D3int(final int xi) {
 		setVals(xi, xi, xi);
 	}
 
-	public D3int(int xi, int yi, int zi) {
+	public D3int(final int xi, final int yi, final int zi) {
 		setVals(xi, yi, zi);
 	}
 
@@ -55,7 +55,7 @@ public class D3int {
 		return out;
 	}
 
-	public void setVals(int xi, int yi, int zi) {
+	public void setVals(final int xi, final int yi, final int zi) {
 		x = xi;
 		y = yi;
 		z = zi;

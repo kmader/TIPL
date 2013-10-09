@@ -2,57 +2,63 @@ package tipl.tools;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.TIPLPlugin;
 import tipl.util.TIPLPluginIO;
 import tipl.util.TIPLPluginOut;
 import tipl.util.TImgTools;
 
 /**
  * Abstract Class for performing TIPLPlugin TIPLPlugin is the class for Plug-ins
- * in the TIPL framework. A plugin should accept an AIM file as an input /
- * constructor. A plugin should then be able to be run using its run function
- * (it implements runnable to make threads and the executors easier) A plugin
- * must have an ExportAim function for writing its output into a
- * TImgTools.ReadTImg memory object
+ * in the TIPL framework. This is just the basic class for a plugin supporting setting and changing 
+ * parameters and can thus be used for input-only, output-only, and input-output plugins
  * **/
-abstract public class BaseTIPLPlugin extends BaseTIPLPluginIn implements
-		TIPLPluginOut, TIPLPluginIO {
+abstract public class BaseTIPLPlugin implements TIPLPlugin {
 
 	public BaseTIPLPlugin() {
-		super();
 	}
 
+
+
+	
 	/**
-	 * constructor function taking boolean (other castings just convert the
-	 * array first) linear array and the dimensions
-	 */
-	public BaseTIPLPlugin(D3int idim, D3int ioffset) {
-		super(idim, ioffset);
+	 * Turn the string into an argumentparser and send it on through default is
+	 * no prefix, this is by default strictly checked because we will not assume the output is going somewhere else
+	 * */
+	@Override
+	public ArgumentParser setParameter(String p) {
+		ArgumentParser t=setParameter(new ArgumentParser(p.split(" ")));
+		t.checkForInvalid();
+		return t;
 	}
-
+	
 	/**
-	 * All plug-ins have an interface for exporting the main result to an Aim
-	 * class based on a template aim, many have other methods for exporting the
-	 * secondary results (distance maps, histograms, shape analyses, but these
-	 * need to be examined individually
-	 * 
-	 * @param templateAim
-	 *            TemplateAim is an aim file which will be used in combination
-	 *            with the array of data saved in the plugin to generate a full
-	 *            aim output class (element size, procedural log, etc..)
-	 */
-	@Deprecated
-	abstract public TImg ExportAim(TImgRO.CanExport templateAim);
-
-	/**
-	 * Default implementation just uses the ExportAim command to produce the
-	 * array
+	 * The default action is just do nothing, other features can be implemented
+	 * on a case by case basis
 	 */
 	@Override
-	public TImg[] ExportImages(TImgRO templateImage) {
-		// TODO Auto-generated method stub
-		final TImg cImg = TImgTools.WrapTImgRO(templateImage);
-		return new TImg[] { ExportAim(cImg) };
+	public void setParameter(String argumentName, Object argumentValue) {
+		if (!argumentName.equals(""))
+			throw new IllegalArgumentException(
+					"SetParameter is not implemented for this plugins"
+							+ getPluginName());
 	}
+	
+	/**
+	 * Turn the string into an argumentparser and send it on through
+	 * */
+	public ArgumentParser setParameter(String p, String prefix) {
+		return setParameter(new ArgumentParser(p.split("\\s+")), prefix);
+	}
+	
+	/**
+	 * Turn the string into an argumentparser and send it on through default is
+	 * no prefix
+	 * */
+	public ArgumentParser setParameter(ArgumentParser p) {
+		return setParameter(p, "");
+	}
+	
 
 }

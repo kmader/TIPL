@@ -10,7 +10,7 @@ import java.io.FileOutputStream;
  * 
  */
 public class CollectCanals {
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final String[] canArgs = new String[args.length - 2];
 		System.arraycopy(args, 2, canArgs, 0, canArgs.length);
 		// for (int i=0;i<canArgs.length;i++)
@@ -26,25 +26,28 @@ public class CollectCanals {
 	public CollectCanals() {
 	}
 
-	public CollectCanals(String inFileRaw, String outFileRaw, String[] canArgs) { // ,boolean
-																					// runInQueueA)
-																					// {
+	public CollectCanals(final String inFileRaw, final String outFileRaw,
+			final String[] canArgs) { // ,boolean
+		// runInQueueA)
+		// {
 		// TODO Auto-generated method stub
 		// Arguments CANLB or BK file, Values in csv list, color, ...
 		RunCollection(inFileRaw, outFileRaw, canArgs, "");
 
 	}
 
-	public CollectCanals(String inFileRaw, String outFileRaw, String[] canArgs,
-			String ruleList) { // ,boolean runInQueueA) {
+	public CollectCanals(final String inFileRaw, final String outFileRaw,
+			final String[] canArgs, final String ruleList) { // ,boolean
+																// runInQueueA)
+																// {
 		// TODO Auto-generated method stub
 		// Arguments CANLB or BK file, Values in csv list, color, ...
 		RunCollection(inFileRaw, outFileRaw, canArgs, ruleList);
 
 	}
 
-	public void RunCollection(String inFileRaw, String outFileRaw,
-			String[] canArgs, String ruleList) {
+	public void RunCollection(final String inFileRaw, final String outFileRaw,
+			final String[] canArgs, final String ruleList) {
 		final String inFile = inFileRaw.trim().toUpperCase();
 		final String outFile = outFileRaw.trim().toUpperCase();
 		FileOutputStream fos;

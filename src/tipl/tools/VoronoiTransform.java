@@ -9,7 +9,7 @@ import tipl.util.TImgTools;
  * Abstract class for performing voronoi like transformations from labeled
  * objects into masks
  */
-public abstract class VoronoiTransform extends BaseTIPLPlugin {
+public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 	/** The labeled input objects */
 	public int[] labels;
 	/** The labeled volumes (output) */

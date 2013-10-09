@@ -21,7 +21,7 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 	 */
 	public static class DiagonalLineFunction extends TestFImages {
 		@Override
-		public boolean tget(long x, long y, long z) {
+		public boolean tget(final long x, final long y, final long z) {
 			return (z == y & y == x);
 		}
 	}
@@ -31,7 +31,7 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 		private final TestFImages Dots = new DotsFunction();
 
 		@Override
-		public boolean tget(long x, long y, long z) {
+		public boolean tget(final long x, final long y, final long z) {
 			return Plane.tget(x, y, z) | Dots.tget(x, y, z);
 		}
 	}
@@ -44,7 +44,7 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 	 */
 	public static class DiagonalPlaneFunction extends TestFImages {
 		@Override
-		public boolean tget(long x, long y, long z) {
+		public boolean tget(final long x, final long y, final long z) {
 			return (Math.abs(z - (x + y)) < 0.5) & ((x + y) % 2 == (z % 2));
 		}
 	}
@@ -57,8 +57,55 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 	 */
 	public static class DotsFunction extends TestFImages {
 		@Override
-		public boolean tget(long x, long y, long z) {
+		public boolean tget(final long x, final long y, final long z) {
 			return ((x + y + z) % 2 == 1);
+		}
+	}
+
+	/**
+	 * single ellipsoid at (5,5,5) with a radius 5 or whatever is given in the
+	 * constructor
+	 * 
+	 * @author mader
+	 * 
+	 */
+	public static class EllipsoidFunction extends TestFImages {
+		protected final int x, y, z;
+		protected final float rx, ry, rz;
+
+		public EllipsoidFunction() {
+			x = 5;
+			y = 5;
+			z = 5;
+			rx = 5.0f;
+			ry = 5.0f;
+			rz = 5.0f;
+		}
+
+		public EllipsoidFunction(final int ix, final int iy, final int iz,
+				final float ir) {
+			x = ix;
+			y = iy;
+			z = iz;
+			rx = ir;
+			ry = ir;
+			rz = ir;
+		}
+
+		public EllipsoidFunction(final int ix, final int iy, final int iz,
+				final float irx, final float iry, final float irz) {
+			x = ix;
+			y = iy;
+			z = iz;
+			rx = irx;
+			ry = iry;
+			rz = irz;
+		}
+
+		@Override
+		public boolean tget(final long ix, final long iy, final long iz) {
+			return (Math.pow(ix - x, 2) / Math.pow(rx, 2) + Math.pow(iy - y, 2)
+					/ Math.pow(ry, 2) + Math.pow(iz - z, 2) / Math.pow(rz, 2)) <= 1;
 		}
 	}
 
@@ -81,7 +128,7 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 		}
 
 		@Override
-		public double rget(long x, long y, long z) {
+		public double rget(final long x, final long y, final long z) {
 			return fixedValue;
 		}
 
@@ -95,7 +142,7 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 	 */
 	public static class LinesFunction extends TestFImages {
 		@Override
-		public boolean tget(long x, long y, long z) {
+		public boolean tget(final long x, final long y, final long z) {
 			return ((x + y) % 2 == 1);
 		}
 	}
@@ -113,7 +160,7 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 		}
 
 		@Override
-		public double rget(long x, long y, long z) {
+		public double rget(final long x, final long y, final long z) {
 			return x;
 		}
 
@@ -132,7 +179,7 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 		}
 
 		@Override
-		public double rget(long x, long y, long z) {
+		public double rget(final long x, final long y, final long z) {
 			return y;
 		}
 
@@ -151,7 +198,7 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 		}
 
 		@Override
-		public double rget(long x, long y, long z) {
+		public double rget(final long x, final long y, final long z) {
 			return z;
 		}
 
@@ -165,7 +212,7 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 	 */
 	public static class SheetImageFunction extends TestFImages {
 		@Override
-		public boolean tget(long x, long y, long z) {
+		public boolean tget(final long x, final long y, final long z) {
 			return (x % 2 == 1); // sheets
 		}
 	}
@@ -185,57 +232,15 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 			z = 5;
 		}
 
-		public SinglePointFunction(int ix, int iy, int iz) {
+		public SinglePointFunction(final int ix, final int iy, final int iz) {
 			x = ix;
 			y = iy;
 			z = iz;
 		}
 
 		@Override
-		public boolean tget(long ix, long iy, long iz) {
+		public boolean tget(final long ix, final long iy, final long iz) {
 			return (ix == x) & (iy == y) & (iz == z);
-		}
-	}
-	
-	
-	/**
-	 * single ellipsoid at (5,5,5) with a radius 5 or whatever is given in the constructor
-	 * 
-	 * @author mader
-	 * 
-	 */
-	public static class EllipsoidFunction extends TestFImages {
-		protected final int x, y, z;
-		protected final float rx,ry,rz;
-		public EllipsoidFunction() {
-			x = 5;
-			y = 5;
-			z = 5;
-			rx=5.0f;
-			ry=5.0f;
-			rz=5.0f;
-		}
-
-		public EllipsoidFunction(int ix, int iy, int iz,float ir) {
-			x = ix;
-			y = iy;
-			z = iz;
-			rx=ir;
-			ry=ir;
-			rz=ir;
-		}
-		public EllipsoidFunction(int ix, int iy, int iz,float irx,float iry, float irz) {
-			x = ix;
-			y = iy;
-			z = iz;
-			rx=irx;
-			ry=iry;
-			rz=irz;
-		}
-
-		@Override
-		public boolean tget(long ix, long iy, long iz) {
-			return (Math.pow(ix-x,2)/Math.pow(rx,2)+Math.pow(iy-y,2)/Math.pow(ry,2)+Math.pow(iz-z,2)/Math.pow(rz,2))<=1;
 		}
 	}
 
@@ -246,7 +251,7 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 	 *            image
 	 * @return total number of true voxels
 	 */
-	public static long countVoxelsImage(TImgRO img) {
+	public static long countVoxelsImage(final TImgRO img) {
 		long totalCount = 0;
 		for (int i = 0; i < img.getDim().z; i++)
 			totalCount += countVoxelsSlice(img, i);
@@ -262,7 +267,7 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 	 *            the slice number to look at
 	 * @return the number of voxels
 	 */
-	public static long countVoxelsSlice(TImgRO img, int sliceZ) {
+	public static long countVoxelsSlice(final TImgRO img, final int sliceZ) {
 		final boolean[] cSlice = (boolean[]) img.getPolyImage(sliceZ, 10);
 		long i = 0;
 		for (final boolean cVal : cSlice)
@@ -322,7 +327,8 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 	 *            position function
 	 * @return an image
 	 */
-	public static TImgRO wrapIt(int sizeX, PureFImage.PositionFunction pf) {
+	public static TImgRO wrapIt(final int sizeX,
+			final PureFImage.PositionFunction pf) {
 		return wrapItAs(sizeX, pf, 10);
 	}
 
@@ -335,14 +341,14 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 	 *            position function
 	 * @return an image
 	 */
-	public static TImgRO wrapItAs(int sizeX, PureFImage.PositionFunction pf,
-			int imType) {
+	public static TImgRO wrapItAs(final int sizeX,
+			final PureFImage.PositionFunction pf, final int imType) {
 		return new PureFImage(justDims(new D3int(sizeX, sizeX, sizeX)), imType,
 				pf);
 	}
 
 	@Override
-	public double get(Double[] ipos) {
+	public double get(final Double[] ipos) {
 		return rget(Math.round(ipos[0]), Math.round(ipos[1]),
 				Math.round(ipos[2]));
 	}
@@ -360,14 +366,14 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 	/**
 	 * function to get the number using x,y,z instead of the silly array
 	 */
-	public double rget(long x, long y, long z) {
+	public double rget(final long x, final long y, final long z) {
 		return tget(x, y, z) ? 1.0 : 0;
 	}
 
 	/**
 	 * function to override for just binary images
 	 */
-	public boolean tget(long x, long y, long z) {
+	public boolean tget(final long x, final long y, final long z) {
 		return false;
 	}
 

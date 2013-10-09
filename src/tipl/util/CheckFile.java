@@ -15,7 +15,7 @@ public class CheckFile {
 	 * 
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		// TODO Auto-generated method stub
 		final File f = new File(args[0]);
 		if (f.exists()) {

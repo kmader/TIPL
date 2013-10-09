@@ -4,6 +4,7 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.HistogramWindow;
 import ij.measure.Calibration;
+
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -66,8 +67,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		int sslice, fslice, asType;
 		volatile VirtualAim parent;
 
-		public sliceLoader(VirtualAim iparent, int iasType, int isslice,
-				int ifslice) {
+		public sliceLoader(final VirtualAim iparent, final int iasType,
+				final int isslice, final int ifslice) {
 			super("sliceLoader:<" + isslice + ", " + ifslice + ">");
 			sslice = isslice;
 			fslice = ifslice;
@@ -87,7 +88,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		}
 	}
 
-	public static String StrRatio(double a, double b) {
+	public static String StrRatio(final double a, final double b) {
 		return String.format("%.2f", ((a) / (b)));
 	}
 
@@ -99,7 +100,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * @return VirtualAim version of input image
 	 */
 	@Deprecated
-	public static VirtualAim TImgToVirtualAim(TImgRO inTImg) {
+	public static VirtualAim TImgToVirtualAim(final TImgRO inTImg) {
 		if (inTImg instanceof VirtualAim)
 			return (VirtualAim) inTImg;
 		else
@@ -243,7 +244,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 **/
 	public static boolean previewDisabled = true;
 
-	public static void main(ArgumentParser p) {
+	public static void main(final ArgumentParser p) {
 		System.out.println("VirtualAim Tool v" + VirtualAim.kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 		VirtualAim inputAim = null;
@@ -284,25 +285,25 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		main(new ArgumentParser(args));
 	}
 
-	public static float max(float a, float b) {
+	public static float max(final float a, final float b) {
 		if (a > b)
 			return a;
 		else
 			return b;
 	}
 
-	public static float min(float a, float b) {
+	public static float min(final float a, final float b) {
 		if (a > b)
 			return b;
 		else
 			return a;
 	}
 
-	private static void ShowInfo(ArgumentParser p) {
+	private static void ShowInfo(final ArgumentParser p) {
 		System.out.println("VirtualAim v" + kVer);
 		System.out.println(" Allows the editing and exporting of aim data v"
 				+ kVer);
@@ -331,8 +332,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * Creates a new, aim from a 1d boolean array and dimensions, offset,
 	 * position, and element size
 	 */
-	public VirtualAim(boolean[] inData, D3int idim, D3int ioffset, D3int ipos,
-			D3float ielSize) {
+	public VirtualAim(final boolean[] inData, final D3int idim,
+			final D3int ioffset, final D3int ipos, final D3float ielSize) {
 		fullAimLoaded = true;
 		fullAimLoadedAs = 10;
 		imageType = 10;
@@ -345,8 +346,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * Creates a new, aim from a 1d char array and dimensions, offset, position,
 	 * and element size
 	 */
-	public VirtualAim(char[] inData, D3int idim, D3int ioffset, D3int ipos,
-			D3float ielSize) {
+	public VirtualAim(final char[] inData, final D3int idim,
+			final D3int ioffset, final D3int ipos, final D3float ielSize) {
 		fullAimLoaded = true;
 		fullAimLoadedAs = 0;
 		imageType = 0;
@@ -355,7 +356,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		GenerateHeader(idim, ioffset, ipos, ielSize);
 	}
 
-	public VirtualAim(D3int idim, D3int ioffset, D3int ipos, D3float ielSize) {
+	public VirtualAim(final D3int idim, final D3int ioffset, final D3int ipos,
+			final D3float ielSize) {
 		fullAimLoaded = false;
 		GenerateHeader(idim, ioffset, ipos, ielSize);
 	}
@@ -364,8 +366,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * Creates a new, aim from a 1d float array and dimensions, offset,
 	 * position, and element size
 	 */
-	public VirtualAim(float[] inData, D3int idim, D3int ioffset, D3int ipos,
-			D3float ielSize) {
+	public VirtualAim(final float[] inData, final D3int idim,
+			final D3int ioffset, final D3int ipos, final D3float ielSize) {
 		fullAimLoaded = true;
 		fullAimLoadedAs = 3;
 		imageType = 3;
@@ -375,17 +377,18 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	/** Create new aim from stack of images and element size */
-	public VirtualAim(ImageStack inStack, D3float ielSize) {
+	public VirtualAim(final ImageStack inStack, final D3float ielSize) {
 		_vaLoadStack(inStack, new D3int(0), ielSize);
 	}
 
 	/** Create new aim from stack of images, pos, and element size */
-	public VirtualAim(ImageStack inStack, D3int ipos, D3float ielSize) {
+	public VirtualAim(final ImageStack inStack, final D3int ipos,
+			final D3float ielSize) {
 		_vaLoadStack(inStack, ipos, ielSize);
 	}
 
 	/** Create a new aim file from a stack of images and imageplus */
-	public VirtualAim(ImageStack inStack, ImagePlus imp) {
+	public VirtualAim(final ImageStack inStack, final ImagePlus imp) {
 
 		// Read in element size
 		final Calibration cal = imp.getCalibration();
@@ -403,8 +406,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * Creates a new, aim from a 1d int array and dimensions, offset, position,
 	 * and element size
 	 */
-	public VirtualAim(int[] inData, D3int idim, D3int ioffset, D3int ipos,
-			D3float ielSize) {
+	public VirtualAim(final int[] inData, final D3int idim,
+			final D3int ioffset, final D3int ipos, final D3float ielSize) {
 		fullAimLoaded = true;
 		fullAimLoadedAs = 2;
 		imageType = 2;
@@ -417,8 +420,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * Creates a new, aim from a 1d short array and dimensions, offset,
 	 * position, and element size
 	 */
-	public VirtualAim(short[] inData, D3int idim, D3int ioffset, D3int ipos,
-			D3float ielSize) {
+	public VirtualAim(final short[] inData, final D3int idim,
+			final D3int ioffset, final D3int ipos, final D3float ielSize) {
 		fullAimLoaded = true;
 		fullAimLoadedAs = 1;
 		imageType = 1;
@@ -431,20 +434,21 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * Creates a new, Aim from the path (either tiff directory or layered tif
 	 * file given in path
 	 */
-	public VirtualAim(String path) {
+	public VirtualAim(final String path) {
 		ReadAim(path, false);
 	}
 
-	public VirtualAim(String path, boolean onlyHeader) {
+	public VirtualAim(final String path, final boolean onlyHeader) {
 		ReadAim(path, onlyHeader);
 	}
 
-	public VirtualAim(TImgRO inTImg) {
+	public VirtualAim(final TImgRO inTImg) {
 		WrapTImg(inTImg);
 	}
 
 	// Generic code for loading a stack
-	private void _vaLoadStack(ImageStack inStack, D3int ipos, D3float ielSize) {
+	private void _vaLoadStack(final ImageStack inStack, final D3int ipos,
+			final D3float ielSize) {
 		final D3int idim = new D3int(inStack.getWidth(), inStack.getHeight(),
 				inStack.getSize() + 1);
 		final D3int ioffset = new D3int(0);
@@ -462,7 +466,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 *            type of image to buffer
 	 * @return a bufferedimage
 	 */
-	protected BufferedImage aimSlice(int n, int cType) {
+	protected BufferedImage aimSlice(final int n, final int cType) {
 
 		BufferedImage image = null;
 		System.gc();
@@ -614,7 +618,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	@Override
-	public String appendProcLog(String logText) {
+	public String appendProcLog(final String logText) {
 		// String newLog=getProcLog()+"\n"+logText;
 		// TheHeader.setProcLog(newLog);
 		// return newLog;
@@ -632,8 +636,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 *            whether or not to use float input or integer for the voxel
 	 *            function
 	 **/
-	public VirtualAim ApplyFunction(int iimageType, FImage.VoxelFunction ivf,
-			boolean useFloatInput) {
+	public VirtualAim ApplyFunction(final int iimageType,
+			final FImage.VoxelFunction ivf, final boolean useFloatInput) {
 		final FImage outF = new FImage(this, iimageType, ivf, useFloatInput);
 		return new VirtualAim(outF);
 	}
@@ -642,17 +646,17 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		getAimImage();
 	}
 
-	public boolean CheckSizes(String otherAimFile) {
+	public boolean CheckSizes(final String otherAimFile) {
 		final VirtualAim otherVA = new VirtualAim(otherAimFile, true);
 		return CheckSizes(otherVA);
 	}
 
-	public boolean CheckSizes(TImgRO otherVA) {
+	public boolean CheckSizes(final TImgRO otherVA) {
 		return TImgTools.CheckSizes2(otherVA, this);
 	}
 
-	private Object decodeimage(int slice, RenderedImage im, int asType)
-			throws IOException {
+	private Object decodeimage(final int slice, final RenderedImage im,
+			int asType) throws IOException {
 
 		int maxVal = 65536;
 		int dataType = -1;
@@ -741,7 +745,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * Object to divide the thread work into supportCores equal parts, default
 	 * is z-slices
 	 */
-	public int[] divideSlices(int cThread) {
+	public int[] divideSlices(final int cThread) {
 		final int minSlice = 0;
 		final int maxSlice = dim.z;
 
@@ -780,8 +784,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		// AimEngine.free();
 	}
 
-	private void GenerateHeader(D3int idim, D3int ioffset, D3int ipos,
-			D3float ielSize) {
+	private void GenerateHeader(final D3int idim, final D3int ioffset,
+			final D3int ipos, final D3float ielSize) {
 		isConnected = true;
 		ischGuet = true;
 
@@ -817,7 +821,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	@Deprecated
-	protected void getAimImage(int asType) {
+	protected void getAimImage(final int asType) {
 		if (fullAimLoaded)
 			if (asType == fullAimLoadedAs)
 				return; // No futher conversion needed, just get out
@@ -908,7 +912,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	/** Used to read in a section of aim file */
-	protected void getAimSubSection(int asType, int bSlice, int tSlice) {
+	protected void getAimSubSection(final int asType, final int bSlice,
+			final int tSlice) {
 		final int wid = dim.x;
 		final int het = dim.y;
 		if (!fullAimLoaded) {
@@ -1045,7 +1050,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	@Override
-	public boolean[] getBoolArray(int n) {
+	public boolean[] getBoolArray(final int n) {
 		boolean[] gbool = new boolean[1];
 		getSliceCalls++;
 		if (n < dim.z) {
@@ -1073,7 +1078,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	@Override
-	public char[] getByteArray(int n) {
+	public char[] getByteArray(final int n) {
 		char[] gb = new char[1];
 		getSliceCalls++;
 		if (n < dim.z) {
@@ -1095,7 +1100,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		return gb;
 	}
 
-	public void GetBytePoints(int minValue, int maxValue, int startSlice) {
+	public void GetBytePoints(final int minValue, final int maxValue,
+			final int startSlice) {
 		char[] gg;
 
 		int rCount = 0;
@@ -1186,7 +1192,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	@Override
-	public float[] getFloatArray(int n) {
+	public float[] getFloatArray(final int n) {
 		getSliceCalls++;
 		float[] gf = new float[1];
 		if (n < dim.z) {
@@ -1228,7 +1234,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	@Override
-	public int[] getIntArray(int n) {
+	public int[] getIntArray(final int n) {
 		int[] gi = new int[1];
 		getSliceCalls++;
 		if (n < dim.z) {
@@ -1248,7 +1254,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		return gi;
 	}
 
-	public void GetIntPoints(int minValue, int maxValue, int startSlice) {
+	public void GetIntPoints(final int minValue, final int maxValue,
+			final int startSlice) {
 		int[] gg;
 		int rCount = 0;
 		int bCount = 0;
@@ -1313,7 +1320,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		GetPoints(0, -1, 0);
 	}
 
-	public void GetPoints(int minValue, int maxValue, int startSlice) {
+	public void GetPoints(final int minValue, final int maxValue,
+			final int startSlice) {
 		switch (this.imageType) {
 		case 0:
 			if (debugMode)
@@ -1340,7 +1348,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		}
 	}
 
-	public void GetPointsFromList(Vector<Float[]> pList) {
+	public void GetPointsFromList(final Vector<Float[]> pList) {
 		final Iterator<Float[]> itr = pList.iterator();
 		positionList = null;
 		positionList = pList;
@@ -1415,7 +1423,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	@Override
-	public Object getPolyImage(int slice, int asType) {
+	public Object getPolyImage(final int slice, final int asType) {
 		try {
 			return loadslice(slice, asType);
 		} catch (final Exception e) {
@@ -1467,7 +1475,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	@Override
-	public short[] getShortArray(int n) {
+	public short[] getShortArray(final int n) {
 		short[] gs = new short[1];
 		if (n < dim.z) {
 			try {
@@ -1487,7 +1495,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		return gs;
 	}
 
-	public void GetShortPoints(short minValue, short maxValue, int startSlice) {
+	public void GetShortPoints(final short minValue, final short maxValue,
+			final int startSlice) {
 		short[] gg;
 
 		int rCount = 0;
@@ -1564,12 +1573,12 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		return isSigned;
 	}
 
-	public float GetSpot(int x, int y, int z) {
+	public float GetSpot(final int x, final int y, final int z) {
 		System.out.println("Not working yet...");
 		return -1;
 	}
 
-	public void getTIFFheader(TIFFField[] allfields) {
+	public void getTIFFheader(final TIFFField[] allfields) {
 
 		int skippedTag = 0;
 		int totalTag = 0;
@@ -1668,27 +1677,31 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 				+ " tags skipped of " + totalTag);
 	}
 
-	public Double[] getXYZVec(int cIndex, int sliceNumber) {
+	public Double[] getXYZVec(final int cIndex, final int sliceNumber) {
 		return TImgTools.getXYZVecFromVec(pos, dim, cIndex, sliceNumber);
 	}
 
 	/** Used to write a slice into the main array */
-	protected synchronized void ibyteCopy(char[] slice, int oPos, int cLen) {
+	protected synchronized void ibyteCopy(final char[] slice, final int oPos,
+			final int cLen) {
 		System.arraycopy(slice, 0, aimByte, oPos, cLen);
 	}
 
 	/** Used to write a slice into the main array */
-	protected synchronized void ifloatCopy(float[] slice, int oPos, int cLen) {
+	protected synchronized void ifloatCopy(final float[] slice, final int oPos,
+			final int cLen) {
 		System.arraycopy(slice, 0, aimFloat, oPos, cLen);
 	}
 
 	/** Used to write a slice into the main array */
-	protected synchronized void iintCopy(int[] slice, int oPos, int cLen) {
+	protected synchronized void iintCopy(final int[] slice, final int oPos,
+			final int cLen) {
 		System.arraycopy(slice, 0, aimInt, oPos, cLen);
 	}
 
 	/** Used to write a slice into the main array */
-	protected synchronized void imaskCopy(boolean[] slice, int oPos, int cLen) {
+	protected synchronized void imaskCopy(final boolean[] slice,
+			final int oPos, final int cLen) {
 		System.arraycopy(slice, 0, aimMask, oPos, cLen);
 	}
 
@@ -1696,7 +1709,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * Creates a new, aim the given Aim and a 1d boolean array with the same
 	 * length as the existing data
 	 */
-	public VirtualAim inheritedAim(boolean[] inData) {
+	public VirtualAim inheritedAim(final boolean[] inData) {
 		return inheritedAim(inData, dim, offset);
 	}
 
@@ -1705,7 +1718,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * length as the existing data
 	 */
 	@Override
-	public VirtualAim inheritedAim(boolean[] inData, D3int idim, D3int ioffset) {
+	public VirtualAim inheritedAim(final boolean[] inData, final D3int idim,
+			final D3int ioffset) {
 		// Clone aim with new elements inside
 		final VirtualAim outImage = new VirtualAim();
 
@@ -1732,7 +1746,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * Creates a new, aim the given Aim and a 1d int array with the same length
 	 * as the existing data
 	 */
-	public VirtualAim inheritedAim(char[] inData) {
+	public VirtualAim inheritedAim(final char[] inData) {
 		return inheritedAim(inData, dim, offset);
 	}
 
@@ -1741,7 +1755,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * as the existing data
 	 */
 	@Override
-	public VirtualAim inheritedAim(char[] inData, D3int idim, D3int ioffset) {
+	public VirtualAim inheritedAim(final char[] inData, final D3int idim,
+			final D3int ioffset) {
 		// Clone aim with new elements inside
 		final VirtualAim outImage = new VirtualAim();
 
@@ -1768,7 +1783,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * Creates a new, aim the given Aim and a 1d float array with the same
 	 * length as the existing data
 	 */
-	public VirtualAim inheritedAim(float[] inData) {
+	public VirtualAim inheritedAim(final float[] inData) {
 		return inheritedAim(inData, dim, offset);
 	}
 
@@ -1777,7 +1792,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * length as the existing data
 	 */
 	@Override
-	public VirtualAim inheritedAim(float[] inData, D3int idim, D3int ioffset) {
+	public VirtualAim inheritedAim(final float[] inData, final D3int idim,
+			final D3int ioffset) {
 		// Clone aim with new elements inside
 		final VirtualAim outImage = new VirtualAim();
 
@@ -1805,7 +1821,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * the given ImageStack
 	 */
 	@Override
-	public VirtualAim inheritedAim(ImageStack inStack) {
+	public VirtualAim inheritedAim(final ImageStack inStack) {
 		// Clone aim with new elements inside
 		final VirtualAim outImage = new VirtualAim();
 
@@ -1827,7 +1843,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * Creates a new, aim the given Aim and a 1d int array with the same length
 	 * as the existing data
 	 */
-	public VirtualAim inheritedAim(int[] inData) {
+	public VirtualAim inheritedAim(final int[] inData) {
 		return inheritedAim(inData, dim, offset);
 	}
 
@@ -1836,7 +1852,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * as the existing data
 	 */
 	@Override
-	public VirtualAim inheritedAim(int[] inData, D3int idim, D3int ioffset) {
+	public VirtualAim inheritedAim(final int[] inData, final D3int idim,
+			final D3int ioffset) {
 		// Clone aim with new elements inside
 		final VirtualAim outImage = new VirtualAim();
 
@@ -1863,7 +1880,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * Creates a new, aim the given Aim and a 1d int array with the same length
 	 * as the existing data
 	 */
-	public VirtualAim inheritedAim(short[] inData) {
+	public VirtualAim inheritedAim(final short[] inData) {
 		return inheritedAim(inData, dim, offset);
 	}
 
@@ -1872,7 +1889,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * length as the existing data
 	 */
 	@Override
-	public VirtualAim inheritedAim(short[] inData, D3int idim, D3int ioffset) {
+	public VirtualAim inheritedAim(final short[] inData, final D3int idim,
+			final D3int ioffset) {
 		// Clone aim with new elements inside
 		final VirtualAim outImage = new VirtualAim();
 
@@ -1896,11 +1914,11 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	@Override
-	public TImg inheritedAim(TImgRO inTImg) {
+	public TImg inheritedAim(final TImgRO inTImg) {
 		return TImgToVirtualAim(inTImg);
 	}
 
-	private void inheritedAimHelper(VirtualAim outImage) {
+	private void inheritedAimHelper(final VirtualAim outImage) {
 		outImage.fullAimLoaded = true;
 		outImage.procLog = procLog;
 		outImage.sampleName = sampleName;
@@ -1911,8 +1929,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	@Override
-	public boolean InitializeImage(D3int dPos, D3int cDim, D3int dOffset,
-			D3float dElSize, int dImageType) {
+	public boolean InitializeImage(final D3int dPos, final D3int cDim,
+			final D3int dOffset, final D3float dElSize, final int dImageType) {
 		pos = dPos;
 		dim = cDim;
 		offset = dOffset;
@@ -1967,7 +1985,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	/** Used to write a slice into the main array */
-	protected synchronized void ishortCopy(short[] slice, int oPos, int cLen) {
+	protected synchronized void ishortCopy(final short[] slice, final int oPos,
+			final int cLen) {
 		System.arraycopy(slice, 0, aimShort, oPos, cLen);
 	}
 
@@ -2081,14 +2100,14 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * and ImageJ data models, and the lack of operator overloading in java :-(
 	 */
 	@Deprecated
-	protected void loadAimfromStack(Object[] istack) {
+	protected void loadAimfromStack(final Object[] istack) {
 		stack = istack;
 		loadAimfromStack();
 	}
 
 	@Deprecated
 	// this function is hideous, this really needs to be fixed
-	protected void loadAimfromTImg(TImgRO inTImg) {
+	protected void loadAimfromTImg(final TImgRO inTImg) {
 		System.out.println("Loading generic TImg as Aim");
 		useTImg = true;
 		baseTImg = inTImg;
@@ -2107,11 +2126,11 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		useTImg = true;
 	}
 
-	private Object loadslice(int slice) throws Exception {
+	private Object loadslice(final int slice) throws Exception {
 		return loadslice(slice, -1);
 	}
 
-	private Object loadslice(int slice, int asType) throws Exception {
+	private Object loadslice(final int slice, int asType) throws Exception {
 		if (asType == -1)
 			asType = imageType;
 		if (fullAimLoaded) {
@@ -2212,7 +2231,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * requires twice as much memory due to the different methods used in Aim
 	 * and ImageJ data models, and the lack of operator overloading in java :-(
 	 */
-	protected void loadStackFromAim(boolean force) {
+	protected void loadStackFromAim(final boolean force) {
 		System.out.println("Loading data as ImageJ stack...");
 		if (isLoaded) {
 			if (force) {
@@ -2288,7 +2307,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	/** create a copy of the desired file and return the path */
-	protected String localLoadingRead(String inpath) {
+	protected String localLoadingRead(final String inpath) {
 		if (!scratchLoading)
 			return inpath;
 		try {
@@ -2383,7 +2402,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	/** Read in a tif-stack and return the decoder */
-	public ImageDecoder parseTifStack(boolean parseHeader) {
+	public ImageDecoder parseTifStack(final boolean parseHeader) {
 		try {
 			final SeekableStream s = new FileSeekableStream(imglist[0]);
 
@@ -2425,7 +2444,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 
 	@Deprecated
 	/** Show a preview of a given slice */
-	public ImagePlus previewSlice(int n) {
+	public ImagePlus previewSlice(final int n) {
 		if (previewDisabled)
 			return null; // X windows can lick my ball and stop hard crashing
 							// fuckin eh
@@ -2447,12 +2466,12 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * some plugins but dangerous, please do not use
 	 */
 	@Deprecated
-	public Object PrivateSliceAccess(int slNum) throws Exception {
+	public Object PrivateSliceAccess(final int slNum) throws Exception {
 		return loadslice(slNum);
 	}
 
 	/** Reads in the given path and loads the first slice */
-	public boolean ReadAim(String inpath, boolean onlyHeader) {
+	public boolean ReadAim(final String inpath, final boolean onlyHeader) {
 		int zlen = 0;
 		// Initialize the Fields here so they can be filled
 		pos = new D3int();
@@ -2547,7 +2566,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	/** multithreaded code for loading slices */
-	public void runSliceLoader(int nOperation, int asType) {
+	public void runSliceLoader(final int nOperation, final int asType) {
 		jStartTime = System.currentTimeMillis();
 		// Call the other threads
 		final Hashtable<sliceLoader, int[]> threadList = new Hashtable<sliceLoader, int[]>(
@@ -2581,19 +2600,19 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	@Override
-	public void setCompression(boolean inData) {
+	public void setCompression(final boolean inData) {
 		useCompression = inData;
 	}
 
 	/** The size of the image */
 	@Override
-	public void setDim(D3int inData) {
+	public void setDim(final D3int inData) {
 		dim = inData;
 	}
 
 	/** The element size (in mm) of a voxel */
 	@Override
-	public void setElSize(D3float inData) {
+	public void setElSize(final D3float inData) {
 		elSize = inData;
 	}
 
@@ -2602,7 +2621,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * same as input)
 	 */
 	@Override
-	public void setImageType(int inData) {
+	public void setImageType(final int inData) {
 		imageType = inData;
 	}
 
@@ -2611,7 +2630,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * voxel data
 	 */
 	@Override
-	public void setOffset(D3int inData) {
+	public void setOffset(final D3int inData) {
 		offset = inData;
 	}
 
@@ -2620,11 +2639,11 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * only needed for ROIs
 	 */
 	@Override
-	public void setPos(D3int inData) {
+	public void setPos(final D3int inData) {
 		pos = inData;
 	}
 
-	public boolean setShortArray(int n, short[] gs) {
+	public boolean setShortArray(final int n, final short[] gs) {
 		if ((n < dim.z) && (imageType == 2) && (fullAimLoaded)) {
 			final int sliceSize = dim.x * dim.y;
 			final int outPos = n * sliceSize;
@@ -2642,16 +2661,16 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	@Override
-	public void setShortScaleFactor(float ssf) {
+	public void setShortScaleFactor(final float ssf) {
 		ShortScaleFactor = ssf;
 	}
 
 	@Override
-	public void setSigned(boolean inData) {
+	public void setSigned(final boolean inData) {
 		isSigned = inData;
 	}
 
-	public void setTIFFheader(TIFFEncodeParam tparam) {
+	public void setTIFFheader(final TIFFEncodeParam tparam) {
 		getProcLog().split("\n");
 		final TIFFField[] tiffProcLog = new TIFFField[6];
 		tiffProcLog[0] = new TIFFField(TAG_PROCLOGSTART, TIFFField.TIFF_ASCII,
@@ -2731,7 +2750,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * 
 	 * @param inTImg
 	 */
-	public void WrapTImg(TImgRO inTImg) {
+	public void WrapTImg(final TImgRO inTImg) {
 		loadAimfromTImg(inTImg);
 		// This is sort of a hack, but it needs to be done, VirtualAims should
 		// be copied the same way everything else is
@@ -2744,7 +2763,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * Write the output using the default settings for the given data-type
 	 */
 	@Override
-	public void WriteAim(String outpath) {
+	public void WriteAim(final String outpath) {
 		WriteAim(outpath, -1);
 	}
 
@@ -2761,7 +2780,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 *            cType is the java image libraries type notation described
 	 *            fully in the BufferedImage documentation
 	 */
-	public void WriteAim(String outpath, int outType) {
+	public void WriteAim(final String outpath, final int outType) {
 		int biType;
 		TWriter outWriter;
 		if (outType == -1)
@@ -2895,7 +2914,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 
 	}
 
-	public void WriteAim(String outpath, int outType, float scaleVal) {
+	public void WriteAim(final String outpath, final int outType,
+			final float scaleVal) {
 		ShortScaleFactor = scaleVal;
 		WriteAim(outpath, outType);
 	}
@@ -2920,8 +2940,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 *            quantity
 	 */
 	@Override
-	public void WriteAim(String outpath, int outType, float scaleVal,
-			boolean IisSigned) {
+	public void WriteAim(final String outpath, final int outType,
+			final float scaleVal, final boolean IisSigned) {
 		ShortScaleFactor = scaleVal;
 		isSigned = IisSigned;
 		WriteAim(outpath, outType);

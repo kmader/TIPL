@@ -84,14 +84,14 @@ public class UFEM implements Runnable {
 	 * find the extents of non-zero values in an image and resize based on the
 	 * smallest bounding box which can be fit around these edges
 	 **/
-	public static TImg boundbox(TImg maskImage) {
+	public static TImg boundbox(final TImg maskImage) {
 		final Resize myResizer = new Resize(maskImage);
 		myResizer.find_edges();
 		myResizer.run();
 		return myResizer.ExportAim(maskImage);
 	}
 
-	public static TImg boundbox(TImg cAim, TImg maskAim) {
+	public static TImg boundbox(final TImg cAim, final TImg maskAim) {
 		final Resize myResizer = new Resize(cAim);
 		myResizer.cutROI(maskAim);
 		myResizer.run();
@@ -102,15 +102,16 @@ public class UFEM implements Runnable {
 	 * run the contouring code and perform open and closing operations
 	 * afterwards
 	 */
-	public static TImg contour(final TImg maskAim, boolean remEdges,
-			double remEdgesRadius, boolean doCL, double minVolumePct,
-			boolean removeMarrowCore, int maskContourSteps,
-			double maskContourBW, boolean justCircle, boolean pureWhiteMask) {
+	public static TImg contour(final TImg maskAim, final boolean remEdges,
+			final double remEdgesRadius, final boolean doCL,
+			final double minVolumePct, final boolean removeMarrowCore,
+			final int maskContourSteps, final double maskContourBW,
+			final boolean justCircle, final boolean pureWhiteMask) {
 		if (pureWhiteMask) {
 			final PureFImage.PositionFunction whitePF = new PureFImage.PositionFunction() {
 
 				@Override
-				public final double get(Double[] ipos) {
+				public final double get(final Double[] ipos) {
 					// TODO Auto-generated method stub
 					return 1;
 				}
@@ -166,9 +167,9 @@ public class UFEM implements Runnable {
 
 	}
 
-	public static TImg filter(final TImg ufiltAim, boolean doLaplace,
-			boolean doGradient, boolean doGauss, int upsampleFactor,
-			int downsampleFactor) {
+	public static TImg filter(final TImg ufiltAim, final boolean doLaplace,
+			final boolean doGradient, final boolean doGauss,
+			final int upsampleFactor, final int downsampleFactor) {
 		final VFilterScale fs = new VFilterScale(ufiltAim);
 		if (doLaplace) {
 			fs.setLaplaceFilter();
@@ -183,7 +184,7 @@ public class UFEM implements Runnable {
 		return fs.ExportAim(ufiltAim);
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 
 		System.out
 				.println(" Micro Cortical Bone Analysis Script v" + UFEM.kVer);
@@ -199,7 +200,7 @@ public class UFEM implements Runnable {
 
 	}
 
-	public static TImg makePoros(TImg inBoneAim) {
+	public static TImg makePoros(final TImg inBoneAim) {
 		final TImgRO.FullReadable inBoneAimPlus = TImgTools
 				.makeTImgFullReadable(inBoneAim);
 		final boolean[] scdat = inBoneAimPlus.getBoolAim();
@@ -214,7 +215,8 @@ public class UFEM implements Runnable {
 
 	}
 
-	protected static void makeProfiles(TImg datAim, TImg mskAim, String fileroot) {
+	protected static void makeProfiles(final TImg datAim, final TImg mskAim,
+			final String fileroot) {
 		GrayAnalysis.StartThetaCylProfile(datAim, mskAim, fileroot + "_th.txt",
 				0.1f);
 		GrayAnalysis.StartZProfile(datAim, mskAim, fileroot + "_z.txt", 0.1f);
@@ -224,18 +226,19 @@ public class UFEM implements Runnable {
 	}
 
 	/** a function to provide new names to the newly recontoured objects */
-	public static String originalName(String inFile) {
+	public static String originalName(final String inFile) {
 		final int cPos = inFile.lastIndexOf(File.separator);
 		return inFile.substring(0, cPos + 1) + "precont_"
 				+ inFile.substring(cPos + 1);
 	}
 
-	public static TImg peelAim(final TImg cAim, final TImg maskAim, int iters) {
+	public static TImg peelAim(final TImg cAim, final TImg maskAim,
+			final int iters) {
 		return peelAim(cAim, maskAim, iters, false);
 	}
 
-	public static TImg peelAim(final TImg cAim, final TImg maskAim, int iters,
-			boolean asBool) {
+	public static TImg peelAim(final TImg cAim, final TImg maskAim,
+			final int iters, final boolean asBool) {
 		final Peel cPeel = new Peel(cAim, maskAim, new D3int(iters), asBool);
 		System.out.println("Calculating Peel " + cAim + " ...");
 		cPeel.run();
@@ -243,7 +246,8 @@ public class UFEM implements Runnable {
 	}
 
 	/** A simple circular contour, edge removal, and peeling */
-	protected static TImg removeEdges(TImg cAim, double remEdgesRadius) {
+	protected static TImg removeEdges(final TImg cAim,
+			final double remEdgesRadius) {
 		EasyContour myContour = new EasyContour(cAim);
 		myContour.useFixedCirc(remEdgesRadius);
 		myContour.run();
@@ -257,7 +261,8 @@ public class UFEM implements Runnable {
 	}
 
 	/** Segment the thesheld bone file into a clean mask */
-	public static TImg segment(TImg threshAim, double morphRadius, int closeIter) {
+	public static TImg segment(final TImg threshAim, final double morphRadius,
+			final int closeIter) {
 
 		final TImgRO.FullReadable threshAimPlus = TImgTools
 				.makeTImgFullReadable(threshAim);
@@ -309,8 +314,8 @@ public class UFEM implements Runnable {
 	}
 
 	/** perform a threshold on an input image and remove edges if needed **/
-	public static TImg threshold(final TImg inAim, int threshVal,
-			boolean rmEdges, double remEdgesRadius) {
+	public static TImg threshold(final TImg inAim, final int threshVal,
+			final boolean rmEdges, final double remEdgesRadius) {
 		final TImgRO.FullReadable inAimPlus = TImgTools
 				.makeTImgFullReadable(inAim);
 		short[] inImg = inAimPlus.getShortAim();
@@ -425,7 +430,7 @@ public class UFEM implements Runnable {
 	private final boolean runAsJob;
 	private final SGEJob jobToRun;
 
-	public UFEM(ArgumentParser p) {
+	public UFEM(final ArgumentParser p) {
 
 		stage = p
 				.getOptionInt(
@@ -736,7 +741,7 @@ public class UFEM implements Runnable {
 	}
 
 	/** Code to make preview (slices every 20 slides of the data) */
-	public void makePreview(String previewName, TImg previewData) {
+	public void makePreview(final String previewName, final TImg previewData) {
 		final FilterScale fs = new FilterScale(previewData);
 		fs.SetScale(1, 1, 1, 1, 1, 20);
 		fs.runFilter();
@@ -744,12 +749,12 @@ public class UFEM implements Runnable {
 		tempAim.WriteAim(previewName);
 	}
 
-	public String nameVersion(String inName, int verNumber) {
+	public String nameVersion(final String inName, final int verNumber) {
 		return inName + "_" + verNumber + ".csv";
 	}
 
 	/** run the labeling and return a colored image */
-	public TImg objectLabeling(TImg inputImage) {
+	public TImg objectLabeling(final TImg inputImage) {
 		ComponentLabel clObjects = new ComponentLabel(inputImage);
 		clObjects.runVoxels(0);
 		final TImg outAim = clObjects.ExportLabelsAim(inputImage);
@@ -892,7 +897,8 @@ public class UFEM implements Runnable {
 	 *            voronoi image but for foams it is often better with the
 	 *            labeled image
 	 */
-	public TImg runNeighborhoodAnalysis(TImg inputAim, String edgeName) {
+	public TImg runNeighborhoodAnalysis(final TImg inputAim,
+			final String edgeName) {
 		final Neighbors nbor = new Neighbors(inputAim);
 		System.out.println("Calculating neighbors " + inputAim + " ...");
 		nbor.run();
@@ -930,7 +936,7 @@ public class UFEM implements Runnable {
 	 * @param sect
 	 *            The Section of code to run
 	 */
-	public void runSection(int sect) {
+	public void runSection(final int sect) {
 		System.out.println("UFEM--" + new Date());
 		if ((multiJobs) & (sect >= 10)) {
 			System.err
@@ -1348,13 +1354,14 @@ public class UFEM implements Runnable {
 		}
 	}
 
-	protected void submitJob(String args, String jobName, int cores) {
+	protected void submitJob(final String args, final String jobName,
+			final int cores) {
 		submitJob(args, jobName, cores, false);
 	}
 
 	/** Used for submitting jobs on the Merlin4 cluster using the SGE system */
-	protected void submitJob(String args, String jobName, int cores,
-			boolean dSave) {
+	protected void submitJob(final String args, final String jobName,
+			final int cores, final boolean dSave) {
 		double memEstimate = (3.8 * (guessDim.prod() * 4) / (1e9));
 		if (dSave)
 			memEstimate *= 1.5;
@@ -1410,7 +1417,7 @@ public class UFEM implements Runnable {
 	 * @param filename
 	 *            Path and name of the file/directory to open
 	 */
-	public boolean tryOpenAimFile(String filename) {
+	public boolean tryOpenAimFile(final String filename) {
 
 		TImg tempAim = null;
 		if (filename.length() > 0) {
@@ -1434,7 +1441,7 @@ public class UFEM implements Runnable {
 
 	}
 
-	protected void ufemThread(int threadTask) {
+	protected void ufemThread(final int threadTask) {
 		smcOperation = threadTask;
 		if (multiJobs) {
 			System.out.println("Running given task :" + threadTask

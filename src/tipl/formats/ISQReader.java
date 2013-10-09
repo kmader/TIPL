@@ -24,8 +24,9 @@ public class ISQReader implements TReader {
 		final long startPos;
 		final ISQReader curReader;
 
-		public ISQSliceReader(final RandomAccessFile infile, int sliceNumber,
-				ISQReader icurReader) throws IOException {
+		public ISQSliceReader(final RandomAccessFile infile,
+				final int sliceNumber, final ISQReader icurReader)
+				throws IOException {
 			in = infile;
 			curReader = icurReader;
 			dim = curReader.getDim();
@@ -41,7 +42,7 @@ public class ISQReader implements TReader {
 		}
 
 		@Override
-		public Object polyReadImage(int asType) throws IOException {
+		public Object polyReadImage(final int asType) throws IOException {
 			if (in.getFilePointer() != startPos)
 				in.seek(startPos);
 
@@ -249,7 +250,7 @@ public class ISQReader implements TReader {
 	}
 
 	@Override
-	public TSliceReader ReadSlice(int iSlice) { // implicit random
+	public TSliceReader ReadSlice(final int iSlice) { // implicit random
 		try {
 			return new ISQSliceReader(getRAFile(), iSlice, this);
 		} catch (final Exception e) {
@@ -260,7 +261,7 @@ public class ISQReader implements TReader {
 	}
 
 	@Override
-	public void SetupReader(String inPath) {
+	public void SetupReader(final String inPath) {
 		try {
 			iFile = new File(inPath);
 		} catch (final Exception e) {

@@ -12,7 +12,7 @@ import tipl.util.TImgTools;
  * (linear array) files. Provides interfaces for casting inputs in other formats
  * to binary
  */
-abstract public class BaseTIPLPluginBW extends BaseTIPLPlugin {
+abstract public class BaseTIPLPluginBW extends BaseTIPLPluginIO {
 	/** First input aim */
 	public boolean[] inAim;
 

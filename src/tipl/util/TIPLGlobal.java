@@ -27,7 +27,7 @@ public class TIPLGlobal {
 	 */
 	public static final ThreadFactory daemonFactory = new ThreadFactory() {
 		@Override
-		public Thread newThread(Runnable runnable) {
+		public Thread newThread(final Runnable runnable) {
 			final Thread thread = Executors.defaultThreadFactory().newThread(
 					runnable);
 			thread.setDaemon(true);
@@ -36,7 +36,7 @@ public class TIPLGlobal {
 	};
 
 	/** a simple file copy function for managing outputs */
-	public static void copyFile(File sourceFile, File destFile)
+	public static void copyFile(final File sourceFile, final File destFile)
 			throws IOException {
 
 		if (!destFile.exists()) {
@@ -61,7 +61,7 @@ public class TIPLGlobal {
 
 	}
 
-	public static void copyFile(String sourceFile, String destFile) {
+	public static void copyFile(final String sourceFile, final String destFile) {
 		try {
 			copyFile(new File(sourceFile), new File(destFile));
 		} catch (final Exception e) {
@@ -72,12 +72,12 @@ public class TIPLGlobal {
 		}
 	}
 
-	public static boolean DeleteFile(String file) {
+	public static boolean DeleteFile(final String file) {
 		return DeleteFile(file, "Unk");
 	}
 
 	/** Delete files */
-	public static boolean DeleteFile(String file, String whoDel) {
+	public static boolean DeleteFile(final String file, final String whoDel) {
 		final File f1 = new File(file);
 		final boolean success = f1.delete();
 		if (!success) {
@@ -97,7 +97,7 @@ public class TIPLGlobal {
 	 **/
 	public static void DeleteTempAtFinish(final String delName) {
 		curRuntime.addShutdownHook(new Thread() {
-			public boolean MyDeleteFile(String file, String whoDel) {
+			public boolean MyDeleteFile(final String file, final String whoDel) {
 				final File f1 = new File(file);
 				final boolean success = f1.delete();
 				if (!success) {
@@ -138,7 +138,7 @@ public class TIPLGlobal {
 	/**
 	 * reserve cores for an operation that other threads can then no longer user
 	 */
-	public static synchronized int reserveCores(int desiredCores) {
+	public static synchronized int reserveCores(final int desiredCores) {
 		final int givenCores = (availableCores > desiredCores) ? desiredCores
 				: availableCores;
 		availableCores -= givenCores;
@@ -146,12 +146,12 @@ public class TIPLGlobal {
 	}
 
 	/** return the cores when a computation is complete */
-	public static synchronized void returnCores(int finishedCores) {
+	public static synchronized void returnCores(final int finishedCores) {
 		availableCores += finishedCores;
 	}
 
 	/** Function to try and open an aim file, return true if it is successful */
-	public static boolean tryOpen(String filename) {
+	public static boolean tryOpen(final String filename) {
 
 		VirtualAim tempAim = null;
 		if (filename.length() > 0) {

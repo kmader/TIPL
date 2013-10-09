@@ -25,13 +25,13 @@ public interface TReader {
 		protected D3int dim;
 
 		@Override
-		public boolean CheckSizes(String otherPath) {
+		public boolean CheckSizes(final String otherPath) {
 			// TODO Auto-generated method stub
 			return false;
 		}
 
 		@Override
-		public void checkSliceDim(D3int globalDim) throws IOException {
+		public void checkSliceDim(final D3int globalDim) throws IOException {
 			if (getDim().x != globalDim.x)
 				throw new IOException(
 						"Aim Sizes, Suddenly No Longer Match Input Images, x:"
@@ -103,7 +103,7 @@ public interface TReader {
 		}
 
 		@Override
-		public void setShortScaleFactor(float ssf) {
+		public void setShortScaleFactor(final float ssf) {
 			ShortScaleFactor = ssf;
 		}
 
@@ -114,20 +114,20 @@ public interface TReader {
 		protected TReader cReader;
 		protected String procLog = "";
 
-		public TReaderImg(TReader inReader) {
+		public TReaderImg(final TReader inReader) {
 			cReader = inReader;
 		}
 
 		@Override
-		public String appendProcLog(String inData) {
+		public String appendProcLog(final String inData) {
 			return getProcLog() + inData;
 		}
 
-		public boolean CheckSizes(String otherPath) {
+		public boolean CheckSizes(final String otherPath) {
 			return true;
 		}
 
-		public boolean CheckSizes(TImg otherTImg) {
+		public boolean CheckSizes(final TImg otherTImg) {
 			return true;
 		}
 
@@ -167,7 +167,7 @@ public interface TReader {
 		}
 
 		@Override
-		public Object getPolyImage(int slice, int asType) {
+		public Object getPolyImage(final int slice, final int asType) {
 			try {
 				final TSliceReader curSlice = cReader.ReadSlice(slice);
 				curSlice.checkSliceDim(getDim());
@@ -215,49 +215,54 @@ public interface TReader {
 		}
 
 		@Override
-		public TImg inheritedAim(boolean[] imgArray, D3int dim, D3int offset) {
+		public TImg inheritedAim(final boolean[] imgArray, final D3int dim,
+				final D3int offset) {
 			return TImgTools.makeTImgExportable(this).inheritedAim(imgArray,
 					dim, offset);
 		}
 
 		@Override
-		public TImg inheritedAim(char[] imgArray, D3int dim, D3int offset) {
+		public TImg inheritedAim(final char[] imgArray, final D3int dim,
+				final D3int offset) {
 			return TImgTools.makeTImgExportable(this).inheritedAim(imgArray,
 					dim, offset);
 		}
 
 		@Override
-		public TImg inheritedAim(float[] imgArray, D3int dim, D3int offset) {
+		public TImg inheritedAim(final float[] imgArray, final D3int dim,
+				final D3int offset) {
 			return TImgTools.makeTImgExportable(this).inheritedAim(imgArray,
 					dim, offset);
 		}
 
 		@Override
-		public TImg inheritedAim(ImageStack iStack) {
+		public TImg inheritedAim(final ImageStack iStack) {
 			return TImgTools.makeTImgExportable(this).inheritedAim(iStack);
 		}
 
 		@Override
-		public TImg inheritedAim(int[] imgArray, D3int dim, D3int offset) {
+		public TImg inheritedAim(final int[] imgArray, final D3int dim,
+				final D3int offset) {
 			return TImgTools.makeTImgExportable(this).inheritedAim(imgArray,
 					dim, offset);
 		}
 
 		@Override
-		public TImg inheritedAim(short[] imgArray, D3int dim, D3int offset) {
+		public TImg inheritedAim(final short[] imgArray, final D3int dim,
+				final D3int offset) {
 			return TImgTools.makeTImgExportable(this).inheritedAim(imgArray,
 					dim, offset);
 		}
 
 		// Temporary solution,
 		@Override
-		public TImg inheritedAim(TImgRO inAim) {
+		public TImg inheritedAim(final TImgRO inAim) {
 			return TImgTools.makeTImgExportable(this).inheritedAim(inAim);
 		}
 
 		@Override
-		public boolean InitializeImage(D3int iPos, D3int iDim, D3int iOff,
-				D3float iSize, int iType) {
+		public boolean InitializeImage(final D3int iPos, final D3int iDim,
+				final D3int iOff, final D3float iSize, final int iType) {
 			return false;
 		}
 
@@ -276,16 +281,16 @@ public interface TReader {
 		}
 
 		@Override
-		public void setCompression(boolean inData) {
+		public void setCompression(final boolean inData) {
 		}
 
 		/** The size of the image */
 		@Override
-		public void setDim(D3int inData) {
+		public void setDim(final D3int inData) {
 		}
 
 		@Override
-		public void setElSize(D3float inData) {
+		public void setElSize(final D3float inData) {
 		}
 
 		/**
@@ -293,7 +298,7 @@ public interface TReader {
 		 * -1 same as input)
 		 */
 		@Override
-		public void setImageType(int inData) {
+		public void setImageType(final int inData) {
 			System.out
 					.println(" Input type setting is not permitted for reader types...");
 		}
@@ -303,7 +308,7 @@ public interface TReader {
 		 * voxel data
 		 */
 		@Override
-		public void setOffset(D3int inData) {
+		public void setOffset(final D3int inData) {
 		}
 
 		/**
@@ -311,25 +316,25 @@ public interface TReader {
 		 * only needed for ROIs
 		 */
 		@Override
-		public void setPos(D3int inData) {
+		public void setPos(final D3int inData) {
 		}
 
 		@Override
-		public void setShortScaleFactor(float ssf) {
+		public void setShortScaleFactor(final float ssf) {
 		}
 
 		@Override
-		public void setSigned(boolean inData) {
+		public void setSigned(final boolean inData) {
 		}
 
 		@Override
-		public void WriteAim(String path) {
+		public void WriteAim(final String path) {
 			TImgTools.WriteTImg(this, path);
 		}
 
 		@Override
-		public void WriteAim(String outpath, int outType, float scaleVal,
-				boolean IisSigned) {
+		public void WriteAim(final String outpath, final int outType,
+				final float scaleVal, final boolean IisSigned) {
 			TImgTools.WriteTImg(this, outpath, outType, scaleVal, IisSigned);
 		}
 

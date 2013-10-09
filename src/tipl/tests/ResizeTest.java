@@ -23,24 +23,26 @@ import tipl.util.TIPLPluginIO;
 
 public class ResizeTest {
 
-	protected static void checkDim(TImgRO img, D3int dim) {
+	protected static void checkDim(final TImgRO img, final D3int dim) {
 		assertEquals(img.getDim().x, dim.x);
 		assertEquals(img.getDim().y, dim.y);
 		assertEquals(img.getDim().z, dim.z);
 	}
 
-	protected static void checkDimensions(TImgRO img, D3int pos, D3int dim) {
+	protected static void checkDimensions(final TImgRO img, final D3int pos,
+			final D3int dim) {
 		checkDim(img, dim);
 		checkPos(img, pos);
 	}
 
-	protected static void checkPos(TImgRO img, D3int pos) {
+	protected static void checkPos(final TImgRO img, final D3int pos) {
 		assertEquals(img.getPos().x, pos.x);
 		assertEquals(img.getPos().y, pos.y);
 		assertEquals(img.getPos().z, pos.z);
 	}
 
-	protected static boolean doSlicesMatch(boolean[] slice1, boolean[] slice2) {
+	protected static boolean doSlicesMatch(final boolean[] slice1,
+			final boolean[] slice2) {
 		assertEquals(slice1.length, slice2.length);
 		for (int i = 0; i < slice1.length; i++) {
 			// System.out.println(i+", "+slice1[i]+" : "+slice2[i]);
@@ -49,7 +51,8 @@ public class ResizeTest {
 		return true;
 	}
 
-	protected static boolean doSlicesMatch(int[] slice1, int[] slice2) {
+	protected static boolean doSlicesMatch(final int[] slice1,
+			final int[] slice2) {
 		assertEquals(slice1.length, slice2.length);
 		for (int i = 0; i < slice1.length; i++) {
 			System.out.println(i + ", " + slice1[i] + " : " + slice2[i]);
@@ -58,21 +61,21 @@ public class ResizeTest {
 		return true;
 	}
 
-	protected static boolean doSlicesMatchB(TImgRO imgA, int sliceA,
-			TImgRO imgB, int sliceB) {
+	protected static boolean doSlicesMatchB(final TImgRO imgA,
+			final int sliceA, final TImgRO imgB, final int sliceB) {
 		final boolean[] aSlice = (boolean[]) imgA.getPolyImage(sliceA, 10);
 		final boolean[] bSlice = (boolean[]) imgB.getPolyImage(sliceB, 10);
 		return doSlicesMatch(aSlice, bSlice);
 	}
 
-	protected static boolean doSlicesMatchI(TImgRO imgA, int sliceA,
-			TImgRO imgB, int sliceB) {
+	protected static boolean doSlicesMatchI(final TImgRO imgA,
+			final int sliceA, final TImgRO imgB, final int sliceB) {
 		final int[] aSlice = (int[]) imgA.getPolyImage(sliceA, 2);
 		final int[] bSlice = (int[]) imgB.getPolyImage(sliceB, 2);
 		return doSlicesMatch(aSlice, bSlice);
 	}
 
-	protected static TIPLPluginIO makeRS(TImgRO inImage) {
+	protected static TIPLPluginIO makeRS(final TImgRO inImage) {
 		final TIPLPluginIO RS = new Resize();
 		RS.LoadImages(new TImgRO[] { inImage });
 		return RS;
@@ -81,7 +84,7 @@ public class ResizeTest {
 	/**
 	 * Test the values in the slices actually match
 	 */
-	public static void testSlicesMatchBool(TImgRO testImg) {
+	public static void testSlicesMatchBool(final TImgRO testImg) {
 		// offset lines
 
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
@@ -111,7 +114,7 @@ public class ResizeTest {
 	/**
 	 * Test the values in the slices actually match using integers
 	 */
-	public static void testSlicesMatchInt(TImgRO testImg) {
+	public static void testSlicesMatchInt(final TImgRO testImg) {
 		// offset lines
 
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");

@@ -3,9 +3,6 @@
  */
 package tipl.ij;
 
-import java.awt.image.ColorModel;
-
-import tipl.formats.TImgRO;
 import ij.ImageStack;
 import ij.gui.HistogramWindow;
 import ij.process.ByteProcessor;
@@ -13,14 +10,19 @@ import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 
+import java.awt.image.ColorModel;
+
+import tipl.formats.TImgRO;
+
 /**
  * @author mader
  * 
  */
 public class TImgToImageStack extends ImageStack {
-	public static ImageStack MakeImageStack(TImgRO inputImage) {
+	public static ImageStack MakeImageStack(final TImgRO inputImage) {
 		return new TImgToImageStack(inputImage);
 	}
+
 	final protected TImgRO coreTImg;
 	final protected TImgRO.TImgFull coreTFull;
 	/** ImageJ.ImageStack colormodel */
@@ -39,7 +41,7 @@ public class TImgToImageStack extends ImageStack {
 	 * @param inputImage
 	 *            the image to use
 	 */
-	public TImgToImageStack(TImgRO inputImage) {
+	public TImgToImageStack(final TImgRO inputImage) {
 		super(inputImage.getDim().x, inputImage.getDim().y,
 				inputImage.getDim().z);
 		coreTImg = inputImage;
@@ -47,22 +49,23 @@ public class TImgToImageStack extends ImageStack {
 	}
 
 	@Override
-	public void addSlice(String sliceLabel, ImageProcessor ip) {
+	public void addSlice(final String sliceLabel, final ImageProcessor ip) {
 		throw new IllegalArgumentException("cannot add new slices!");
 	}
 
 	@Override
-	public void addSlice(String sliceLabel, ImageProcessor ip, int n) {
+	public void addSlice(final String sliceLabel, final ImageProcessor ip,
+			final int n) {
 		throw new IllegalArgumentException("cannot add new slices!");
 	}
 
 	@Override
-	public void addSlice(String sliceLabel, Object pixels) {
+	public void addSlice(final String sliceLabel, final Object pixels) {
 		throw new IllegalArgumentException("cannot add new slices!");
 	}
 
 	@Override
-	public void deleteSlice(int n) {
+	public void deleteSlice(final int n) {
 		throw new IllegalArgumentException("cannot add new slices!");
 	}
 
@@ -74,7 +77,7 @@ public class TImgToImageStack extends ImageStack {
 
 	/** Returns the pixel array for the specified slice, were 1<=n<=nslices. */
 	@Override
-	public Object getPixels(int n) {
+	public Object getPixels(final int n) {
 		final ImageProcessor ip = getProcessor(n);
 		if (ip != null)
 			return ip.getPixels();
@@ -87,7 +90,7 @@ public class TImgToImageStack extends ImageStack {
 	 * Returns null if the stack is empty.
 	 */
 	@Override
-	public ImageProcessor getProcessor(int n) {
+	public ImageProcessor getProcessor(final int n) {
 		final int wid = getWidth();
 		final int het = getHeight();
 		final int imageType = coreTImg.getImageType();
@@ -146,7 +149,7 @@ public class TImgToImageStack extends ImageStack {
 
 	@Override
 	/** Returns the label of the Nth image. */
-	public String getSliceLabel(int n) {
+	public String getSliceLabel(final int n) {
 		return "TIPL:Slice:" + n;
 	}
 
@@ -160,7 +163,7 @@ public class TImgToImageStack extends ImageStack {
 	 * Assigns a pixel array to the specified slice, were 1<=n<=nslices.
 	 */
 	@Override
-	public void setPixels(Object pixels, int n) {
+	public void setPixels(final Object pixels, final int n) {
 		System.out
 				.println("setPixels not defined but we can pretend like it is:"
 						+ pixels + " @ " + n);

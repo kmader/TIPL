@@ -40,7 +40,7 @@ import Jama.Matrix;
  * Curvature computes the curvatures at every point in an image based on a
  * gaussian filter
  */
-public class Curvature extends BaseTIPLPlugin {
+public class Curvature extends BaseTIPLPluginIO {
 	/**
 	 * This class is the abstract class for my FloatArrayXDs, which are a one
 	 * dimensional structures with methods for access in n dimensions

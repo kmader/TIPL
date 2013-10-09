@@ -121,7 +121,7 @@ public class UFOAM {
 
 	public static final String kVer = "130809_024";
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 
 		System.out.println(" Universal Foam Analysis (dk31 edition) Script v"
 				+ kVer);
@@ -137,7 +137,7 @@ public class UFOAM {
 
 	}
 
-	public UFOAM(ArgumentParser pIn) {
+	public UFOAM(final ArgumentParser pIn) {
 		p = pIn;
 		GrayAnalysis.doPreload = true;
 		// Defaults
@@ -371,7 +371,7 @@ public class UFOAM {
 		maskAim = myResizer.ExportAim(maskAim);
 	}
 
-	public TImg boundbox(TImg cAim) {
+	public TImg boundbox(final TImg cAim) {
 		final Resize myResizer = new Resize(cAim);
 		myResizer.cutROI(maskAim);
 		myResizer.run();
@@ -467,15 +467,15 @@ public class UFOAM {
 		}
 	}
 
-	public String nameVersion(String inName, int verNumber) {
+	public String nameVersion(final String inName, final int verNumber) {
 		return inName + "_" + verNumber + ".csv";
 	}
 
-	public TImg peelAim(TImg cAim, int iters) {
+	public TImg peelAim(final TImg cAim, final int iters) {
 		return peelAim(cAim, maskAim, iters);
 	}
 
-	public TImg peelAim(TImg cAim, TImg pAim, int iters) {
+	public TImg peelAim(final TImg cAim, final TImg pAim, final int iters) {
 		final Peel cPeel = new Peel(cAim, pAim, new D3int(iters));
 		System.out.println("Calculating Peel " + cAim + " ...");
 		cPeel.run();
@@ -640,7 +640,7 @@ public class UFOAM {
 		}
 	}
 
-	public void runSection(int scriptStage) {
+	public void runSection(final int scriptStage) {
 		long start;
 		System.currentTimeMillis();
 		start = System.currentTimeMillis();
@@ -889,8 +889,9 @@ public class UFOAM {
 			if (maskAim == null)
 				maskAim = TImgTools.ReadTImg(maskAimFile);
 			final XDF cXDF = new XDF();
-			cXDF.setParameter("-rdfsize="+rdfSize+", -iterations="+rdfIter);
-			cXDF.LoadImages(new TImgRO[] {bubblesAim,maskAim});
+			cXDF.setParameter("-rdfsize=" + rdfSize + ", -iterations="
+					+ rdfIter);
+			cXDF.LoadImages(new TImgRO[] { bubblesAim, maskAim });
 			cXDF.milMode = rdfMILmode; // for volanic rock this makes sense
 			cXDF.execute();
 			rdfAim = cXDF.ExportAim(bubblesAim);

@@ -14,7 +14,7 @@ import java.io.OutputStreamWriter;
  * 
  */
 public class SGEJob {
-	public static void main(String[] argv) {
+	public static void main(final String[] argv) {
 		final SGEJob test = new SGEJob();
 		final ArgumentParser p = test.setParameter(new ArgumentParser(argv));
 
@@ -33,8 +33,8 @@ public class SGEJob {
 	 * @param prefix
 	 *            text to be used before each argument, (preferably format xyz:)
 	 */
-	public static SGEJob runAsJob(String className, ArgumentParser p,
-			String prefix) {
+	public static SGEJob runAsJob(final String className,
+			final ArgumentParser p, final String prefix) {
 		final SGEJob test = new SGEJob(p, prefix, "$JCMD&" + className
 				+ p.subArguments(prefix).toString("&"));
 		return test;
@@ -51,8 +51,8 @@ public class SGEJob {
 	 * @param prefix
 	 *            text to be used before each argument, (preferably format xyz:)
 	 */
-	public static SGEJob runScriptAsJob(String scriptPath, ArgumentParser p,
-			String prefix) {
+	public static SGEJob runScriptAsJob(final String scriptPath,
+			final ArgumentParser p, final String prefix) {
 		final SGEJob test = new SGEJob(p, prefix, "$TIPLCMD&" + scriptPath
 				+ p.subArguments(prefix).toString("&"));
 		return test;
@@ -62,7 +62,7 @@ public class SGEJob {
 	/**
 	 * Used for submitting jobs on the Merlin4 cluster using the SGE system
 	 * */
-	public static int sendJob(String execStr, String pushStr) {
+	public static int sendJob(final String execStr, final String pushStr) {
 		System.out.println("Job-Details:" + pushStr);
 		try {
 			final Runtime rt = Runtime.getRuntime();
@@ -153,7 +153,7 @@ public class SGEJob {
 	 * @param p
 	 *            given input arguments p
 	 */
-	public SGEJob(ArgumentParser p) {
+	public SGEJob(final ArgumentParser p) {
 		init();
 		setParameter(p);
 	}
@@ -166,7 +166,8 @@ public class SGEJob {
 	 * @param prefix
 	 *            text to be used before each argument, (preferably format xyz:)
 	 */
-	protected SGEJob(ArgumentParser p, String prefix, String baseCmd) {
+	protected SGEJob(final ArgumentParser p, final String prefix,
+			final String baseCmd) {
 		init();
 		jobToRun = baseCmd;
 		argPrefix = prefix;
@@ -179,12 +180,12 @@ public class SGEJob {
 	 * @param prefix
 	 *            text to be used before each argument, (preferably format xyz:)
 	 */
-	public SGEJob(String prefix) {
+	public SGEJob(final String prefix) {
 		init();
 		argPrefix = prefix;
 	}
 
-	public SGEJob(String[] cmdLine) {
+	public SGEJob(final String[] cmdLine) {
 		init();
 		setParameter(new ArgumentParser(cmdLine));
 	}
@@ -226,7 +227,7 @@ public class SGEJob {
 	 * @param guessDim
 	 * @return memory needed in megabytes
 	 */
-	public double memEstimate(D3int imgDim) {
+	public double memEstimate(final D3int imgDim) {
 		return (memoryFactor * (imgDim.prod() * 2) / (1e6));
 	}
 
@@ -247,7 +248,7 @@ public class SGEJob {
 				+ String.format("%02d", seconds);
 	}
 
-	public void setExecutionTime(double etime) {
+	public void setExecutionTime(final double etime) {
 		maxExecutionTime = etime;
 	}
 
@@ -257,15 +258,15 @@ public class SGEJob {
 	 * 
 	 * @param mem
 	 */
-	public void setJavaMemory(double mem) {
+	public void setJavaMemory(final double mem) {
 		setMemory((mem + jvmHeapReserve) / jvmUtility);
 	}
 
-	public void setJobToRun(String inCmd) {
+	public void setJobToRun(final String inCmd) {
 		jobToRun = inCmd;
 	}
 
-	protected void setJvmMemory(double mem) {
+	protected void setJvmMemory(final double mem) {
 		final double jvmMaxVal = (mem - jvmHeapReserve) * jvmUtility;
 		jvmMaxMemory = Math.round(jvmMaxVal) + "M";
 		jvmStartMemory = Math.round(jvmMaxVal - jvmHeapReserve) + "M";
@@ -276,12 +277,12 @@ public class SGEJob {
 	 * 
 	 * @param mem
 	 */
-	public void setMemory(double mem) {
+	public void setMemory(final double mem) {
 		memory = mem;
 		setJvmMemory(mem);
 	}
 
-	public ArgumentParser setParameter(ArgumentParser p) {
+	public ArgumentParser setParameter(final ArgumentParser p) {
 		cores = p.getOptionInt(argPrefix + "cores", cores,
 				"Number of CPUs to request for a job", 1, 128);
 		email = p.getOptionString(argPrefix + "email", email,
@@ -373,7 +374,7 @@ public class SGEJob {
 		submitJob(jobToRun);
 	}
 
-	protected void submitJob(String cmdToRun) {
+	protected void submitJob(final String cmdToRun) {
 		final String jobInfo = createHeader() + setupJava();
 		String ePath = qsubPath;
 		if (waitForJob)

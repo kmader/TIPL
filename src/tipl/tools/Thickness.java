@@ -14,7 +14,7 @@ import tipl.util.TImgTools;
  * @author mader
  * 
  */
-public abstract class Thickness extends BaseTIPLPlugin {
+public abstract class Thickness extends BaseTIPLPluginIO {
 	public int[] inAim;
 	public int[] outAim;
 	// double neighborOccupancy=1.0; // delete if less than 100% of neighbors

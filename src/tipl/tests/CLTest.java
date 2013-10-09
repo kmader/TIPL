@@ -18,8 +18,8 @@ import tipl.util.TImgTools;
  * 
  */
 public class CLTest {
-	protected static void checkVals(TIPLPluginIn CL, int maxLabel,
-			double avgCount) {
+	protected static void checkVals(final TIPLPluginIn CL, final int maxLabel,
+			final double avgCount) {
 		System.out.println("Maximum Label of CL Image:" + getMax(CL)
 				+ ", average count:" + getAvg(CL));
 		assertEquals(getMax(CL), maxLabel);
@@ -34,7 +34,7 @@ public class CLTest {
 		return ((Integer) iP.getInfo("maxlabel")).intValue();
 	}
 
-	protected static TIPLPluginIO makeCL(TImgRO sImg) {
+	protected static TIPLPluginIO makeCL(final TImgRO sImg) {
 		final TIPLPluginIO CL = new ComponentLabel();
 		CL.LoadImages(new TImgRO[] { sImg });
 		return CL;

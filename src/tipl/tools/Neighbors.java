@@ -16,7 +16,7 @@ import tipl.util.TImgTools;
  * image with the count of the neighbors of each object or countvox with the
  * count of the neighbors at each voxel
  */
-public class Neighbors extends BaseTIPLPlugin {
+public class Neighbors extends BaseTIPLPluginIO {
 	private class NeighborList {
 		public int label;
 		// label of neighbor, voxel count

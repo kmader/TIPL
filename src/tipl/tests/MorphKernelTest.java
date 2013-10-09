@@ -18,7 +18,7 @@ import tipl.util.TIPLPluginIO;
  */
 public class MorphKernelTest {
 	// start the morphological plugin tests
-	protected static TIPLPluginIO makeMorpho(TImgRO inImage) {
+	protected static TIPLPluginIO makeMorpho(final TImgRO inImage) {
 		final TIPLPluginIO MP = new Morpho();
 
 		MP.LoadImages(new TImgRO[] { inImage });
@@ -34,7 +34,7 @@ public class MorphKernelTest {
 
 	private final BaseTIPLPluginIn.morphKernel d = BaseTIPLPluginIn.fullKernel;
 
-	private void checkD(BaseTIPLPluginIn.morphKernel b) {
+	private void checkD(final BaseTIPLPluginIn.morphKernel b) {
 		assertEquals(b.inside(0, 0, 10, 10, 10, 10, 10, 10), true);
 		// x
 		assertEquals(b.inside(0, 0, 10, 9, 10, 10, 10, 10), true);
@@ -47,7 +47,7 @@ public class MorphKernelTest {
 		assertEquals(b.inside(0, 0, 10, 10, 10, 10, 10, 11), true);
 	}
 
-	private void checkFull(BaseTIPLPluginIn.morphKernel b) {
+	private void checkFull(final BaseTIPLPluginIn.morphKernel b) {
 		for (int i = -1; i <= 1; i++)
 			for (int j = -1; j <= 1; j++)
 				for (int k = -1; k <= 1; k++)

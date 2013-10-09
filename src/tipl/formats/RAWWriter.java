@@ -13,7 +13,7 @@ public class RAWWriter implements TWriter {
 	TImg outImg;
 	int rawType;
 
-	public RAWWriter(int irawType) {
+	public RAWWriter(final int irawType) {
 		rawType = irawType;
 	}
 
@@ -23,7 +23,7 @@ public class RAWWriter implements TWriter {
 	}
 
 	@Override
-	public void SetupWriter(TImg inImg, String outpath) {
+	public void SetupWriter(final TImg inImg, final String outpath) {
 		outImg = inImg;
 		rawName = outpath;
 		try {
@@ -78,7 +78,7 @@ public class RAWWriter implements TWriter {
 	}
 
 	@Override
-	public void WriteSlice(int n) {
+	public void WriteSlice(final int n) {
 		byte[] buffer = null;
 		final TImg.TImgFull fullOutImg = new TImg.TImgFull(outImg);
 		try {

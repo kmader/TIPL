@@ -22,7 +22,7 @@ public class GrowRegions extends BaseTIPLBlock {
 		public int fillType = 0;
 
 		@Override
-		public TIPLPluginIO getGrowingPlugin(TImg obj, TImg mask) {
+		public TIPLPluginIO getGrowingPlugin(final TImg obj, final TImg mask) {
 			switch (fillType) {
 			case 0:
 				return new kVoronoiShrink(obj, mask);
@@ -96,7 +96,7 @@ public class GrowRegions extends BaseTIPLBlock {
 	}
 
 	@Override
-	public ArgumentParser setParameterBlock(ArgumentParser p) {
+	public ArgumentParser setParameterBlock(final ArgumentParser p) {
 		SNA.fillType = p
 				.getOptionInt(
 						"filltype",

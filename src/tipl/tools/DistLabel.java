@@ -15,7 +15,7 @@ import Jama.Matrix;
  * DistLabel is the class used for labeling bubbles based on a distance map and
  * a mask
  */
-public class DistLabel extends BaseTIPLPlugin {
+public class DistLabel extends BaseTIPLPluginIO {
 	private static class bubbleFiller extends Thread {
 		// int cLabel;
 		// private SeedLabel cBubble;
