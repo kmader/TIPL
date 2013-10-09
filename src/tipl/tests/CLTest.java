@@ -6,7 +6,6 @@ import org.junit.Test;
 
 import tipl.formats.TImgRO;
 import tipl.tools.ComponentLabel;
-import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.TIPLPluginIO;
 import tipl.util.TIPLPluginIn;
@@ -41,6 +40,47 @@ public class CLTest {
 		return CL;
 	}
 
+	@Test
+	public void testComponentLimit() {
+		System.out.println("Testing Component volume limits");
+		final TImgRO testImg = TestFImages.wrapIt(10,
+				new TestFImages.DiagonalPlaneAndDotsFunction());
+		ComponentLabel CL = (ComponentLabel) makeCL(testImg);
+		final D3float voxSize = new D3float(1.0, 1.0, 1.0);
+		CL.setParameter("-kernel=2 -sphradius=1.0");
+		// 1 volumed things
+		CL.runVolume(voxSize, 0, 1000);
+		checkVals(CL, 393, 1.4);
+		// remove the smallest component
+		CL = (ComponentLabel) makeCL(testImg);
+		CL.setParameter("-kernel=2 -sphradius=1.0");
+		// 1 volumed things
+		CL.runVolume(voxSize, 0, 162);
+		checkVals(CL, 392, 1);
+
+		// remove it with the export mask
+		CL = (ComponentLabel) makeCL(testImg);
+		CL.setParameter("-kernel=2 -sphradius=1.0");
+		CL.runVoxels(0);
+		checkVals(CL, 393, 1.4);
+		// just the small objects
+		final TImgRO outImageSmall = CL.ExportMaskAimVolume(
+				TImgTools.makeTImgExportable(testImg), voxSize, 0, 162);
+		final ComponentLabel CLsmall = (ComponentLabel) makeCL(outImageSmall);
+		CLsmall.setParameter("-kernel=2 -sphradius=1.0");
+		CLsmall.runVoxels(0);
+		checkVals(CLsmall, 392, 1);
+
+		// just the big object
+		final TImgRO outImageBig = CL.ExportMaskAimVolume(
+				TImgTools.makeTImgExportable(testImg), voxSize, 162);
+		final ComponentLabel CLbig = (ComponentLabel) makeCL(outImageBig);
+		CLbig.setParameter("-kernel=2 -sphradius=1.0");
+		CLbig.runVoxels(0);
+		checkVals(CLbig, 1, 163);
+		System.out.println("Made it to end!");
+	}
+
 	/**
 	 * Test method for {@link tipl.tools.ComponentLabel#execute()}.
 	 */
@@ -59,7 +99,7 @@ public class CLTest {
 	/**
 	 * Test method for {@link tipl.tools.ComponentLabel#runVoxels(int, int)}.
 	 */
-	//@Test
+	// @Test
 	public void testRunVoxelsIntInt() {
 		System.out.println("Testing runVoxelsIntInt");
 		final TImgRO testImg = TestFImages.wrapIt(10,
@@ -90,45 +130,7 @@ public class CLTest {
 		checkVals(CL, 0, 0);
 
 	}
-	@Test
-	public void testComponentLimit() {
-		System.out.println("Testing Component volume limits");
-		final TImgRO testImg = TestFImages.wrapIt(10,
-				new TestFImages.DiagonalPlaneAndDotsFunction());
-		ComponentLabel CL=(ComponentLabel) makeCL(testImg);
-		D3float voxSize=new D3float(1.0,1.0,1.0);
-		CL.setParameter("-kernel=2 -sphradius=1.0");
-		// 1 volumed things
-		CL.runVolume(voxSize, 0, 1000);
-		checkVals(CL, 393, 1.4);
-		// remove the smallest component
-		CL=(ComponentLabel) makeCL(testImg);
-		CL.setParameter("-kernel=2 -sphradius=1.0");
-		// 1 volumed things
-		CL.runVolume(voxSize, 0, 162);
-		checkVals(CL, 392, 1);
-		
-		
-		// remove it with the export mask
-		CL=(ComponentLabel) makeCL(testImg);
-		CL.setParameter("-kernel=2 -sphradius=1.0");
-		CL.runVoxels(0);
-		checkVals(CL, 393, 1.4);
-		// just the small objects
-		TImgRO outImageSmall=CL.ExportMaskAimVolume(TImgTools.makeTImgExportable(testImg), voxSize, 0,162);
-		ComponentLabel CLsmall=(ComponentLabel) makeCL(outImageSmall);
-		CLsmall.setParameter("-kernel=2 -sphradius=1.0");
-		CLsmall.runVoxels(0);
-		checkVals(CLsmall, 392, 1);
-		
-		// just the big object
-		TImgRO outImageBig=CL.ExportMaskAimVolume(TImgTools.makeTImgExportable(testImg), voxSize, 162);
-		ComponentLabel CLbig=(ComponentLabel) makeCL(outImageBig);
-		CLbig.setParameter("-kernel=2 -sphradius=1.0");
-		CLbig.runVoxels(0);
-		checkVals(CLbig, 1, 163);
-		System.out.println("Made it to end!");
-	}
+
 	/**
 	 * Test spherical radius.
 	 */

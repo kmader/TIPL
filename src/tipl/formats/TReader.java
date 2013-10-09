@@ -214,8 +214,6 @@ public interface TReader {
 			return true;
 		}
 
-
-
 		@Override
 		public TImg inheritedAim(boolean[] imgArray, D3int dim, D3int offset) {
 			return TImgTools.makeTImgExportable(this).inheritedAim(imgArray,

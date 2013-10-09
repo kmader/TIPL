@@ -3,8 +3,6 @@
  */
 package tipl.util;
 
-import ij.ImageStack;
-
 import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -52,12 +50,15 @@ public class TImgTools {
 		 * only needed for ROIs
 		 */
 		public void setPos(D3int inData);
+
 		/**
-		 * A function to set the short scale factor used to convert shorts to double and back
+		 * A function to set the short scale factor used to convert shorts to
+		 * double and back
+		 * 
 		 * @param ssf
 		 */
 		public void setShortScaleFactor(float ssf);
-		
+
 	}
 
 	/**
@@ -90,8 +91,11 @@ public class TImgTools {
 		 * the aim-file
 		 */
 		public String getProcLog();
+
 		/**
-		 * A function to change the short scale factor used to convert shorts to double and back
+		 * A function to change the short scale factor used to convert shorts to
+		 * double and back
+		 * 
 		 * @return
 		 */
 		public float getShortScaleFactor();
@@ -105,17 +109,17 @@ public class TImgTools {
 	public static final int FAST_MEMORY_BASED = 3;
 	/** minimum isfast level to count as being cached */
 	public static int FAST_CACHED = FAST_MEMORY_MAP_BASED;
-	
-	public static final int IMAGETYPE_BOOL=10;
-	public static final int IMAGETYPE_CHAR=0;
-	public static final int IMAGETYPE_SHORT=1;
-	public static final int IMAGETYPE_INT=2;
-	public static final int IMAGETYPE_FLOAT=3;
-	public static final int IMAGETYPE_DOUBLE=4;
-	public static final int IMAGETYPE_COMPLEX=5;
-	public static final int IMAGETYPE_SPECTRAL=6;
-	public static final int IMAGETYPE_GLOB=7;
-	
+
+	public static final int IMAGETYPE_BOOL = 10;
+	public static final int IMAGETYPE_CHAR = 0;
+	public static final int IMAGETYPE_SHORT = 1;
+	public static final int IMAGETYPE_INT = 2;
+	public static final int IMAGETYPE_FLOAT = 3;
+	public static final int IMAGETYPE_DOUBLE = 4;
+	public static final int IMAGETYPE_COMPLEX = 5;
+	public static final int IMAGETYPE_SPECTRAL = 6;
+	public static final int IMAGETYPE_GLOB = 7;
+
 	/**
 	 * A global image cache so images can be referenced until they are unloaded
 	 * by just their name
@@ -489,6 +493,31 @@ public class TImgTools {
 	}
 
 	/**
+	 * Calculate the type of object it is from the slice information
+	 * (getPolyImage, etc)
+	 * 
+	 * @param iData
+	 *            a slice from the image (usually an array)
+	 * @return the type of the object
+	 */
+	public static int identifySliceType(Object iData) {
+		if (iData instanceof boolean[])
+			return TImgTools.IMAGETYPE_BOOL;
+		if (iData instanceof char[])
+			return TImgTools.IMAGETYPE_CHAR;
+		if (iData instanceof short[])
+			return TImgTools.IMAGETYPE_SHORT;
+		if (iData instanceof int[])
+			return TImgTools.IMAGETYPE_INT;
+		if (iData instanceof float[])
+			return TImgTools.IMAGETYPE_FLOAT;
+		if (iData instanceof double[])
+			return TImgTools.IMAGETYPE_DOUBLE;
+		throw new IllegalArgumentException("Type of object:" + iData
+				+ " cannot be determined!! Proceed with extreme caution");
+	}
+
+	/**
 	 * Check to see if the type chosen is valid
 	 * 
 	 * @param asType
@@ -532,7 +561,7 @@ public class TImgTools {
 		outData.appendProcLog(inData.getProcLog());
 		outData.setShortScaleFactor(inData.getShortScaleFactor());
 	}
-	
+
 	public static TImg ReadTImg(String path) {
 		return ReadTImg(path, false, false);
 	}
@@ -568,20 +597,7 @@ public class TImgTools {
 			System.err.println("Image:" + path + " is not in the cache!");
 		}
 	}
-	/**
-	 * Calculate the type of object it is from the slice information (getPolyImage, etc)
-	 * @param iData a slice from the image (usually an array)
-	 * @return the type of the object
-	 */
-	public static int identifySliceType(Object iData) {
-		if (iData instanceof boolean[]) return TImgTools.IMAGETYPE_BOOL;
-		if (iData instanceof char[]) return  TImgTools.IMAGETYPE_CHAR;
-		if (iData instanceof short[]) return  TImgTools.IMAGETYPE_SHORT;
-		if (iData instanceof int[]) return  TImgTools.IMAGETYPE_INT;
-		if (iData instanceof float[]) return  TImgTools.IMAGETYPE_FLOAT;
-		if (iData instanceof double[]) return  TImgTools.IMAGETYPE_DOUBLE;
-		throw new IllegalArgumentException("Type of object:"+iData+" cannot be determined!! Proceed with extreme caution");
-	}
+
 	/**
 	 * The size in bytes of each datatype
 	 * 

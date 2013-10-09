@@ -39,10 +39,9 @@ public class kVoronoi extends VoronoiTransform {
 			System.exit(0);
 		}
 
-		long preload, start;
+		long start;
 
-		// Read in the data set
-		preload = System.currentTimeMillis();
+		System.currentTimeMillis();
 
 		System.out.println("Loading " + labelsAimName + " ...");
 		final TImg labelsAim = TImgTools.ReadTImg(labelsAimName);

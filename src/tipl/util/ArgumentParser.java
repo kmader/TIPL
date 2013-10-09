@@ -117,8 +117,13 @@ public class ArgumentParser extends ArgumentList {
 	public String getOptionAsString(final String opt) {
 		return getOption(opt).getValueAsString();
 	}
-	public boolean getOptionBoolean(String inOpt, String helpString) {return getOptionBoolean( inOpt,  helpString,emptyCallback);}
-	public boolean getOptionBoolean(String inOpt, String helpString,ArgumentCallback inCallback) {
+
+	public boolean getOptionBoolean(String inOpt, String helpString) {
+		return getOptionBoolean(inOpt, helpString, emptyCallback);
+	}
+
+	public boolean getOptionBoolean(String inOpt, String helpString,
+			ArgumentCallback inCallback) {
 		final String opt = formatKey(inOpt);
 		ArgumentList.TypedArgument<Boolean> cArg;
 		final Boolean bF = new Boolean(false);

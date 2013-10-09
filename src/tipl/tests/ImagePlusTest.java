@@ -1,6 +1,5 @@
 package tipl.tests;
 
-import static org.junit.Assert.*;
 import ij.ImagePlus;
 import ij.ImageStack;
 
@@ -16,13 +15,14 @@ public class ImagePlusTest {
 	public void testMakeImagePlus() {
 		final TImgRO testImg = TestFImages.wrapIt(100,
 				new TestFImages.DiagonalPlaneFunction());
-		ImageStack curStack=TImgToImageStack.MakeImageStack(testImg);
-		//ij.IJ.
-		ImagePlus curImg=TImgToImagePlus.MakeImagePlus(testImg);
+		TImgToImageStack.MakeImageStack(testImg);
+
+		final ImagePlus curImg = TImgToImagePlus.MakeImagePlus(testImg);
 		curImg.show();
 		try {
-		Thread.currentThread().sleep(5000);
-		} catch (Exception e) {
+			Thread.currentThread();
+			Thread.sleep(5000);
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 	}

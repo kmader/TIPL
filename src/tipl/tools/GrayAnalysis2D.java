@@ -200,7 +200,6 @@ public class GrayAnalysis2D extends Hist2D {
 			return outslice;
 		}
 
-
 		public Double[] getXYZVec(int cIndex, int cSlice) {
 			return TImgTools.getXYZVecFromVec(img, cIndex, cSlice);
 		}

@@ -42,6 +42,7 @@ public interface TImg extends TImgRO, TImgRO.CanExport,
 	public void setImageType(int inData);
 
 	/** Set the short scalar factor in the image data **/
+	@Override
 	public void setShortScaleFactor(float ssf);
 
 	public void setSigned(boolean inData);

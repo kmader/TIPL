@@ -2,7 +2,6 @@ package tipl.tools;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.formats.VirtualAim;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.TImgTools;

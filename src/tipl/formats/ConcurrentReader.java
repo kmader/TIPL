@@ -9,7 +9,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import tipl.tools.BaseTIPLPlugin;
 import tipl.tools.BaseTIPLPluginIn;
 import tipl.util.D3float;
 import tipl.util.D3int;
@@ -229,7 +228,6 @@ public class ConcurrentReader implements TImgRO {
 	public boolean getSigned() {
 		return templateData.getSigned();
 	}
-
 
 	public Double[] getXYZVec(int cIndex, int sliceNumber) {
 		return TImgTools.getXYZVecFromVec(this, cIndex, sliceNumber);

@@ -322,33 +322,49 @@ public class PureFImage implements TImg {
 	}
 
 	/**
-	 * Creates a PureFImage tool with the given settings
-	 * @param dummyDataset used as the basis for the whole analysis
-	 * @param iimageType type of image to be made
-	 * @param ipf function to use to calculate values
-	 * @param inShortScaleFactor a scaling factor between integer and floats (used when reading floats)
+	 * allows for a purefimage to have a short scaling factor (mainly used for
+	 * testing but can have other purposes)
 	 */
-	public PureFImage(TImgTools.HasDimensions dummyDataset, int iimageType,
-			PositionFunction ipf, float inShortScaleFactor) {
-		imageType = iimageType;
-		pf = ipf;
-		shortScaleFactor=inShortScaleFactor;
-		TImgTools.mirrorImage(dummyDataset, this);
-	}
+	public final float shortScaleFactor;
+
 	/**
 	 * Creates a PureFImage tool with the given settings
-	 * @param dummyDataset used as the basis for the whole analysis
-	 * @param iimageType type of image to be made
-	 * @param ipf function to use to calculate values
+	 * 
+	 * @param dummyDataset
+	 *            used as the basis for the whole analysis
+	 * @param iimageType
+	 *            type of image to be made
+	 * @param ipf
+	 *            function to use to calculate values
 	 */
 	public PureFImage(TImgTools.HasDimensions dummyDataset, int iimageType,
 			PositionFunction ipf) {
 		imageType = iimageType;
 		pf = ipf;
-		shortScaleFactor=1.0f;
+		shortScaleFactor = 1.0f;
 		TImgTools.mirrorImage(dummyDataset, this);
 	}
-	
+
+	/**
+	 * Creates a PureFImage tool with the given settings
+	 * 
+	 * @param dummyDataset
+	 *            used as the basis for the whole analysis
+	 * @param iimageType
+	 *            type of image to be made
+	 * @param ipf
+	 *            function to use to calculate values
+	 * @param inShortScaleFactor
+	 *            a scaling factor between integer and floats (used when reading
+	 *            floats)
+	 */
+	public PureFImage(TImgTools.HasDimensions dummyDataset, int iimageType,
+			PositionFunction ipf, float inShortScaleFactor) {
+		imageType = iimageType;
+		pf = ipf;
+		shortScaleFactor = inShortScaleFactor;
+		TImgTools.mirrorImage(dummyDataset, this);
+	}
 
 	// New functions just tackily implemented
 	@Override
@@ -468,10 +484,7 @@ public class PureFImage implements TImg {
 	public String getSampleName() {
 		return pf.name() + " @ POS:" + myPos + "," + myDim;
 	}
-	/**
-	 * allows for a purefimage to have a short scaling factor (mainly used for testing but can have other purposes)
-	 */
-	public final float shortScaleFactor;
+
 	@Override
 	public float getShortScaleFactor() {
 		return shortScaleFactor;
@@ -485,8 +498,6 @@ public class PureFImage implements TImg {
 	public boolean getSigned() {
 		return false;
 	}
-
-
 
 	public Double[] getXYZVec(int cIndex, int sliceNumber) {
 		return TImgTools.getXYZVecFromVec(myPos, myDim, cIndex, sliceNumber);

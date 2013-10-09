@@ -343,7 +343,6 @@ public class HildThickness extends Thickness {
 					if (((cVDist) > MINWALLDIST)) {
 						unfilledVox++;
 						double gradX = 0.0, gradY = 0.0, gradZ = 0.0;
-						double lapVal = 0.0;
 						int lapCount = 0;
 						int gradCount = 0;
 						for (int z2 = max(z - iNeighborSize.z, lowz); z2 <= min(
@@ -368,10 +367,7 @@ public class HildThickness extends Thickness {
 										if (((x2 != x) ? 1 : 0)
 												+ ((y2 != y) ? 1 : 0)
 												+ ((z2 != z) ? 1 : 0) <= 1) { // slightly
-																				// larger
-																				// laplacian
-											lapVal += (distScalar * (inAim[off2]));
-											lapCount++;
+																				lapCount++;
 										}
 
 										// First derivative is 0 and second
@@ -382,8 +378,6 @@ public class HildThickness extends Thickness {
 								}
 							}
 						}
-						lapVal += -lapCount * (distScalar * (inAim[off]));
-						lapVal /= lapCount;
 						gradX /= gradCount;
 						gradY /= gradCount;
 						gradZ /= gradCount;

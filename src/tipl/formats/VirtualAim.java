@@ -4,12 +4,6 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.HistogramWindow;
 import ij.measure.Calibration;
-import ij.process.ByteProcessor;
-import ij.process.FloatProcessor;
-import ij.process.ImageProcessor;
-import ij.process.ShortProcessor;
-
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -34,7 +28,6 @@ import java.util.Vector;
 import javax.media.jai.PlanarImage;
 
 import tipl.ij.TImgToImagePlus;
-import tipl.ij.TImgToImageStack;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
@@ -66,9 +59,9 @@ import com.sun.media.jai.codecimpl.util.RasterFactory;
  * <li>Mar 13, 2013 - Added ability to load data using the DirectoryReader
  * classes <li>Mar 14, 2013 - Changed the way local loading works
  */
-public class VirtualAim implements TImg, TImgRO.TImgOld,
-		TImgRO.FullReadable, TImgRO.CanExport {
-	
+public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
+		TImgRO.CanExport {
+
 	public static class sliceLoader extends Thread {
 		int sslice, fslice, asType;
 		volatile VirtualAim parent;
@@ -94,6 +87,10 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		}
 	}
 
+	public static String StrRatio(double a, double b) {
+		return String.format("%.2f", ((a) / (b)));
+	}
+
 	/**
 	 * method to quickly wrap (if needed) a TImgRO objectinto a virtual aim and
 	 * provide all the additional needed methods
@@ -109,12 +106,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 			return new VirtualAim(inTImg);
 	}
 
-	private int nSlices;
 	/** ImageJ.ImageStack Dimensions */
 	public int width, height;
-
-	/** ImageJ.ImageStack colormodel */
-	private static ColorModel cm = null;
 	/**
 	 * The aim type of the image (0=char, 1=short, 2=int, 3=float, 10=bool, -1
 	 * same as input)
@@ -136,9 +129,9 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 	public static boolean scratchLoading = false;
 	/** The filename of the actual scratch file used */
 	private String scratchFilename = "";
+
 	/** The dimensions of the aim */
 	public D3int dim;
-
 	/**
 	 * The position of the bottom leftmost voxel in the image in real space,
 	 * only needed for ROIs
@@ -157,8 +150,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 	 * float (for distance maps is (1000.0/32767.0))
 	 */
 	public float ShortScaleFactor = 1.0f;
-	Vector<Float[]> positionList;
 
+	Vector<Float[]> positionList;
 	Vector<Float> valueList;
 	/** Is a valid filled data set */
 	public boolean ischGuet;
@@ -168,18 +161,18 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 	public float getSliceCalls;
 	String dataName;
 	public String sampleName = "";
+
 	/**
 	 * Procedure Log, string containing past operations and information on the
 	 * aim-file
 	 */
 	public String procLog = "";
-
 	public static final String kVer = "130528_044";
 	/** Path of original Aim file */
 	public String aimPath = "";
+
 	/** List of tiff file names when reading a directory of images */
 	Vector<String> filenames;
-
 	public boolean debugMode = false;
 	/**
 	 * Whether or not basic compression (compatible almost everywhere) should be
@@ -191,11 +184,11 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 	 * data
 	 */
 	public boolean useHighCompression = true;
+
 	// The entire dataset in an Aim-style array
 	/** if loaded, stores the whole aim as a 1d array */
 	@Deprecated
 	public volatile boolean[] aimMask = new boolean[1];
-
 	/** if fullAimLoaded, stores the whole aim as a 1d array */
 	@Deprecated
 	public volatile char[] aimByte = new char[1];
@@ -218,20 +211,20 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 	private final int TAG_PROCLOGSTART = 1000;
 	private final int TAG_ELSIZE = 998;
 	private final int TAG_OFFSET = 997;
+
 	private final int TAG_POS = 996;
-
 	private final int TAG_SHORTSCALE = 995;
-	private final int TAG_ISSIGNED = 994;
 
+	private final int TAG_ISSIGNED = 994;
 	private File[] imglist;
+
 	private int cgLength = -1;
-	
 	HistogramWindow curHistWind = null;
+
 	// Image Stack Implementation Code
 	protected Object[] stack = null;
 
 	protected boolean isLoaded = false;
-
 	/** Show a preview everytime a file is written or opened */
 	public boolean showPreview = true;
 	/** Is the stack in sync with the aim data */
@@ -243,6 +236,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 	 */
 	protected TImgRO baseTImg;
 	protected boolean useTImg = false;
+
 	/**
 	 * Preview is Disabled by default since it can crash things on windowless
 	 * clients
@@ -458,6 +452,166 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		GenerateHeader(idim, ioffset, ipos, ielSize);
 	}
 
+	/**
+	 * Creates a buffered image for the given slice which can be used to save as
+	 * jpg
+	 * 
+	 * @param n
+	 *            slice number
+	 * @param cType
+	 *            type of image to buffer
+	 * @return a bufferedimage
+	 */
+	protected BufferedImage aimSlice(int n, int cType) {
+
+		BufferedImage image = null;
+		System.gc();
+		int maxVal = 255;
+		if (cType == BufferedImage.TYPE_BYTE_GRAY)
+			maxVal = 127;
+		if (cType == BufferedImage.TYPE_USHORT_GRAY)
+			maxVal = 65536;
+		if (cType == BufferedImage.TYPE_BYTE_BINARY)
+			maxVal = 255;
+		// int outPos=n*width*height;
+		final int outPos = n * dim.x * dim.y;
+		final int sliceLen = dim.x * dim.y;
+		// System.out.println("Slice:"+n+", cop-"+String.format("%.2f",(outPos+0.0)/1e6)+" MVx, "+String.format("%.2f",(outPos*100.0)/tPos)+" %");
+		int[] pixels;
+		float[] fpixels;
+		if (!fullAimLoaded) {
+			if (cType == BufferedImage.TYPE_BYTE_GRAY)
+				getByteAim();
+			if (cType == BufferedImage.TYPE_USHORT_GRAY)
+				getShortAim();
+			if (cType == BufferedImage.TYPE_BYTE_BINARY)
+				getBoolAim();
+			if (cType == BufferedImage.TYPE_CUSTOM)
+				getFloatAim();
+		}
+		if (fullAimLoaded) {
+			if (cType == BufferedImage.TYPE_CUSTOM) { // Float is a special case
+				fpixels = new float[sliceLen];
+
+				switch (imageType) {
+				case 0:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						fpixels[cIndex - outPos] = (aimByte[cIndex] + (isSigned ? maxVal / 2
+								: 0))
+								* ShortScaleFactor;
+					}
+					break;
+				case 1:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						fpixels[cIndex - outPos] = (aimShort[cIndex] + (isSigned ? maxVal / 2
+								: 0))
+								* ShortScaleFactor;
+					}
+					break;
+				case 2:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						fpixels[cIndex - outPos] = (aimInt[cIndex] + (isSigned ? maxVal / 2
+								: 0))
+								* ShortScaleFactor;
+					}
+					break;
+				case 3:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						fpixels[cIndex - outPos] = aimFloat[cIndex];
+					}
+					break;
+				case 10:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						if (aimMask[cIndex])
+							fpixels[cIndex - outPos] = 1.0f;
+					}
+					break;
+
+				default:
+					System.out.println("Not supported!");
+					break;
+				}
+
+				final int nbBands = 1;
+				final int[] rgbOffset = new int[nbBands];
+				final SampleModel sampleModel = RasterFactory
+						.createPixelInterleavedSampleModel(
+								DataBuffer.TYPE_FLOAT, dim.x, dim.y, nbBands,
+								nbBands * dim.x, rgbOffset);
+
+				final ColorModel colorModel = ImageCodec
+						.createComponentColorModel(sampleModel);
+
+				final DataBufferFloat dataBuffer = new DataBufferFloat(fpixels,
+						fpixels.length);
+				fpixels = null;
+				final WritableRaster raster = RasterFactory
+						.createWritableRaster(sampleModel, dataBuffer,
+								new Point(0, 0));
+
+				image = new BufferedImage(colorModel, raster, false, null);
+
+			} else {
+				image = new BufferedImage(dim.x, dim.y, cType);
+				final WritableRaster raster = (WritableRaster) image.getData();
+
+				pixels = new int[sliceLen]; // is unsigned (deletes negative
+											// values)
+
+				switch (imageType) {
+				case 0:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						pixels[cIndex - outPos] = (aimByte[cIndex])
+								+ (isSigned ? maxVal / 2 : 0);
+
+					}
+					break;
+				case 1:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						pixels[cIndex - outPos] = (aimShort[cIndex])
+								+ (isSigned ? maxVal / 2 : 0);
+						// sliceAvg+=pixels[cIndex-outPos];
+					}
+					break;
+				case 2:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						pixels[cIndex - outPos] = aimInt[cIndex]
+								+ (isSigned ? maxVal / 2 : 0);
+						// sliceAvg+=pixels[cIndex-outPos];
+					}
+					break;
+				case 3:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						pixels[cIndex - outPos] = (int) (aimFloat[cIndex] / ShortScaleFactor)
+								+ (isSigned ? maxVal / 2 : 0);
+						// sliceAvg+=pixels[cIndex-outPos];
+					}
+					break;
+				case 10:
+					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
+						if (aimMask[cIndex])
+							pixels[cIndex - outPos] = maxVal;
+						// sliceAvg+=pixels[cIndex-outPos];
+					}
+
+					break;
+
+				default:
+					System.out.println("Not supported!");
+					break;
+				}
+				raster.setPixels(0, 0, dim.x, dim.y, pixels);
+				image.setData(raster);
+				pixels = null;
+			}
+		} else {
+			System.out.println("Error, Full Aim data has not yet been loaded!");
+		}
+		System.gc();
+
+		return image;
+
+	}
 
 	@Override
 	public String appendProcLog(String logText) {
@@ -583,9 +737,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 
 	}
 
-
-
-
 	/**
 	 * Object to divide the thread work into supportCores equal parts, default
 	 * is z-slices
@@ -645,8 +796,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		// ImageJ code
 		width = dim.x;
 		height = dim.y;
-		nSlices = dim.z - 1;
-
 		// Offset only important for filtering
 		// pos.x-=offset.x;
 		// pos.y-=offset.y;
@@ -1005,7 +1154,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		positionList.trimToSize();
 		valueList.trimToSize();
 		triangles = triArea;
-		// System.out.println("Surface Area : "+triArea);
+
 	}
 
 	/**
@@ -1056,7 +1205,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		return gf;
 	}
 
-
 	/** Package as ImagePlus */
 	public ImagePlus getImagePlus() {
 		return TImgToImagePlus.MakeImagePlus(this);
@@ -1100,52 +1248,51 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		return gi;
 	}
 
-	public void GetIntPoints(int minValue,int maxValue,int startSlice) {
+	public void GetIntPoints(int minValue, int maxValue, int startSlice) {
 		int[] gg;
-		int rCount=0;
-		int bCount=0;
+		int rCount = 0;
+		int bCount = 0;
 		D3float npos;
-		
-		final float triArea=0;
+
+		final float triArea = 0;
 		// End Marching Header
-		final int defArraySize=Math.min((int) (dim.x*dim.y*dim.z*0.9),2000);
-		positionList=new Vector<Float[]>(defArraySize);
-		valueList=new Vector<Float>(defArraySize);
-		for (int i=startSlice;i<dim.z;i++) {
-			rCount=0;
-			bCount=0;
-			//new boolean[getWidth()][getHeight()];
-			gg=getIntArray(i);
-			for (final int b: gg) {
-				if (b>minValue) {
-					if ((b<=maxValue) | (maxValue<minValue)) {
-						npos=TImgTools.getRXYZFromVec(pos,dim,rCount,i);
-						//npos=TImgTools.getRXYZFromVec(pos,elSize,rpos);
-						
-						
-						
-						final Float[] cPos=new Float[3];
-						cPos[0]=new Float(npos.x);
-						cPos[1]=new Float(npos.y);
-						cPos[2]=new Float(npos.z);
-						//System.out.println("Cur Pt Get :"+cPos[0]+":"+cPos[1]+":"+cPos[2]);
+		final int defArraySize = Math.min((int) (dim.x * dim.y * dim.z * 0.9),
+				2000);
+		positionList = new Vector<Float[]>(defArraySize);
+		valueList = new Vector<Float>(defArraySize);
+		for (int i = startSlice; i < dim.z; i++) {
+			rCount = 0;
+			bCount = 0;
+			// new boolean[getWidth()][getHeight()];
+			gg = getIntArray(i);
+			for (final int b : gg) {
+				if (b > minValue) {
+					if ((b <= maxValue) | (maxValue < minValue)) {
+						npos = TImgTools.getRXYZFromVec(pos, dim, rCount, i);
+
+						final Float[] cPos = new Float[3];
+						cPos[0] = new Float(npos.x);
+						cPos[1] = new Float(npos.y);
+						cPos[2] = new Float(npos.z);
+						// System.out.println("Cur Pt Get :"+cPos[0]+":"+cPos[1]+":"+cPos[2]);
 						positionList.add(cPos);
-						valueList.add(new Float(((float) b)));
+						valueList.add(new Float((b)));
 						bCount++;
 					}
 				}
 				rCount++;
 			}
-			if (bCount==0) {
-				if (debugMode) System.out.println("Empty Slice!");
+			if (bCount == 0) {
+				if (debugMode)
+					System.out.println("Empty Slice!");
 				break;
-			} //else 	System.out.println("Busy slice with  :"+bCount);
-			
-			gg=null;	
+			} // else System.out.println("Busy slice with  :"+bCount);
+
+			gg = null;
 		}
 		positionList.trimToSize();
 		valueList.trimToSize();
-		triangles=triArea;
+		triangles = triArea;
 	}
 
 	/**
@@ -1161,7 +1308,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 	public String getPath() {
 		return aimPath;
 	}
-
 
 	public void GetPoints() {
 		GetPoints(0, -1, 0);
@@ -1291,7 +1437,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		return pos;
 	}
 
-	
 	@Override
 	public String getProcLog() {
 		return procLog;
@@ -1419,10 +1564,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		return isSigned;
 	}
 
-
-
-
-
 	public float GetSpot(int x, int y, int z) {
 		System.out.println("Not working yet...");
 		return -1;
@@ -1526,8 +1667,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		System.out.println("Scanning tiff-header..." + skippedTag
 				+ " tags skipped of " + totalTag);
 	}
-
-
 
 	public Double[] getXYZVec(int cIndex, int sliceNumber) {
 		return TImgTools.getXYZVecFromVec(pos, dim, cIndex, sliceNumber);
@@ -1767,7 +1906,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		outImage.sampleName = sampleName;
 		outImage.setShortScaleFactor(getShortScaleFactor());
 		outImage.GenerateHeader(outImage.dim, outImage.offset, pos, elSize);
-		
+
 		outImage.ischGuet = true;
 	}
 
@@ -1831,7 +1970,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 	protected synchronized void ishortCopy(short[] slice, int oPos, int cLen) {
 		System.arraycopy(slice, 0, aimShort, oPos, cLen);
 	}
-
 
 	/**
 	 * Convert the loaded image to a stack Warning loading an image as a stack
@@ -1948,7 +2086,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		loadAimfromStack();
 	}
 
-	@Deprecated // this function is hideous, this really needs to be fixed
+	@Deprecated
+	// this function is hideous, this really needs to be fixed
 	protected void loadAimfromTImg(TImgRO inTImg) {
 		System.out.println("Loading generic TImg as Aim");
 		useTImg = true;
@@ -2057,25 +2196,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 			}
 
 		} else {
-			/**
-			 * outdated code let's remove it if (slice<imglist.length) { try {
-			 * //
-			 * System.out.println("Reading Slice : "+slice+" / "+imglist.length
-			 * +" as "+imglist[slice]); FileInputStream in = new
-			 * FileInputStream(imglist[slice]); FileChannel channel =
-			 * in.getChannel(); ByteBuffer buffer =
-			 * ByteBuffer.allocate((int)channel.size()); channel.read(buffer);
-			 * in.close(); SeekableStream stream = new
-			 * ByteArraySeekableStream(buffer.array()); String[] names =
-			 * ImageCodec.getDecoderNames(stream); ImageDecoder dec =
-			 * ImageCodec.createImageDecoder(names[0], stream, null); return
-			 * decodeimage(slice,dec.decodeAsRenderedImage(),asType); } catch
-			 * (Exception e) { System.out.println("Slice "+slice+
-			 * " cannot be open/read Does it exist??"); e.printStackTrace();
-			 * return null; } } else {
-			 * System.out.println("Exceeds bound!!!"+slice
-			 * +" of "+imglist.length); return null; }
-			 **/
 			throw new IllegalStateException(
 					"Directory Datasets Should Now Be Handeled by the DirectoryReader class not by VirtualAim");
 
@@ -2110,8 +2230,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		// Pre allocate array and read in data
 		width = dim.x;
 		height = dim.y;
-		nSlices = dim.z - 1;
-
 		switch (imageType) {
 		case 0:
 		case 10:
@@ -2255,8 +2373,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		// ImageJ code
 		width = dim.x;
 		height = dim.y;
-		nSlices = dim.z - 1;
-
 		appendProcLog("Dimensions: " + dim);
 		appendProcLog("Position: " + pos);
 		appendProcLog("Element Size: " + elSize);
@@ -2306,6 +2422,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 	public ImagePlus previewSlice() {
 		return previewSlice(Math.round(dim.z / 2 + 1));
 	}
+
 	@Deprecated
 	/** Show a preview of a given slice */
 	public ImagePlus previewSlice(int n) {
@@ -2313,8 +2430,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 			return null; // X windows can lick my ball and stop hard crashing
 							// fuckin eh
 		try {
-			ImagePlus curImPlus = TImgToImagePlus.MakeImagePlus(this);
-			
+			final ImagePlus curImPlus = TImgToImagePlus.MakeImagePlus(this);
 
 			curImPlus.show();
 			curImPlus.getProcessor().setMinAndMax(0, 255);
@@ -2340,9 +2456,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		int zlen = 0;
 		// Initialize the Fields here so they can be filled
 		pos = new D3int();
-		// offset=TheHeader.getOff();
 		offset = new D3int();
-		// elSize=TheHeader.getEl_size_mm();
 		elSize = new D3float(0.0014, 0.0014, 0.0014);
 
 		ShortScaleFactor = 1.0f;
@@ -2411,33 +2525,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 			final TImg cImg = DirectoryReader.ChooseBest(inpath).getImage();
 			WrapTImg(cImg);
 			return true;
-			/**
-			 * try { File dir = new File(path); sampleName=path; // Reads a
-			 * TiffStack and pretends it is an aim
-			 * 
-			 * FileFilter filter = new FileFilter() { int cfiles=0; public
-			 * boolean accept(File file) {
-			 * //System.out.println(file.getAbsolutePath()); cfiles++; //if
-			 * (cfiles>200) return false; // max 200 files, filemax if (
-			 * file.getAbsolutePath().endsWith(".tif")) return true; if (
-			 * file.getAbsolutePath().endsWith(".TIF")) return true; if (
-			 * file.getAbsolutePath().endsWith(".tiff")) return true; if (
-			 * file.getAbsolutePath().endsWith(".TIFF")) return true; return
-			 * false; } };
-			 * 
-			 * imglist = dir.listFiles(filter); zlen=imglist.length;
-			 * appendProcLog
-			 * ("Reading in Tiff File Stack: "+path+", files:"+zlen); dim=new
-			 * D3int(-1,-1,zlen); //imglist=imglist.sort(); // Sort the list of
-			 * filenames because some operating systems do not handle this
-			 * automatically Arrays.sort(imglist, new Comparator<File>(){ public
-			 * int compare(File f1, File f2) { return
-			 * f1.getAbsolutePath().compareTo(f2.getAbsolutePath()); } }); }
-			 * catch (Exception e) {
-			 * System.out.println("ERROR LoadAim: TIFFStack: "
-			 * +path+" cannot be opened? Does it exist"); e.printStackTrace();
-			 * imglist=null; ischGuet=false; return false; }
-			 **/
 		}
 
 		if (zlen > 0) {
@@ -2528,7 +2615,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		offset = inData;
 	}
 
-
 	/**
 	 * The position of the bottom leftmost voxel in the image in real space,
 	 * only needed for ROIs
@@ -2588,10 +2674,10 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 
 	/** Show aim as a stack */
 	public ImagePlus show() {
-		ImagePlus curImPlus =  TImgToImagePlus.MakeImagePlus(this);
-		System.out.println("Show Aim... "+getDim().z);
+		final ImagePlus curImPlus = TImgToImagePlus.MakeImagePlus(this);
+		System.out.println("Show Aim... " + getDim().z);
 		if (getDim().z > 0) {
-			
+
 			System.out.println("Created...");
 			switch (imageType) {
 			case 0:
@@ -2630,11 +2716,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		return curImPlus;
 	}
 
-	public String StrRatio(double a, double b) {
-		return String.format("%.2f", ((a) / (b)));
-	}
-
-
 	/**
 	 * Deletes the stack information from memory and marks the stack as
 	 * unloaded, good for saving memory
@@ -2645,16 +2726,18 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		System.gc();
 	}
 
-	/** Generic code for wrapping a TImg **/
+	/**
+	 * Generic code for wrapping a TImg
+	 * 
+	 * @param inTImg
+	 */
 	public void WrapTImg(TImgRO inTImg) {
 		loadAimfromTImg(inTImg);
-		// This is sort of a hack, but it needs to be done, VirtualAims should be copied the same way everything else is
+		// This is sort of a hack, but it needs to be done, VirtualAims should
+		// be copied the same way everything else is
 		TImgTools.mirrorImage(inTImg, this);
 		GenerateHeader(inTImg.getDim(), inTImg.getOffset(), inTImg.getPos(),
 				inTImg.getElSize());
-	}
-
-	public void write() {
 	}
 
 	/**
@@ -2811,165 +2894,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld,
 		}
 
 	}
-	
-	
-	/**
-	 * Creates a buffered image for the given slice which can be used to save as jpg
-	 * @param n slice number
-	 * @param cType type of image to buffer
-	 * @return a bufferedimage
-	 */
-	protected BufferedImage aimSlice(int n, int cType) {
-
-		BufferedImage image = null;
-		System.gc();
-		int maxVal = 255;
-		if (cType == BufferedImage.TYPE_BYTE_GRAY)
-			maxVal = 127;
-		if (cType == BufferedImage.TYPE_USHORT_GRAY)
-			maxVal = 65536;
-		if (cType == BufferedImage.TYPE_BYTE_BINARY)
-			maxVal = 255;
-		// int outPos=n*width*height;
-		final int outPos = n * dim.x * dim.y;
-		final int sliceLen = dim.x * dim.y;
-		// System.out.println("Slice:"+n+", cop-"+String.format("%.2f",(outPos+0.0)/1e6)+" MVx, "+String.format("%.2f",(outPos*100.0)/tPos)+" %");
-		int[] pixels;
-		float[] fpixels;
-		if (!fullAimLoaded) {
-			if (cType == BufferedImage.TYPE_BYTE_GRAY)
-				getByteAim();
-			if (cType == BufferedImage.TYPE_USHORT_GRAY)
-				getShortAim();
-			if (cType == BufferedImage.TYPE_BYTE_BINARY)
-				getBoolAim();
-			if (cType == BufferedImage.TYPE_CUSTOM)
-				getFloatAim();
-		}
-		if (fullAimLoaded) {
-			if (cType == BufferedImage.TYPE_CUSTOM) { // Float is a special case
-				fpixels = new float[sliceLen];
-
-				switch (imageType) {
-				case 0:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						fpixels[cIndex - outPos] = (aimByte[cIndex] + (isSigned ? maxVal / 2
-								: 0))
-								* ShortScaleFactor;
-					}
-					break;
-				case 1:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						fpixels[cIndex - outPos] = (aimShort[cIndex] + (isSigned ? maxVal / 2
-								: 0))
-								* ShortScaleFactor;
-					}
-					break;
-				case 2:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						fpixels[cIndex - outPos] = (aimInt[cIndex] + (isSigned ? maxVal / 2
-								: 0))
-								* ShortScaleFactor;
-					}
-					break;
-				case 3:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						fpixels[cIndex - outPos] = aimFloat[cIndex];
-					}
-					break;
-				case 10:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						if (aimMask[cIndex])
-							fpixels[cIndex - outPos] = 1.0f;
-					}
-					break;
-
-				default:
-					System.out.println("Not supported!");
-					break;
-				}
-
-				final int nbBands = 1;
-				final int[] rgbOffset = new int[nbBands];
-				final SampleModel sampleModel = RasterFactory
-						.createPixelInterleavedSampleModel(
-								DataBuffer.TYPE_FLOAT, dim.x, dim.y, nbBands,
-								nbBands * dim.x, rgbOffset);
-
-				final ColorModel colorModel = ImageCodec
-						.createComponentColorModel(sampleModel);
-
-				final DataBufferFloat dataBuffer = new DataBufferFloat(fpixels,
-						fpixels.length);
-				fpixels = null;
-				final WritableRaster raster = RasterFactory
-						.createWritableRaster(sampleModel, dataBuffer,
-								new Point(0, 0));
-
-				image = new BufferedImage(colorModel, raster, false, null);
-
-			} else {
-				image = new BufferedImage(dim.x, dim.y, cType);
-				final WritableRaster raster = (WritableRaster) image.getData();
-
-				pixels = new int[sliceLen]; // is unsigned (deletes negative
-											// values)
-
-				switch (imageType) {
-				case 0:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						pixels[cIndex - outPos] = (aimByte[cIndex])
-								+ (isSigned ? maxVal / 2 : 0);
-
-					}
-					break;
-				case 1:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						pixels[cIndex - outPos] = (aimShort[cIndex])
-								+ (isSigned ? maxVal / 2 : 0);
-						// sliceAvg+=pixels[cIndex-outPos];
-					}
-					break;
-				case 2:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						pixels[cIndex - outPos] = aimInt[cIndex]
-								+ (isSigned ? maxVal / 2 : 0);
-						// sliceAvg+=pixels[cIndex-outPos];
-					}
-					break;
-				case 3:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						pixels[cIndex - outPos] = (int) (aimFloat[cIndex] / ShortScaleFactor)
-								+ (isSigned ? maxVal / 2 : 0);
-						// sliceAvg+=pixels[cIndex-outPos];
-					}
-					break;
-				case 10:
-					for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
-						if (aimMask[cIndex])
-							pixels[cIndex - outPos] = maxVal;
-						// sliceAvg+=pixels[cIndex-outPos];
-					}
-
-					break;
-
-				default:
-					System.out.println("Not supported!");
-					break;
-				}
-				raster.setPixels(0, 0, dim.x, dim.y, pixels);
-				image.setData(raster);
-				pixels = null;
-			}
-		} else {
-			System.out.println("Error, Full Aim data has not yet been loaded!");
-		}
-		System.gc();
-
-		return image;
-
-	}
-
 
 	public void WriteAim(String outpath, int outType, float scaleVal) {
 		ShortScaleFactor = scaleVal;

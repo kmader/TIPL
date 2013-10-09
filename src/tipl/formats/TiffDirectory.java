@@ -9,7 +9,6 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 
-import tipl.formats.TReader.TSliceReader;
 import tipl.formats.TiffFolder.TIFSliceReader;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
@@ -244,7 +243,6 @@ public class TiffDirectory implements TImg {
 	public boolean getSigned() {
 		return signedValue;
 	}
-
 
 	public void getTIFFheader(TIFFField[] allfields) {
 

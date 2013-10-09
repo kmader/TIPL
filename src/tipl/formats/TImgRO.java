@@ -59,26 +59,21 @@ public interface TImgRO extends TImgTools.HasDimensions {
 
 		public short[] getShortAim();
 	}
+
 	/**
 	 * an object that can output its entire stack
+	 * 
 	 * @author mader
-	 *
+	 * 
 	 */
 	public static interface HasStack extends TImgRO {
 		/**
 		 * Returns a stack of images as an array of linear arrays
+		 * 
 		 * @param asType
 		 * @return
 		 */
 		public Object[] getPolyStack(int asType);
-	}
-	public abstract static class TImgStack implements HasStack {
-		@Override
-		public Object[] getPolyStack(int asType) {
-			ArrayList<Object> cStack=new ArrayList<Object>();
-			for(int i=0;i<=getDim().z;i++) cStack.add(getPolyImage(i,asType));
-			return cStack.toArray();
-		}
 	}
 
 	public static class TImgFull implements TImgOld {
@@ -86,13 +81,6 @@ public interface TImgRO extends TImgTools.HasDimensions {
 
 		public TImgFull(final TImgRO inImg) {
 			myImg = inImg;
-		}
-		/**
-		 * return the underlying TImgRO object
-		 * @return the TImgRO object
-		 */
-		public TImgRO gT() {
-			return myImg;
 		}
 
 		@Override
@@ -119,6 +107,15 @@ public interface TImgRO extends TImgTools.HasDimensions {
 		public short[] getShortArray(int sliceNumber) {
 			return (short[]) myImg.getPolyImage(sliceNumber, 1);
 		}
+
+		/**
+		 * return the underlying TImgRO object
+		 * 
+		 * @return the TImgRO object
+		 */
+		public TImgRO gT() {
+			return myImg;
+		}
 	}
 
 	public static interface TImgOld {
@@ -131,6 +128,16 @@ public interface TImgRO extends TImgTools.HasDimensions {
 		public int[] getIntArray(int sliceNumber);
 
 		public short[] getShortArray(int sliceNumber);
+	}
+
+	public abstract static class TImgStack implements HasStack {
+		@Override
+		public Object[] getPolyStack(int asType) {
+			final ArrayList<Object> cStack = new ArrayList<Object>();
+			for (int i = 0; i <= getDim().z; i++)
+				cStack.add(getPolyImage(i, asType));
+			return cStack.toArray();
+		}
 	}
 
 	public String appendProcLog(String inData);
@@ -159,6 +166,7 @@ public interface TImgRO extends TImgTools.HasDimensions {
 	 * The factor to scale bool/short/int/char values by when converting to/from
 	 * float (for distance maps is (1000.0/32767.0))
 	 */
+	@Override
 	public float getShortScaleFactor();
 
 	/**

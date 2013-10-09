@@ -76,7 +76,7 @@ public class ADTester {
 				"joey");
 		final ArgumentDialog a = new ArgumentDialog(p, "whaddup",
 				"nohelpforyou");
-		
+
 		System.out.println(a.scrapeDialog());
 	}
 

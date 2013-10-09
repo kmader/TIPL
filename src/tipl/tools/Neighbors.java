@@ -55,20 +55,6 @@ public class Neighbors extends BaseTIPLPlugin {
 			} else
 				return zero;
 		}
-
-		public int[][] view() {
-			final int[][] outMat = new int[count()][3];
-			final Iterator<Integer> it = nvox.keySet().iterator();
-			for (int i = 0; it.hasNext(); i++) {
-				outMat[i][0] = label;
-				final Integer cKey = it.next();
-				outMat[i][1] = cKey.intValue();
-				;
-				outMat[i][2] = nvox.get(cKey).intValue();
-			}
-			return outMat;
-
-		}
 	}
 
 	private class NeighborVoxel implements Iterator {

@@ -10,17 +10,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import tipl.formats.VirtualAim;
-import tipl.tools.BaseTIPLPlugin;
 import tipl.tools.BaseTIPLPluginIn;
 
 public class TIPLGlobal {
 	/**
 	 * the current runtime being used (whatever that is)
 	 */
-	public static Runtime curRuntime=Runtime.getRuntime();
+	public static Runtime curRuntime = Runtime.getRuntime();
 	/** number of cores available for processing tasks */
-	public static int availableCores = curRuntime
-			.availableProcessors();
+	public static int availableCores = curRuntime.availableProcessors();
 	/** maximum number of IO operations to perform at the same time */
 	public static int supportedIOThreads = 4;
 	/**

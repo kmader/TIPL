@@ -442,8 +442,7 @@ public class ComponentLabel extends BaseTIPLPlugin {
 					else
 						acceptList[ir] = false;
 				}
-				
-				
+
 				final boolean[] outputMask = new boolean[labels.length];
 				for (int i = 0; i < labels.length; i++)
 					outputMask[i] = acceptList[labels[i]];
@@ -655,7 +654,7 @@ public class ComponentLabel extends BaseTIPLPlugin {
 			}
 		};
 
-		final TImg outVirtualAim = ExportMaskAim(templateAim,objFilter);
+		final TImg outVirtualAim = ExportMaskAim(templateAim, objFilter);
 		outVirtualAim.appendProcLog(objFilter.getProcLog());
 		return outVirtualAim;
 	}

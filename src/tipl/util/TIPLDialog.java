@@ -14,7 +14,6 @@ import ij.gui.MultiLineLabel;
 import ij.macro.Interpreter;
 import ij.macro.MacroRunner;
 import ij.plugin.ScreenGrabber;
-import ij.plugin.filter.PlugInFilterRunner;
 import ij.plugin.frame.Recorder;
 import ij.util.Tools;
 
@@ -101,6 +100,46 @@ import java.util.Vector;
 public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 		FocusListener, ItemListener, KeyListener, AdjustmentListener,
 		WindowListener {
+	protected static abstract class CallbackGUIControlWithMouse implements
+			GUIControl {
+		protected MouseListener getMouseListener(
+				final ArgumentList.ArgumentCallback iv) {
+			return new MouseListener() {
+				@Override
+				public void mouseClicked(MouseEvent arg0) {
+					iv.valueSet(getValueAsString());
+				}
+
+				@Override
+				public void mouseEntered(MouseEvent arg0) {
+				}
+
+				@Override
+				public void mouseExited(MouseEvent arg0) {
+				}
+
+				@Override
+				public void mousePressed(MouseEvent arg0) {
+				}
+
+				@Override
+				public void mouseReleased(MouseEvent arg0) {
+				}
+			};
+		}
+
+		protected abstract void pushMLToObject(MouseListener curListener);
+
+		// protected ArgumentList.ArgumentCallback
+		// curCallback=ArgumentList.emptyCallback;
+		// protected MouseListener curMouseListener=emptyMouseListener;
+		@Override
+		public void setValueCallback(ArgumentList.ArgumentCallback iv) {
+			pushMLToObject(getMouseListener(iv));
+
+		}
+	}
+
 	/**
 	 * Interface to allow easy reading the values from controls
 	 * 
@@ -109,47 +148,32 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 	 */
 	protected static interface GUIControl {
 		public String getValueAsString();
+
 		public void setValueCallback(ArgumentList.ArgumentCallback iv);
 	}
-	final protected static MouseListener emptyMouseListener=new MouseListener() {
+
+	final protected static MouseListener emptyMouseListener = new MouseListener() {
 		@Override
-		public void mouseClicked(MouseEvent arg0) {}
-		@Override
-		public void mouseEntered(MouseEvent arg0) {}
-		@Override
-		public void mouseExited(MouseEvent arg0) {}
-		@Override
-		public void mousePressed(MouseEvent arg0) {}
-		@Override
-		public void mouseReleased(MouseEvent arg0) {}
-		
-	};
-	protected static abstract class CallbackGUIControlWithMouse implements GUIControl {
-		//protected ArgumentList.ArgumentCallback curCallback=ArgumentList.emptyCallback;
-		//protected MouseListener curMouseListener=emptyMouseListener;
-		@Override
-		public void setValueCallback(ArgumentList.ArgumentCallback iv) {
-			pushMLToObject(getMouseListener(iv));
-			
+		public void mouseClicked(MouseEvent arg0) {
 		}
-		protected abstract void pushMLToObject(MouseListener curListener);
-		protected MouseListener getMouseListener(final ArgumentList.ArgumentCallback iv) {
-			return new MouseListener() {
-			@Override
-			public void mouseClicked(MouseEvent arg0) {
-				iv.valueSet(getValueAsString());
-			}
-			@Override
-			public void mouseEntered(MouseEvent arg0) {}
-			@Override
-			public void mouseExited(MouseEvent arg0) {}
-			@Override
-			public void mousePressed(MouseEvent arg0) {}
-			@Override
-			public void mouseReleased(MouseEvent arg0) {}
-		};
-	}
-	}
+
+		@Override
+		public void mouseEntered(MouseEvent arg0) {
+		}
+
+		@Override
+		public void mouseExited(MouseEvent arg0) {
+		}
+
+		@Override
+		public void mousePressed(MouseEvent arg0) {
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent arg0) {
+		}
+
+	};
 
 	/** begin old code **/
 
@@ -161,12 +185,12 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 			public String getValueAsString() {
 				return f.getState() ? "true" : "false";
 			}
+
 			@Override
 			protected void pushMLToObject(MouseListener curListener) {
 				f.addMouseListener(curListener);
 			}
-			
-			
+
 		};
 	}
 
@@ -176,6 +200,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 			public String getValueAsString() {
 				return f.getText();
 			}
+
 			@Override
 			protected void pushMLToObject(MouseListener curListener) {
 				f.addMouseListener(curListener);
@@ -1393,6 +1418,62 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 		return new Label(label);
 	}
 
+	public void NonBlockingShow() {
+		final Panel buttons = new Panel();
+
+		buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
+		cancel = new Button(cancelLabel);
+		cancel.addActionListener(this);
+		cancel.addKeyListener(this);
+		if (yesNoCancel) {
+			okLabel = yesLabel;
+			no = new Button(noLabel);
+			no.addActionListener(this);
+			no.addKeyListener(this);
+		}
+		okay = new Button(okLabel);
+		okay.addActionListener(this);
+		okay.addKeyListener(this);
+		final boolean addHelp = helpURL != null;
+		if (addHelp) {
+			help = new Button(helpLabel);
+			help.addActionListener(this);
+			help.addKeyListener(this);
+		}
+		if (IJ.isMacintosh()) {
+			if (addHelp)
+				buttons.add(help);
+			if (yesNoCancel)
+				buttons.add(no);
+			if (!hideCancelButton)
+				buttons.add(cancel);
+			buttons.add(okay);
+		} else {
+			buttons.add(okay);
+			if (yesNoCancel)
+				buttons.add(no);
+			;
+			if (!hideCancelButton)
+				buttons.add(cancel);
+			if (addHelp)
+				buttons.add(help);
+		}
+		c.gridx = 0;
+		c.gridy = y;
+		c.anchor = GridBagConstraints.EAST;
+		c.gridwidth = 2;
+		c.insets = new Insets(15, 0, 0, 0);
+		grid.setConstraints(buttons, c);
+		add(buttons);
+		if (IJ.isMacintosh())
+			setResizable(false);
+		pack();
+		setup();
+		if (centerDialog)
+			GUI.center(this);
+		setVisible(true);
+	}
+
 	/**
 	 * Notify any DialogListeners of changes having occurred If a listener
 	 * returns false, do not call further listeners and disable the OK button
@@ -1556,61 +1637,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 
 	protected void setup() {
 	}
-	public void NonBlockingShow() {
-		final Panel buttons = new Panel();
 
-		buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		cancel = new Button(cancelLabel);
-		cancel.addActionListener(this);
-		cancel.addKeyListener(this);
-		if (yesNoCancel) {
-			okLabel = yesLabel;
-			no = new Button(noLabel);
-			no.addActionListener(this);
-			no.addKeyListener(this);
-		}
-		okay = new Button(okLabel);
-		okay.addActionListener(this);
-		okay.addKeyListener(this);
-		final boolean addHelp = helpURL != null;
-		if (addHelp) {
-			help = new Button(helpLabel);
-			help.addActionListener(this);
-			help.addKeyListener(this);
-		}
-		if (IJ.isMacintosh()) {
-			if (addHelp)
-				buttons.add(help);
-			if (yesNoCancel)
-				buttons.add(no);
-			if (!hideCancelButton)
-				buttons.add(cancel);
-			buttons.add(okay);
-		} else {
-			buttons.add(okay);
-			if (yesNoCancel)
-				buttons.add(no);
-			;
-			if (!hideCancelButton)
-				buttons.add(cancel);
-			if (addHelp)
-				buttons.add(help);
-		}
-		c.gridx = 0;
-		c.gridy = y;
-		c.anchor = GridBagConstraints.EAST;
-		c.gridwidth = 2;
-		c.insets = new Insets(15, 0, 0, 0);
-		grid.setConstraints(buttons, c);
-		add(buttons);
-		if (IJ.isMacintosh())
-			setResizable(false);
-		pack();
-		setup();
-		if (centerDialog)
-			GUI.center(this);
-		setVisible(true);
-	}
 	/** Displays this dialog box. */
 	public void showDialog() {
 		if (macro) {

@@ -33,6 +33,10 @@ public class Morpho extends BaseTIPLPluginBW {
 	/** current operation, erode = -1, dilate = +1 */
 	protected volatile int curOperation = 0;
 
+	public Morpho() {
+
+	}
+
 	/** constructor function using TIPLPluginBW standard classes */
 	@Deprecated
 	public Morpho(boolean[] inputmap, D3int idim, D3int ioffset) {
@@ -60,9 +64,6 @@ public class Morpho extends BaseTIPLPluginBW {
 	/** constructor function using TIPLPluginBW standard classes */
 	public Morpho(TImgRO inputAim) {
 		LoadImages(new TImgRO[] { inputAim });
-	}
-	public Morpho() {
-		
 	}
 
 	@Deprecated

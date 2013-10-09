@@ -387,7 +387,6 @@ public class MMapImage implements TImg, TReader, TWriter {
 		}
 	}
 
-
 	@Override
 	public TImg inheritedAim(boolean[] imgArray, D3int dim, D3int offset) {
 		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,

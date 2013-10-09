@@ -4,8 +4,6 @@ package tipl.tools;
 //import java.awt.image.*;
 //import java.awt.image.ColorModel.*;
 import java.io.FileWriter;
-import java.util.HashMap;
-
 import tipl.util.D3float;
 import tipl.util.D3int;
 

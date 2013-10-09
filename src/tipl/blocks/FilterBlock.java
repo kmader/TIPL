@@ -14,7 +14,7 @@ import tipl.util.TImgTools;
  */
 public class FilterBlock extends BaseTIPLBlock {
 	public final String prefix;
-	protected final static String blockName="Filter";
+	protected final static String blockName = "Filter";
 	public final IBlockImage[] inImages = new IBlockImage[] { new BlockImage(
 			"ufilt", "", "Input unfiltered image", true) };
 	public final IBlockImage[] outImages = new IBlockImage[] { new BlockImage(

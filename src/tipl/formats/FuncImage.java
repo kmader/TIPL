@@ -247,8 +247,6 @@ public abstract class FuncImage implements TImg {
 		return templateData.getSigned();
 	}
 
-
-
 	/**
 	 * The output value for a given position and value
 	 * 

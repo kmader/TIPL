@@ -2,7 +2,6 @@ package tipl.tests;
 
 import tipl.formats.PureFImage;
 import tipl.formats.TImgRO;
-import tipl.formats.PureFImage.PositionFunction;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
@@ -26,15 +25,17 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 			return (z == y & y == x);
 		}
 	}
-	
+
 	public static class DiagonalPlaneAndDotsFunction extends TestFImages {
-		private final TestFImages Plane=new DiagonalPlaneFunction();
-		private final TestFImages Dots=new DotsFunction();
+		private final TestFImages Plane = new DiagonalPlaneFunction();
+		private final TestFImages Dots = new DotsFunction();
+
 		@Override
 		public boolean tget(long x, long y, long z) {
 			return Plane.tget(x, y, z) | Dots.tget(x, y, z);
 		}
 	}
+
 	/**
 	 * diagonal plane
 	 * 
@@ -62,6 +63,31 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 	}
 
 	/**
+	 * fixed value image
+	 * 
+	 * @author mader
+	 * 
+	 */
+	public static class FixedValueImage extends TestFImages {
+		private final int fixedValue;
+
+		public FixedValueImage(final int value) {
+			fixedValue = value;
+		}
+
+		@Override
+		public double[] getRange() {
+			return new double[] { 0, fixedValue };
+		}
+
+		@Override
+		public double rget(long x, long y, long z) {
+			return fixedValue;
+		}
+
+	}
+
+	/**
 	 * lines
 	 * 
 	 * @author mader
@@ -71,30 +97,6 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 		@Override
 		public boolean tget(long x, long y, long z) {
 			return ((x + y) % 2 == 1);
-		}
-	}
-	
-	/**
-	 * single point at (5,5,5)
-	 * 
-	 * @author mader
-	 * 
-	 */
-	public static class SinglePointFunction extends TestFImages {
-		protected final int x,y,z;
-		public SinglePointFunction() {
-			x=5;
-			y=5;
-			z=5;
-		}
-		public SinglePointFunction(int ix,int iy, int iz) {
-			x=ix;
-			y=iy;
-			z=iz;
-		}
-		@Override
-		public boolean tget(long ix, long iy, long iz) {
-			return (ix==x) & (iy==y) & (iz==z);
 		}
 	}
 
@@ -118,24 +120,6 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 	}
 
 	/**
-	 * progressive z image
-	 * 
-	 * @author mader
-	 * 
-	 */
-	public static class ProgZImage extends TestFImages {
-		@Override
-		public double[] getRange() {
-			return new double[] { 0, 2000 };
-		}
-
-		@Override
-		public double rget(long x, long y, long z) {
-			return z;
-		}
-
-	}
-	/**
 	 * progressive y image
 	 * 
 	 * @author mader
@@ -153,25 +137,22 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 		}
 
 	}
+
 	/**
-	 * fixed value image
+	 * progressive z image
 	 * 
 	 * @author mader
 	 * 
 	 */
-	public static class FixedValueImage extends TestFImages {
-		private final int fixedValue;
-		public FixedValueImage(final int value) {
-			fixedValue=value;
-		}
+	public static class ProgZImage extends TestFImages {
 		@Override
 		public double[] getRange() {
-			return new double[] { 0, fixedValue };
+			return new double[] { 0, 2000 };
 		}
 
 		@Override
 		public double rget(long x, long y, long z) {
-			return fixedValue;
+			return z;
 		}
 
 	}
@@ -188,10 +169,55 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 			return (x % 2 == 1); // sheets
 		}
 	}
-	/** 
-	 * count the number of voxels in a slice 
-	 * @param img the image to use
-	 * @param sliceZ the slice number to look at
+
+	/**
+	 * single point at (5,5,5)
+	 * 
+	 * @author mader
+	 * 
+	 */
+	public static class SinglePointFunction extends TestFImages {
+		protected final int x, y, z;
+
+		public SinglePointFunction() {
+			x = 5;
+			y = 5;
+			z = 5;
+		}
+
+		public SinglePointFunction(int ix, int iy, int iz) {
+			x = ix;
+			y = iy;
+			z = iz;
+		}
+
+		@Override
+		public boolean tget(long ix, long iy, long iz) {
+			return (ix == x) & (iy == y) & (iz == z);
+		}
+	}
+
+	/**
+	 * count voxels in an entire image
+	 * 
+	 * @param img
+	 *            image
+	 * @return total number of true voxels
+	 */
+	public static long countVoxelsImage(TImgRO img) {
+		long totalCount = 0;
+		for (int i = 0; i < img.getDim().z; i++)
+			totalCount += countVoxelsSlice(img, i);
+		return totalCount;
+	}
+
+	/**
+	 * count the number of voxels in a slice
+	 * 
+	 * @param img
+	 *            the image to use
+	 * @param sliceZ
+	 *            the slice number to look at
 	 * @return the number of voxels
 	 */
 	public static long countVoxelsSlice(TImgRO img, int sliceZ) {
@@ -201,16 +227,6 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 			if (cVal)
 				i++;
 		return i;
-	}
-	/**
-	 * count voxels in an entire image
-	 * @param img image
-	 * @return total number of true voxels
-	 */
-	public static long countVoxelsImage(TImgRO img) {
-		long totalCount=0;
-		for(int i=0;i<img.getDim().z;i++) totalCount+=countVoxelsSlice(img,i);
-		return totalCount;
 	}
 
 	public static TImgTools.HasDimensions justDims(final D3int inDim) {
@@ -239,16 +255,17 @@ public abstract class TestFImages implements PureFImage.PositionFunction {
 				// TODO Auto-generated method stub
 				return new D3int(0);
 			}
-			
+
 			@Override
 			public String getProcLog() {
 				// just return nothing
 				return "";
 			}
-			
+
+			@Override
 			public float getShortScaleFactor() {
 				// this value is fixed in these images
-				return 1.0f; 
+				return 1.0f;
 			}
 
 		};

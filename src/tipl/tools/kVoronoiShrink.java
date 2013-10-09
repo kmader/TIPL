@@ -37,10 +37,9 @@ public class kVoronoiShrink extends kVoronoi {
 			System.exit(0);
 		}
 
-		long preload, start;
+		long start;
 
-		// Read in the data set
-		preload = System.currentTimeMillis();
+		System.currentTimeMillis();
 
 		kVoronoiShrink KV;
 

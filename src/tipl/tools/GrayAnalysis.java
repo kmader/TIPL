@@ -6,8 +6,6 @@ package tipl.tools;
 import java.io.FileWriter;
 import java.util.Date;
 import java.util.Hashtable;
-import java.util.Vector;
-
 import tipl.formats.FImage;
 import tipl.formats.PureFImage;
 import tipl.formats.TImg;

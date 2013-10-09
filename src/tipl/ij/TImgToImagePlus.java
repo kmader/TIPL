@@ -5,7 +5,6 @@ package tipl.ij;
 
 import java.awt.Image;
 
-import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
 import ij.ImagePlus;
@@ -16,7 +15,7 @@ import ij.process.ImageProcessor;
 
 /**
  * @author mader
- *
+ * 
  */
 public class TImgToImagePlus extends ImagePlus {
 
@@ -36,7 +35,7 @@ public class TImgToImagePlus extends ImagePlus {
 		float maxv = 0;
 		int mode;
 		HistogramWindow chw;
-	
+
 		public autoRanger(ImageProcessor outIm, HistogramWindow ichw,
 				char[] ipixels) {
 			super("Charer");
@@ -44,9 +43,9 @@ public class TImgToImagePlus extends ImagePlus {
 			bpixels = ipixels;
 			chw = ichw;
 			mode = 0;
-	
+
 		}
-	
+
 		public autoRanger(ImageProcessor outIm, HistogramWindow ichw,
 				float[] ipixels) {
 			super("Floater");
@@ -54,9 +53,9 @@ public class TImgToImagePlus extends ImagePlus {
 			fpixels = ipixels;
 			chw = ichw;
 			mode = 3;
-	
+
 		}
-	
+
 		public autoRanger(ImageProcessor outIm, HistogramWindow ichw,
 				short[] ipixels) {
 			super("Shorter");
@@ -64,9 +63,9 @@ public class TImgToImagePlus extends ImagePlus {
 			spixels = ipixels;
 			chw = ichw;
 			mode = 1;
-	
+
 		}
-	
+
 		@Override
 		public void run() {
 			switch (mode) {
@@ -128,22 +127,45 @@ public class TImgToImagePlus extends ImagePlus {
 			}
 			final float mean = sum / cnt;
 			final float std = (float) Math.sqrt(ssum / cnt - mean * mean);
-	
+
 			ip.setMinAndMax(mean - std, mean + std);
 			// new HistogramWindow("Histogram of "+ip.getShortTitle(), ip, 200,
 			// mean-std, mean+std, iyMax);
 			final String mytitle = "AR:" + this;
 			if (chw != null) {
 				chw.showHistogram(new ImagePlus(mytitle, ip), 255,
-						VirtualAim.max(minv, mean - std), VirtualAim.min(maxv, mean + std));
+						VirtualAim.max(minv, mean - std),
+						VirtualAim.min(maxv, mean + std));
 				chw.run();
 			}
 			System.out.println("AutoRanger:" + this + ", Finished:(" + (mean)
 					+ " -> [" + minv + "," + (mean - std) + "," + (mean + std)
 					+ "," + maxv + "])");
-	
+
 		}
-	
+
+	}
+
+	/**
+	 * factory function for making an imageplus from a TImg by first making an
+	 * imagestack
+	 * 
+	 * @param curImg
+	 * @return
+	 */
+	public static ImagePlus MakeImagePlus(TImgRO curImg) {
+		final ImageStack curImStack = new TImgToImageStack(curImg);
+
+		final ImagePlus curImPlus = new ImagePlus(curImg.getSampleName(),
+				curImStack);
+
+		final Calibration cal = new Calibration();
+		cal.pixelWidth = curImg.getElSize().x;
+		cal.pixelHeight = curImg.getElSize().y;
+		cal.pixelDepth = curImg.getElSize().z;
+		cal.setUnit("mm");
+		curImPlus.setCalibration(cal);
+		return curImPlus;
 	}
 
 	/**
@@ -186,25 +208,6 @@ public class TImgToImagePlus extends ImagePlus {
 	public TImgToImagePlus(String title, ImageStack stack) {
 		super(title, stack);
 		// TODO Auto-generated constructor stub
-	}
-
-	/**
-	 * factory function for making an imageplus from a TImg by first making an imagestack
-	 * @param curImg
-	 * @return
-	 */
-	public static ImagePlus MakeImagePlus(TImgRO curImg) {
-		ImageStack curImStack = new TImgToImageStack(curImg);
-		
-		ImagePlus curImPlus = new ImagePlus(curImg.getSampleName(),curImStack);
-
-		final Calibration cal = new Calibration();
-		cal.pixelWidth = curImg.getElSize().x;
-		cal.pixelHeight = curImg.getElSize().y;
-		cal.pixelDepth = curImg.getElSize().z;
-		cal.setUnit("mm");
-		curImPlus.setCalibration(cal);
-		return curImPlus;
 	}
 
 }
