@@ -58,36 +58,36 @@ public class MorphKernelTest {
 
 	@Test
 	public void testMorphClose() {
-		final TImgRO testImg = TestFImages.wrapIt(10,
-				new TestFImages.SinglePointFunction(5, 5, 5));
+		final TImgRO testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.SinglePointFunction(5, 5, 5));
 		System.out.println("Testing Closing with D-kernel");
 		final TIPLPluginIO RS = makeMorpho(testImg);
 		// kernel all (0), d-all on the axes (1), spherical (2)
 		RS.setParameter("-kernel=1");
 		RS.execute("closeMany", new Integer(1));
 		final TImgRO outImg = RS.ExportImages(testImg)[0];
-		assertEquals(TestFImages.countVoxelsImage(outImg), 1); // from one point
+		assertEquals(TIPLTestingLibrary.countVoxelsImage(outImg), 1); // from one point
 																// to one point
 	}
 
 	@Test
 	public void testMorphCloseAll() {
-		final TImgRO testImg = TestFImages.wrapIt(10,
-				new TestFImages.SinglePointFunction(5, 5, 5));
+		final TImgRO testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.SinglePointFunction(5, 5, 5));
 		System.out.println("Testing Closing with All-Kernel");
 		final TIPLPluginIO RS = makeMorpho(testImg);
 		// kernel all (0), d-all on the axes (1), spherical (2)
 		RS.setParameter("-kernel=0");
 		RS.execute("closeMany", new Integer(1));
 		final TImgRO outImg = RS.ExportImages(testImg)[0];
-		assertEquals(TestFImages.countVoxelsImage(outImg), 1); // from one point
+		assertEquals(TIPLTestingLibrary.countVoxelsImage(outImg), 1); // from one point
 																// to one point
 	}
 
 	@Test
 	public void testMorphDilationAll() {
-		final TImgRO testImg = TestFImages.wrapIt(10,
-				new TestFImages.SinglePointFunction(5, 5, 5));
+		final TImgRO testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.SinglePointFunction(5, 5, 5));
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Dilation with all kernel");
 		final TIPLPluginIO RS = makeMorpho(testImg);
@@ -95,7 +95,7 @@ public class MorphKernelTest {
 		RS.setParameter("-kernel=0");
 		RS.execute("dilateMany", new Integer(1));
 		final TImgRO outImg = RS.ExportImages(testImg)[0];
-		assertEquals(TestFImages.countVoxelsImage(outImg), 27); // 27=3x3x3
+		assertEquals(TIPLTestingLibrary.countVoxelsImage(outImg), 27); // 27=3x3x3
 																// (perfect)
 	}
 
@@ -104,8 +104,8 @@ public class MorphKernelTest {
 	 */
 	@Test
 	public void testMorphDilationDK() {
-		final TImgRO testImg = TestFImages.wrapIt(10,
-				new TestFImages.SinglePointFunction(5, 5, 5));
+		final TImgRO testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.SinglePointFunction(5, 5, 5));
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Dilation with D-kernel");
 		final TIPLPluginIO RS = makeMorpho(testImg);
@@ -113,28 +113,28 @@ public class MorphKernelTest {
 		RS.setParameter("-kernel=1");
 		RS.execute("dilateMany", new Integer(1));
 		final TImgRO outImg = RS.ExportImages(testImg)[0];
-		assertEquals(TestFImages.countVoxelsImage(outImg), 7); // 7 = self +
+		assertEquals(TIPLTestingLibrary.countVoxelsImage(outImg), 7); // 7 = self +
 																// (+/- 1) in
 																// x,y,z (6)
 	}
 
 	@Test
 	public void testMorphDilationSph() {
-		final TImgRO testImg = TestFImages.wrapIt(10,
-				new TestFImages.SinglePointFunction(5, 5, 5));
+		final TImgRO testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.SinglePointFunction(5, 5, 5));
 		System.out.println("Testing Dilation with spherical-kernel");
 		final TIPLPluginIO RS = makeMorpho(testImg);
 		// kernel all (0), d-all on the axes (1), spherical (2)
 		RS.setParameter("-kernel=2 -neighborhood=2,2,2");
 		RS.execute("dilateMany", new Integer(1));
 		final TImgRO outImg = RS.ExportImages(testImg)[0];
-		assertEquals(TestFImages.countVoxelsImage(outImg), 33);
+		assertEquals(TIPLTestingLibrary.countVoxelsImage(outImg), 33);
 	}
 
 	@Test
 	public void testMorphErosionDK() {
-		final TImgRO testImg = TestFImages.wrapIt(10,
-				new TestFImages.SinglePointFunction(5, 5, 5));
+		final TImgRO testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.SinglePointFunction(5, 5, 5));
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Dilation with D-kernel");
 		final TIPLPluginIO RS = makeMorpho(testImg);
@@ -142,7 +142,7 @@ public class MorphKernelTest {
 		RS.setParameter("-kernel=1");
 		RS.execute("erodeMany", new Integer(1));
 		final TImgRO outImg = RS.ExportImages(testImg)[0];
-		assertEquals(TestFImages.countVoxelsImage(outImg), 0);
+		assertEquals(TIPLTestingLibrary.countVoxelsImage(outImg), 0);
 	}
 
 	/**

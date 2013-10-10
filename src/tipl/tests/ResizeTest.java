@@ -147,8 +147,8 @@ public class ResizeTest {
 	@Test
 	public void test() {
 		// offset lines
-		final TImgRO testImg = TestFImages.wrapIt(10,
-				new TestFImages.LinesFunction());
+		final TImgRO testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.LinesFunction());
 
 		final TIPLPluginIO RS = makeRS(testImg);
 		RS.setParameter("-pos=5,5,5 -dim=5,5,1");
@@ -165,8 +165,8 @@ public class ResizeTest {
 	@Test
 	public void testOutDims() {
 		// offset lines
-		final TImgRO testImg = TestFImages.wrapIt(10,
-				new TestFImages.LinesFunction());
+		final TImgRO testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.LinesFunction());
 		final TIPLPluginIO RS = makeRS(testImg);
 		RS.setParameter("-pos=5,5,5 -dim=5,5,1");
 		RS.execute();
@@ -181,13 +181,13 @@ public class ResizeTest {
 	 */
 	@Test
 	public void testOutImageType() {
-		final PureFImage.PositionFunction pf = new TestFImages.DiagonalPlaneFunction();
+		final PureFImage.PositionFunction pf = new TestPosFunctions.DiagonalPlaneFunction();
 		// make one of each
-		final TImgRO[] testImgs = { TestFImages.wrapItAs(10, pf, 0),
-				TestFImages.wrapItAs(10, pf, 1),
-				TestFImages.wrapItAs(10, pf, 2),
-				TestFImages.wrapItAs(10, pf, 3),
-				TestFImages.wrapItAs(10, pf, 10) };
+		final TImgRO[] testImgs = { TestPosFunctions.wrapItAs(10, pf, 0),
+				TestPosFunctions.wrapItAs(10, pf, 1),
+				TestPosFunctions.wrapItAs(10, pf, 2),
+				TestPosFunctions.wrapItAs(10, pf, 3),
+				TestPosFunctions.wrapItAs(10, pf, 10) };
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Short Scale Factor");
 		TIPLPluginIO RS;
@@ -211,9 +211,9 @@ public class ResizeTest {
 		// offset lines
 		final int sizeX = 10;
 		final float ssf = 1.5f;
-		final TImgRO testImg = new PureFImage(TestFImages.justDims(new D3int(
+		final TImgRO testImg = new PureFImage(TestPosFunctions.justDims(new D3int(
 				sizeX, sizeX, sizeX)), 2,
-				new TestFImages.DiagonalPlaneFunction(), ssf);
+				new TestPosFunctions.DiagonalPlaneFunction(), ssf);
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Short Scale Factor");
 		final TIPLPluginIO RS = makeRS(testImg);
@@ -233,8 +233,8 @@ public class ResizeTest {
 	public void testOutVoxCount() {
 		// offset lines
 
-		final TImgRO testImg = TestFImages.wrapIt(10,
-				new TestFImages.DiagonalPlaneFunction());
+		final TImgRO testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.DiagonalPlaneFunction());
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Voxel Count");
 		final TIPLPluginIO RS = makeRS(testImg);
@@ -242,23 +242,23 @@ public class ResizeTest {
 		RS.setParameter("-pos=0,0,5 -dim=10,10,1");
 		RS.execute();
 		final TImgRO outImg = RS.ExportImages(testImg)[0];
-		assertEquals(TestFImages.countVoxelsSlice(outImg, 0),
-				TestFImages.countVoxelsSlice(testImg, 5));
+		assertEquals(TIPLTestingLibrary.countVoxelsSlice(outImg, 0),
+				TIPLTestingLibrary.countVoxelsSlice(testImg, 5));
 
 	}
 
 	@Test
 	public void testSlicesMatchIntNormal() {
-		final TImgRO testImg = TestFImages.wrapItAs(10,
-				new TestFImages.ProgZImage(), 2);
+		final TImgRO testImg = TestPosFunctions.wrapItAs(10,
+				new TestPosFunctions.ProgZImage(), 2);
 		testSlicesMatchInt(testImg);
 
 	}
 
 	@Test
 	public void testSlicesMatchIntPreload() {
-		final TImgRO testImg = TestFImages.wrapItAs(10,
-				new TestFImages.ProgZImage(), 2);
+		final TImgRO testImg = TestPosFunctions.wrapItAs(10,
+				new TestPosFunctions.ProgZImage(), 2);
 		testSlicesMatchInt(testImg);
 		final VirtualAim vImg = new VirtualAim(testImg);
 
@@ -269,16 +269,16 @@ public class ResizeTest {
 
 	@Test
 	public void testSlicesMatchNormal() {
-		final TImgRO testImg = TestFImages.wrapIt(10,
-				new TestFImages.DiagonalPlaneFunction());
+		final TImgRO testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.DiagonalPlaneFunction());
 		testSlicesMatchBool(testImg);
 
 	}
 
 	@Test
 	public void testSlicesMatchPreload() {
-		final TImgRO testImg = TestFImages.wrapIt(10,
-				new TestFImages.DiagonalPlaneFunction());
+		final TImgRO testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.DiagonalPlaneFunction());
 		// TImgRO.FullReadable vImg=TImgTools.makeTImgFullReadable(testImg);
 		final VirtualAim vImg = new VirtualAim(testImg);
 
@@ -288,8 +288,8 @@ public class ResizeTest {
 
 	@Test
 	public void testSlicesMatchPreLoaded() {
-		final TImgRO testImg = TestFImages.wrapIt(10,
-				new TestFImages.DiagonalPlaneFunction());
+		final TImgRO testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.DiagonalPlaneFunction());
 
 		testSlicesMatchBool(testImg);
 

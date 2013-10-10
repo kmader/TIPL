@@ -43,8 +43,8 @@ public class CLTest {
 	@Test
 	public void testComponentLimit() {
 		System.out.println("Testing Component volume limits");
-		final TImgRO testImg = TestFImages.wrapIt(10,
-				new TestFImages.DiagonalPlaneAndDotsFunction());
+		final TImgRO testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.DiagonalPlaneAndDotsFunction());
 		ComponentLabel CL = (ComponentLabel) makeCL(testImg);
 		final D3float voxSize = new D3float(1.0, 1.0, 1.0);
 		CL.setParameter("-kernel=2 -sphradius=1.0");
@@ -87,8 +87,8 @@ public class CLTest {
 	@Test
 	public void testExecute() {
 		System.out.println("Testing execute");
-		final TImgRO testImg = TestFImages.wrapIt(10,
-				new TestFImages.SheetImageFunction());
+		final TImgRO testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.SheetImageFunction());
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test2.tif");
 		final TIPLPluginIn CL = makeCL(testImg);
 		CL.execute();
@@ -102,8 +102,8 @@ public class CLTest {
 	// @Test
 	public void testRunVoxelsIntInt() {
 		System.out.println("Testing runVoxelsIntInt");
-		final TImgRO testImg = TestFImages.wrapIt(10,
-				new TestFImages.DiagonalPlaneFunction());
+		final TImgRO testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.DiagonalPlaneFunction());
 		TIPLPluginIn CL = makeCL(testImg);
 		CL.setParameter("-kernel=2 -sphradius=1.72");
 		CL.execute("runVoxels", new Integer(0));
@@ -137,8 +137,8 @@ public class CLTest {
 	@Test
 	public void testSphRadius() {
 		// offset lines
-		TImgRO testImg = TestFImages
-				.wrapIt(10, new TestFImages.LinesFunction());
+		TImgRO testImg = TestPosFunctions
+				.wrapIt(10, new TestPosFunctions.LinesFunction());
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		TIPLPluginIO CL = makeCL(testImg);
 		System.out.println("Testing SphRadius");
@@ -157,7 +157,7 @@ public class CLTest {
 		CL.execute();
 		checkVals(CL, 1, 500);
 
-		testImg = TestFImages.wrapIt(10, new TestFImages.DotsFunction());
+		testImg = TestPosFunctions.wrapIt(10, new TestPosFunctions.DotsFunction());
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		CL = makeCL(testImg);
 		CL.setParameter("-kernel=2 -sphradius=1.00");
@@ -174,8 +174,8 @@ public class CLTest {
 		CL.execute();
 		checkVals(CL, 1, 500);
 
-		testImg = TestFImages.wrapIt(10,
-				new TestFImages.DiagonalPlaneFunction());
+		testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.DiagonalPlaneFunction());
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		CL = makeCL(testImg);
 		CL.setParameter("-kernel=2 -sphradius=1.00");
@@ -192,8 +192,8 @@ public class CLTest {
 		CL.execute();
 		checkVals(CL, 1, 55);
 
-		testImg = TestFImages
-				.wrapIt(10, new TestFImages.DiagonalLineFunction());
+		testImg = TestPosFunctions
+				.wrapIt(10, new TestPosFunctions.DiagonalLineFunction());
 		TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		CL = makeCL(testImg);
 		CL.setParameter("-kernel=2 -sphradius=1.00");
