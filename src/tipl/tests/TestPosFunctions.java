@@ -1,5 +1,7 @@
 package tipl.tests;
 
+import java.util.Random;
+
 import tipl.formats.PureFImage;
 import tipl.formats.TImgRO;
 import tipl.util.D3float;
@@ -207,6 +209,56 @@ public abstract class TestPosFunctions implements PureFImage.PositionFunction {
 
 	}
 	/**
+	 * Radially layers centered at a predetermined point
+	 * @author mader
+	 *
+	 */
+	public static class PolarLayeredImage extends LayeredImage {
+		protected final float xc,yc,zc;
+		/**
+		 * Create a new function for a radially layered polar image (just in r)
+		 * @param xcent center position
+		 * @param ycent
+		 * @param zcent
+		 * @param iphase1
+		 * @param iphase2
+		 * @param irwidth width of radial rings
+		 */
+		public PolarLayeredImage( final int xcent, final int ycent, final int zcent, final int iphase1,final int iphase2, final float irwidth) {
+			super(iphase1,iphase2,irwidth);
+			xc=xcent;
+			yc=ycent;
+			zc=zcent;
+		}
+		/**
+		 * 
+		 * @param xcent
+		 * @param ycent
+		 * @param zcent
+		 * @param iphase1
+		 * @param iphase2
+		 * @param irwidth width of radial rings
+		 * @param ithwidth spead of sectors in theta
+		 * @param izwidth height of rings in z
+		 */
+		public PolarLayeredImage( final int xcent, final int ycent, final int zcent, final int iphase1,final int iphase2, final float irwidth, final float ithwidth, final float izwidth) {
+			super(iphase1,iphase2,irwidth,ithwidth,izwidth);
+			xc=xcent;
+			yc=ycent;
+			zc=zcent;
+		}
+		@Override
+		public double rget(final long x, final long y, final long z) {
+			int phase=0;
+			double r=Math.sqrt(Math.pow(x-xc, 2)+Math.pow(y-yc, 2));
+			double th=Math.atan2(y-yc, x-xc)*180/Math.PI;
+			if (xwidth>0) phase+=Math.round(r/xwidth)%2;
+			if (ywidth>0) phase+=Math.round(th/ywidth)%2;
+			if (zwidth>0) phase+=Math.round(z/zwidth)%2;
+			return ((phase%2)>0) ? phase1 : phase2;
+		}
+	}
+	/**
 	 * progressive x image
 	 * 
 	 * @author mader
@@ -251,6 +303,7 @@ public abstract class TestPosFunctions implements PureFImage.PositionFunction {
 	 * 
 	 */
 	public static class ProgZImage extends TestPosFunctions {
+		
 		@Override
 		public double[] getRange() {
 			return new double[] { 0, 2000 };
@@ -405,6 +458,7 @@ public abstract class TestPosFunctions implements PureFImage.PositionFunction {
 	public void disableRotation() {
 		rotated=false;
 	}
+	
 	/**
 	 * theta and phi to rotate by
 	 */
@@ -415,9 +469,28 @@ public abstract class TestPosFunctions implements PureFImage.PositionFunction {
 	protected double cx=0,cy=0,cz=0;
 	/** should the rotation function even be used **/
 	protected boolean rotated=false;
+	/**
+	 * set the maximum value of the noise signal 
+	 * @param inoisemax maximum value of the noise (negative means phase noise and absolute value is the probability of switching)
+	 */
+	public void setNoise(final double inoisemax) { noisemax=inoisemax;}
+	/**
+	 * set the possible phases for phase-based noise (phase jumping)
+	 * @param iphases list of possible phase values
+	 */
+	public void setNoisePhases(final double[] iphases) {phases=iphases;}
+	/** amount of noise in the image **/
+	protected double noisemax=0.0;
+	protected double[] phases={0.0};
+	protected Random rn = new Random();
+	
 	final public double nget(final long x, final long y, final long z) {
-		if (rotated) return rot_rget(x,y,z);
-		else return rget(x,y,z);
+		double noise=0.0;
+		if (noisemax>0) noise=noisemax*2*(rn.nextDouble()-0.5);
+		if (noisemax<0) if (rn.nextDouble()<(-1*noisemax)) return phases[rn.nextInt(phases.length)];
+		if (rotated) return rot_rget(x,y,z)+noise;
+		else return rget(x,y,z)+noise;
+		
 	}
 	/**
 	 * rotates the coordinates according to theta (xz) and phi (xy)
