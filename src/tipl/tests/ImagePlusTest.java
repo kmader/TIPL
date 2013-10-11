@@ -19,7 +19,6 @@ public class ImagePlusTest {
 		comboFun.setRotation(45, 0,75,75,75);
 		final TImgRO testImg = TestPosFunctions
 				.wrapIt(150, comboFun );
-		TImgToImageStack.MakeImageStack(testImg);
 
 		final ImagePlus curImg = TImgToImagePlus.MakeImagePlus(testImg);
 		curImg.show();

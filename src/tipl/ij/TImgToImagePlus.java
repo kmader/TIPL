@@ -13,6 +13,7 @@ import java.awt.Image;
 
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
+import tipl.ij.volviewer.Volume_Viewer;
 
 /**
  * @author mader
@@ -152,12 +153,12 @@ public class TImgToImagePlus extends ImagePlus {
 	 * imagestack
 	 * 
 	 * @param curImg
-	 * @return
+	 * @return type TImgToImagePlus which has the additional rendering function integrating volume viewer
 	 */
-	public static ImagePlus MakeImagePlus(final TImgRO curImg) {
+	public static TImgToImagePlus MakeImagePlus(final TImgRO curImg) {
 		final ImageStack curImStack = new TImgToImageStack(curImg);
-
-		final ImagePlus curImPlus = new ImagePlus(curImg.getSampleName(),
+		// make use of this class
+		final TImgToImagePlus curImPlus = new TImgToImagePlus(curImg.getSampleName(),
 				curImStack);
 
 		final Calibration cal = new Calibration();
@@ -168,22 +169,7 @@ public class TImgToImagePlus extends ImagePlus {
 		curImPlus.setCalibration(cal);
 		return curImPlus;
 	}
-	
-	/**
-	 * 
-	 */
-	public TImgToImagePlus() {
-		// TODO Auto-generated constructor stub
-	}
-
-	/**
-	 * @param pathOrURL
-	 */
-	public TImgToImagePlus(final String pathOrURL) {
-		super(pathOrURL);
-		// TODO Auto-generated constructor stub
-	}
-
+	// standard constructors
 	/**
 	 * @param title
 	 * @param img
@@ -209,6 +195,12 @@ public class TImgToImagePlus extends ImagePlus {
 	public TImgToImagePlus(final String title, final ImageStack stack) {
 		super(title, stack);
 		// TODO Auto-generated constructor stub
+	}
+	
+	//fun functions
+	public void render(String args) {
+		Volume_Viewer cViewer = new Volume_Viewer();
+		cViewer.tiplShowView("",this);
 	}
 
 }
