@@ -213,7 +213,6 @@ public final class Volume_Viewer implements PlugIn {
 				}
 			} while (frame.isVisible());
 		} else System.out.println(this+" Frame doesn't even exist");
-		gui.imageRegion.saveToImage();
 		cleanup();
 	}
 	
@@ -268,7 +267,9 @@ public final class Volume_Viewer implements PlugIn {
 			gui.newDisplayMode();
 		}
 	}
-	
+	/*
+	 * just remove all the variables by setting them to null and 'force' a garbage collect 
+	 */
 	private void cleanup() {
 		
 		vol.data3D = null;

@@ -10,6 +10,7 @@ package tipl.ij.volviewer;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.NewImage;
+import ij.io.SaveDialog;
 import ij.process.ImageProcessor;
 
 import java.awt.Color;
@@ -163,7 +164,11 @@ class ImageRegion extends JPanel {
 		else
 			setLine(2, 0, 0, 0, 0, 1, color);
 	}
-	public synchronized ImagePlus getImageAsImagePlus() {
+	/**
+	 * get the current snapshot as an imageplus object (more useful for future processing
+	 * @return filename
+	 */
+	protected synchronized ImagePlus getImageAsImagePlus() {
 		BufferedImage bufferedImage =  new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
 		paint(bufferedImage.createGraphics());
@@ -189,6 +194,23 @@ class ImageRegion extends JPanel {
 		return plotImage;
 		
 	}
+	/**
+	 * Save the current image as a file (for when the tool is not used inside imageJ
+	 * @param path path to save to
+	 */
+	public synchronized void saveToImageFile(String path) {
+		ImagePlus plotImage = getImageAsImagePlus();
+		IJ.save(plotImage,path);
+	}
+	public synchronized void saveToImageFile() {
+		ImagePlus plotImage = getImageAsImagePlus();
+		SaveDialog sd=new SaveDialog("Save snapshot as...",plotImage.getTitle(),".jpg");
+		String fileName=sd.getDirectory()+sd.getFileName();
+		System.out.println(this+": Saving as "+fileName);
+		IJ.save(plotImage,fileName);
+		
+	}
+	
 	public synchronized void saveToImage() {
 
 		ImagePlus plotImage = getImageAsImagePlus();

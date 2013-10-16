@@ -73,12 +73,20 @@ public abstract class TestPosFunctions implements PureFImage.PositionFunction {
 		protected final TestPosFunctions bgFun;
 		protected final TestPosFunctions phFun;
 		protected final int phase;
+		protected final double[] range;
 		public BGPlusPhase(final TestPosFunctions ibgf, final TestPosFunctions iphf, final int iphase) {
 			bgFun=ibgf;
+			double minVal=Math.min(ibgf.getRange()[0], iphase);
+			double maxVal=Math.max(ibgf.getRange()[1], iphase);
+			range=new double[] {minVal,maxVal};
 			phFun=iphf;
 			phase=iphase;
+			
 		}
-
+		@Override
+		public double[] getRange() {
+			return range;
+		}
 		@Override
 		public double rget(final long ix, final long iy, final long iz) {
 			return phFun.nget(ix,iy,iz)>0 ? phase : (bgFun.nget(ix,iy,iz));

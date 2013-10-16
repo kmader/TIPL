@@ -84,7 +84,7 @@ public class TImgToImageStack extends ImageStack {
 		else
 			return null;
 	}
-
+	public boolean useAutoRanger=false;
 	/**
 	 * Returns an ImageProcessor for the specified slice, were 1<=n<=nslices.
 	 * Returns null if the stack is empty.
@@ -109,7 +109,7 @@ public class TImgToImageStack extends ImageStack {
 			ip = new ByteProcessor(wid, het, rbpixels, cm);
 			ip.setSnapshotPixels(rbpixels);
 			ip.setMinAndMax(Byte.MIN_VALUE, Byte.MAX_VALUE);
-			(new TImgToImagePlus.autoRanger(ip, curHistWind, bpixels)).start();
+			if (useAutoRanger) (new TImgToImagePlus.autoRanger(ip, curHistWind, bpixels)).start();
 			break;
 		case 1:
 		case 2:
@@ -119,7 +119,7 @@ public class TImgToImageStack extends ImageStack {
 			ip = new ShortProcessor(wid, het, spixels, cm);
 			ip.setSnapshotPixels(spixels);
 			ip.setMinAndMax(Short.MIN_VALUE, Short.MAX_VALUE);
-			(new TImgToImagePlus.autoRanger(ip, curHistWind, spixels)).start();
+			if (useAutoRanger) (new TImgToImagePlus.autoRanger(ip, curHistWind, spixels)).start();
 			break;
 
 		case 3:
@@ -129,7 +129,7 @@ public class TImgToImageStack extends ImageStack {
 			ip = new FloatProcessor(wid, het, fpixels, cm);
 			ip.setSnapshotPixels(fpixels);
 			ip.setMinAndMax(-Double.MAX_VALUE, Double.MAX_VALUE);
-			(new TImgToImagePlus.autoRanger(ip, curHistWind, fpixels)).start();
+			if (useAutoRanger) (new TImgToImagePlus.autoRanger(ip, curHistWind, fpixels)).start();
 			break;
 
 		}

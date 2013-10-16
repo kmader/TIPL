@@ -26,9 +26,11 @@ public class VolumeViewerTests {
 		final TestPosFunctions bgLayers= new TestPosFunctions.LayeredImage(1, 2, 25,0,0);
 		final TestPosFunctions densePart=  new TestPosFunctions.EllipsoidFunction(75, 75, 75,
 				10, 10, 10); 
+		final TestPosFunctions comboFun = new TestPosFunctions.BGPlusPhase(bgLayers, densePart, 3);
 		final TImgRO testImg = TestPosFunctions
-				.wrapIt(150, new TestPosFunctions.BGPlusPhase(bgLayers, densePart, 3) );
+				.wrapIt(150, comboFun);
 		final TImgToImagePlus curImg = TImgToImagePlus.MakeImagePlus(testImg);
+		curImg.setDisplayRange(comboFun.getRange()[0], comboFun.getRange()[1]);
 		curImg.render("");
 		
 		fail("Not yet implemented"); // TODO
