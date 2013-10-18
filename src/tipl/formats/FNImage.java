@@ -149,7 +149,11 @@ public class FNImage extends FImage {
 			};
 		}
 	}
-
+	/**
+	 * Interface for creating the voxel functions (since they need to be created new for every voxel)
+	 * @author mader
+	 *
+	 */
 	public static interface VFNGenerator {
 		public VoxelFunctionN get();
 	}
@@ -184,19 +188,19 @@ public class FNImage extends FImage {
 	 * Fimage simply returns data from the template file whenever any resource
 	 * except slice data is requested
 	 */
-	public FNImage(final TImgRO[] dummyDataset, final int iimageType,
+	public FNImage(final TImgRO[] inputDataset, final int iimageType,
 			final VFNGenerator ivfg) {
 		super(false);
-		templateDataArray = dummyDataset;
+		templateDataArray = inputDataset;
 		templateData = templateDataArray[0];
 		imageType = iimageType;
-		sliceSize = ((boolean[]) templateData.getPolyImage(0, 10)).length; // read
-																			// slice
-																			// 0
-																			// this
-																			// must
-																			// be
-																			// present
+		sliceSize = ((boolean[]) templateData.getPolyImage(0, TImgTools.IMAGETYPE_BOOL)).length; // read
+		// slice
+		// 0
+		// this
+		// must
+		// be
+		// present
 		VFGSetup(iimageType, ivfg, false);
 
 	}
@@ -210,19 +214,19 @@ public class FNImage extends FImage {
 	 *            asks if integers or floats are given as input to the
 	 *            voxelfunction
 	 **/
-	public FNImage(final TImg[] dummyDataset, final int iimageType,
+	public FNImage(final TImg[] inputDataset, final int iimageType,
 			final VFNGenerator ivfg, final boolean useFloatInput) {
 		super(useFloatInput);
-		templateDataArray = dummyDataset;
+		templateDataArray = inputDataset;
 		templateData = templateDataArray[0];
 		imageType = iimageType;
-		sliceSize = ((boolean[]) templateData.getPolyImage(0, 10)).length; // read
-																			// slice
-																			// 0
-																			// this
-																			// must
-																			// be
-																			// present
+		sliceSize = ((boolean[]) templateData.getPolyImage(0, TImgTools.IMAGETYPE_BOOL)).length; // read
+		// slice
+		// 0
+		// this
+		// must
+		// be
+		// present
 		VFGSetup(iimageType, ivfg, useFloatInput);
 	}
 
@@ -239,43 +243,46 @@ public class FNImage extends FImage {
 	public boolean CheckSizes(final TImgRO otherTImg) {
 		return TImgTools.CheckSizes2(this, otherTImg);
 	}
-
-	public boolean[] getBoolArray(final int isliceNumber) {
+	
+	@Override
+	public Object getPolyImage(final int isliceNumber, final int asType) {
 		final VoxelFunctionN[] cvf = VFNSpawn();
-		final boolean[] maskSlice = new boolean[sliceSize];
 		VFNIterate(cvf, isliceNumber);
-		for (int i = 0; i < sliceSize; i++)
-			maskSlice[i] = cvf[i].get() > 0.5;
+		switch (asType) {
+		case TImgTools.IMAGETYPE_BOOL:
+			final boolean[] maskSlice = new boolean[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				maskSlice[i] = cvf[i].get() > 0.5;
 
-		return maskSlice;
-	}
+				return maskSlice;
 
-	public char[] getByteArray(final int isliceNumber) {
-		final VoxelFunctionN[] cvf = VFNSpawn();
-		final char[] byteSlice = new char[sliceSize];
-		VFNIterate(cvf, isliceNumber);
-		for (int i = 0; i < sliceSize; i++)
-			byteSlice[i] = (char) cvf[i].get();
-		return byteSlice;
-	}
+		case TImgTools.IMAGETYPE_CHAR:
+			final char[] byteSlice = new char[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				byteSlice[i] = (char) cvf[i].get();
+			return byteSlice;
+		case TImgTools.IMAGETYPE_SHORT:
+			final short[] sSlice = new short[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				sSlice[i] = (short) cvf[i].get();
+			return sSlice;
+		case TImgTools.IMAGETYPE_INT:
+			final int[] intSlice = new int[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				intSlice[i] = (int) cvf[i].get();
+			return intSlice;
+		case TImgTools.IMAGETYPE_FLOAT:
+			final float[] floatSlice = new float[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				floatSlice[i] = (float) cvf[i].get();
+			return floatSlice;
+		default:
+			throw new IllegalArgumentException("Type must be valid :"
+					+ asType);
 
-	public float[] getFloatArray(final int isliceNumber) {
-		final VoxelFunctionN[] cvf = VFNSpawn();
-		final float[] floatSlice = new float[sliceSize];
-		VFNIterate(cvf, isliceNumber);
-		for (int i = 0; i < sliceSize; i++)
-			floatSlice[i] = (float) cvf[i].get();
-		return floatSlice;
-	}
+		}
+	} 
 
-	public int[] getIntArray(final int isliceNumber) {
-		final VoxelFunctionN[] cvf = VFNSpawn();
-		final int[] intSlice = new int[sliceSize];
-		VFNIterate(cvf, isliceNumber);
-		for (int i = 0; i < sliceSize; i++)
-			intSlice[i] = (int) cvf[i].get();
-		return intSlice;
-	}
 
 	@Override
 	public String getProcLog() {
@@ -345,7 +352,6 @@ public class FNImage extends FImage {
 
 	protected void VFNFloatIterate(final VoxelFunctionN[] cvf,
 			final int isliceNumber) {
-
 		for (final TImgRO cImg : templateDataArray) {
 			final TImg.TImgFull fullCImg = new TImg.TImgFull(cImg);
 			final float[] fSlice = fullCImg.getFloatArray(isliceNumber);
@@ -355,6 +361,12 @@ public class FNImage extends FImage {
 		}
 	}
 
+	/**
+	 * The function reads the given slices from each of the input images and uses it to populate the VoxelFunction array
+	 * with integer values. 
+	 * @param cvf
+	 * @param isliceNumber
+	 */
 	protected void VFNIntIterate(final VoxelFunctionN[] cvf,
 			final int isliceNumber) {
 		for (final TImgRO cImg : templateDataArray) {
@@ -365,17 +377,22 @@ public class FNImage extends FImage {
 			}
 		}
 	}
-
+	/**
+	 * VFN iterate determines based on the class if the float or integer based iterate command makes sense
+	 * @param cvf function array to populate with values
+	 * @param isliceNumber slice number to extract from all images
+	 */
 	protected void VFNIterate(final VoxelFunctionN[] cvf, final int isliceNumber) {
-		if (useFloat)
+		if (useFloat) {
 			VFNFloatIterate(cvf, isliceNumber);
-		else
+		} else {
 			VFNIntIterate(cvf, isliceNumber);
+		}
 	}
 
 	protected VoxelFunctionN[] VFNSpawn() {
 		final VoxelFunctionN[] outVFN = new VoxelFunctionN[sliceSize];
-		for (int i = 0; i < sliceSize; i++)
+		for (int i = 0; i < sliceSize; i++) // create a new function for every point in the slice
 			outVFN[i] = vfg.get();
 		return outVFN;
 	}

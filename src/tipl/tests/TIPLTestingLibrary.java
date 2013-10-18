@@ -12,7 +12,7 @@ import tipl.util.D3int;
  *
  */
 public abstract class TIPLTestingLibrary {
-	
+	public static final boolean verbose=false;
 	public static void checkDimensions(final TImgRO img, final D3int dim,final D3int pos) {
 		checkDim(img,dim);
 		checkDim(img,pos);
@@ -32,7 +32,7 @@ public abstract class TIPLTestingLibrary {
 			final boolean[] slice2) {
 		assertEquals(slice1.length, slice2.length);
 		for (int i = 0; i < slice1.length; i++) {
-			// System.out.println(i+", "+slice1[i]+" : "+slice2[i]);
+			if (verbose) System.out.println(i+", "+slice1[i]+" : "+slice2[i]);
 			assertEquals(slice1[i], slice2[i]);
 		}
 		return true;
@@ -42,7 +42,7 @@ public abstract class TIPLTestingLibrary {
 			final int[] slice2) {
 		assertEquals(slice1.length, slice2.length);
 		for (int i = 0; i < slice1.length; i++) {
-			System.out.println(i + ", " + slice1[i] + " : " + slice2[i]);
+			if (verbose) System.out.println(i + ", " + slice1[i] + " : " + slice2[i]);
 			assertEquals(slice1[i], slice2[i]);
 		}
 		return true;
