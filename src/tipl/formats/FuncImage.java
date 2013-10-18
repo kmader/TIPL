@@ -9,9 +9,9 @@ import tipl.util.TImgTools;
  * FImage is simply an image which is a transform (VoxelFunction) of another
  * image, this is currently used to create Zimages, Rimages and the like
  */
-public abstract class FuncImage implements TImg {
+public abstract class FuncImage implements TImgRO {
 
-	protected TImg templateData;
+	protected TImgRO templateData;
 	protected int imageType;
 
 	public boolean useMask = false;
@@ -53,7 +53,7 @@ public abstract class FuncImage implements TImg {
 	 * Fimage simply returns data from the template file whenever any resource
 	 * except slice data is requested
 	 */
-	public FuncImage(final TImg dummyDataset, final int iimageType) {
+	public FuncImage(final TImgRO dummyDataset, final int iimageType) {
 		templateData = dummyDataset;
 
 		imageType = iimageType;
@@ -69,7 +69,7 @@ public abstract class FuncImage implements TImg {
 	 *            asks if integers or floats are given as input to the
 	 *            voxelfunction
 	 **/
-	public FuncImage(final TImg dummyDataset, final int iimageType,
+	public FuncImage(final TImgRO dummyDataset, final int iimageType,
 			final boolean useFloatInput) {
 		templateData = dummyDataset;
 		imageType = iimageType;
@@ -81,7 +81,7 @@ public abstract class FuncImage implements TImg {
 		return templateData.getProcLog() + inData;
 	}
 
-	public boolean CheckSizes(final TImg otherTImg) {
+	public boolean CheckSizes(final TImgRO otherTImg) {
 		return TImgTools.CheckSizes2(this, otherTImg);
 	}
 
@@ -257,58 +257,6 @@ public abstract class FuncImage implements TImg {
 	 */
 	public abstract double getVFvalue(int cIndex, int sliceNumber, double v);
 
-	@Override
-	public TImg inheritedAim(final boolean[] imgArray, final D3int dim,
-			final D3int offset) {
-		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
-				offset);
-	}
-
-	@Override
-	public TImg inheritedAim(final char[] imgArray, final D3int dim,
-			final D3int offset) {
-		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
-				offset);
-	}
-
-	@Override
-	public TImg inheritedAim(final float[] imgArray, final D3int dim,
-			final D3int offset) {
-		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
-				offset);
-	}
-
-	@Override
-	public TImg inheritedAim(final ImageStack iStack) {
-		return TImgTools.makeTImgExportable(this).inheritedAim(iStack);
-	}
-
-	@Override
-	public TImg inheritedAim(final int[] imgArray, final D3int dim,
-			final D3int offset) {
-		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
-				offset);
-	}
-
-	@Override
-	public TImg inheritedAim(final short[] imgArray, final D3int dim,
-			final D3int offset) {
-		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
-				offset);
-	}
-
-	// Temporary solution, here it would probably even be better to use
-	// templateAim.inherited but that can be figured out later
-	@Override
-	public TImg inheritedAim(final TImgRO inAim) {
-		return TImgTools.makeTImgExportable(this).inheritedAim(inAim);
-	}
-
-	@Override
-	public boolean InitializeImage(final D3int iPos, final D3int iDim,
-			final D3int iOff, final D3float iSize, final int iType) {
-		return false;
-	}
 
 	@Override
 	public int isFast() {
@@ -330,65 +278,24 @@ public abstract class FuncImage implements TImg {
 		return false;
 	}
 
-	@Override
-	public void setCompression(final boolean inData) {
-	}
-
-	/** The size of the image */
-	@Override
-	public void setDim(final D3int inData) {
-	}
-
-	@Override
-	public void setElSize(final D3float inData) {
-	}
-
 	public boolean setFloatArray(final int iSlice, final float[] junk) {
 		System.out.println("NOT IMPLEMENTED FOR :" + this);
 		return false;
 	}
 
-	/**
-	 * The aim type of the image (0=char, 1=short, 2=int, 3=float, 10=bool, -1
-	 * same as input)
-	 */
-	@Override
-	public void setImageType(final int inData) {
-	}
 
 	public boolean setIntArray(final int iSlice, final int[] junk) {
 		System.out.println("NOT IMPLEMENTED FOR :" + this);
 		return false;
 	}
 
-	/**
-	 * The size of the border around the image which does not contain valid
-	 * voxel data
-	 */
-	@Override
-	public void setOffset(final D3int inData) {
-	}
-
-	/**
-	 * The position of the bottom leftmost voxel in the image in real space,
-	 * only needed for ROIs
-	 */
-	@Override
-	public void setPos(final D3int inData) {
-	}
 
 	public boolean setShortArray(final int iSlice, final short[] junk) {
 		System.out.println("NOT IMPLEMENTED FOR :" + this);
 		return false;
 	}
 
-	@Override
-	public void setShortScaleFactor(final float ssf) {
-	}
 
-	@Override
-	public void setSigned(final boolean inData) {
-	}
 
 	@Override
 	public void WriteAim(final String path) {

@@ -8,10 +8,10 @@ import tipl.util.TImgTools;
  */
 public class FImage extends FuncImage {
 	public static class MaskablePFImage extends FImage {
-		protected TImg templateData;
+		protected TImgRO templateData;
 		protected int imageType;
 
-		public MaskablePFImage(final TImg dummyDataset, final int iimageType,
+		public MaskablePFImage(final TImgRO dummyDataset, final int iimageType,
 				final PureFImage.PositionFunction ipf) {
 
 			super(dummyDataset, iimageType, new FImage.VoxelFunction() {
@@ -38,7 +38,7 @@ public class FImage extends FuncImage {
 			}, true);
 		}
 
-		public MaskablePFImage(final TImg dummyDataset,
+		public MaskablePFImage(final TImgRO dummyDataset,
 				final PureFImage iPFImage) {
 
 			super(dummyDataset, iPFImage.imageType, new FImage.VoxelFunction() {
@@ -93,7 +93,7 @@ public class FImage extends FuncImage {
 	 * Fimage simply returns data from the template file whenever any resource
 	 * except slice data is requested
 	 */
-	public FImage(final TImg dummyDataset, final int iimageType,
+	public FImage(final TImgRO dummyDataset, final int iimageType,
 			final VoxelFunction ivf) {
 		super(dummyDataset, iimageType, false);
 		vf = ivf;
@@ -109,7 +109,7 @@ public class FImage extends FuncImage {
 	 *            asks if integers or floats are given as input to the
 	 *            voxelfunction
 	 **/
-	public FImage(final TImg dummyDataset, final int iimageType,
+	public FImage(final TImgRO dummyDataset, final int iimageType,
 			final VoxelFunction ivf, final boolean useFloatInput) {
 		super(dummyDataset, iimageType, useFloatInput);
 		vf = ivf;

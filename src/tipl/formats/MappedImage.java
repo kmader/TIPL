@@ -23,7 +23,7 @@ public class MappedImage extends FuncImage {
 	 * the given range
 	 */
 	public static class FloatThreshold extends MappedImage {
-		protected TImg templateData;
+		protected TImgRO templateData;
 		protected int imageType;
 		final float mnVal, mxVal;
 
@@ -31,7 +31,7 @@ public class MappedImage extends FuncImage {
 		 * FloatThreshold simply returns data from the template file whenever
 		 * any resource except slice data is requested
 		 */
-		public FloatThreshold(final TImg dummyDataset, final int iimageType,
+		public FloatThreshold(final TImgRO dummyDataset, final int iimageType,
 				final float threshValA, final float threshValB) {
 
 			super(dummyDataset, iimageType, new StationaryVoxelFunction() {
@@ -72,7 +72,7 @@ public class MappedImage extends FuncImage {
 
 	/** Simple threshold is simply an image where */
 	public static class IntThreshold extends MappedImage {
-		protected TImg templateData;
+		protected TImgRO templateData;
 		protected int imageType;
 		final int tval;
 
@@ -80,7 +80,7 @@ public class MappedImage extends FuncImage {
 		 * Zimage simply returns data from the template file whenever any
 		 * resource except slice data is requested
 		 */
-		public IntThreshold(final TImg dummyDataset, final int iimageType,
+		public IntThreshold(final TImgRO dummyDataset, final int iimageType,
 				final int threshVal) {
 
 			super(dummyDataset, iimageType, new StationaryVoxelFunction() {
@@ -117,10 +117,10 @@ public class MappedImage extends FuncImage {
 
 	/** Simple mapping of input values to output values */
 	public static class SimpleMapImage extends MappedImage {
-		protected TImg templateData;
+		protected TImgRO templateData;
 		protected int imageType;
 
-		public SimpleMapImage(final TImg dummyDataset, final int iimageType,
+		public SimpleMapImage(final TImgRO dummyDataset, final int iimageType,
 				final String arrayBlob, final boolean passThrough,
 				final double defValue) {
 			super(dummyDataset, iimageType, StringToSVF(arrayBlob, passThrough,
@@ -289,7 +289,7 @@ public class MappedImage extends FuncImage {
 
 			if (outputFile.length() > 0) { // Write output File
 				inputAim.getIntAim();
-				final TImg mappedAim = new SimpleMapImage(inputAim, 2, mapping,
+				final TImgRO mappedAim = new SimpleMapImage(inputAim, 2, mapping,
 						passthrough, defValue);
 				System.out.println("Writing " + outputFile + " ...");
 				TImgTools.WriteTImg(mappedAim, outputFile);
@@ -357,7 +357,7 @@ public class MappedImage extends FuncImage {
 	 * @param iimageType
 	 * @param ivf
 	 */
-	public MappedImage(final TImg dummyDataset, final int iimageType,
+	public MappedImage(final TImgRO dummyDataset, final int iimageType,
 			final StationaryVoxelFunction isvf) {
 		super(dummyDataset, iimageType);
 		svf = isvf;
@@ -369,7 +369,7 @@ public class MappedImage extends FuncImage {
 	 * @param ivf
 	 * @param useFloatInput
 	 */
-	public MappedImage(final TImg dummyDataset, final int iimageType,
+	public MappedImage(final TImgRO dummyDataset, final int iimageType,
 			final StationaryVoxelFunction isvf, final boolean useFloatInput) {
 		super(dummyDataset, iimageType, useFloatInput);
 		svf = isvf;

@@ -23,8 +23,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import tipl.util.HZClient;
+
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
+import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.HazelcastInstanceAware;
 import com.hazelcast.core.IMap;
@@ -37,7 +40,7 @@ import com.hazelcast.core.PartitionAware;
 public class HazelcastTests {
 	protected ClientConfig config;
 	protected HazelcastInstance hazelcastClient;
-	public static final int sliceCount=1000;
+	public static final int sliceCount=10000;
 	public static final int sliceSize=5000;
 	public static final int sliceLoops=1;
 	/**
@@ -46,9 +49,11 @@ public class HazelcastTests {
 	@Before
 	public void setUp() throws Exception {
 		config = new ClientConfig();
+		//HZClient.addMerlin(config);
 		//config.addAddress("129.129.158.222:5701");
+		
 		//config.setExecutorPoolSize(1000);
-		hazelcastClient = HazelcastClient.newHazelcastClient(config);
+		hazelcastClient = HZClient.createCluster(HZClient.getMerlin());//HazelcastClient.newHazelcastClient(config);
 	}
 
 	/**
@@ -56,9 +61,9 @@ public class HazelcastTests {
 	 */
 	@After
 	public void tearDown() throws Exception {
-		hazelcastClient.shutdown();
+		Hazelcast.shutdownAll();
 	}
-
+	
 
 
 	public static long sumArray(HazelcastInstance client,String arrayName) {
@@ -137,7 +142,18 @@ public class HazelcastTests {
 	protected static final String imName="testSimpleImage";
 	
 	@Test
+	public void testHazelMapOperationParallelDumb() {
+		hazelMapOperation(true,true);
+	}
+	@Test
 	public void testHazelMapOperationParallel() {
+		hazelMapOperation(true,false);
+	}
+	@Test
+	public void testHazelMapOperationSerial() {
+		hazelMapOperation(false,false);
+	}
+	public void hazelMapOperation(boolean isParallel, boolean isDumb) {
 		long ExpectedSum=sliceSize;
 		ExpectedSum*=sliceCount-1;
 		ExpectedSum*=sliceCount;
@@ -145,25 +161,11 @@ public class HazelcastTests {
 		System.out.println(config.getExecutorPoolSize()+" is the pool size");
 		Map<Long,int[]> testImg=createEmptyHazelImage(hazelcastClient,imName);
 		initializeMap(testImg,sliceCount,sliceSize);
-		try {assertEquals(testSimpleHazelParallel(imName,true),ExpectedSum);}
+		try {assertEquals(testSimpleHazelParallel(imName,isParallel,isDumb),ExpectedSum);}
 		catch (Exception e) {
 			System.out.println("Parallel Execution was Interruped!!!!");
 		}
 	}
-	@Test
-	public void testHazelMapOperationSerial() {
-		long ExpectedSum=sliceSize;
-		ExpectedSum*=sliceCount-1;
-		ExpectedSum*=sliceCount;
-		ExpectedSum/=2;
-		Map<Long,int[]> testImg=createEmptyHazelImage(hazelcastClient,imName);
-		initializeMap(testImg,sliceCount,sliceSize);
-		SliceOperation sOp=new SliceSum(imName, new Long(0));
-		long oValue=0;
-		for (Long curSlice : testImg.keySet()) oValue+=sOp.processSlice(testImg.get(curSlice));
-		assertEquals(oValue,ExpectedSum);
-	}
-	
 	@Test
 	public void testMakeImageSerial() {
 		final String testName="testImg";
@@ -180,7 +182,7 @@ public class HazelcastTests {
 			System.out.println("Parallel Execution was Interruped for Making Image!!!!");
 		}
 		
-		try {assertEquals(testSimpleHazelParallel(testName,false),ExpectedSum);}
+		try {assertEquals(testSimpleHazelParallel(testName,false,false),ExpectedSum);}
 		catch (Exception e) {
 			System.out.println("Parallel Execution was Interruped!!!!");
 		}
@@ -208,16 +210,22 @@ public class HazelcastTests {
 			System.out.println("Parallel Execution was Interruped for Making Image!!!!");
 		}
 		
-		try {assertEquals(testSimpleHazelParallel(testName,true),ExpectedSum);}
+		try {assertEquals(testSimpleHazelParallel(testName,true,false),ExpectedSum);}
 		catch (Exception e) {
 			System.out.println("Parallel Execution was Interruped!!!!");
 		}
 	}
 	
-	public long testSimpleHazelParallel(String objName, boolean isParallel) throws Exception {
+	public long testSimpleHazelParallel(String objName, boolean isParallel,boolean isDumb) throws Exception {
 		ExecutorService es = hazelcastClient.getExecutorService(execName);
 		Set<Callable<Long>> tasks=new HashSet<Callable<Long>>();
-		for (int i=0;i<sliceCount;i++) tasks.add(new SliceSum(objName, new Long(i)));
+		for (int i=0;i<sliceCount;i++) {
+			if (isDumb) {
+				tasks.add(new SliceSumDumb(objName, new Long(i)));
+			} else {
+				tasks.add(new SliceSum(objName, new Long(i)));
+			}
+		}
 		List<Future<Long>> output;
 		if (isParallel) {
 			output=es.invokeAll(tasks);
@@ -226,7 +234,6 @@ public class HazelcastTests {
 			output=new LinkedList<Future<Long>>();
 			for(Callable<Long> ctask : tasks) {
 				if (ctask instanceof HazelcastInstanceAware) {
-					System.out.println("Hazelcast Aware!"+ctask);
 					((HazelcastInstanceAware) ctask).setHazelcastInstance(hazelcastClient);
 				}
 				output.add(new Predestiny<Long>(ctask.call()));
@@ -251,6 +258,8 @@ public class HazelcastTests {
 		}
 		public Long call() {
 			IMap<Long, int[]> curImage = hz.getMap(objName);
+			System.out.println(hz.getCluster().getLocalMember()+" makes image:"+objName+" slice #"+sliceId);
+			
 			int[] sliceData = getSlice(sliceId);
 			curImage.put(sliceId,sliceData);
 			return null;
@@ -324,6 +333,7 @@ public static int[] randomSlice(int sliceSize) {
 		public Long call() {
 			IMap<Long, int[]> curImage = hz.getMap(objName);
 			int[] sliceData = curImage. get(sliceId);
+			System.out.println(hz.getCluster().getLocalMember()+" processes image:"+objName+" slice #"+sliceId);
 			return processSlice(sliceData);
 		}
 		public abstract Long processSlice(int[] sliceData);
@@ -345,16 +355,35 @@ public static int[] randomSlice(int sliceSize) {
 		public SliceSum(String inName, long inSliceId) {
 			super(inName, inSliceId);
 		}
-
+		/** really inefficient adding routine **/
 		@Override
 		public Long processSlice(int[] sliceData) {
+			
 			long totVal=0;
-			
+			for(int i=0;i<10000;i++) {
+			totVal=0;
 			for (int cVal : sliceData) totVal+=cVal;
-			
+			}
 			return totVal;
 		}
 
+	}
+	/** 
+	 * slicesum that sends invalid partition keys making the partitionaware functionality useless
+	 * @author mader
+	 *
+	 */
+	public static class SliceSumDumb extends SliceSum {
+		
+		public SliceSumDumb(String inName, long inSliceId) {
+			super(inName, inSliceId);
+			
+		}
+		@Override
+		public Long getPartitionKey() {
+			return new Long(0);
+		}
+		
 	}
 	/** a very boring future which has been defined in the constructor, allows compatibility with other classes
 	 * 

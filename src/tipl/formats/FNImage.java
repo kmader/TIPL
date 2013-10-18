@@ -175,7 +175,7 @@ public class FNImage extends FImage {
 		public String name();
 	}
 
-	protected TImg[] templateDataArray;
+	protected TImgRO[] templateDataArray;
 	protected VFNGenerator vfg;
 	protected VoxelFunctionN vfn;
 	protected final int sliceSize;
@@ -184,7 +184,7 @@ public class FNImage extends FImage {
 	 * Fimage simply returns data from the template file whenever any resource
 	 * except slice data is requested
 	 */
-	public FNImage(final TImg[] dummyDataset, final int iimageType,
+	public FNImage(final TImgRO[] dummyDataset, final int iimageType,
 			final VFNGenerator ivfg) {
 		super(false);
 		templateDataArray = dummyDataset;
@@ -229,14 +229,14 @@ public class FNImage extends FImage {
 	@Override
 	public String appendProcLog(final String inData) {
 		final String oName = templateData.getProcLog() + inData;
-		for (final TImg cImg : templateDataArray) {
+		for (final TImgRO cImg : templateDataArray) {
 			cImg.appendProcLog(inData);
 		}
 		return oName;
 	}
 
 	@Override
-	public boolean CheckSizes(final TImg otherTImg) {
+	public boolean CheckSizes(final TImgRO otherTImg) {
 		return TImgTools.CheckSizes2(this, otherTImg);
 	}
 
@@ -286,7 +286,7 @@ public class FNImage extends FImage {
 	@Override
 	public String getSampleName() {
 		String oName = vf.name() + " @ (";
-		for (final TImg cImg : templateDataArray) {
+		for (final TImgRO cImg : templateDataArray) {
 			oName += cImg.getSampleName() + ", ";
 		}
 		return oName + ")";
@@ -346,7 +346,7 @@ public class FNImage extends FImage {
 	protected void VFNFloatIterate(final VoxelFunctionN[] cvf,
 			final int isliceNumber) {
 
-		for (final TImg cImg : templateDataArray) {
+		for (final TImgRO cImg : templateDataArray) {
 			final TImg.TImgFull fullCImg = new TImg.TImgFull(cImg);
 			final float[] fSlice = fullCImg.getFloatArray(isliceNumber);
 			for (int i = 0; i < sliceSize; i++) {
@@ -357,7 +357,7 @@ public class FNImage extends FImage {
 
 	protected void VFNIntIterate(final VoxelFunctionN[] cvf,
 			final int isliceNumber) {
-		for (final TImg cImg : templateDataArray) {
+		for (final TImgRO cImg : templateDataArray) {
 			final TImg.TImgFull fullCImg = new TImg.TImgFull(cImg);
 			final int[] tSlice = fullCImg.getIntArray(isliceNumber);
 			for (int i = 0; i < sliceSize; i++) {

@@ -13,7 +13,7 @@ import tipl.util.TImgTools;
  * 
  * <pre> v1
  * */
-public class PureFImage implements TImg {
+public class PureFImage implements TImgRO,TImgTools.ChangesDimensions {
 	/**
 	 * RImageCyl is simply an image where the intensity values = the radial
 	 * distance in cylindrical coordinates
@@ -22,7 +22,7 @@ public class PureFImage implements TImg {
 		int x, y;
 		double minr = 0, maxr = 4000;
 
-		public CylR(final TImg dummyDataset) {
+		public CylR(final TImgRO dummyDataset) {
 			final Double[] sPos = TImgTools
 					.getXYZVecFromVec(dummyDataset, 0, 0);
 			final Double[] fPos = TImgTools.getXYZVecFromVec(dummyDataset,
@@ -57,7 +57,7 @@ public class PureFImage implements TImg {
 	public static class CylTheta implements PureFImage.PositionFunction {
 		int x, y;
 
-		public CylTheta(final TImg dummyDataset) {
+		public CylTheta(final TImgRO dummyDataset) {
 			final Double[] sPos = TImgTools
 					.getXYZVecFromVec(dummyDataset, 0, 0);
 			final Double[] fPos = TImgTools.getXYZVecFromVec(dummyDataset,
@@ -86,11 +86,11 @@ public class PureFImage implements TImg {
 	}
 
 	public static class PhiImageSph extends PureFImage {
-		protected TImg templateData;
+		protected TImgRO templateData;
 		protected int imageType;
 
 		/** ThetaImageCyl simply returns the theta position in the current slice */
-		public PhiImageSph(final TImg dummyDataset, final int iimageType) {
+		public PhiImageSph(final TImgRO dummyDataset, final int iimageType) {
 			super(dummyDataset, iimageType, new SphPhi(dummyDataset));
 		}
 	}
@@ -112,21 +112,21 @@ public class PureFImage implements TImg {
 	 * distance
 	 */
 	public static class RImage extends PureFImage {
-		protected TImg templateData;
+		protected TImgRO templateData;
 		protected int imageType;
 
 		/**
 		 * Rimage simply returns the r position based on the estimated center of
 		 * volume
 		 */
-		public RImage(final TImg dummyDataset, final int iimageType) {
+		public RImage(final TImgRO dummyDataset, final int iimageType) {
 			// templateData=dummyDataset;
 			// imageType=iimageType;
 			super(dummyDataset, iimageType, new SphR(dummyDataset));
 		}
 
 		/** use a fixed center of volume **/
-		public RImage(final TImg dummyDataset, final int iimageType,
+		public RImage(final TImgRO dummyDataset, final int iimageType,
 				final int x, final int y, final int z) {
 			// templateData=dummyDataset;
 			// imageType=iimageType;
@@ -135,11 +135,11 @@ public class PureFImage implements TImg {
 	}
 
 	public static class RImageCyl extends PureFImage {
-		protected TImg templateData;
+		protected TImgRO templateData;
 		protected int imageType;
 
 		/** Rimage simply returns the r position in the current slice */
-		public RImageCyl(final TImg dummyDataset, final int iimageType) {
+		public RImageCyl(final TImgRO dummyDataset, final int iimageType) {
 			super(dummyDataset, iimageType, new CylR(dummyDataset));
 		}
 	}
@@ -151,7 +151,7 @@ public class PureFImage implements TImg {
 	public static class SphPhi implements PureFImage.PositionFunction {
 		int x, y, z;
 
-		public SphPhi(final TImg dummyDataset) {
+		public SphPhi(final TImgRO dummyDataset) {
 			final Double[] sPos = TImgTools
 					.getXYZVecFromVec(dummyDataset, 0, 0);
 			final Double[] fPos = TImgTools.getXYZVecFromVec(dummyDataset,
@@ -199,11 +199,11 @@ public class PureFImage implements TImg {
 		}
 
 		/** estimate the center of volume based on the dimensions of the dataset **/
-		public SphR(final TImg dummyDataset) {
+		public SphR(final TImgRO dummyDataset) {
 			estCOV(dummyDataset);
 		}
 
-		protected void estCOV(final TImg dummyDataset) {
+		protected void estCOV(final TImgRO dummyDataset) {
 			final Double[] sPos = TImgTools
 					.getXYZVecFromVec(dummyDataset, 0, 0);
 			final Double[] fPos = TImgTools.getXYZVecFromVec(dummyDataset,
@@ -236,11 +236,11 @@ public class PureFImage implements TImg {
 	}
 
 	public static class ThetaImageCyl extends PureFImage {
-		protected TImg templateData;
+		protected TImgRO templateData;
 		protected int imageType;
 
 		/** ThetaImageCyl simply returns the theta position in the current slice */
-		public ThetaImageCyl(final TImg dummyDataset, final int iimageType) {
+		public ThetaImageCyl(final TImgRO dummyDataset, final int iimageType) {
 			super(dummyDataset, iimageType, new CylTheta(dummyDataset));
 		}
 	}
@@ -249,7 +249,7 @@ public class PureFImage implements TImg {
 	public static class ZFunc implements PureFImage.PositionFunction {
 		Double[] sPos, fPos;
 
-		public ZFunc(final TImg dummyDataset) {
+		public ZFunc(final TImgRO dummyDataset) {
 			sPos = TImgTools.getXYZVecFromVec(dummyDataset, 0, 0);
 			fPos = TImgTools.getXYZVecFromVec(dummyDataset,
 					dummyDataset.getDim().x * dummyDataset.getDim().y - 1,
@@ -275,14 +275,14 @@ public class PureFImage implements TImg {
 
 	/** ZImage is simply an image where the intensity values = the slice number */
 	public static class ZImage extends PureFImage {
-		protected TImg templateData;
+		protected TImgRO templateData;
 		protected int imageType;
 
 		/**
 		 * Zimage simply returns data from the template file whenever any
 		 * resource except slice data is requested
 		 */
-		public ZImage(final TImg dummyDataset, final int iimageType) {
+		public ZImage(final TImgRO dummyDataset, final int iimageType) {
 			// templateData=dummyDataset;
 			// imageType=iimageType;
 			super(dummyDataset, iimageType, new ZFunc(dummyDataset));
@@ -297,7 +297,6 @@ public class PureFImage implements TImg {
 	protected D3float mySize;
 	protected String procLog = "";
 
-	protected int sliceLength;
 	public static final double[] intRange = { 0, 2 ^ 31 - 1 };
 	public static final double[] byteRange = { 0, 2 ^ 7 - 1 };
 	public static final double[] shortRange = { 0, 2 ^ 15 - 1 };
@@ -326,7 +325,7 @@ public class PureFImage implements TImg {
 	 * allows for a purefimage to have a short scaling factor (mainly used for
 	 * testing but can have other purposes)
 	 */
-	public final float shortScaleFactor;
+	protected float shortScaleFactor;
 
 	/**
 	 * Creates a PureFImage tool with the given settings
@@ -381,7 +380,7 @@ public class PureFImage implements TImg {
 		return false;
 	}
 
-	public boolean CheckSizes(final TImg otherTImg) {
+	public boolean CheckSizes(final TImgRO otherTImg) {
 		return TImgTools.CheckSizes2(otherTImg, this);
 	}
 
@@ -426,6 +425,7 @@ public class PureFImage implements TImg {
 
 	@Override
 	public Object getPolyImage(final int isliceNumber, final int asType) {
+		final int sliceLength=getDim().x*getDim().y;
 		switch (asType) {
 		case 10:
 
@@ -505,57 +505,6 @@ public class PureFImage implements TImg {
 		return TImgTools.getXYZVecFromVec(myPos, myDim, cIndex, sliceNumber);
 	}
 
-	@Override
-	public TImg inheritedAim(final boolean[] imgArray, final D3int dim,
-			final D3int offset) {
-		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
-				offset);
-	}
-
-	@Override
-	public TImg inheritedAim(final char[] imgArray, final D3int dim,
-			final D3int offset) {
-		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
-				offset);
-	}
-
-	@Override
-	public TImg inheritedAim(final float[] imgArray, final D3int dim,
-			final D3int offset) {
-		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
-				offset);
-	}
-
-	@Override
-	public TImg inheritedAim(final ImageStack iStack) {
-		return TImgTools.makeTImgExportable(this).inheritedAim(iStack);
-	}
-
-	@Override
-	public TImg inheritedAim(final int[] imgArray, final D3int dim,
-			final D3int offset) {
-		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
-				offset);
-	}
-
-	@Override
-	public TImg inheritedAim(final short[] imgArray, final D3int dim,
-			final D3int offset) {
-		return TImgTools.makeTImgExportable(this).inheritedAim(imgArray, dim,
-				offset);
-	}
-
-	// Temporary solution,
-	@Override
-	public TImg inheritedAim(final TImgRO inAim) {
-		return TImgTools.makeTImgExportable(this).inheritedAim(inAim);
-	}
-
-	@Override
-	public boolean InitializeImage(final D3int iPos, final D3int iDim,
-			final D3int iOff, final D3float iSize, final int iType) {
-		return false;
-	}
 
 	/**
 	 * a functional image is faster than disk-based encoded but slower than in
@@ -574,81 +523,8 @@ public class PureFImage implements TImg {
 	public float readShortScaleFactor() {
 		return 1;
 	}
+	
 
-	public boolean setBoolArray(final int iSlice, final boolean[] junk) {
-		System.out.println("NOT IMPLEMENTED FOR :" + this);
-		return false;
-	}
-
-	public boolean setByteArray(final int iSlice, final char[] junk) {
-		System.out.println("NOT IMPLEMENTED FOR :" + this);
-		return false;
-	}
-
-	@Override
-	public void setCompression(final boolean inData) {
-	}
-
-	/** The size of the image */
-	@Override
-	public void setDim(final D3int inData) {
-		myDim = inData;
-		sliceLength = myDim.x * myDim.y;
-	}
-
-	@Override
-	public void setElSize(final D3float inData) {
-		mySize = inData;
-	}
-
-	public boolean setFloatArray(final int iSlice, final float[] junk) {
-		System.out.println("NOT IMPLEMENTED FOR :" + this);
-		return false;
-	}
-
-	/**
-	 * The aim type of the image (0=char, 1=short, 2=int, 3=float, 10=bool, -1
-	 * same as input)
-	 */
-	@Override
-	public void setImageType(final int inData) {
-	}
-
-	public boolean setIntArray(final int iSlice, final int[] junk) {
-		System.out.println("NOT IMPLEMENTED FOR :" + this);
-		return false;
-	}
-
-	/**
-	 * The size of the border around the image which does not contain valid
-	 * voxel data
-	 */
-	@Override
-	public void setOffset(final D3int inData) {
-		myOffset = inData;
-	}
-
-	/**
-	 * The position of the bottom leftmost voxel in the image in real space,
-	 * only needed for ROIs
-	 */
-	@Override
-	public void setPos(final D3int inData) {
-		myPos = inData;
-	}
-
-	public boolean setShortArray(final int iSlice, final short[] junk) {
-		System.out.println("NOT IMPLEMENTED FOR :" + this);
-		return false;
-	}
-
-	@Override
-	public void setShortScaleFactor(final float ssf) {
-	}
-
-	@Override
-	public void setSigned(final boolean inData) {
-	}
 
 	@Override
 	public void WriteAim(final String path) {
@@ -659,6 +535,33 @@ public class PureFImage implements TImg {
 	public void WriteAim(final String outpath, final int outType,
 			final float scaleVal, final boolean IisSigned) {
 		TImgTools.WriteTImg(this, outpath, outType, scaleVal, IisSigned);
+	}
+
+	@Override
+	public void setDim(D3int inData) {
+		myDim=inData;
+	}
+
+	@Override
+	public void setElSize(D3float inData) {
+		mySize=inData;
+	}
+
+	@Override
+	public void setOffset(D3int inData) {
+		myOffset=inData;
+	}
+
+	@Override
+	public void setPos(D3int inData) {
+		myPos=inData;
+		
+	}
+
+	@Override
+	public void setShortScaleFactor(float ssf) {
+		shortScaleFactor=ssf;
+		
 	}
 
 }

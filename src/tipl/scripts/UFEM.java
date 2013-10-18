@@ -129,7 +129,7 @@ public class UFEM implements Runnable {
 				}
 
 			};
-			return new PureFImage(maskAim, 10, whitePF);
+			return TImgTools.WrapTImgRO(new PureFImage(maskAim, 10, whitePF));
 		}
 		if (justCircle) {
 			final EasyContour myContour = new EasyContour(maskAim);

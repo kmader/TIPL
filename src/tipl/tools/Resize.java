@@ -958,24 +958,26 @@ public class Resize extends BaseTIPLPluginMult {
 
 					switch (inImageType) { // Only way to be sure the data is
 											// actually the right type
-					case 10: // Boolean
+					case TImgTools.IMAGETYPE_BOOL: // Boolean
 						aMask = fullInputAim.getBoolArray(z);
 						break;
-					case 0: // Byte
+					case TImgTools.IMAGETYPE_CHAR: // Byte
 						aByte = fullInputAim.getByteArray(z);
 						break;
-					case 1: // Short
+					case TImgTools.IMAGETYPE_SHORT: // Short
 						aShort = fullInputAim.getShortArray(z);
 						break;
-					case 2: // Integer
+					case TImgTools.IMAGETYPE_INT: // Integer
 						aInt = fullInputAim.getIntArray(z);
 						break;
-					case 3: // Float
+					case TImgTools.IMAGETYPE_FLOAT: // Float
 						aFloat = fullInputAim.getFloatArray(z);
 						break;
+					default: // No type?
+						throw new IllegalArgumentException("Type is invalid!"+inImageType);
 					}
 
-				}
+				} else throw new IllegalArgumentException("Z position is not valid"+z+" should be ["+lowz+","+uppz+")");
 				for (int y = itLowy; y < itUppy; y++) {
 					final boolean yvalid = ((y >= lowy) & (y < uppy));
 					final int iz = z - itLowz;
@@ -984,26 +986,26 @@ public class Resize extends BaseTIPLPluginMult {
 
 					for (int x = itLowx; x < itUppx; x++, off++) {
 						final boolean xvalid = ((x >= lowx) & (x < uppx));
+						
 						if ((xvalid) & (yvalid) & (zvalid)) {
 
 							final int sOff2 = (y) * dim.x + x; // Offset in the
-																// current slice
 							switch (inImageType) { // Only way to be sure the
 													// data is actually the
 													// right type
-							case 10: // Boolean
+							case TImgTools.IMAGETYPE_BOOL: // Boolean
 								outAimMask[off] = aMask[sOff2];
 								break;
-							case 0: // Byte
+							case TImgTools.IMAGETYPE_CHAR: // Byte
 								outAimByte[off] = aByte[sOff2];
 								break;
-							case 1: // Short
+							case TImgTools.IMAGETYPE_SHORT: // Short
 								outAimShort[off] = aShort[sOff2];
 								break;
-							case 2: // Integer
+							case TImgTools.IMAGETYPE_INT: // Integer
 								outAimInt[off] = aInt[sOff2];
 								break;
-							case 3: // Float
+							case TImgTools.IMAGETYPE_FLOAT: // Float
 								outAimFloat[off] = aFloat[sOff2];
 								break;
 							}
@@ -1011,19 +1013,19 @@ public class Resize extends BaseTIPLPluginMult {
 							switch (inImageType) { // Only way to be sure the
 													// data is actually the
 													// right type
-							case 10: // Boolean
+							case TImgTools.IMAGETYPE_BOOL: // Boolean
 								outAimMask[off] = padOutMask;
 								break;
-							case 0: // Byte
+							case TImgTools.IMAGETYPE_CHAR: // Byte
 								outAimByte[off] = padOutByte;
 								break;
-							case 1: // Short
+							case TImgTools.IMAGETYPE_SHORT: // Short
 								outAimShort[off] = padOutShort;
 								break;
-							case 2: // Integer
+							case TImgTools.IMAGETYPE_INT: // Integer
 								outAimInt[off] = padOutInt;
 								break;
-							case 3: // Float
+							case TImgTools.IMAGETYPE_FLOAT: // Float
 								outAimFloat[off] = padOutFloat;
 								break;
 							}
