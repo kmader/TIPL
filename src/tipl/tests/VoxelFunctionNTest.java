@@ -3,12 +3,11 @@
  */
 package tipl.tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
 import tipl.formats.FNImage;
-import tipl.formats.FNImage.VoxelFunctionN;
 
 /**
  * Test the voxel function itself, it makes testing the later steps much much easier

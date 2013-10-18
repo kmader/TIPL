@@ -3,15 +3,11 @@
  */
 package tipl.tests;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
 import tipl.formats.FNImage;
-import tipl.formats.TImgRO;
-import tipl.formats.FNImage.VFNGenerator;
 import tipl.formats.FNImage.VoxelFunctionN;
-import tipl.util.TImgTools;
+import tipl.formats.TImgRO;
 
 /**
  * Test the FNImage package which is used to combine multiple images together in an efficient manner

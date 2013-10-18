@@ -69,7 +69,6 @@ public class ThresholdBlock extends BaseTIPLBlock {
 		for (int i = 0; i < inImg.length; i++) {
 			scdat[i] = inImg[i] > threshVal;
 		}
-		inImg = null;
 		rawImgPlus = null;
 		final TImg threshImg = rawImg.inheritedAim(scdat, rawImg.getDim(),
 				rawImg.getOffset());
@@ -77,8 +76,8 @@ public class ThresholdBlock extends BaseTIPLBlock {
 				+ threshVal);
 		TImgTools.RemoveTImgFromCache(getFileParameter("gfilt"));
 		if (getFileParameter("notthreshold").length() > 0) {
-			final boolean[] ncdat = new boolean[inImg.length];
-			for (int i = 0; i < inImg.length; i++) {
+			final boolean[] ncdat = new boolean[scdat.length];
+			for (int i = 0; i < scdat.length; i++) {
 				ncdat[i] = inImg[i] < threshVal;
 			}
 			final TImg notThreshImg = rawImg.inheritedAim(ncdat,

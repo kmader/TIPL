@@ -1,6 +1,5 @@
 package tipl.formats;
 
-import ij.ImageStack;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TImgTools;

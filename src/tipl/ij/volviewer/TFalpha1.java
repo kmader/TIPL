@@ -14,7 +14,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 
-
 import javax.swing.JPanel;
 
 public class TFalpha1 extends JPanel implements MouseListener, MouseMotionListener {

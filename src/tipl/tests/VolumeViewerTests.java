@@ -3,8 +3,7 @@
  */
 package tipl.tests;
 
-import static org.junit.Assert.*;
-import ij.ImagePlus;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 

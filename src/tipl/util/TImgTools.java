@@ -279,7 +279,7 @@ public class TImgTools {
 			return gbool;
 		default:
 			throw new IllegalArgumentException("Unknown data type!!!" + asType
-					+ ", " + gs);
+					+ " from char");
 
 		}
 	}
