@@ -45,19 +45,11 @@ public abstract class DirectoryReader implements TReader {
 		public FileFilter getFilter();
 	}
 
-	final static String version = "08-03-2013";
-	/** register the plugins so the directory reader can be used on it's own **/
-	static {
-		try {
-			Class.forName("tipl.formats.TiffFolder");
-			Class.forName("tipl.formats.DMPFolder");
-		} catch (final ClassNotFoundException any) {
-			any.printStackTrace();
-		}
-	}
+	final static String version = "21-10-2013";
+
 
 	/**
-	 * ChooseBest chosses the directory reader plugin which has the highest
+	 * ChooseBest chooses the directory reader plugin which has the highest
 	 * number of matches in the given directory using the FileFilter
 	 * 
 	 * @param path
@@ -90,14 +82,7 @@ public abstract class DirectoryReader implements TReader {
 		return allFacts.get(bestFilter).get(path);
 	}
 
-	/**
-	 * ChooseBest chosses the directory reader plugin which has the highest
-	 * number of matches in the given directory using the FileFilter
-	 **/
-	public static DirectoryReader ChooseBest_OLD(final String path) {
-		final FileFilter tFilter = EvaluateDirectory(path);
-		return RegisteredReaders.get(tFilter).get(path);
-	}
+
 
 	public static FileFilter EvaluateDirectory(final String path) {
 

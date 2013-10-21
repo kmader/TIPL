@@ -25,6 +25,8 @@ import com.sun.media.jai.codec.ImageDecoder;
 import com.sun.media.jai.codec.SeekableStream;
 
 /**
+ * Tiff folder is the code used to read in a file-system directory (as compared with a tiffdirectory) of tiff files (as normally produced with the reconstruction pipeline as of 2012/13)
+ * It handles listing and ordering the files and reading them in, in a parallel compatible manner
  * @author maderk
  * 
  */
