@@ -42,7 +42,7 @@ public class XDFTest {
 	/**
 	 * Test method for a simple sphere
 	 */
-	//@Test
+	@Test
 	public void testSphereXDF() {
 		final String testName="testSph";
 		final TImgRO testImg = TestPosFunctions.wrapIt(50,
@@ -58,7 +58,7 @@ public class XDFTest {
 	/**
 	 * Test method for a fancy layered structure
 	 */
-	//@Test
+	@Test
 	public void testSphereLayerXDF() {
 		final String testName="testSphLayer";
 		final TestPosFunctions bgLayers= new TestPosFunctions.LayeredImage(1, 2, 25,0,0);

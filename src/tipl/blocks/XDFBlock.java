@@ -38,7 +38,7 @@ public class XDFBlock extends BaseTIPLBlock {
 			new BlockImage("input", "input.tif", "Input image",
 					true),
 			new BlockImage("mask", "", "Mask Image", false),
-			new BlockImage("value", "value.tif", "Value Image", false)};
+			new BlockImage("value", "", "Value Image", false)};
 
 	public final IBlockImage[] outImages = new IBlockImage[] { new BlockImage(
 			"rdf", "rdf.tif", "Correlation function", true) };
@@ -75,8 +75,8 @@ public class XDFBlock extends BaseTIPLBlock {
 		cXDF.execute();
 		
 		TImgTools.RemoveTImgFromCache(getFileParameter("input"));
-		TImgTools.WriteBackground(cXDF.ExportImages(inputAim)[0], getFileParameter("output"));
-		XDF.WriteHistograms((XDF) cXDF, TImgTools.makeTImgExportable(inputAim),getFileParameter("output"));
+		TImgTools.WriteBackground(cXDF.ExportImages(inputAim)[0], getFileParameter("rdf"));
+		XDF.WriteHistograms((XDF) cXDF, TImgTools.makeTImgExportable(inputAim),getFileParameter("rdf"));
 		return true;
 	}
 

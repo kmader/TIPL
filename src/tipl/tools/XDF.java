@@ -741,7 +741,7 @@ public class XDF extends BaseTIPLPluginMult {
 	final int MAXDISTVAL = 32765;
 
 	final int OUTERSHELL = 0;
-	public int mcIter;
+	public int mcIter=5000;
 	private int curIter;
 	private int missedIter;
 	public float meanVal = 0f;
@@ -794,7 +794,7 @@ public class XDF extends BaseTIPLPluginMult {
 	public ArgumentParser setParameter(ArgumentParser p,String cPrefix) {
 		int rdfs = p.getOptionInt(cPrefix + "rdfs", -1, "RDF Size (-1 leaves the value as default)");
 		if (rdfs>0) rdfSize=new D3int(rdfs); // if it is greater than 0 recreate it
-		rdfSize = p.getOptionD3int(cPrefix + "rdfsize", new D3int(rdfs),
+		rdfSize = p.getOptionD3int(cPrefix + "rdfsize", rdfSize,
 				"RDF Size");
 		mcIter = p.getOptionInt(cPrefix + "iter", mcIter, "iterations");
 		tensorCutOff = (float) p.getOptionDouble(cPrefix + "tensorthresh",
@@ -832,7 +832,7 @@ public class XDF extends BaseTIPLPluginMult {
 				"Scan the entire image");
 		skipFactor = p.getOptionD3int(cPrefix + "skipfactor", skipFactor,
 				"Skip factor");
-		InitRDF(rdfSize);
+		
 		return p;
 	}
 	
@@ -1065,8 +1065,12 @@ public class XDF extends BaseTIPLPluginMult {
 	}
 	@Override
 	public boolean execute() {
-		// Run loop to make bubbles
-
+		
+		
+		// Setup the XDF Code
+		InitRDF(rdfSize);
+		
+		
 		jStartTime = System.currentTimeMillis();
 		// first import the basic image (sloppy)
 		inputType=startImageType;
