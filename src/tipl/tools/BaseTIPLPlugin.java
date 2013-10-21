@@ -1,7 +1,7 @@
 package tipl.tools;
 
 import tipl.util.ArgumentParser;
-import tipl.util.TIPLPlugin;
+import tipl.util.ITIPLPlugin;
 
 /**
  * Abstract Class for performing TIPLPlugin TIPLPlugin is the class for Plug-ins
@@ -9,7 +9,7 @@ import tipl.util.TIPLPlugin;
  * setting and changing parameters and can thus be used for input-only,
  * output-only, and input-output plugins
  * **/
-abstract public class BaseTIPLPlugin implements TIPLPlugin {
+abstract public class BaseTIPLPlugin implements ITIPLPlugin {
 
 	public BaseTIPLPlugin() {
 	}

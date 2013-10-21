@@ -5,7 +5,7 @@ import java.util.Random;
 import tipl.formats.TImg;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
-import tipl.util.TIPLPluginIO;
+import tipl.util.ITIPLPluginIO;
 import tipl.util.TImgTools;
 
 /**
@@ -59,7 +59,7 @@ public class MCThickness extends Thickness {
 		System.out.println("Thickness v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 		ArgumentParser p = new ArgumentParser(args);
-		final TIPLPluginIO myThick = new MCThickness();
+		final ITIPLPluginIO myThick = new MCThickness();
 		final String inputFile = p.getOptionString("input", "",
 				"Input distance map image");
 		p = myThick.setParameter(p, "");

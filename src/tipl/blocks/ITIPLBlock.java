@@ -13,7 +13,7 @@ import tipl.util.ArgumentParser;
  * @author mader
  * 
  */
-public interface TIPLBlock {
+public interface ITIPLBlock {
 
 	public class BlockImage implements IBlockImage {
 		protected final String name;
@@ -112,7 +112,7 @@ public interface TIPLBlock {
 	 * @param outputName
 	 *            the name of the field being connected
 	 */
-	public void connectInput(String inputName, TIPLBlock outputBlock,
+	public void connectInput(String inputName, ITIPLBlock outputBlock,
 			String outputName);
 
 	/**

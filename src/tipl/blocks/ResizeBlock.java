@@ -15,7 +15,7 @@ import tipl.tools.Resize;
 import tipl.util.ArgumentDialog;
 import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
-import tipl.util.TIPLPluginIO;
+import tipl.util.ITIPLPluginIO;
 import tipl.util.TImgTools;
 
 /**
@@ -31,7 +31,7 @@ public class ResizeBlock extends BaseTIPLBlock {
 			"input", "", "Input unfiltered image", true) };
 	public final IBlockImage[] outImages = new IBlockImage[] { new BlockImage(
 			"output", "cropped.tif", "Resized image", true) };
-	TIPLPluginIO fs = new Resize();
+	ITIPLPluginIO fs = new Resize();
 
 	public ResizeBlock() {
 		super(blockName);

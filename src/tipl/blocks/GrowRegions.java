@@ -5,7 +5,7 @@ import tipl.tools.cVoronoi;
 import tipl.tools.kVoronoiShrink;
 import tipl.util.ArgumentParser;
 import tipl.util.TIPLGlobal;
-import tipl.util.TIPLPluginIO;
+import tipl.util.ITIPLPluginIO;
 import tipl.util.TImgTools;
 
 /**
@@ -22,7 +22,7 @@ public class GrowRegions extends BaseTIPLBlock {
 		public int fillType = 0;
 
 		@Override
-		public TIPLPluginIO getGrowingPlugin(final TImg obj, final TImg mask) {
+		public ITIPLPluginIO getGrowingPlugin(final TImg obj, final TImg mask) {
 			switch (fillType) {
 			case 0:
 				return new kVoronoiShrink(obj, mask);

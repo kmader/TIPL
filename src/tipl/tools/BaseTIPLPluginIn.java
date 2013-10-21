@@ -11,7 +11,7 @@ import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
-import tipl.util.TIPLPluginIn;
+import tipl.util.ITIPLPluginIn;
 
 /**
  * Abstract Class for performing TIPLPlugin TIPLPlugin is the class for Plug-ins
@@ -22,7 +22,7 @@ import tipl.util.TIPLPluginIn;
  * TImgTools.ReadTImg memory object
  * **/
 abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
-		TIPLPluginIn {
+		ITIPLPluginIn {
 	/** The kernel used for filtering operations */
 	public static interface filterKernel {
 		/**

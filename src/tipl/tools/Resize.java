@@ -4,7 +4,7 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
-import tipl.util.TIPLPluginIO;
+import tipl.util.ITIPLPluginIO;
 import tipl.util.TImgTools;
 
 /**
@@ -121,7 +121,7 @@ public class Resize extends BaseTIPLPluginMult {
 				"Input masked image");
 		final String matchFile = p.getOptionString("mask", "",
 				"Matching masked image");
-		final TIPLPluginIO RS = new Resize();
+		final ITIPLPluginIO RS = new Resize();
 		final String outputFile = p.getOptionString("output", "resized.tif",
 				"Output resized image");
 		p = RS.setParameter(p, "");

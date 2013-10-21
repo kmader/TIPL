@@ -9,6 +9,6 @@ package tipl.util;
  * @author mader
  * 
  */
-public interface TIPLPluginIO extends TIPLPluginIn, TIPLPluginOut {
+public interface ITIPLPluginIO extends ITIPLPluginIn, ITIPLPluginOut {
 
 }

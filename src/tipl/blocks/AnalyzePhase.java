@@ -8,7 +8,7 @@ import tipl.tools.Neighbors;
 import tipl.tools.kVoronoiShrink;
 import tipl.util.ArgumentParser;
 import tipl.util.TIPLGlobal;
-import tipl.util.TIPLPluginIO;
+import tipl.util.ITIPLPluginIO;
 import tipl.util.TImgTools;
 
 /**
@@ -28,12 +28,12 @@ public class AnalyzePhase extends BaseTIPLBlock {
 	 */
 	public static class ShapeAndNeighborAnalysis {
 		public final boolean useGrownLabel = false;
-		TIPLPluginIO myNH = new Neighbors();
+		ITIPLPluginIO myNH = new Neighbors();
 
 		public TImg[] execute(final TImg labeledImage, final TImg maskImage,
 				final String phName, final boolean writeShapeTensor) {
 			// now make the dilation
-			final TIPLPluginIO vorn = getGrowingPlugin(labeledImage, maskImage);
+			final ITIPLPluginIO vorn = getGrowingPlugin(labeledImage, maskImage);
 			vorn.execute();
 			final TImg growOut = vorn.ExportImages(labeledImage)[0];
 			final TImg cImg = (useGrownLabel) ? (labeledImage) : (growOut);
@@ -41,7 +41,7 @@ public class AnalyzePhase extends BaseTIPLBlock {
 					writeShapeTensor);
 			GrayAnalysis.AddDensityColumn(growOut, phName + "_1.csv", phName
 					+ "_2.csv", "Density");
-			final TIPLPluginIO myNH = getNeighborPlugin();
+			final ITIPLPluginIO myNH = getNeighborPlugin();
 			myNH.LoadImages(new TImgRO[] { growOut });
 			myNH.execute();
 			myNH.execute("WriteNeighborList", phName + "_edge.csv");
@@ -59,7 +59,7 @@ public class AnalyzePhase extends BaseTIPLBlock {
 		 * @return a plugin object which when executed fills the mask with the
 		 *         obj (voronoi transform or something like that)
 		 */
-		public TIPLPluginIO getGrowingPlugin(final TImg obj, final TImg mask) {
+		public ITIPLPluginIO getGrowingPlugin(final TImg obj, final TImg mask) {
 			return new kVoronoiShrink(obj, mask);
 		}
 
@@ -67,7 +67,7 @@ public class AnalyzePhase extends BaseTIPLBlock {
 		 * 
 		 * @return a plugin object for managing neighbors
 		 */
-		public TIPLPluginIO getNeighborPlugin() {
+		public ITIPLPluginIO getNeighborPlugin() {
 			return myNH;
 		}
 	}
@@ -77,7 +77,7 @@ public class AnalyzePhase extends BaseTIPLBlock {
 	public String phaseName;
 	// public double sphKernelRadius;
 	public boolean writeShapeTensor;
-	TIPLPluginIO CL = new ComponentLabel();
+	ITIPLPluginIO CL = new ComponentLabel();
 	public final IBlockImage[] inImages = new IBlockImage[] {
 			new BlockImage("segmented", "segmented.tif", "Segmented image",
 					true),

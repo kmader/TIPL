@@ -10,7 +10,7 @@ import org.junit.Test;
 import tipl.formats.TImgRO;
 import tipl.tools.BaseTIPLPluginIn;
 import tipl.tools.Morpho;
-import tipl.util.TIPLPluginIO;
+import tipl.util.ITIPLPluginIO;
 
 /**
  * @author mader
@@ -18,8 +18,8 @@ import tipl.util.TIPLPluginIO;
  */
 public class MorphKernelTest {
 	// start the morphological plugin tests
-	protected static TIPLPluginIO makeMorpho(final TImgRO inImage) {
-		final TIPLPluginIO MP = new Morpho();
+	protected static ITIPLPluginIO makeMorpho(final TImgRO inImage) {
+		final ITIPLPluginIO MP = new Morpho();
 
 		MP.LoadImages(new TImgRO[] { inImage });
 		return MP;
@@ -61,7 +61,7 @@ public class MorphKernelTest {
 		final TImgRO testImg = TestPosFunctions.wrapIt(10,
 				new TestPosFunctions.SinglePointFunction(5, 5, 5));
 		System.out.println("Testing Closing with D-kernel");
-		final TIPLPluginIO RS = makeMorpho(testImg);
+		final ITIPLPluginIO RS = makeMorpho(testImg);
 		// kernel all (0), d-all on the axes (1), spherical (2)
 		RS.setParameter("-kernel=1");
 		RS.execute("closeMany", new Integer(1));
@@ -75,7 +75,7 @@ public class MorphKernelTest {
 		final TImgRO testImg = TestPosFunctions.wrapIt(10,
 				new TestPosFunctions.SinglePointFunction(5, 5, 5));
 		System.out.println("Testing Closing with All-Kernel");
-		final TIPLPluginIO RS = makeMorpho(testImg);
+		final ITIPLPluginIO RS = makeMorpho(testImg);
 		// kernel all (0), d-all on the axes (1), spherical (2)
 		RS.setParameter("-kernel=0");
 		RS.execute("closeMany", new Integer(1));
@@ -90,7 +90,7 @@ public class MorphKernelTest {
 				new TestPosFunctions.SinglePointFunction(5, 5, 5));
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Dilation with all kernel");
-		final TIPLPluginIO RS = makeMorpho(testImg);
+		final ITIPLPluginIO RS = makeMorpho(testImg);
 		// kernel all (0), d-all on the axes (1), spherical (2)
 		RS.setParameter("-kernel=0");
 		RS.execute("dilateMany", new Integer(1));
@@ -108,7 +108,7 @@ public class MorphKernelTest {
 				new TestPosFunctions.SinglePointFunction(5, 5, 5));
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Dilation with D-kernel");
-		final TIPLPluginIO RS = makeMorpho(testImg);
+		final ITIPLPluginIO RS = makeMorpho(testImg);
 		// kernel all (0), d-all on the axes (1), spherical (2)
 		RS.setParameter("-kernel=1");
 		RS.execute("dilateMany", new Integer(1));
@@ -123,7 +123,7 @@ public class MorphKernelTest {
 		final TImgRO testImg = TestPosFunctions.wrapIt(10,
 				new TestPosFunctions.SinglePointFunction(5, 5, 5));
 		System.out.println("Testing Dilation with spherical-kernel");
-		final TIPLPluginIO RS = makeMorpho(testImg);
+		final ITIPLPluginIO RS = makeMorpho(testImg);
 		// kernel all (0), d-all on the axes (1), spherical (2)
 		RS.setParameter("-kernel=2 -neighborhood=2,2,2");
 		RS.execute("dilateMany", new Integer(1));
@@ -137,7 +137,7 @@ public class MorphKernelTest {
 				new TestPosFunctions.SinglePointFunction(5, 5, 5));
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Dilation with D-kernel");
-		final TIPLPluginIO RS = makeMorpho(testImg);
+		final ITIPLPluginIO RS = makeMorpho(testImg);
 		// kernel all (0), d-all on the axes (1), spherical (2)
 		RS.setParameter("-kernel=1");
 		RS.execute("erodeMany", new Integer(1));

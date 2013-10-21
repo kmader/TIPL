@@ -7,8 +7,8 @@ import org.junit.Test;
 import tipl.formats.TImgRO;
 import tipl.tools.ComponentLabel;
 import tipl.util.D3float;
-import tipl.util.TIPLPluginIO;
-import tipl.util.TIPLPluginIn;
+import tipl.util.ITIPLPluginIO;
+import tipl.util.ITIPLPluginIn;
 import tipl.util.TImgTools;
 
 /**
@@ -18,7 +18,7 @@ import tipl.util.TImgTools;
  * 
  */
 public class CLTest {
-	protected static void checkVals(final TIPLPluginIn CL, final int maxLabel,
+	protected static void checkVals(final ITIPLPluginIn CL, final int maxLabel,
 			final double avgCount) {
 		System.out.println("Maximum Label of CL Image:" + getMax(CL)
 				+ ", average count:" + getAvg(CL));
@@ -26,16 +26,16 @@ public class CLTest {
 		assertEquals(getAvg(CL), avgCount, 0.1);
 	}
 
-	protected static double getAvg(final TIPLPluginIn iP) {
+	protected static double getAvg(final ITIPLPluginIn iP) {
 		return ((Double) iP.getInfo("avgcount")).doubleValue();
 	}
 
-	protected static int getMax(final TIPLPluginIn iP) {
+	protected static int getMax(final ITIPLPluginIn iP) {
 		return ((Integer) iP.getInfo("maxlabel")).intValue();
 	}
 
-	protected static TIPLPluginIO makeCL(final TImgRO sImg) {
-		final TIPLPluginIO CL = new ComponentLabel();
+	protected static ITIPLPluginIO makeCL(final TImgRO sImg) {
+		final ITIPLPluginIO CL = new ComponentLabel();
 		CL.LoadImages(new TImgRO[] { sImg });
 		return CL;
 	}
@@ -90,7 +90,7 @@ public class CLTest {
 		final TImgRO testImg = TestPosFunctions.wrapIt(10,
 				new TestPosFunctions.SheetImageFunction());
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test2.tif");
-		final TIPLPluginIn CL = makeCL(testImg);
+		final ITIPLPluginIn CL = makeCL(testImg);
 		CL.execute();
 		checkVals(CL, 5, 100);
 
@@ -104,7 +104,7 @@ public class CLTest {
 		System.out.println("Testing runVoxelsIntInt");
 		final TImgRO testImg = TestPosFunctions.wrapIt(10,
 				new TestPosFunctions.DiagonalPlaneFunction());
-		TIPLPluginIn CL = makeCL(testImg);
+		ITIPLPluginIn CL = makeCL(testImg);
 		CL.setParameter("-kernel=2 -sphradius=1.72");
 		CL.execute("runVoxels", new Integer(0));
 		checkVals(CL, 1, 10);
@@ -140,7 +140,7 @@ public class CLTest {
 		TImgRO testImg = TestPosFunctions
 				.wrapIt(10, new TestPosFunctions.LinesFunction());
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
-		TIPLPluginIO CL = makeCL(testImg);
+		ITIPLPluginIO CL = makeCL(testImg);
 		System.out.println("Testing SphRadius");
 
 		CL.setParameter("-kernel=2 -sphradius=1.0");

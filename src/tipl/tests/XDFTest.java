@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import tipl.formats.TImgRO;
 import tipl.tools.XDF;
-import tipl.util.TIPLPluginIO;
+import tipl.util.ITIPLPluginIO;
 import tipl.util.TImgTools;
 
 /**
@@ -18,8 +18,8 @@ import tipl.util.TImgTools;
  */
 public class XDFTest {
 	public static final String testDir="/Users/mader/Dropbox/TIPL/test/xdf_tests/";
-	protected static TIPLPluginIO makeXDF(final TImgRO inImage) {
-		final TIPLPluginIO XF = new XDF();
+	protected static ITIPLPluginIO makeXDF(final TImgRO inImage) {
+		final ITIPLPluginIO XF = new XDF();
 		XF.LoadImages(new TImgRO[] { inImage });
 		return XF;
 	}
@@ -42,7 +42,7 @@ public class XDFTest {
 		final String testName="testSph";
 		final TImgRO testImg = TestPosFunctions.wrapIt(50,
 				new TestPosFunctions.EllipsoidFunction(25, 25, 25, 10));
-		final TIPLPluginIO XF = makeXDF(testImg);
+		final ITIPLPluginIO XF = makeXDF(testImg);
 		XF.setParameter("-iter=2000 -rdfsize=20,20,20");
 		XF.execute();
 		final TImgRO outImage = XF.ExportImages(testImg)[0];
@@ -62,7 +62,7 @@ public class XDFTest {
 		final TImgRO testImg = TestPosFunctions
 				.wrapIt(150, new TestPosFunctions.BGPlusPhase(bgLayers, densePart, 3) );
 		TImgTools.WriteTImg(testImg, testDir+testName+"_img.tif");
-		TIPLPluginIO XF = makeXDF(testImg);
+		ITIPLPluginIO XF = makeXDF(testImg);
 		XF.setParameter("-iter=2000 -rdfsize=30,30,30 -asint -inphase=3 -outphase=1");
 		XF.execute();
 		final TImgRO outImage = XF.ExportImages(testImg)[0];

@@ -3,7 +3,7 @@ package tipl.blocks;
 import tipl.formats.TImg;
 import tipl.tools.VFilterScale;
 import tipl.util.ArgumentParser;
-import tipl.util.TIPLPluginIO;
+import tipl.util.ITIPLPluginIO;
 import tipl.util.TImgTools;
 
 /**
@@ -19,7 +19,7 @@ public class FilterBlock extends BaseTIPLBlock {
 			"ufilt", "", "Input unfiltered image", true) };
 	public final IBlockImage[] outImages = new IBlockImage[] { new BlockImage(
 			"gfilt", "gfilt.tif", "Post-filtering image", true) };
-	TIPLPluginIO fs = new VFilterScale();
+	ITIPLPluginIO fs = new VFilterScale();
 
 	public FilterBlock() {
 		super(blockName);

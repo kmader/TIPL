@@ -3,8 +3,8 @@ package tipl.tools;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.D3int;
-import tipl.util.TIPLPluginIO;
-import tipl.util.TIPLPluginOut;
+import tipl.util.ITIPLPluginIO;
+import tipl.util.ITIPLPluginOut;
 import tipl.util.TImgTools;
 
 /**
@@ -16,7 +16,7 @@ import tipl.util.TImgTools;
  * TImgTools.ReadTImg memory object
  * **/
 abstract public class BaseTIPLPluginIO extends BaseTIPLPluginIn implements
-		TIPLPluginOut, TIPLPluginIO {
+		ITIPLPluginOut, ITIPLPluginIO {
 
 	public BaseTIPLPluginIO() {
 		super();

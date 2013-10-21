@@ -12,7 +12,7 @@ import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
 import tipl.tools.Resize;
 import tipl.util.D3int;
-import tipl.util.TIPLPluginIO;
+import tipl.util.ITIPLPluginIO;
 
 /**
  * Test the Resize class using synthetic data
@@ -30,8 +30,8 @@ public class ResizeTest {
 
 
 
-	protected static TIPLPluginIO makeRS(final TImgRO inImage) {
-		final TIPLPluginIO RS = new Resize();
+	protected static ITIPLPluginIO makeRS(final TImgRO inImage) {
+		final ITIPLPluginIO RS = new Resize();
 		RS.LoadImages(new TImgRO[] { inImage });
 		return RS;
 	}
@@ -44,7 +44,7 @@ public class ResizeTest {
 
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Slices Match  in BW");
-		TIPLPluginIO RS = makeRS(testImg);
+		ITIPLPluginIO RS = makeRS(testImg);
 
 		RS.setParameter("-pos=0,0,5 -dim=10,10,2");
 		RS.execute();
@@ -74,7 +74,7 @@ public class ResizeTest {
 
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Slices Match");
-		TIPLPluginIO RS = makeRS(testImg);
+		ITIPLPluginIO RS = makeRS(testImg);
 
 		RS.setParameter("-pos=0,0,5 -dim=10,10,2");
 		RS.execute();
@@ -105,7 +105,7 @@ public class ResizeTest {
 		final TImgRO testImg = TestPosFunctions.wrapIt(10,
 				new TestPosFunctions.LinesFunction());
 
-		final TIPLPluginIO RS = makeRS(testImg);
+		final ITIPLPluginIO RS = makeRS(testImg);
 		RS.setParameter("-pos=5,5,5 -dim=5,5,1");
 		RS.execute();
 		final TImgRO outImg = RS.ExportImages(testImg)[0];
@@ -122,7 +122,7 @@ public class ResizeTest {
 		// offset lines
 		final TImgRO testImg = TestPosFunctions.wrapIt(10,
 				new TestPosFunctions.LinesFunction());
-		final TIPLPluginIO RS = makeRS(testImg);
+		final ITIPLPluginIO RS = makeRS(testImg);
 		RS.setParameter("-pos=5,5,5 -dim=5,5,1");
 		RS.execute();
 		final TImgRO outImg = RS.ExportImages(testImg)[0];
@@ -144,7 +144,7 @@ public class ResizeTest {
 				TestPosFunctions.wrapItAs(10, pf, 3),
 				TestPosFunctions.wrapItAs(10, pf, 10) };
 		System.out.println("Testing Short Scale Factor");
-		TIPLPluginIO RS;
+		ITIPLPluginIO RS;
 		for (final TImgRO testImg : testImgs) {
 			System.out.println("Testing Image Type: " + testImg.getImageType());
 			RS = makeRS(testImg);
@@ -170,7 +170,7 @@ public class ResizeTest {
 				new TestPosFunctions.DiagonalPlaneFunction(), ssf);
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Short Scale Factor");
-		final TIPLPluginIO RS = makeRS(testImg);
+		final ITIPLPluginIO RS = makeRS(testImg);
 
 		RS.setParameter("-pos=0,0,5 -dim=10,10,1");
 		RS.execute();
@@ -191,7 +191,7 @@ public class ResizeTest {
 				new TestPosFunctions.DiagonalPlaneFunction());
 		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Voxel Count");
-		final TIPLPluginIO RS = makeRS(testImg);
+		final ITIPLPluginIO RS = makeRS(testImg);
 
 		RS.setParameter("-pos=0,0,5 -dim=10,10,1");
 		RS.execute();

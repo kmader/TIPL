@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import tipl.blocks.FilterBlock;
-import tipl.blocks.TIPLBlock;
+import tipl.blocks.ITIPLBlock;
 import tipl.util.ArgumentDialog;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
@@ -41,7 +41,7 @@ public class ADTester {
 	@Test
 	public void testGUIBlock() {
 		// fail("Not yet implemented"); // TODO
-		TIPLBlock cBlock = new FilterBlock();
+		ITIPLBlock cBlock = new FilterBlock();
 		cBlock = ArgumentDialog.GUIBlock(cBlock);
 
 	}

@@ -7,7 +7,7 @@ import java.awt.Color;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 
-import tipl.blocks.TIPLBlock;
+import tipl.blocks.ITIPLBlock;
 import tipl.util.ArgumentList.RangedArgument;
 import tipl.util.TIPLDialog.GUIControl;
 
@@ -27,7 +27,7 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
 	 *            the intialized block
 	 * @return the block with setParameter run
 	 */
-	public static TIPLBlock GUIBlock(final TIPLBlock blockToRun) {
+	public static ITIPLBlock GUIBlock(final ITIPLBlock blockToRun) {
 		ArgumentParser args = new ArgumentParser(new String[] {});
 		args = blockToRun.setParameter(args);
 		final ArgumentDialog guiArgs = new ArgumentDialog(args,

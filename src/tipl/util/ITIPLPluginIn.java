@@ -11,6 +11,6 @@ import tipl.formats.TImgRO;
  * @author mader
  * 
  */
-public interface TIPLPluginIn extends TIPLPlugin {
+public interface ITIPLPluginIn extends ITIPLPlugin {
 	public void LoadImages(TImgRO[] inImages);
 }

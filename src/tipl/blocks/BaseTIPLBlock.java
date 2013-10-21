@@ -16,8 +16,8 @@ import tipl.util.TImgTools;
  * @author mader
  * 
  */
-public abstract class BaseTIPLBlock implements TIPLBlock {
-	protected TIPLBlock[] prereqBlocks = new TIPLBlock[] {};
+public abstract class BaseTIPLBlock implements ITIPLBlock {
+	protected ITIPLBlock[] prereqBlocks = new ITIPLBlock[] {};
 	// protected String[] neededPathArgs=new String[]{};
 	protected ArgumentParser args = new ArgumentParser(new String[] {});
 	protected String blockName = "";
@@ -49,10 +49,10 @@ public abstract class BaseTIPLBlock implements TIPLBlock {
 	 * @param parFunc
 	 * @return TIPLBlock to be run later
 	 */
-	public static TIPLBlock InlineBlock(final String name, final String prefix,
+	public static ITIPLBlock InlineBlock(final String name, final String prefix,
 			final String[] earlierPathArgs, final String[] outArgs,
 			final Runnable job, final ArgumentParser.IsetParameter parFunc) {
-		return InlineBlock(name, prefix, new TIPLBlock[] {}, earlierPathArgs,
+		return InlineBlock(name, prefix, new ITIPLBlock[] {}, earlierPathArgs,
 				outArgs, job, parFunc);
 	}
 
@@ -71,11 +71,11 @@ public abstract class BaseTIPLBlock implements TIPLBlock {
 	 * @param parFunc
 	 * @return TIPLBlock to be run later
 	 */
-	public static TIPLBlock InlineBlock(final String name, final String prefix,
-			final TIPLBlock[] earlierBlocks, final String[] earlierPathArgs,
+	public static ITIPLBlock InlineBlock(final String name, final String prefix,
+			final ITIPLBlock[] earlierBlocks, final String[] earlierPathArgs,
 			final String[] outputArgs, final Runnable job,
 			final ArgumentParser.IsetParameter parFunc) {
-		final TIPLBlock cBlock = new BaseTIPLBlock(name, earlierBlocks) {
+		final ITIPLBlock cBlock = new BaseTIPLBlock(name, earlierBlocks) {
 			@Override
 			protected IBlockImage[] bGetInputNames() {
 				final IBlockImage[] inNames = new BlockImage[earlierPathArgs.length];
@@ -149,11 +149,11 @@ public abstract class BaseTIPLBlock implements TIPLBlock {
 		 */
 		// black magic
 		if (blockname.length() > 0) {
-			TIPLBlock cBlock = null;
+			ITIPLBlock cBlock = null;
 			try {
 				// cBlock=(TIPLBlock)
 				// Class.forName(blockname).getConstructor(forConstructor).newInstance(toConstructor);
-				cBlock = (TIPLBlock) Class.forName(blockname).newInstance();
+				cBlock = (ITIPLBlock) Class.forName(blockname).newInstance();
 			} catch (final ClassNotFoundException e) {
 				e.printStackTrace();
 				throw new IllegalArgumentException("Block Class:" + blockname
@@ -225,7 +225,7 @@ public abstract class BaseTIPLBlock implements TIPLBlock {
 		blockName = inName;
 	}
 
-	public BaseTIPLBlock(final String inName, final TIPLBlock[] earlierBlocks) {
+	public BaseTIPLBlock(final String inName, final ITIPLBlock[] earlierBlocks) {
 		blockName = inName;
 		prereqBlocks = earlierBlocks;
 	}
@@ -236,7 +236,7 @@ public abstract class BaseTIPLBlock implements TIPLBlock {
 
 	@Override
 	public void connectInput(final String inputName,
-			final TIPLBlock outputBlock, final String outputName) {
+			final ITIPLBlock outputBlock, final String outputName) {
 		blockConnections.put(inputName, outputBlock.getPrefix() + outputName);
 	}
 
@@ -307,7 +307,7 @@ public abstract class BaseTIPLBlock implements TIPLBlock {
 	public boolean isReady() {
 		// TODO Auto-generated method stub
 		boolean retValue = true;
-		for (final TIPLBlock cblock : prereqBlocks)
+		for (final ITIPLBlock cblock : prereqBlocks)
 			if (!cblock.isComplete()) {
 				System.out.println("Not ready for block " + toString()
 						+ ", block:" + cblock + " has not completed");

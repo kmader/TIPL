@@ -12,7 +12,7 @@ import tipl.formats.TImgRO;
  * @author mader
  * 
  */
-public interface TIPLPluginOut extends TIPLPlugin {
+public interface ITIPLPluginOut extends ITIPLPlugin {
 	/**
 	 * export the images that are outputs of this plugin output is TImg since it
 	 * should be writable
