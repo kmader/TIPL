@@ -11,6 +11,8 @@ import org.junit.Test;
 
 import tipl.formats.DirectoryReader;
 import tipl.formats.TImg;
+import tipl.formats.TImgRO;
+import tipl.formats.TImgRO.TImgFull;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
 
@@ -21,6 +23,7 @@ import tipl.util.TImgTools;
 public class DirectoryIOTest {
 	public static final String dmpPath="/Users/mader/Dropbox/TIPL/test/io_tests/rec_DMP";
 	public static final String tifPath="/Users/mader/Dropbox/TIPL/test/io_tests/rec8bit";
+	public static final String tif16Path="/Users/mader/Dropbox/TIPL/test/io_tests/rec16bit";
 	public static final String isqPath="/Users/mader/Dropbox/TIPL/test/io_tests/test.isq;2";
 	/**
 	 * @throws java.lang.Exception
@@ -40,7 +43,7 @@ public class DirectoryIOTest {
 	 * Test method for
 	 * {@link tipl.formats.DirectoryReader#ChooseBest(java.lang.String)}.
 	 */
-	@Test
+	//@Test
 	public void testChooseBest() {
 		DirectoryReader curReader=DirectoryReader.ChooseBest(dmpPath);
 		System.out.println("Reading folder:"+dmpPath+" as "+curReader);
@@ -57,8 +60,31 @@ public class DirectoryIOTest {
 	 */
 	@Test
 	public void testEvaluateDirectory() {
+		fail("Not implemented yet");
 	}
-
+	/**
+	 * Test method for
+	 * {@link tipl.formats.DirectoryReader#EvaluateDirectory(java.lang.String)}.
+	 */
+	@Test
+	public void testReadFolder() {
+		System.out.println("Testing ReadFolder : tif="+tifPath);
+		TImg curImg=TImgTools.ReadTImg(tifPath);
+		char[] alles=TImgTools.makeTImgFullReadable(curImg).getByteAim();
+		System.out.println(alles+" is loaded");
+	}
+	@Test
+	public void testReadFolder16bit() {
+		System.out.println("Testing ReadFolder : tif="+tif16Path);
+		TImg curImg=TImgTools.ReadTImg(tif16Path);
+		TImgFull curImgFull=new TImgRO.TImgFull(curImg);
+		char[] allea=curImgFull.getByteArray(0);
+		System.out.println(allea+" is loaded: 0="+allea[0]);
+		char[] alles=TImgTools.makeTImgFullReadable(curImg).getByteAim();
+		System.out.println(alles+" is loaded");
+	}
+	
+	
 	/**
 	 * Test method for {@link tipl.formats.DirectoryReader#getDim()}.
 	 */

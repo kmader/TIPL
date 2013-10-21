@@ -194,13 +194,5 @@ public class DMPFolder extends DirectoryReader {
 		return "DMP-Folder-Reader " + version;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see tipl.formats.DirectoryReader#setImageType(int)
-	 */
-	public void setImageType(final int inData) {
-		throw new IllegalArgumentException("Type Cannot Be Set");
-	}
 
 }

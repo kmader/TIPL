@@ -167,7 +167,7 @@ public abstract class DirectoryReader implements TReader {
 	final private TSliceFactory tsf;
 	private final boolean signedValue = true;
 
-	private int imageType;
+	private int imageType=-1;
 	@Deprecated
 	private static HashMap<FileFilter, DRFactory> RegisteredReaders = new HashMap<FileFilter, DRFactory>();
 
@@ -316,22 +316,24 @@ public abstract class DirectoryReader implements TReader {
 	@Override
 	public void ReadHeader() {
 		ParseFirstHeader();
+		File firstFile=imglist[0];
+		if (!firstFile.exists()) throw new IllegalArgumentException(this+":First file is not even found!!");
 		try {
-			final TSliceReader tsr = tsf.ReadFile(imglist[0]);
+			final TSliceReader tsr = tsf.ReadFile(firstFile);
 			final D3int cDim = tsr.getDim();
 			cDim.z = imglist.length;
 			setDim(cDim);
 			setElSize(tsr.getElSize());
 			setOffset(tsr.getOffset());
 			setPos(tsr.getPos());
+			setImageType(tsr.getImageType());
 
 			System.out.println("DirectoryReader [" + readerName()
 					+ "] : Sample: " + getPath() + " Timg has been selected");
 		} catch (final Exception e) {
-			System.out.println("Error Reading header from " + tsf + " of "
-					+ imglist[0]);
 			e.printStackTrace();
-			return;
+			throw new IllegalArgumentException("Error Reading header from " + tsf + " of "
+					+ imglist[0]);
 		}
 
 	}
@@ -386,6 +388,15 @@ public abstract class DirectoryReader implements TReader {
 	 */
 	protected void setPos(final D3int inDim) {
 		pos = inDim;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see tipl.formats.TImg#setImageType()
+	 */
+	protected void setImageType(final int inIT) {
+		imageType = inIT;
 	}
 
 	/*
