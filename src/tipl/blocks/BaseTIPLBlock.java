@@ -6,6 +6,7 @@ package tipl.blocks;
 import java.util.LinkedHashMap;
 
 import tipl.formats.TImg;
+import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.SGEJob;
 import tipl.util.TImgTools;
@@ -18,13 +19,14 @@ import tipl.util.TImgTools;
  */
 public abstract class BaseTIPLBlock implements ITIPLBlock {
 	protected ITIPLBlock[] prereqBlocks = new ITIPLBlock[] {};
-	// protected String[] neededPathArgs=new String[]{};
 	protected ArgumentParser args = new ArgumentParser(new String[] {});
 	protected String blockName = "";
 	protected boolean skipBlock = true;
+	protected boolean saveToCache = false;
+	protected boolean readFromCache = true;
 	protected LinkedHashMap<String, String> blockConnections = new LinkedHashMap<String, String>();
 	final protected LinkedHashMap<String, String> ioParameters = new LinkedHashMap<String, String>();
-	public final static String kVer = "130819_003";
+	public final static String kVer = "131021_004";
 
 	protected static void checkHelp(final ArgumentParser p) {
 		if (p.hasOption("?")) {
@@ -139,20 +141,10 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 		ArgumentParser p = new ArgumentParser(args);
 		final String blockname = p.getOptionString("blockname", "",
 				"Class name of the block to run");
-		/*
-		 * if (p.getOptionBoolean("stringconst",
-		 * "Use the string array constructor for the TIPLBlock")) { String[]
-		 * requiredfiles = p.getOptionString("stringarray","",
-		 * "String array (& delimited) to use in constructor").split("&");
-		 * forConstructor=String[].class; toConstructor=new
-		 * Object[]{requiredfiles}; }
-		 */
 		// black magic
 		if (blockname.length() > 0) {
 			ITIPLBlock cBlock = null;
 			try {
-				// cBlock=(TIPLBlock)
-				// Class.forName(blockname).getConstructor(forConstructor).newInstance(toConstructor);
 				cBlock = (ITIPLBlock) Class.forName(blockname).newInstance();
 			} catch (final ClassNotFoundException e) {
 				e.printStackTrace();
@@ -247,10 +239,13 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	 */
 	@Override
 	final public boolean execute() {
-		if (!skipBlock)
+		if (!skipBlock) {
+			System.out.println(toString()+(isReady() ? " is ready!" : " is not ready!!!!"));
 			return executeBlock();
-		else
+		}
+		else {
 			System.out.println(toString() + " skipped!");
+		}
 		return true;
 	}
 
@@ -264,8 +259,15 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	protected abstract String getDescription();
 
 	@Override
+	@Deprecated
 	public String getFileParameter(final String argument) {
 		return ioParameters.get(argument);
+	}
+	
+	@Override
+	public TImgRO getInputFile(final String argument) {
+		 if (getFileParameter(argument).length()<1) return null;
+		 return TImgTools.ReadTImg(getFileParameter(argument),readFromCache,saveToCache);
 	}
 
 	@Override

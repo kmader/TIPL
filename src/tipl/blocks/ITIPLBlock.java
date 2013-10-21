@@ -3,6 +3,7 @@
  */
 package tipl.blocks;
 
+import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 
 /**
@@ -130,6 +131,12 @@ public interface ITIPLBlock {
 	 * @return file/path name
 	 */
 	public String getFileParameter(String argument);
+	/**
+	 * get an input file (handles loading and everything in a consistent manner and returns null if the image is empty 
+	 * @param argument image argument name
+	 * @return
+	 */
+	public TImgRO getInputFile(String argument);
 
 	public IBlockInfo getInfo();
 

@@ -119,6 +119,8 @@ public class TImgTools {
 	public static final int IMAGETYPE_COMPLEX = 5;
 	public static final int IMAGETYPE_SPECTRAL = 6;
 	public static final int IMAGETYPE_GLOB = 7;
+	
+	public static final String IMAGETYPE_HELP = "(boolean image/1bit="+IMAGETYPE_BOOL+", character image/8bit="+IMAGETYPE_CHAR+", short image/16bit="+IMAGETYPE_SHORT+", integer image/32bit="+IMAGETYPE_INT+", float image/32bit="+IMAGETYPE_FLOAT+")";
 
 	/**
 	 * A global image cache so images can be referenced until they are unloaded
@@ -140,6 +142,16 @@ public class TImgTools {
 			return inImage;
 		else
 			return ConcurrentReader.CacheImage(inImage, inImage.getImageType());
+	}
+	
+	public static TImgRO[] fillListWithNull(TImgRO[] inImages,int keepLength) {
+		TImgRO[] outImages=new TImgRO[keepLength];
+		for(int i=0;i<keepLength;i++) {
+			TImgRO curElement=null;
+			if (i<inImages.length) curElement=inImages[i];
+			outImages[i]=curElement;
+		}
+		return outImages;
 	}
 
 	/**

@@ -23,6 +23,11 @@ public class XDFTest {
 		XF.LoadImages(new TImgRO[] { inImage });
 		return XF;
 	}
+	protected static ITIPLPluginIO makeXDF(final TImgRO inImage,final TImgRO valueImage) {
+		final ITIPLPluginIO XF = new XDF();
+		XF.LoadImages(new TImgRO[] { inImage,null,valueImage });
+		return XF;
+	}
 
 	/**
 	 * Test method for
@@ -37,7 +42,7 @@ public class XDFTest {
 	/**
 	 * Test method for a simple sphere
 	 */
-	@Test
+	//@Test
 	public void testSphereXDF() {
 		final String testName="testSph";
 		final TImgRO testImg = TestPosFunctions.wrapIt(50,
@@ -53,7 +58,7 @@ public class XDFTest {
 	/**
 	 * Test method for a fancy layered structure
 	 */
-	@Test
+	//@Test
 	public void testSphereLayerXDF() {
 		final String testName="testSphLayer";
 		final TestPosFunctions bgLayers= new TestPosFunctions.LayeredImage(1, 2, 25,0,0);
@@ -75,6 +80,52 @@ public class XDFTest {
 		final TImgRO outImage2 = XF.ExportImages(testImg)[0];
 		TImgTools.WriteTImg(outImage2, testDir+testName+"_rdf_32.tif");
 		XDF.WriteHistograms(((XDF) XF), TImgTools.makeTImgExportable(testImg), testDir+testName+"_rdf_32");
+		fail("Not yet implemented"); // TODO
+	}
+	
+	/**
+	 * Test method for a fancy layered structure and a sphere
+	 */
+	@Test
+	public void testSphereInLayerValFloatXDF() {
+		final String testName="testSphLayerWithValFloat";
+		final TestPosFunctions bgLayers= new TestPosFunctions.LayeredImage(1, 2, 25,0,0);
+		final TestPosFunctions densePart=  new TestPosFunctions.EllipsoidFunction(75, 75, 75,
+				10, 10, 10); 
+		final TImgRO bgImg = TestPosFunctions
+				.wrapIt(150, bgLayers);
+		final TImgRO sphImg = TestPosFunctions
+				.wrapIt(150, densePart);
+		
+		ITIPLPluginIO XF = makeXDF(sphImg,bgImg);
+		XF.setParameter("-iter=10000 -rdfsize=30,30,0 -valueImageType=3");
+		XF.execute();
+		final TImgRO outImage = XF.ExportImages(sphImg)[0];
+		TImgTools.WriteTImg(outImage, testDir+testName+"_rdf.tif");
+		
+		fail("Not yet implemented"); // TODO
+	}
+	
+	/**
+	 * Test method for a fancy layered structure and a sphere
+	 */
+	@Test
+	public void testSphereInLayerValXDF() {
+		final String testName="testSphLayerWithVal";
+		final TestPosFunctions bgLayers= new TestPosFunctions.LayeredImage(1, 2, 25,0,0);
+		final TestPosFunctions densePart=  new TestPosFunctions.EllipsoidFunction(75, 75, 75,
+				10, 10, 10); 
+		final TImgRO bgImg = TestPosFunctions
+				.wrapIt(150, bgLayers);
+		final TImgRO sphImg = TestPosFunctions
+				.wrapIt(150, densePart);
+		
+		ITIPLPluginIO XF = makeXDF(sphImg,bgImg);
+		XF.setParameter("-iter=500 -rdfsize=30,30,0 -valueImageType=2 -outphase=2");
+		XF.execute();
+		final TImgRO outImage = XF.ExportImages(sphImg)[0];
+		TImgTools.WriteTImg(outImage, testDir+testName+"_rdf.tif");
+		
 		fail("Not yet implemented"); // TODO
 	}
 
