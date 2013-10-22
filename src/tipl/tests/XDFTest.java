@@ -98,7 +98,7 @@ public class XDFTest {
 				.wrapIt(150, densePart);
 		
 		ITIPLPluginIO XF = makeXDF(sphImg,bgImg);
-		XF.setParameter("-iter=10000 -rdfsize=30,30,0 -valueImageType=3");
+		XF.setParameter("-iter=10000 -rdfsize=30,30,0 -valueImageType=3 -usesurface");
 		XF.execute();
 		final TImgRO outImage = XF.ExportImages(sphImg)[0];
 		TImgTools.WriteTImg(outImage, testDir+testName+"_rdf.tif");

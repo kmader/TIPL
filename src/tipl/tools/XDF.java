@@ -921,8 +921,8 @@ public class XDF extends BaseTIPLPluginMult {
 	 * An mask with all the valid starting locations based on the input type and selected phase
 	 * @return
 	 */
-	protected boolean[] prepareStartMask() {
-		final int cImgTyp = inputType;
+	protected boolean[] prepareStartMask(final int cImgTyp) {
+		long totVoxels=0,allVoxels=0;
 		boolean[] outImage= new boolean[aimLength];
 		for (int z = lowz; z < (uppz); z++) {
 			for (int y = (lowy); y < (uppy); y++) {
@@ -947,9 +947,14 @@ public class XDF extends BaseTIPLPluginMult {
 						break;
 					}
 					outImage[off]=validStart;
+					if (validStart) totVoxels++;
+					allVoxels++;
 				}
 			}
 		}
+		System.out.println("Starting Image Calculation finished (IM:"+cImgTyp+",IP:"+inPhase+") : "
+				+ StrPctRatio(totVoxels, allVoxels) + " , " + StrMvx(totVoxels)
+				+ " vox");
 		return outImage;
 	}
 	/**
@@ -967,7 +972,10 @@ public class XDF extends BaseTIPLPluginMult {
 				+ ")");
 		long totVox = 0;
 		long surfVox = 0;
-		if (xdfMask==null) xdfMask=new boolean[inStartMask.length];
+		if (xdfMask==null) {
+			xdfMask=new boolean[inStartMask.length];
+			for(int i=0;i<xdfMask.length;i++) xdfMask[i]=true;
+		}
 		hasMask=true;
 		for (int z = lowz; z < (uppz); z++) {
 			for (int y = (lowy); y < (uppy); y++) {
@@ -977,9 +985,9 @@ public class XDF extends BaseTIPLPluginMult {
 						totVox++;
 						boolean outValue = checkNeighborSurface(x, y, z,
 								off,inStartMask);
-						if (!outValue) xdfMask[off]=false; 
-						if (xdfSurfMask[off])
-							surfVox++;
+						xdfSurfMask[off]=outValue;
+						if (!outValue) xdfMask[off]=false; // remove points from the mask that don't belong
+						if (outValue) surfVox++;
 					}
 				}
 			}
@@ -988,7 +996,6 @@ public class XDF extends BaseTIPLPluginMult {
 		System.out.println("Surface Calculation finished  : "
 				+ StrPctRatio(surfVox, totVox) + " , " + StrMvx(surfVox)
 				+ " vox");
-		hasMask=true;
 		return xdfSurfMask;
 	}
 	/**
@@ -1076,7 +1083,7 @@ public class XDF extends BaseTIPLPluginMult {
 		inputType=startImageType;
 		System.out.println("Loading Start Image:"+internalImageReference+" of type:"+startImageType);
 		ImportAim(internalImageReference,startImageType);
-		boolean[] xdfStartMask=prepareStartMask(); // now find the right values in the image
+		boolean[] xdfStartMask=prepareStartMask(startImageType); // now find the right values in the image
 		
 		if (startImageType == 3)
 			useSurface = false;
