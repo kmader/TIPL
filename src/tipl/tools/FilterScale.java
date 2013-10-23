@@ -45,6 +45,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 		final int filterType = p
 				.getOptionInt("filter", 0,
 						"0 - Nearest Neighbor, 1 - Gaussian, 2 - Gradient, 3 - Laplace, 4 - Median");
+
 		final D3int upfactor = p.getOptionD3int("upfactor", new D3int(1, 1, 1),
 				"Upscale factor");
 		final D3int downfactor = p.getOptionD3int("downfactor", new D3int(2, 2,
@@ -260,7 +261,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 
 		System.out.println("New output: dim-" + odim + ", ElSize:" + oelsize
 				+ ", Pos:" + opos + "," + StrPctRatio(odim.prod(), dim.prod())
-				+ " VolRed, ImgT:" + imageType);
+				+ " VolRed, ImgT:" + oimageType);
 		procLog += "New output: dim-" + odim + ", pos:" + opos + ", "
 				+ StrPctRatio(odim.prod(), dim.prod()) + " VolRed, ImgT:"
 				+ imageType + "\n";
@@ -384,10 +385,6 @@ public class FilterScale extends BaseTIPLPluginMult {
 
 	@Override
 	protected void InitMask() {
-		// Defaults for the filter, downscale by 2
-
-		oimageType = -1;
-
 	}
 
 	@Override
@@ -753,6 +750,9 @@ public class FilterScale extends BaseTIPLPluginMult {
 						prefix + "filtersetting",
 						-1.0,
 						"For gaussian it is the Sigma Value, for Median it is the window size (values less than 0 are ignored)");
+		oimageType = p
+				.getOptionInt(prefix+"output", oimageType,
+						"-1 is same as input, "+TImgTools.IMAGETYPE_HELP);
 		final D3int upfactor = p.getOptionD3int(prefix + "upfactor", new D3int(
 				1, 1, 1), "Upscale factor");
 		final D3int downfactor = p.getOptionD3int(prefix + "downfactor",

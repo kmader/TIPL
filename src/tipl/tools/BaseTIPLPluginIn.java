@@ -727,6 +727,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 	public boolean runMulticore() {
 
 		final Thread myThread = Thread.currentThread();
+		
 		if (myThread == launchThread) { // Distribute work load
 			workForThread = new Hashtable<Thread, Object>(neededCores() - 1);
 			jStartTime = System.currentTimeMillis();
@@ -734,10 +735,14 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 			for (int i = 1; i < neededCores(); i++) { // setup the background
 														// threads
 				final Object myWork = divideThreadWork(i);
-				final Thread bgThread = new Thread(this, "BG:"
-						+ getPluginName() + " : " + myWork);
-				workForThread.put(bgThread, myWork);
-				bgThread.start();
+				if (myWork==null) { 
+					System.out.println(this+":Nothing for thread:"+i+" to do, it won't be used!");
+				} else {
+					final Thread bgThread = new Thread(this, "BG:"
+							+ getPluginName() + " : " + myWork);
+					workForThread.put(bgThread, myWork);
+					bgThread.start();
+				}
 			}
 
 			processWork(divideThreadWork(0)); // Do one share of the work while

@@ -1,5 +1,6 @@
 package tipl.blocks;
 
+import tipl.formats.MappedImage;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.tools.EasyContour;
@@ -11,22 +12,23 @@ import tipl.util.TImgTools;
 /** perform a threshold on an input image and remove edges if needed **/
 public class ThresholdBlock extends BaseTIPLBlock {
 	/** A simple circular contour, edge removal, and peeling */
-	public static TImg removeEdges(final TImg cAim, final double remEdgesRadius) {
+	public static TImg removeEdges(final TImgRO cAim, final double remEdgesRadius) {
 		EasyContour myContour = new EasyContour(cAim);
 		myContour.useFixedCirc(remEdgesRadius);
-		myContour.run();
+		myContour.execute();
 		cAim.appendProcLog(myContour.getProcLog());
-		final Peel cPeel = new Peel(cAim, myContour.ExportAim(cAim), new D3int(
+		final Peel cPeel = new Peel(cAim, myContour.ExportImages(cAim)[0], new D3int(
 				1));
 		myContour = null;
 		System.out.println("Calculating Remove Edges Peel " + cAim + " ...");
-		cPeel.run();
-		return cPeel.ExportAim(cAim);
+		cPeel.execute();
+		return cPeel.ExportImages(cAim)[0];
 	}
 
 	protected double threshVal, remEdgesRadius;
-	protected boolean rmEdges;
+	protected boolean rmEdges,flipThreshold;
 	public final String prefix;
+	
 	public final IBlockImage[] inImages = new IBlockImage[] { new BlockImage(
 			"gfilt", "", "Input filtered image", true) };
 
@@ -35,6 +37,7 @@ public class ThresholdBlock extends BaseTIPLBlock {
 					"BW image with values above the threshold", true),
 			new BlockImage("notthreshold", "",
 					"BW image with values below the threshold", false) };
+	
 	final protected String opString = ">";
 	final protected String iopString = "<";
 
@@ -45,6 +48,15 @@ public class ThresholdBlock extends BaseTIPLBlock {
 
 	public ThresholdBlock(final String inPrefix) {
 		super("Threshold");
+		prefix = inPrefix;
+	}
+	/**
+	 * for subclasses of this block
+	 * @param namePrefix
+	 * @param inPrefix
+	 */
+	protected ThresholdBlock(final String namePrefix,final String inPrefix) {
+		super(namePrefix+"Threshold");
 		prefix = inPrefix;
 	}
 
@@ -63,27 +75,31 @@ public class ThresholdBlock extends BaseTIPLBlock {
 		TImg rawImg = TImgTools.ReadTImg(getFileParameter("gfilt"), true, true);
 		TImgRO.FullReadable rawImgPlus = TImgTools.makeTImgFullReadable(rawImg);
 		short[] inImg = rawImgPlus.getShortAim();
-
+		final boolean isFlipped=flipThreshold;
 		// Threshold the data
 		final boolean[] scdat = new boolean[inImg.length];
 		for (int i = 0; i < inImg.length; i++) {
-			scdat[i] = inImg[i] > threshVal;
+			if (isFlipped) 
+				scdat[i] = inImg[i] < threshVal;
+			else 
+				scdat[i] = inImg[i] > threshVal;
 		}
 		rawImgPlus = null;
-		final TImg threshImg = rawImg.inheritedAim(scdat, rawImg.getDim(),
+		TImg threshImg = rawImg.inheritedAim(scdat, rawImg.getDim(),
 				rawImg.getOffset());
-		threshImg.appendProcLog("CMD:Threshold, Value:" + opString + " "
+		threshImg.appendProcLog("CMD:Threshold, Value:" + (isFlipped ? iopString : opString) + " "
 				+ threshVal);
 		TImgTools.RemoveTImgFromCache(getFileParameter("gfilt"));
+		/*
+		 * perform some post threshold operations on the image to clean it up if needed
+		 */
+		threshImg=postThreshFunction(threshImg);
 		if (getFileParameter("notthreshold").length() > 0) {
-			final boolean[] ncdat = new boolean[scdat.length];
-			for (int i = 0; i < scdat.length; i++) {
-				ncdat[i] = inImg[i] < threshVal;
-			}
-			final TImg notThreshImg = rawImg.inheritedAim(ncdat,
-					rawImg.getDim(), rawImg.getOffset());
-			notThreshImg.appendProcLog("CMD:Threshold, Value:" + iopString
+			TImgRO notThreshImg = new MappedImage.InvertImage(threshImg, 10, 1);
+
+			notThreshImg.appendProcLog("CMD:Threshold, Value:" + (isFlipped ? opString : iopString)
 					+ " " + threshVal);
+			notThreshImg=postNotthreshFunction(TImgTools.WrapTImgRO(notThreshImg));
 			finishImages(notThreshImg, getFileParameter("notthreshold"));
 		}
 		finishImages(threshImg, getFileParameter("threshold"));
@@ -92,8 +108,27 @@ public class ThresholdBlock extends BaseTIPLBlock {
 
 		return true;
 	}
+	/**
+	 * The function performs post thresholding tasks on the binary image before the notthresh image is produced
+	 * can be used for morphological operations and similar tasks
+	 * @param inImage image directly after thresholding
+	 * @return
+	 */
+	protected TImg postThreshFunction(TImg inImage) {
+		return inImage;
+	}
+	
+	/**
+	 * The function performs post thresholding tasks on the inverse of the binary image after the notthresh image is produced
+	 * can be used for morphological operations and similar tasks. Default is to run the postthreshfunction
+	 * @param inImage image directly after thresholding
+	 * @return
+	 */
+	protected TImg postNotthreshFunction(TImg inImage) {
+		return postThreshFunction(inImage);
+	}
 
-	protected void finishImages(TImg inImage, final String inName) {
+	protected void finishImages(TImgRO inImage, final String inName) {
 		if (rmEdges)
 			inImage = removeEdges(inImage, remEdgesRadius);
 		TImgTools.WriteTImg(inImage, inName, true);
@@ -113,6 +148,8 @@ public class ThresholdBlock extends BaseTIPLBlock {
 	public ArgumentParser setParameterBlock(final ArgumentParser p) {
 		threshVal = p.getOptionInt(prefix + "threshvalue", 2200,
 				"Value used to threshold image");
+		flipThreshold = p.getOptionBoolean(prefix + "flipthresh",
+				"Flip the threshold criteria (<) instead of (>)");
 		rmEdges = p.getOptionBoolean(prefix + "removeedges",
 				"Leave edges when making contour");
 		remEdgesRadius = p.getOptionDouble(prefix + "edgeradius", 1.0,

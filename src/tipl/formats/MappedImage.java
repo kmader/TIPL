@@ -133,6 +133,48 @@ public class MappedImage extends FuncImage {
 		}
 	}
 
+	/**
+	 * Invert Image simply returns (maxValue - data) with data being the original image
+	 */
+	public static class InvertImage extends MappedImage {
+		protected TImgRO templateData;
+		protected int imageType;
+		final float mxVal;
+		public InvertImage(final TImgRO dummyDataset, final int iimageType,
+				final float maxValue) {
+
+			super(dummyDataset, iimageType, new StationaryVoxelFunction() {
+				final float mxVal = maxValue;
+
+				@Override
+				public double get(final double voxval) {
+					return maxValue-voxval;
+				}
+
+				@Override
+				public double[] getRange() {
+					return new double[] { 0, maxValue };
+				}
+
+				@Override
+				public String name() {
+					return "Invert=[" + maxValue + "-in]";
+				}
+
+				@Override
+				public String toString() {
+					return name();
+				}
+			}, true);
+			mxVal = maxValue;
+		}
+
+		@Override
+		public String toString() {
+			return "InvertImage:<" + mxVal + "-in>";
+		}
+	}
+
 	public static interface StationaryVoxelFunction {
 		/** gray value to return for a voxel at position ipos[] with value v **/
 		public double get(double v);

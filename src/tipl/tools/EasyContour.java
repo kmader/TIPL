@@ -369,7 +369,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 
 		protected double getBinD(final Point t) {
 			final double cAng = Math.atan2(t.y - yc, t.x - xc) + Math.PI;
-			final double cBin = cAng / (2 * Math.PI) * (cpts);
+			final double cBin = cAng / (2 * Math.PI) * (cpts-1);
 			return cBin;
 		}
 
@@ -514,7 +514,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 			int fBin = (int) Math.ceil(nBin);
 			if (fBin == cpts)
 				fBin = 0;
-
+			
 			final Point2D.Double sPt = getPoint(sBin);
 			final Point2D.Double fPt = getPoint(fBin);
 			final double tx = fPt.x - sPt.x;
@@ -619,8 +619,6 @@ public class EasyContour extends BaseTIPLPluginBW {
 
 	@Override
 	public boolean execute() {
-
-		runMulticore();
 		if (Thread.currentThread() == launchThread) {
 			Contour2D cContour;
 			if (cContourGenerator == null)
@@ -632,6 +630,8 @@ public class EasyContour extends BaseTIPLPluginBW {
 					+ ": " + cContour + "\n";
 			runCount++;
 		}
+		
+		runMulticore();
 		return true;
 	}
 
@@ -656,7 +656,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 	@Override
 	@Deprecated
 	public void run() {
-		execute();
+		runMulticore();
 	}
 
 	public void runContouring(final int bSlice, final int tSlice) {
