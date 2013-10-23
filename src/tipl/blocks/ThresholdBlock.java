@@ -11,15 +11,18 @@ import tipl.util.TImgTools;
 
 /** perform a threshold on an input image and remove edges if needed **/
 public class ThresholdBlock extends BaseTIPLBlock {
-	/** A simple circular contour, edge removal, and peeling */
-	public static TImg removeEdges(final TImgRO cAim, final double remEdgesRadius) {
+	protected static TImg makeMask(final TImgRO cAim, final double remEdgesRadius) {
 		EasyContour myContour = new EasyContour(cAim);
 		myContour.useFixedCirc(remEdgesRadius);
 		myContour.execute();
 		cAim.appendProcLog(myContour.getProcLog());
-		final Peel cPeel = new Peel(cAim, myContour.ExportImages(cAim)[0], new D3int(
+		return myContour.ExportImages(cAim)[0];
+	}
+	/** A simple circular contour, edge removal, and peeling */
+	public static TImg removeEdges(final TImgRO cAim, final double remEdgesRadius) {
+		
+		final Peel cPeel = new Peel(cAim,makeMask(cAim,remEdgesRadius), new D3int(
 				1));
-		myContour = null;
 		System.out.println("Calculating Remove Edges Peel " + cAim + " ...");
 		cPeel.execute();
 		return cPeel.ExportImages(cAim)[0];
@@ -36,7 +39,9 @@ public class ThresholdBlock extends BaseTIPLBlock {
 			new BlockImage("threshold", "threshold.tif",
 					"BW image with values above the threshold", true),
 			new BlockImage("notthreshold", "",
-					"BW image with values below the threshold", false) };
+					"BW image with values below the threshold", false),
+			new BlockImage("mask", "",
+					"Mask image containing the sum of both phases", false)};
 	
 	final protected String opString = ">";
 	final protected String iopString = "<";
@@ -101,6 +106,9 @@ public class ThresholdBlock extends BaseTIPLBlock {
 					+ " " + threshVal);
 			notThreshImg=postNotthreshFunction(TImgTools.WrapTImgRO(notThreshImg));
 			finishImages(notThreshImg, getFileParameter("notthreshold"));
+		}
+		if (getFileParameter("mask").length() > 0) {
+			finishImages(new MappedImage.FixedImage(threshImg, 10, 1), getFileParameter("mask"));
 		}
 		finishImages(threshImg, getFileParameter("threshold"));
 

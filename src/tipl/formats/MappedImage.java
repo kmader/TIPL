@@ -134,6 +134,48 @@ public class MappedImage extends FuncImage {
 	}
 
 	/**
+	 * Fixed Image simply returns (maxValue - data) with data being the original image
+	 */
+	public static class FixedImage extends MappedImage {
+		protected TImgRO templateData;
+		protected int imageType;
+		final float fxValue;
+		public FixedImage(final TImgRO dummyDataset, final int iimageType,
+				final float fixedValue) {
+
+			super(dummyDataset, iimageType, new StationaryVoxelFunction() {
+				final float fxVal = fixedValue;
+
+				@Override
+				public double get(final double voxval) {
+					return fxVal;
+				}
+
+				@Override
+				public double[] getRange() {
+					return new double[] { fxVal, fxVal };
+				}
+
+				@Override
+				public String name() {
+					return "FixedImage=[" + fixedValue + "]";
+				}
+
+				@Override
+				public String toString() {
+					return name();
+				}
+			}, true);
+			fxValue = fixedValue;
+		}
+
+		@Override
+		public String toString() {
+			return "FixedImage:<" + fxValue + ">";
+		}
+	}
+	
+	/**
 	 * Invert Image simply returns (maxValue - data) with data being the original image
 	 */
 	public static class InvertImage extends MappedImage {

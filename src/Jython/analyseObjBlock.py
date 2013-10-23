@@ -1,4 +1,6 @@
-
+"""
+The analyze object code makes use of the existing tools and blocks to threshold and analyze an image
+"""
 # All the java libraries we might need
 import tipl.formats.VirtualAim as VA # image IO
 import tipl.tools.ComponentLabel as CL # component labeling
@@ -12,9 +14,10 @@ import tipl.util.ArgumentParser as AP
 import tipl.util.TImgTools as TIT
 import tipl.util.TImgTools.WriteBackground as WriteBackground
 import tipl.util.SGEJob as SGEJob
+import tipl.formats.MappedImage as MappedImage
 # import needed blocks
 import tipl.blocks.FilterBlock as FilterB
-import tipl.blocks.ThresholdBlock as Threshold
+import tipl.blocks.FoamThresholdBlock as Threshold
 
 import tipl.util.TIPLGlobal as TIPLGlobal # for changing the number of available cores
 # jython libraries
@@ -23,14 +26,17 @@ from jarray import array,zeros # matrix library
 
 
 p=AP(sys.argv[1:])
+p.blockOverwrite()  
 blocklist=[FilterB("filt:"),Threshold("thresh:")]
 # set defaults
 p.getOptionD3int("filt:downfactor",D3int(1,1,1),"Default should be 1 since this script isnt about scaling")
+
 p=blocklist[0].setParameter(p)
 # link blocks
 p.getOptionPath("thresh:gfilt",p.getOptionAsString("filt:gfilt"),"Automatically Fed Forward")
+p.getOptionString("thresh:mask","mask.tif","The mask output file should be saved")
 p=blocklist[1].setParameter(p)
-maskFile=p.getOptionPath("mask","mask.tif","Mask Image")
+useInverse=p.getOptionBoolean("useinverse","Use inverse threshold image instead of threshold")
 minVoxCount=p.getOptionInt("minvoxcount",1,"Minimum voxel count");
 sphKernelRadius=p.getOptionDouble("sphkernelradius",1.74,"Radius of spherical kernel to use for component labeling: vertex sharing is sqrt(3)*r, edge sharing is sqrt(2)*r,face sharing is 1*r ");
 writeShapeTensor=p.getOptionBoolean("shapetensor","Include Shape Tensor")
@@ -55,9 +61,17 @@ if runAsJob:
 
 map(lambda x: x.execute(),blocklist)
 
-threshImg=TIT.ReadTImg(p.getOptionAsString("thresh:threshold"))
-maskImg=TIT.ReadTImg(maskFile)
+if useInverse:
+	threshImage=TIT.ReadTImg(p.getOptionAsString("thresh:notthreshold"))
+else:
+	threshImage=TIT.ReadTImg(p.getOptionAsString("thresh:threshold"))
 
+maskFile=p.getOptionAsString("thresh:mask")
+if len(maskFile)<1:
+	maskImage=TIT.WrapTImgRO(MappedImage.FixedImage(threshImage, 10, 1))
+else:
+	maskImage=TIT.ReadTImg(maskFile)
+ 
 def analyzePhase(inImg,maskImg,phName):
 	# volume filter
 	myCL=CL(inImg);
@@ -85,6 +99,6 @@ def analyzePhase(inImg,maskImg,phName):
 	GrayAnalysis.AddRegionColumn(lout,NHimg,phName+"_2.csv",phName+"_3.csv","Neighbors");
 	
 
-analyzePhase(threshImg,maskImg,phaseName)
+analyzePhase(threshImage,maskImage,phaseName)
 
 

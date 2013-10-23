@@ -67,8 +67,8 @@ public class FoamThresholdBlock extends ThresholdBlock {
 						"Radius to use for the kernel (vertex shaing is sqrt(3), edge sharing is sqrt(2), and face sharing is 1)");
 
 		clthresh=p.getOptionBoolean(prefix+"clthresh","Perform component labeling on thresheld image");
-		clnotthresh=p.getOptionBoolean(prefix+"clthresh","Perform component labeling on inverse thresheld image");
-		minVolumePct = p.getOptionDouble("minPct", minVolumePct,
+		clnotthresh=p.getOptionBoolean(prefix+"clnotthresh","Perform component labeling on inverse thresheld image");
+		minVolumePct = p.getOptionDouble(prefix+"clminpct", minVolumePct,
 				"Minimum Volume Percent for Component labeling");
 
 		return p;
