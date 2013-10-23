@@ -113,9 +113,9 @@ public class ThresholdBlock extends BaseTIPLBlock {
 	public ArgumentParser setParameterBlock(final ArgumentParser p) {
 		threshVal = p.getOptionInt(prefix + "threshvalue", 2200,
 				"Value used to threshold image");
-		rmEdges = p.getOptionBoolean("removeedges",
+		rmEdges = p.getOptionBoolean(prefix + "removeedges",
 				"Leave edges when making contour");
-		remEdgesRadius = p.getOptionDouble("edgeradius", 1.0,
+		remEdgesRadius = p.getOptionDouble(prefix + "edgeradius", 1.0,
 				"% of radius to use for removing edges");
 		return p;
 	}

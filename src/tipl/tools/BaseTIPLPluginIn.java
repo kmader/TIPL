@@ -768,7 +768,6 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 																					// load
 			final Object myWork = workForThread.get(myThread);
 			if (myWork == null) {
-				// gommer go schlofe
 				System.out.println("Too many cores for too little work!");
 			} else
 				processWork(myWork);

@@ -418,7 +418,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 	@Override
 	@Deprecated
 	public void run() {
-		execute();
+		runMulticore();
 	}
 
 	@Override

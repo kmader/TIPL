@@ -119,6 +119,7 @@ public class SGEJob {
 	protected String javaCmdPath = "/afs/psi.ch/project/tipl/jvm/bin/java";
 	protected String jobToRun = "ls -R *";
 	protected boolean waitForJob = false;
+	protected boolean includeSGERAM = true;
 	/**
 	 * memory needed in megabytes
 	 */
@@ -204,7 +205,7 @@ public class SGEJob {
 		if (sendMail.length() > 0)
 			headerStr += "#$ -m " + sendMail + "\n";
 		headerStr += "#$ -o " + logName + "\n";
-		headerStr += "#$ -l mem_free=" + mem_free() + ",ram=" + ram()
+		headerStr += "#$ -l mem_free=" + mem_free() + (includeSGERAM ? (",ram=" + ram()) : "")
 				+ ",s_rt=" + runtime() + ",h_rt=" + runtime() + "\n\n";
 		// some strange handling bug, no idea what it is for
 		headerStr += "###################################################\n# Fix the SGE environment-handling bug (bash):\nsource /usr/share/Modules/init/sh\nexport -n -f module\n";
@@ -281,8 +282,21 @@ public class SGEJob {
 		memory = mem;
 		setJvmMemory(mem);
 	}
-
+	
+	/**
+	 * code to set the defaults to the beamline cluster values
+	 */
+	public void setBeamlineCluster() {
+		qsubPath="/gridware/sge/bin/lx24-amd64/qsub";
+		includeSGERAM=false;
+		queueName="tomcat_smp.q";
+		
+	}
 	public ArgumentParser setParameter(final ArgumentParser p) {
+		if (p.getOptionBoolean(argPrefix + "atbeamline",
+				"Load defaults from the tomcat cluster")) {
+			setBeamlineCluster();
+		}
 		cores = p.getOptionInt(argPrefix + "cores", cores,
 				"Number of CPUs to request for a job", 1, 128);
 		email = p.getOptionString(argPrefix + "email", email,
