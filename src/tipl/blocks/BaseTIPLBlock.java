@@ -7,7 +7,9 @@ import java.util.LinkedHashMap;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.tools.Resize;
 import tipl.util.ArgumentParser;
+import tipl.util.D3int;
 import tipl.util.SGEJob;
 import tipl.util.TImgTools;
 
@@ -24,6 +26,10 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	protected boolean skipBlock = true;
 	protected boolean saveToCache = false;
 	protected boolean readFromCache = true;
+	/**
+	 * maximum number of slices to read in (-1 is unlimited)
+	 */
+	protected int maxReadSlices=-1; 
 	protected LinkedHashMap<String, String> blockConnections = new LinkedHashMap<String, String>();
 	final protected LinkedHashMap<String, String> ioParameters = new LinkedHashMap<String, String>();
 	public final static String kVer = "131021_004";
@@ -264,10 +270,37 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 		return ioParameters.get(argument);
 	}
 	
-	@Override
-	public TImgRO getInputFile(final String argument) {
+	
+	private TImgRO getInputFileRaw(final String argument) {
 		 if (getFileParameter(argument).length()<1) return null;
 		 return TImgTools.ReadTImg(getFileParameter(argument),readFromCache,saveToCache);
+	}
+	/**
+	 * only reads in a limited number of slices (enables quick and dirty script tests)
+	 * @param argument name of commandline argument to read in
+	 * @return cropped (if needed) version of the file
+	 */
+	private TImgRO getInputFileMaxSlices(final String argument, int maxSlices) {
+		TImgRO fullImage=getInputFileRaw(argument);
+
+		Resize myResize=new Resize(fullImage);
+		D3int outDim=fullImage.getDim();
+		myResize.cutROI(fullImage.getPos(),new D3int(outDim.x,outDim.y,Math.min(outDim.z, maxSlices)));
+		myResize.execute();
+		return myResize.ExportImages(fullImage)[0];
+	}
+	/**
+	 * Set the maximum number of slices to read in when using the get input file command
+	 * @param maxNumberOfSlices
+	 */
+	public void setMaxSlices(int maxNumberOfSlices) {
+		maxReadSlices=maxNumberOfSlices;
+	}
+	
+	@Override
+	public TImgRO getInputFile(final String argument) {
+		if (maxReadSlices>0) return getInputFileMaxSlices(argument,maxReadSlices);
+		else return getInputFileRaw(argument);
 	}
 
 	@Override

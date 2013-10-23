@@ -1,11 +1,12 @@
 package tipl.blocks;
 
 import tipl.formats.TImg;
+import tipl.formats.TImgRO;
 import tipl.tools.cVoronoi;
 import tipl.tools.kVoronoiShrink;
 import tipl.util.ArgumentParser;
-import tipl.util.TIPLGlobal;
 import tipl.util.ITIPLPluginIO;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 /**
@@ -22,7 +23,7 @@ public class GrowRegions extends BaseTIPLBlock {
 		public int fillType = 0;
 
 		@Override
-		public ITIPLPluginIO getGrowingPlugin(final TImg obj, final TImg mask) {
+		public ITIPLPluginIO getGrowingPlugin(final TImgRO obj, final TImgRO mask) {
 			switch (fillType) {
 			case 0:
 				return new kVoronoiShrink(obj, mask);
@@ -74,10 +75,8 @@ public class GrowRegions extends BaseTIPLBlock {
 
 	@Override
 	public boolean executeBlock() {
-		final TImg labelAim = TImgTools.ReadTImg(getFileParameter("labels"),
-				true, true);
-		final TImg maskImg = TImgTools.ReadTImg(getFileParameter("mask"), true,
-				true);
+		final TImgRO labelAim = getInputFile("labels");
+		final TImgRO maskImg = getInputFile("mask");
 		final TImg[] outImages = SNA.execute(labelAim, maskImg, phaseName,
 				writeShapeTensor);
 		TImgTools.WriteBackground(outImages[0], getFileParameter("fillvols"));

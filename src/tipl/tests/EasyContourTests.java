@@ -3,15 +3,11 @@
  */
 package tipl.tests;
 
-import static org.junit.Assert.fail;
-
 import org.junit.Test;
 
 import tipl.formats.MappedImage;
 import tipl.formats.TImgRO;
 import tipl.tools.EasyContour;
-import tipl.tools.XDF;
-import tipl.util.ITIPLPluginIO;
 import tipl.util.TImgTools;
 
 /**

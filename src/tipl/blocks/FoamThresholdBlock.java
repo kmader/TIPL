@@ -8,7 +8,6 @@ import tipl.tools.ComponentLabel;
 import tipl.tools.Morpho;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
-import tipl.util.TImgTools;
 
 /**
  * The threshold code used for processing liquid foam samples (morphological cleaning and the like
@@ -37,7 +36,7 @@ public class FoamThresholdBlock extends ThresholdBlock {
 		return super.getDescription()+" with additional morphological operations to clean foam images";
 	}
 
-	protected int closeIter=3,openIter=3,closeNH=1,openNH=1,dilNH=1;
+	protected int closeIter=1,openIter=1,closeNH=1,openNH=1,dilNH=1;
 	protected double eroOccup=1.0,morphRadius=1.75,dilOccup=1.0,minVolumePct=5;
 	protected boolean clthresh,clnotthresh;
 

@@ -77,11 +77,14 @@ public class ThresholdBlock extends BaseTIPLBlock {
 
 	@Override
 	public boolean executeBlock() {
-		TImg rawImg = TImgTools.ReadTImg(getFileParameter("gfilt"), true, true);
+		TImg rawImg = TImgTools.WrapTImgRO(getInputFile("gfilt"));
+		
 		TImgRO.FullReadable rawImgPlus = TImgTools.makeTImgFullReadable(rawImg);
 		short[] inImg = rawImgPlus.getShortAim();
 		final boolean isFlipped=flipThreshold;
-		// Threshold the data
+		/**
+		 * Threshold the data (this is not a nice solution but it works for now)
+		 */
 		final boolean[] scdat = new boolean[inImg.length];
 		for (int i = 0; i < inImg.length; i++) {
 			if (isFlipped) 

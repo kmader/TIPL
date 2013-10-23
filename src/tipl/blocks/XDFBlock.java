@@ -1,15 +1,10 @@
 package tipl.blocks;
 
-import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.tools.ComponentLabel;
-import tipl.tools.GrayAnalysis;
-import tipl.tools.Neighbors;
 import tipl.tools.XDF;
-import tipl.tools.kVoronoiShrink;
 import tipl.util.ArgumentParser;
-import tipl.util.TIPLGlobal;
 import tipl.util.ITIPLPluginIO;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 /**

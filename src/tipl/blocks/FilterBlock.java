@@ -1,6 +1,7 @@
 package tipl.blocks;
 
 import tipl.formats.TImg;
+import tipl.formats.TImgRO;
 import tipl.tools.VFilterScale;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPluginIO;
@@ -43,9 +44,8 @@ public class FilterBlock extends BaseTIPLBlock {
 
 	@Override
 	public boolean executeBlock() {
-		final TImg ufiltAim = TImgTools.ReadTImg(getFileParameter("ufilt"),
-				true, true);
-		fs.LoadImages(new TImg[] { ufiltAim });
+		final TImgRO ufiltAim = getInputFile("ufilt");
+		fs.LoadImages(new TImgRO[] { ufiltAim });
 		fs.execute();
 		final TImg gfiltAim = fs.ExportImages(ufiltAim)[0];
 		TImgTools.WriteTImg(gfiltAim, getFileParameter("gfilt"), true);

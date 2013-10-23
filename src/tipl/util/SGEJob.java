@@ -289,7 +289,7 @@ public class SGEJob {
 	public void setBeamlineCluster() {
 		qsubPath="/gridware/sge/bin/lx24-amd64/qsub";
 		includeSGERAM=false;
-		queueName="tomcat_smp.q";
+		queueName="tomcat_smp_standard.q";
 		
 	}
 	public ArgumentParser setParameter(final ArgumentParser p) {

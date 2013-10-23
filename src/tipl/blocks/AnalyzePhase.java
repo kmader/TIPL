@@ -7,8 +7,8 @@ import tipl.tools.GrayAnalysis;
 import tipl.tools.Neighbors;
 import tipl.tools.kVoronoiShrink;
 import tipl.util.ArgumentParser;
-import tipl.util.TIPLGlobal;
 import tipl.util.ITIPLPluginIO;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 /**
@@ -30,13 +30,13 @@ public class AnalyzePhase extends BaseTIPLBlock {
 		public final boolean useGrownLabel = false;
 		ITIPLPluginIO myNH = new Neighbors();
 
-		public TImg[] execute(final TImg labeledImage, final TImg maskImage,
+		public TImg[] execute(final TImgRO labeledImage, final TImgRO maskImage,
 				final String phName, final boolean writeShapeTensor) {
 			// now make the dilation
 			final ITIPLPluginIO vorn = getGrowingPlugin(labeledImage, maskImage);
 			vorn.execute();
 			final TImg growOut = vorn.ExportImages(labeledImage)[0];
-			final TImg cImg = (useGrownLabel) ? (labeledImage) : (growOut);
+			final TImgRO cImg = (useGrownLabel) ? (labeledImage) : (growOut);
 			GrayAnalysis.StartLacunaAnalysis(cImg, phName + "_1.csv", "Mask",
 					writeShapeTensor);
 			GrayAnalysis.AddDensityColumn(growOut, phName + "_1.csv", phName
@@ -59,7 +59,7 @@ public class AnalyzePhase extends BaseTIPLBlock {
 		 * @return a plugin object which when executed fills the mask with the
 		 *         obj (voronoi transform or something like that)
 		 */
-		public ITIPLPluginIO getGrowingPlugin(final TImg obj, final TImg mask) {
+		public ITIPLPluginIO getGrowingPlugin(final TImgRO obj, final TImgRO mask) {
 			return new kVoronoiShrink(obj, mask);
 		}
 

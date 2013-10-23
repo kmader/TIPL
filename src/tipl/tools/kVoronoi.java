@@ -3,6 +3,7 @@ package tipl.tools;
 import java.util.Date;
 
 import tipl.formats.TImg;
+import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.TImgTools;
 
@@ -97,7 +98,7 @@ public class kVoronoi extends VoronoiTransform {
 
 	protected volatile int changescnt, gtBlocks = 0, validVoxels = 0;
 
-	public kVoronoi(final TImg labelAim) {
+	public kVoronoi(final TImgRO labelAim) {
 		super(labelAim);
 	}
 
@@ -111,16 +112,16 @@ public class kVoronoi extends VoronoiTransform {
 	 *            Whether or not regions where the image touches the boundary
 	 *            should be included as edges
 	 **/
-	public kVoronoi(final TImg maskAim, final boolean includeEdges) {
+	public kVoronoi(final TImgRO maskAim, final boolean includeEdges) {
 		super(1);
 		EdgeMask(maskAim, includeEdges);
 	}
 
-	public kVoronoi(final TImg labelAim, final TImg maskAim) {
+	public kVoronoi(final TImgRO labelAim, final TImgRO maskAim) {
 		super(labelAim, maskAim);
 	}
 
-	protected void EdgeMask(final TImg maskAim, final boolean includeEdges) {
+	protected void EdgeMask(final TImgRO maskAim, final boolean includeEdges) {
 		mask = TImgTools.makeTImgFullReadable(maskAim).getBoolAim();
 		aimLength = mask.length;
 		labels = new int[aimLength];

@@ -8,7 +8,6 @@ import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
-import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 /**

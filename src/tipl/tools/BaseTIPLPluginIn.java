@@ -10,8 +10,8 @@ import java.util.Hashtable;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
-import tipl.util.TIPLGlobal;
 import tipl.util.ITIPLPluginIn;
+import tipl.util.TIPLGlobal;
 
 /**
  * Abstract Class for performing TIPLPlugin TIPLPlugin is the class for Plug-ins
