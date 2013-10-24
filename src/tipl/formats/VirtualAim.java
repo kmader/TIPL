@@ -258,8 +258,15 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 
 			outputFile = p.getOptionString("output", "",
 					"Output Aim File (.raw, .tif, directory/, etc)");
+			VirtualAim.scratchLoading = p.getOptionBoolean("local",
+					"Load image data from local filesystems");
+			VirtualAim.scratchDirectory = p.getOptionString("localdir",
+					"/home/scratch/", "Directory to save local data to");
+			
 			System.out.println("Loading " + inputFile + " ...");
+			
 			inputAim = new VirtualAim(inputFile);
+			
 			inputAim.useCompression = !p.getOptionBoolean("nocompression",
 					"Skip compression steps (more compatible but larger )");
 			inputAim.useHighCompression = inputAim.useCompression;

@@ -157,7 +157,7 @@ public class ThresholdBlock extends BaseTIPLBlock {
 
 	@Override
 	public ArgumentParser setParameterBlock(final ArgumentParser p) {
-		threshVal = p.getOptionInt(prefix + "threshvalue", 2200,
+		threshVal = p.getOptionDouble(prefix + "threshvalue", 2200,
 				"Value used to threshold image");
 		flipThreshold = p.getOptionBoolean(prefix + "flipthresh",
 				"Flip the threshold criteria (<) instead of (>)");

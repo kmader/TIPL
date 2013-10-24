@@ -34,7 +34,7 @@ public class TIPLGlobal {
 			return thread;
 		}
 	};
-
+	final static boolean useApacheForCopy=true;
 	/** a simple file copy function for managing outputs */
 	public static void copyFile(final File sourceFile, final File destFile)
 			throws IOException {
@@ -42,24 +42,28 @@ public class TIPLGlobal {
 		if (!destFile.exists()) {
 			destFile.createNewFile();
 		}
-
-		FileChannel source = null;
-		FileChannel destination = null;
-
-		try {
-			source = new FileInputStream(sourceFile).getChannel();
-			destination = new FileOutputStream(destFile).getChannel();
-			destination.transferFrom(source, 0, source.size());
-		} finally {
-			if (source != null) {
-				source.close();
-			}
-			if (destination != null) {
-				destination.close();
+		if (useApacheForCopy) {
+			org.apache.commons.io.FileUtils.copyFile(sourceFile, destFile); // since standard java 1.6 does not support 2g+ files
+			return;
+		} else {
+			FileChannel source = null;
+			FileChannel destination = null;
+			try {
+				source = new FileInputStream(sourceFile).getChannel();
+				destination = new FileOutputStream(destFile).getChannel();
+				destination.transferFrom(source, 0, source.size());
+			} finally {
+				if (source != null) {
+					source.close();
+				}
+				if (destination != null) {
+					destination.close();
+				}
 			}
 		}
 
 	}
+
 
 	public static void copyFile(final String sourceFile, final String destFile) {
 		try {
@@ -114,7 +118,7 @@ public class TIPLGlobal {
 			@Override
 			public void run() {
 				System.out
-						.println("SHUTHOOK\tChecking to ensure that all temp-files have been deleted");
+				.println("SHUTHOOK\tChecking to ensure that all temp-files have been deleted");
 				MyDeleteFile(delName, "SHUTHOOK");
 			}
 		});
@@ -158,7 +162,7 @@ public class TIPLGlobal {
 			System.out.println("Trying to open ... " + filename);
 		} else {
 			System.out
-					.println("Filename is empty, assuming that it is not essential and proceeding carefully!! ... ");
+			.println("Filename is empty, assuming that it is not essential and proceeding carefully!! ... ");
 			return true;
 		}
 

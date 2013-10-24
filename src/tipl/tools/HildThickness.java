@@ -148,7 +148,7 @@ public class HildThickness extends Thickness {
 				+ "_dto.tif", "Output thickness map");
 		final String histoFile = p.getOptionString("csv", defOutName + "_dto",
 				"Histogram of thickness values");
-		final String profileFile = p.getOptionString("profile", histoFile,
+		final String profileFile = p.getOptionString("profile", histoFile+"_z",
 				"Profile of thickness values");
 
 		final boolean runAsJob = p

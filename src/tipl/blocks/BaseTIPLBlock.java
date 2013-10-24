@@ -275,17 +275,21 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 		 if (getFileParameter(argument).length()<1) return null;
 		 return TImgTools.ReadTImg(getFileParameter(argument),readFromCache,saveToCache);
 	}
+	protected int lastReadSlices=-2;
+	protected int startReadSlices=-1;
 	/**
-	 * only reads in a limited number of slices (enables quick and dirty script tests)
+	 * only reads in a limited number of slices (enables quick and dirty script tests and easily dividing data sets to speed up analysis)
 	 * @param argument name of commandline argument to read in
+	 * @param startSlice first slice to take from the image
+	 * @param endSlice last slice to take
 	 * @return cropped (if needed) version of the file
 	 */
-	private TImgRO getInputFileMaxSlices(final String argument, int maxSlices) {
+	private TImgRO getInputFileSliceRange(final String argument,int startSlice, int endSlice) {
 		TImgRO fullImage=getInputFileRaw(argument);
-
 		Resize myResize=new Resize(fullImage);
+		D3int outPos=fullImage.getPos();
 		D3int outDim=fullImage.getDim();
-		myResize.cutROI(fullImage.getPos(),new D3int(outDim.x,outDim.y,Math.min(outDim.z, maxSlices)));
+		myResize.cutROI(new D3int(outPos.x,outPos.y,Math.min(outPos.x, startSlice)),new D3int(outDim.x,outDim.y,Math.min(outDim.z, endSlice-startSlice)));
 		myResize.execute();
 		return myResize.ExportImages(fullImage)[0];
 	}
@@ -293,13 +297,21 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	 * Set the maximum number of slices to read in when using the get input file command
 	 * @param maxNumberOfSlices
 	 */
-	public void setMaxSlices(int maxNumberOfSlices) {
-		maxReadSlices=maxNumberOfSlices;
+	public void setSliceRange(int startSlice,int finishSlice) {
+		startReadSlices=startSlice;
+		lastReadSlices=finishSlice;
+	}
+	/**
+	 * get the current range 
+	 * @return
+	 */
+	public int[] getSliceRange() {
+		return new int[] {startReadSlices,lastReadSlices};
 	}
 	
 	@Override
 	public TImgRO getInputFile(final String argument) {
-		if (maxReadSlices>0) return getInputFileMaxSlices(argument,maxReadSlices);
+		if (lastReadSlices>=startReadSlices) return getInputFileSliceRange(argument,startReadSlices,lastReadSlices);
 		else return getInputFileRaw(argument);
 	}
 
