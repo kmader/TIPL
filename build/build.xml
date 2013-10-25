@@ -20,6 +20,7 @@
             <!--<zipfileset excludes="META-INF/*.SF" src="../libraries/jython-2.7-b1.jar"/>-->
             <!--<zipfileset excludes="META-INF/*.SF" src="../libraries/jython.jar"/>-->
             <zipfileset excludes="META-INF/*.SF" src="../libraries/jython-standalone-2.5.3.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="../libraries/commons-io-2.4.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../libraries/VIB_.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../libraries/VIB-lib.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../libraries/sezpoz-1.9.jar"/>

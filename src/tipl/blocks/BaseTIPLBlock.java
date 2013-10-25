@@ -289,7 +289,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 		Resize myResize=new Resize(fullImage);
 		D3int outPos=fullImage.getPos();
 		D3int outDim=fullImage.getDim();
-		myResize.cutROI(new D3int(outPos.x,outPos.y,Math.min(outPos.x, startSlice)),new D3int(outDim.x,outDim.y,Math.min(outDim.z, endSlice-startSlice)));
+		myResize.cutROI(new D3int(outPos.x,outPos.y,Math.max(outPos.x, startSlice)),new D3int(outDim.x,outDim.y,Math.min(outDim.z, endSlice-startSlice)));
 		myResize.execute();
 		return myResize.ExportImages(fullImage)[0];
 	}

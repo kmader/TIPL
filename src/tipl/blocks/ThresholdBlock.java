@@ -74,13 +74,14 @@ public class ThresholdBlock extends BaseTIPLBlock {
 	protected IBlockImage[] bGetOutputNames() {
 		return outImages;
 	}
-
+	protected boolean useFloat=true;
 	@Override
 	public boolean executeBlock() {
 		TImg rawImg = TImgTools.WrapTImgRO(getInputFile("gfilt"));
 		
 		TImgRO.FullReadable rawImgPlus = TImgTools.makeTImgFullReadable(rawImg);
-		short[] inImg = rawImgPlus.getShortAim();
+		//Object outImage
+		float[] inImg = rawImgPlus.getFloatAim();
 		final boolean isFlipped=flipThreshold;
 		/**
 		 * Threshold the data (this is not a nice solution but it works for now)
