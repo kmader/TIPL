@@ -41,8 +41,13 @@ minVoxCount=p.getOptionInt("minvoxcount",1,"Minimum voxel count");
 sphKernelRadius=p.getOptionDouble("sphkernelradius",1.74,"Radius of spherical kernel to use for component labeling: vertex sharing is sqrt(3)*r, edge sharing is sqrt(2)*r,face sharing is 1*r ");
 writeShapeTensor=p.getOptionBoolean("shapetensor","Include Shape Tensor")
 phaseName=p.getOptionString("phase","pores","Phase name")
+
 TIPLGlobal.availableCores=p.getOptionInt("maxcores",TIPLGlobal.availableCores,"Number of cores/threads to use for processing"); 
-		
+
+VA.scratchLoading = p.getOptionBoolean("local","Load image data from local filesystems");
+VA.scratchDirectory = p.getOptionString("localdir","/home/scratch/", "Directory to save local data to");	
+startSlice=p.getOptionInt("startslice",-1,"Starting Z Slice")
+endSlice=p.getOptionInt("endslice",-2,"Ending Z Slice")
 runAsJob=p.getOptionBoolean("sge:runasjob","Run Program as a Job")
 if runAsJob: 
 	scriptName=p.getOptionPath("sge:scriptname",os.path.abspath(inspect.getfile(inspect.currentframe())),"Path to Script File")
@@ -59,7 +64,8 @@ if runAsJob:
 	job.submit()
 	exit()
 
-map(lambda x: x.execute(),blocklist)
+map(lambda x: x.setSliceRange(startSlice,endSlice),blocklist) # set the slice range to read
+map(lambda x: x.execute(),blocklist) # execute the block code
 
 if useInverse:
 	threshImage=TIT.ReadTImg(p.getOptionAsString("thresh:notthreshold"))
