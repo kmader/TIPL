@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.formats.VirtualAim;
 import tipl.tools.Resize;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
@@ -187,7 +188,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 			checkHelp(p);
 
 	}
-
+	public static final boolean readImageDuringTry=false;
 	/**
 	 * Attempts to load the aim file with the given name (usually tif stack) and
 	 * returns whether or not something has gone wrong during this loading
@@ -197,9 +198,9 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	 */
 	public static boolean tryOpenImagePath(final String filename) {
 
-		TImg tempAim = null;
+		TImg tempAim = null; // TImg (should be, but currently that eats way too much computer time)
 		if (filename.length() > 0) {
-			System.out.println("Trying to open ... " + filename);
+			System.out.println("Trying- to open ... " + filename);
 		} else {
 			System.out
 					.println("Filename is empty, assuming that it is not essential and proceeding carefully!! ... ");
@@ -207,7 +208,11 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 		}
 
 		try {
-			tempAim = TImgTools.ReadTImg(filename);
+			System.out.println("Trying-Image Found: "+filename+(readImageDuringTry ? "and will be open..." : "will be assumed to be ok!"));
+			if (!readImageDuringTry) return true;
+			
+			tempAim = TImgTools.ReadTImg(filename); // ReadTImg (should be, but currently that eats way too much computer time)
+			System.out.println("Trying-Image Opened, checking dimensions:"+tempAim.getDim());
 			if (tempAim.getDim().prod() < 1)
 				return false;
 			return (tempAim.isGood());

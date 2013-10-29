@@ -52,7 +52,7 @@ public abstract class BaseTIPLPluginInExecutor extends BaseTIPLPluginIn {
 	 */
 	public BaseTIPLPluginInExecutor(final D3int idim, final D3int ioffset) {
 		super(idim, ioffset);
-		myPool = Executors.newFixedThreadPool(supportedCores,
+		myPool = Executors.newFixedThreadPool(supportedCores(),
 				TIPLGlobal.daemonFactory);
 		// TODO Auto-generated constructor stub
 	}
@@ -104,7 +104,7 @@ public abstract class BaseTIPLPluginInExecutor extends BaseTIPLPluginIn {
 		}
 		final String outString = "MCJob Ran in "
 				+ StrRatio(System.currentTimeMillis() - jStartTime, 1000)
-				+ " seconds in " + supportedCores;
+				+ " seconds in " + supportedCores();
 		System.out.println(outString);
 		procLog += outString + "\n";
 		return true;

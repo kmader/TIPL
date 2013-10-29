@@ -153,7 +153,7 @@ public class UFEM implements Runnable {
 			EasyContour myContour = new EasyContour(cleanedMaskAim);
 			myContour.usePoly(maskContourSteps, maskContourBW);
 			myContour.bothContourModes = removeMarrowCore;
-			myContour.run();
+			myContour.execute();
 			final Morpho cleanContour = new Morpho(myContour.ExportAim(maskAim));
 			myContour = null;
 
@@ -168,7 +168,7 @@ public class UFEM implements Runnable {
 	}
 
 	public static TImg filter(final TImg ufiltAim, final boolean doLaplace,
-			final boolean doGradient, final boolean doGauss,
+			final boolean doGradient, final boolean doGauss,final boolean doMedian,
 			final int upsampleFactor, final int downsampleFactor) {
 		final VFilterScale fs = new VFilterScale(ufiltAim);
 		if (doLaplace) {
@@ -177,6 +177,8 @@ public class UFEM implements Runnable {
 			fs.setGradientFilter();
 		} else if (doGauss) {
 			fs.setGaussFilter();
+		} else if (doMedian) {
+			fs.setMedianFilter();
 		}
 		fs.SetScale(upsampleFactor, upsampleFactor, upsampleFactor,
 				downsampleFactor, downsampleFactor, downsampleFactor);
@@ -412,7 +414,7 @@ public class UFEM implements Runnable {
 
 	int upsampleFactor, downsampleFactor, threshVal, maskContourSteps,
 			porosMaskPeel, stage;
-	boolean doLaplace, doGradient, doGauss, singleStep, resume, makePreviews,
+	boolean doLaplace, doGradient, doGauss,doMedian, singleStep, resume, makePreviews,
 			multiJobs, doFixMasks, doCL, removeMarrowCore, justCircle,
 			pureWhiteMask;
 	private int smcOperation = 0;
@@ -533,6 +535,7 @@ public class UFEM implements Runnable {
 		doLaplace = p.getOptionBoolean("laplace", "Use a laplacian filter");
 		doGradient = p.getOptionBoolean("gradient", "Use a gradient filter");
 		doGauss = p.getOptionBoolean("gauss", "Use a gaussian filter");
+		doMedian = p.getOptionBoolean("median", "Use a median filter");
 		// Threshold
 		threshVal = p.getOptionInt("thresh", 2200,
 				"Value used to threshold image");
@@ -955,7 +958,7 @@ public class UFEM implements Runnable {
 			ufiltAim = TImgTools.ReadTImg(ufiltAimFile);
 
 			if (doResample) {
-				gfiltAim = filter(ufiltAim, doLaplace, doGradient, doGauss,
+				gfiltAim = filter(ufiltAim, doLaplace, doGradient, doGauss,doMedian,
 						upsampleFactor, downsampleFactor);
 				gfiltAim.WriteAim(gfiltAimFile);
 
@@ -1041,6 +1044,7 @@ public class UFEM implements Runnable {
 			maskAim = contour(maskAim, false, remEdgesRadius, doCL,
 					minVolumePct, removeMarrowCore, maskContourSteps,
 					maskContourBW, justCircle, pureWhiteMask);
+			
 			maskAim.WriteAim(maskAimFile);
 
 			boneAim = peelAim(boneAim, maskAim, 1, true);

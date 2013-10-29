@@ -475,7 +475,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 	/** does this plugin support multi-threaded processing */
 	public boolean supportsThreading = false;
 	/** how many cores are supported (additional threads to launch) */
-	public static int supportedCores = TIPLGlobal.availableCores;
+	public static int supportedCores() {return TIPLGlobal.availableCores;}
 	protected boolean checkMaxCores = true;
 	/** which thread ran the script (will normally not work afterwards */
 	protected Thread launchThread = null;
@@ -692,8 +692,8 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 	public int neededCores() {
 		if (wantedCores() < 1)
 			return 1;
-		if (wantedCores() > supportedCores)
-			return supportedCores;
+		if (wantedCores() > supportedCores())
+			return supportedCores();
 		return wantedCores();
 	}
 
@@ -865,7 +865,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 
 	/** how many cores/jobs does the plugin want (-1 = as many as possible) */
 	public int wantedCores() {
-		return supportedCores;
+		return supportedCores();
 	}
 
 }

@@ -168,7 +168,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 * aim-file
 	 */
 	public String procLog = "";
-	public static final String kVer = "130528_044";
+	public static final String kVer = "131025_045";
 	/** Path of original Aim file */
 	public String aimPath = "";
 
@@ -2427,6 +2427,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 					imglist = null;
 				}
 			}
+			
 			final ImageDecoder dec = ImageCodec.createImageDecoder("tiff", s,
 					param);
 

@@ -35,8 +35,7 @@ public class ISQReader implements TReader {
 			long nPos = ((long) dim.x) * dim.y * bytesPerPixel;
 			nPos *= sliceNumber;
 			nPos += curReader.fileOffset;
-			System.out.println("Read Slice " + sliceNumber + " : " + nPos
-					+ ", Currently :" + in.getFilePointer());
+			//System.out.println("Read Slice " + sliceNumber + " : " + nPos+ ", Currently :" + in.getFilePointer());
 			in.seek(nPos);
 			startPos = in.getFilePointer();
 		}
@@ -88,7 +87,7 @@ public class ISQReader implements TReader {
 				}
 				base += pixelsRead;
 			}
-			System.out.println("Cur Pos:" + in.getFilePointer());
+			//System.out.println("Cur Pos:" + in.getFilePointer());
 			return TImgTools.convertShortArray(cSlice, asType, true, 1, maxVal);
 		}
 
