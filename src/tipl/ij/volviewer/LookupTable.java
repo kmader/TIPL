@@ -14,12 +14,12 @@ import java.awt.image.IndexColorModel;
 public class LookupTable {
 	int [] colors;
 	private int [] origColors;
-	private Control control;
+	final private Control control;
 	
-	final int[][]   lut = new int[256][3];
+	int[][]   lut = new int[256][3];
 	final int[][][] lut2D_2 = new int[256][128][3];
 	final int[][][] lut2D_3 = new int[256][128][3];
-	private Volume_Viewer vv;
+	final private Volume_Viewer vv;
 
 	LookupTable(Control control, Volume_Viewer vv) {
 		this.control = control;
@@ -169,6 +169,34 @@ public class LookupTable {
 			int g = lut[i][1] = tempTable[3*i+1];
 			int b = lut[i][2] = tempTable[3*i+2];
 			colors[i] = 0xff000000  | (r << 16) | (g <<8) | b;
+		}
+	}
+	
+	void stretch(int minVal, int maxVal) {
+		stretch(lut,colors,minVal,maxVal);
+		vv.gradientLUT.repaint();
+	}
+	/** 
+	 * restretch the values in the current color table over a new range
+	 * @param inlut
+	 * @param incolors
+	 * @param minVal
+	 * @param maxVal
+	 */
+	static void stretch(final int[][] inlut,int[] incolors,int minVal,int maxVal) {
+		int[][] newLut = new int[256][3];
+		for (int i=0; i<256; i++) newLut[i]=inlut[i];
+		
+		for (int j=0; j<256; j++) {
+			int i = (int) Math.round((j-minVal+0.0)/(maxVal-minVal)*256);
+			int[] curSpot;
+			if ((i>0) & (i<256)) curSpot=newLut[i];
+			else curSpot=new int[] {0,0,0};
+			
+			int r = inlut[j][0] = curSpot[0];
+			int g = inlut[j][1] = curSpot[1];
+			int b = inlut[j][2] = curSpot[2];
+			incolors[j] = 0xff000000  | (r << 16) | (g <<8) | b;
 		}
 	}
 }

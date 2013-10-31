@@ -54,8 +54,21 @@ public class Volume {
 	private ImagePlus imp;
 	private Volume_Viewer vv; 
 	
-
-	public Volume(Control control, Volume_Viewer vv){
+	public static Volume create(Control control, Volume_Viewer vv) {
+		Volume outV=new Volume(control, vv);
+		outV.getMinMax();
+		outV.readVolumeData();
+		return outV;
+	}
+	public static Volume create(Control control, Volume_Viewer vv,int imin,int imax) {
+		Volume outV=new Volume(control, vv);
+		outV.rescaleImage(imin, imax);
+		return outV;
+	}
+	
+	public double[] getRange() { return new double[] {min,max};}
+	
+	private Volume(Control control, Volume_Viewer vv){
 		this.control = control;
 		this.vv = vv;
 		this.imp = vv.imp;
@@ -94,12 +107,10 @@ public class Volume {
 		yOffa  = heightV/2.f;  	 	   
 		zOffa  = depthV/2.f;
 
-		getMinMax();
-
-		readVolumeData();
+		
 	}
 	
-	void getMinMax() {
+	protected void getMinMax() {
 		min = ip.getMin();
 		max = ip.getMax();
 
@@ -124,8 +135,16 @@ public class Volume {
 		if (control.zAspect == 0)
 			control.zAspect = 1;
 	}
-
-	private void readVolumeData() {
+	public void resetImage() {
+		getMinMax();
+		readVolumeData();
+	}
+	public void rescaleImage(double imin,double imax) {
+		min=imin;
+		max=imax;
+		readVolumeData();
+	}
+	protected void readVolumeData() {
 
 		if (control.LOG) System.out.println("Read data");
 

@@ -77,23 +77,24 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 
 	ImageRegion imageRegion;
 	private ImageRegion sliceImageRegion;
-	
+
 	private JSpinner spinnerX, spinnerY, spinnerZ;
 	private boolean enableSpinnerChangeListener = true;
 
 	private JSlider alphaSlider1, alphaSlider2, alphaSlider3, alphaSlider4, sliderLumTolerance, sliderGradTolerance;
 	private JButton autobutton1, autobutton2, autobutton3, clearbutton1, clearbutton2, clearbutton3, clearbutton4;
-
+	private JButton rescalebutton1,krescalebutton1,rescaledatabutton,resetdatabutton;
+	private JTextField rescaledatamin,rescaledatamax;
 	private JTabbedPane transferFunctionTabbedPane;
 	private JPanel lightBox;
-	
+
 	private String positionString, valueString;
 	private int positionX, positionY, positionZ;
 	private int maxPositionX, maxPositionY, maxPositionZ;
-	
+
 	Pic pic = null;
 	Pic picSlice = null;
- 
+
 	private Control control;
 	private Volume_Viewer vv;
 
@@ -110,19 +111,56 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 	private ImageRegion imageLEDRegion;
 	private Pic picLED;
 
-	
+
 	private JLabel jLabelLight;
 
 	private JSlider objectLightSlider;
-	
+
 	public Gui(Control control, Volume_Viewer vv) {
 		this.control = control;
 		this.vv = vv;
 	}
+	protected void showHisto() {
+		for (int i = 0; i < vv.vol.histVal.length; i++) if (vv.vol.histVal[i]>0) System.out.println(i+"\t"+vv.vol.histVal[i]);
+	}
+	/**
+	 * rescale the current lookup table based on a percent cutoff of the cummulative distribution
+	 * @param pctCutoff
+	 */
+	protected void rescaleLutUsingHistogram(double pctCutoff) {
+		showHisto();
+		double totHist=0;
+		for (int i = 1; i < vv.vol.histVal.length; i++) totHist+=vv.vol.histVal[i];
+		double curHist=0;
+		int minVal=255,maxVal=0;
 
+		for (int i = 1; i < vv.vol.histVal.length; i++)		{ // find the max / modal value
+			if ((curHist/totHist>pctCutoff) & (i<minVal)) minVal=i;
+			if (((curHist/totHist)<(1-pctCutoff)) & (i>maxVal)) maxVal=i;
+			curHist+=vv.vol.histVal[i];
+
+		}
+		System.out.println("New Range Determined ("+Math.round(pctCutoff*100)+"%):"+minVal+", "+maxVal);
+		vv.lookupTable.stretch(minVal, maxVal);
+		vv.lookupTable.setLut();
+		vv.cube.initTextsAndDrawColors(imageRegion);
+		newDisplayMode();
+	}
+	protected void minvisAlphaTable() {
+		alphaSlider1.setValue(150);
+		vv.tf_a1.setAlphaOffset(0);
+		vv.tf_a1.setAlphaAuto2(0.5);
+		vv.tf_a1.repaint();
+		newDisplayMode();
+	}
+	protected void rescaleData() {
+		showHisto();
+		vv.cube.initTextsAndDrawColors(imageRegion);
+		newDisplayMode();
+	}
 
 	void makeGui() {
-		
+
 		if (vv.tf_rgb == null) 
 			vv.tf_rgb = new TFrgb(control, vv);
 		if (vv.tf_a1 == null) 
@@ -134,11 +172,11 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		if (vv.tf_a4 == null) 
 			vv.tf_a4 = new TFalpha4(control, vv.vol, vv.vol.aPaint_3D, vv.vol.aPaint_3D2);
 		//vv.vol.calculateGradients();
-		
-		
+
+
 		control.pickColor = false;
 		if (checkPickColor2 != null) checkPickColor2.setSelected(control.pickColor);
-		
+
 		// image panel
 		pic = new Pic(control, vv, control.windowWidthImageRegion, control.windowHeight);
 		imageRegion = new ImageRegion(control);	
@@ -146,7 +184,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		imageRegion.addMouseMotionListener(this);
 		imageRegion.addMouseListener(this);
 		imageRegion.setPic(pic);
-		
+
 
 
 		picSlice = new Pic(control, vv, control.windowWidthSlices, control.windowHeight-130);
@@ -165,7 +203,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		slicePanel = new JPanel();
 		slicePanel.setLayout(new BorderLayout());
 		slicePanel.add(sliceImageRegion, BorderLayout.NORTH);
-		
+
 
 
 		JPanel sliderBox = new JPanel();
@@ -201,7 +239,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		sliderBox.add(positionYSlider);	
 
 		slicePanel.add(sliderBox,BorderLayout.CENTER);
-		
+
 
 
 		JPanel labelBox = new JPanel();
@@ -223,7 +261,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		centerPanel.add(imageRegion,BorderLayout.CENTER);
 		centerPanel.add(slicePanel,BorderLayout.WEST);
 
-		
+
 		// upper button panel
 		upperButtonPanel = new JPanel();
 		//upperButtonPanel.setLayout(new GridLayout(1,0));
@@ -311,8 +349,8 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 			}
 		});
 		upperButtonPanel.add(buttonSaveView); 
-		
-		
+
+
 		JButton buttonReset = new JButton("Reset");
 		buttonReset.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -327,14 +365,14 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		sliderPanel.setPreferredSize(new Dimension(control.windowWidthSliderRegion, control.windowHeight));
 		sliderPanel.setMaximumSize(new Dimension(control.windowWidthSliderRegion, control.windowHeight));
 		sliderPanel.setLayout(new GridLayout(0,1));
-				
+
 		control.maxDist = (int)(Math.sqrt(vv.vol.zOffa*vv.vol.zOffa*control.zAspect*control.zAspect + vv.vol.yOffa*vv.vol.yOffa +vv.vol.xOffa*vv.vol.xOffa));
 		if (!control.distWasSet && control.renderMode >= Control.PROJECTION_MAX)
 			control.dist = -control.maxDist;
 		control.dist = Math.min(Math.max(control.dist, -control.maxDist), control.maxDist);
 
 		JPanel panelDist = new JPanel();	
-		
+
 		picLED = new Pic(control, vv, 15, 15);
 		imageLEDRegion = new ImageRegion(control);	
 		imageLEDRegion.setPlaneColor(UIManager.getColor ( "Panel.background" ));
@@ -343,7 +381,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		picLED.render_LED(true);
 		imageLEDRegion.setImage(picLED.image);
 		imageLEDRegion.repaint();
-		
+
 		String textOnButton = (control.showTF) ?"<html><body><center>Hide<br>TF</center></body></html>" :
 			"<html><body><center>Show<br>TF</center></body></html>";
 		JButton tfButton = new JButton(textOnButton);
@@ -399,7 +437,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		panelScale.add(scaleLabel2);		
 		sliderPanel.add(panelScale); 
 
-		
+
 		// lower button panel (south) ===========================================
 		lowerButtonPanel = new JPanel();
 		lowerButtonPanel.setPreferredSize(new Dimension(900, 40));
@@ -427,7 +465,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		checkSlices.setHorizontalTextPosition(SwingConstants.LEADING);
 		checkSlices.addItemListener (this);
 		panelCheck.add(checkSlices);
-		
+
 		JPanel panelSpinners = new JPanel();
 		JLabel labelX = new JLabel("Rotation: x:");
 		panelSpinners.add(labelX);
@@ -443,7 +481,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		panelSpinners.add(labelZ);
 		spinnerZ = makeSpinner(Math.round(control.degreeZ));
 		panelSpinners.add(spinnerZ);
-		
+
 		JPanel panelOrientationButtons = new JPanel();
 		panelOrientationButtons.setLayout(new GridLayout(1,3));
 
@@ -493,20 +531,67 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 
 
 
-		
+
 		// transferfunction panel ===========================================
 		transferFunctionPanel = new JPanel();
-		
+
 		transferFunctionPanel.setPreferredSize(new Dimension(280,650));
+
+		rescaledatamin = new JTextField();
+		rescaledatamin.setText("" + vv.vol.getRange()[0]);
+		rescaledatamin.setPreferredSize(new Dimension(50,20));
+		transferFunctionPanel.add(rescaledatamin);
+		rescaledatamax = new JTextField();
+		rescaledatamax.setText("" + vv.vol.getRange()[1]);
+		rescaledatamax.setPreferredSize(new Dimension(50,20));
+		transferFunctionPanel.add(rescaledatamax);
+		// image range
+		rescaledatabutton = new JButton("rescale");
+		rescaledatabutton.setMargin(new java.awt.Insets(1, 1, 1, 1));
+		rescaledatabutton.setFont(new Font("Sans", Font.PLAIN, 12));
+		rescaledatabutton.setPreferredSize(new Dimension(50,20));
+		rescaledatabutton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				vv.vol.rescaleImage(Double.parseDouble(rescaledatamin.getText()),Double.parseDouble(rescaledatamax.getText()));
+				rescaleData();
+			}
+		});
+		transferFunctionPanel.add(rescaledatabutton);
+		resetdatabutton = new JButton("reset");
+		resetdatabutton.setMargin(new java.awt.Insets(1, 1, 1, 1));
+		resetdatabutton.setFont(new Font("Sans", Font.PLAIN, 12));
+		resetdatabutton.setPreferredSize(new Dimension(40,20));
+		resetdatabutton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				vv.vol.resetImage();
+				rescaledatamin.setText(""+vv.vol.getRange()[0]);
+				rescaledatamax.setText(""+vv.vol.getRange()[0]);
+				rescaleData();
+			}
+		});
+		transferFunctionPanel.add(resetdatabutton);
 		JLabel tfLabel = new JLabel(" Transfer Function (TF): Color & Alpha");
 		transferFunctionPanel.add(tfLabel);
-		
+
 		lutChoice = new JComboBox(Control.lutName);
 		lutChoice.setSelectedIndex(control.lutNr);
-		lutChoice.setPreferredSize(new Dimension(240, 30));
+		lutChoice.setPreferredSize(new Dimension(190, 30));
 		lutChoice.setAlignmentX(Component.LEFT_ALIGNMENT);
 		lutChoice.addActionListener(this);
 		transferFunctionPanel.add(lutChoice);
+
+		// new rescale button
+		rescalebutton1 = new JButton("rescale");
+		rescalebutton1.setMargin(new java.awt.Insets(1, 1, 1, 1));
+		rescalebutton1.setFont(new Font("Sans", Font.PLAIN, 12));
+		rescalebutton1.setPreferredSize(new Dimension(50,20));
+		rescalebutton1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				rescaleLutUsingHistogram(0.05);
+			}
+		});
+		transferFunctionPanel.add(rescalebutton1);
+
 
 		JLabel rgbLabel = new JLabel("Draw LUT");
 		transferFunctionPanel.add(rgbLabel);
@@ -557,7 +642,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		JLabel alphaLabel1 = new JLabel("                                      ");
 		tfPanel1D.add(alphaLabel1);
 		tfPanel1D.add(vv.tf_a1);
-		
+
 
 		alphaSlider1 = new JSlider(0, 300, 150);
 		alphaSlider1.setBorder( new TitledBorder(empty, "global alpha offset", TitledBorder.CENTER, TitledBorder.BELOW_BOTTOM, new Font("Sans", Font.PLAIN, 10)));
@@ -593,7 +678,22 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 				newDisplayMode();
 			}
 		});
+
 		tfPanel1D.add(clearbutton1);
+
+
+
+		// new rescale button
+		krescalebutton1 = new JButton("minvis");
+		krescalebutton1.setMargin(new java.awt.Insets(1, 1, 1, 1));
+		krescalebutton1.setFont(new Font("Sans", Font.PLAIN, 12));
+		krescalebutton1.setPreferredSize(new Dimension(50,20));
+		krescalebutton1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				minvisAlphaTable();
+			}
+		});
+		tfPanel1D.add(krescalebutton1);
 
 		// transfer function panel 2D Luminance / Gradient
 		JPanel tfPanel2D = new JPanel();
@@ -657,6 +757,8 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 			}
 		});
 		tfPanel2D.add(clearbutton2);
+
+
 
 		// transfer function panel 2D LH 
 		JPanel tfPanel2DLH = new JPanel();
@@ -822,8 +924,8 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		jp3.add(tfPanel2DLH);
 		jp4.add(tfPanelPaint);
 		transferFunctionPanel.add(transferFunctionTabbedPane);
-		
-		
+
+
 		// TODO  light
 		lightBox = new JPanel();
 		lightBox.setLayout(new BorderLayout());
@@ -833,7 +935,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		lightSliderBoxL.setPreferredSize(new Dimension(58, 110));
 		lightSliderBoxR.setLayout(new GridLayout(5,1));
 		lightSliderBoxL.setLayout(new GridLayout(5,1));
-		
+
 		JLabel jl1 = new JLabel("object color", SwingConstants.RIGHT);
 		jl1.setFont(new Font("Sans", Font.PLAIN, 10));
 		lightSliderBoxL.add(jl1);
@@ -842,7 +944,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		objectLightSlider.addMouseListener(this);
 		objectLightSlider.setEnabled(control.useLight);
 		lightSliderBoxR.add(objectLightSlider);
-		
+
 		JLabel jl2 = new JLabel("ambient", SwingConstants.RIGHT);
 		jl2.setFont(new Font("Sans", Font.PLAIN, 10));
 		lightSliderBoxL.add(jl2);
@@ -851,7 +953,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		ambientSlider.addMouseListener(this);
 		ambientSlider.setEnabled(control.useLight);
 		lightSliderBoxR.add(ambientSlider);	
-		
+
 		JLabel jl3 = new JLabel("diffuse", SwingConstants.RIGHT);
 		jl3.setFont(new Font("Sans", Font.PLAIN, 10));
 		lightSliderBoxL.add(jl3);
@@ -860,7 +962,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		diffuseSlider.addMouseListener(this);
 		diffuseSlider.setEnabled(control.useLight);
 		lightSliderBoxR.add(diffuseSlider);	
-		
+
 		JLabel jl4 = new JLabel("specular", SwingConstants.RIGHT);
 		jl4.setFont(new Font("Sans", Font.PLAIN, 10));
 		lightSliderBoxL.add(jl4);
@@ -869,7 +971,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		specularSlider.addMouseListener(this);
 		specularSlider.setEnabled(control.useLight);
 		lightSliderBoxR.add(specularSlider);	
-		
+
 		JLabel jl5 = new JLabel("shine", SwingConstants.RIGHT);
 		jl5.setFont(new Font("Sans", Font.PLAIN, 10));
 		lightSliderBoxL.add(jl5);
@@ -880,13 +982,13 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		shineSlider.addMouseListener(this);
 		shineSlider.setEnabled(control.useLight);
 		lightSliderBoxR.add(shineSlider);	
-		
-		
+
+
 		checkLight = new JCheckBox("Light");
 		checkLight.setSelected(control.useLight);
 		//checkLight.setHorizontalAlignment(JCheckBox.RIGHT);
 		checkLight.addItemListener (this);
-		
+
 		picLight = new Pic(control, vv, 55, 55);
 		imageLightRegion = new ImageRegion(control);	
 		imageLightRegion.setPlaneColor(UIManager.getColor ( "Panel.background" ));
@@ -898,13 +1000,13 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		picLight.render_sphere();
 		imageLightRegion.setImage(picLight.image);
 		imageLightRegion.repaint();
-		
+
 		JPanel lightBoxLeft = new JPanel();
 		lightBoxLeft.setPreferredSize(new Dimension(120, 115));
 		lightBoxLeft.setLayout(new BorderLayout());
 		lightBoxLeft.add(checkLight, BorderLayout.NORTH);
 		lightBoxLeft.add(lightRegion, BorderLayout.CENTER);
-		
+
 		jLabelLight = new JLabel("<html>Drag sphere <P>to change<P> direction, <P> double click<P> to change <P>color of light.</html>");
 		lightBoxLeft.add(jLabelLight, BorderLayout.WEST);
 		//jLabelLight.setVisible(control.light == 1);
@@ -913,17 +1015,17 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 			jLabelLight.setForeground(Color.BLACK);
 		else
 			jLabelLight.setForeground(UIManager.getColor ("Panel.background"));
-		
-		
+
+
 		JPanel lightBoxBottom = new JPanel();
 		lightBoxBottom.setLayout(new GridLayout(1,2));
 
-		
+
 		lightBox.add(lightBoxLeft, BorderLayout.WEST);
 		lightBox.add(lightSliderBoxL, BorderLayout.CENTER);
 		lightBox.add(lightSliderBoxR, BorderLayout.EAST);
 		transferFunctionPanel.add(lightBox);
-		
+
 		if (control.renderMode >= Control.PROJECTION_MAX) {
 			transferFunctionTabbedPane.setVisible(true);
 			samplingLabel.setVisible(true);
@@ -934,12 +1036,12 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 			samplingLabel.setVisible(false);
 			tfSampling.setVisible(false);
 		}
-		
+
 		if (control.renderMode == Control.VOLUME) 
 			lightBox.setVisible(true);
 		else 
 			lightBox.setVisible(false);
-		
+
 
 		// put all together
 		setLayout(new BorderLayout());
@@ -959,7 +1061,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		sliceImageRegion.setText("yz slice  x=" + positionX, 1, xs, wy+wz+2*ys-3, 0, Color.black, 1);
 		sliceImageRegion.setText("xz slice  y=" + positionY, 2, xs, wy+2*wz+3*ys-3, 0, Color.black, 1);		
 	}
-	
+
 	private JSpinner makeSpinner(float value) {
 		JSpinner jSpinner;
 		SpinnerNumberModel m_numberSpinnerModel;
@@ -1086,7 +1188,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 			imageLightRegion.setImage(picLight.image);
 			imageLightRegion.repaint();
 		}
-		
+
 		if ( ( (slider == positionXSlider || slider == positionYSlider || slider == positionZSlider) && control.showSlices) ||
 				slider == scaleSlider || slider == alphaSlider1 || slider == alphaSlider2 || slider == alphaSlider3 || slider == alphaSlider4 || 
 				slider == objectLightSlider ||  slider == ambientSlider || slider == diffuseSlider || slider == specularSlider || slider == shineSlider ||slider == distSlider) {
@@ -1143,7 +1245,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 					break;
 				}
 				vv.lookupTable.setLut();
-				
+
 				if (checkPickColor2 != null) checkPickColor2.setSelected(control.pickColor);
 				if (checkPickColor3 != null) checkPickColor3.setSelected(control.pickColor);
 				if (control.lutNr == Control.ORIG || control.lutNr == Control.GRAY) {
@@ -1181,7 +1283,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 					tfSampling.setVisible(false);
 					control.dist = 0;
 				}
-				
+
 				if (control.renderMode == Control.VOLUME) 
 					lightBox.setVisible(true);
 				else 
@@ -1272,7 +1374,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 				}
 			}
 		}
-		
+
 		if (source == imageLightRegion) {
 			if (e.getClickCount() >= 2) {
 				Color lightColor = JColorChooser.showDialog(null, "Choose light color", null);
@@ -1288,7 +1390,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 				}
 			}
 		}
-		
+
 	}
 
 	public void mouseEntered(MouseEvent arg0) {}
@@ -1430,7 +1532,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		signalBusy();
 
 		vv.cube.setTextAndLines(imageRegion);
-		
+
 		if (control.renderMode >= Control.PROJECTION_MAX){ 
 			pic.startVolumeRendering();
 		}  
@@ -1451,7 +1553,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		sliceImageRegion.setImage(picSlice.image);
 		sliceImageRegion.repaint();		
 	}
-	
+
 	void signalReady() {
 		if (control.LOG) {
 			long end = System.currentTimeMillis();
@@ -1462,10 +1564,10 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		imageLEDRegion.setImage(picLED.image);
 		imageLEDRegion.paintImmediately(0, 0, imageLEDRegion.getWidth(), imageLEDRegion.getHeight());
 	}
-	
+
 	long startR=0;
 
-	
+
 	void signalBusy() {
 		if (control.LOG) {
 			if (control.LOG) startR = System.currentTimeMillis();
@@ -1475,7 +1577,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		imageLEDRegion.setImage(picLED.image);
 		imageLEDRegion.paintImmediately(0, 0, imageLEDRegion.getWidth(), imageLEDRegion.getHeight());
 	}
-	
+
 
 	public void setSpinners() {
 		enableSpinnerChangeListener = false;
@@ -1486,16 +1588,16 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		}
 		enableSpinnerChangeListener = true;		
 	}
-	
-	
+
+
 	class SpinnerListener implements ChangeListener /*, ActionListener */{
 
 		static final int MIN_TIME = 200;	// minimum time in ms between update requests
-		
+
 		public void stateChanged(ChangeEvent evt) {
 			if (enableSpinnerChangeListener) {
 				control.spinnersAreChanging = true;
-		
+
 				control.degreeX = (Float) spinnerX.getValue();
 				control.degreeY = (Float) spinnerY.getValue();
 				control.degreeZ = (Float) spinnerZ.getValue();

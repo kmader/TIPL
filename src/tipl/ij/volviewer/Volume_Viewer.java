@@ -122,10 +122,15 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 	public static String join(String[] a,String delim) {return Arrays.asList(a).toString().replaceAll(", ", delim).replaceAll("^\\[|\\]$", "");}
 	public static String join(String[] a) {return join(a,", ");}
 	protected String snapshotPath="";
+	protected boolean customRange=false;
+	protected int crMin=0,crMax=0;
 	@Override
 	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
 		// TODO Update help descriptions
 		batch = p.getOptionBoolean(prefix+"batch", batch,"Run in batch mode");
+		customRange = p.getOptionBoolean(prefix+"usecr", customRange,"Use custom ranges");
+		crMin = p.getOptionInt(prefix+"crmin", crMin,"Minimum value");
+		crMax = p.getOptionInt(prefix+"crmax", crMax,"Maximum value");
 		control.xloc = p.getOptionInt(prefix+"xloc", control.xloc,"x location");
 		control.yloc = p.getOptionInt(prefix+"yloc", control.yloc,"y location");
 		control.showTF = p.getOptionBoolean(prefix+"showTF",true, "Show the Transfer function");
@@ -157,7 +162,7 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 		control.lightGreen = p.getOptionInt(prefix+"lightGreen", control.lightGreen,"");
 		control.lightBlue = p.getOptionInt(prefix+"lightBlue", control.lightBlue,"");
 		control.snapshot =  p.getOptionBoolean(prefix+"snapshot",control.snapshot,"Take a snapshot");
-		snapshotPath=p.getOptionPath("output", snapshotPath, "Location to save the output image(s)");
+		snapshotPath=p.getOptionPath(prefix+"output", snapshotPath, "Location to save the output image(s)");
 		return p;
 	}
 	@Override
@@ -219,8 +224,11 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 		}
 		if(imp.getType()==ImagePlus.COLOR_RGB) 	// Check for RGB stack.
 			control.isRGB = true;
-
-		vol = new Volume(control, this);
+		if (customRange) {
+			vol = Volume.create(control, this,crMin,crMax);
+		} else {
+			vol = Volume.create(control, this);
+		}
 
 		lookupTable = new LookupTable(control, this);
 		lookupTable.readLut();

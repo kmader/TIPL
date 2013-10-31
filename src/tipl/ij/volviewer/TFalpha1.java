@@ -100,8 +100,36 @@ public class TFalpha1 extends JPanel implements MouseListener, MouseMotionListen
 			alpha1[x] = alpha1Dauto[x]; // copy alpha1Dauto to alpha1
 			a1[x] = (int) Math.min(Math.max(0,alpha1[x]), 255);
 		}
+		// Zero is always useless in my images
+		alpha1[0]=0;
+		a1[0]=0;
 		control.alphaWasChanged = true;
 	}
+	public static double percentVisible(float[] alphaMap, int[] histogram) {
+		double totSum=0,visSum=0;
+		for(int i=0;i<alphaMap.length;i++) {
+			totSum+=histogram[i];
+			visSum+=alphaMap[i]/255*histogram[i];
+		}
+		return visSum/totSum;
+	}
+	public void setAlphaAuto2(double pctVisible) {
+		float sumAboveZero=0;
+		for (int i = 1; i < vol.histVal.length; i++) { // find the max / modal value
+			sumAboveZero+=vol.histVal[i];
+		}
+		float sumAll=sumAboveZero+vol.histVal[0];
+		// Zero is always useless in my images
+		alpha1[0]=0;
+		a1[0]=0;
+		for (int x = 1; x < 256; x++) {
+			alpha1[x] =(float) (255*pctVisible/(sumAboveZero/sumAll)); // copy alpha1Dauto to alpha1
+			a1[x] = (int) Math.min(Math.max(0,alpha1[x]), 255);
+		}
+		
+		control.alphaWasChanged = true;
+	}
+	
 
 	public void clearAlpha() {
 
