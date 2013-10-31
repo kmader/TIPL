@@ -8,11 +8,25 @@ import java.nio.channels.FileChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import tipl.formats.VirtualAim;
 import tipl.tools.BaseTIPLPluginIn;
 
 public class TIPLGlobal {
+	/**
+	 * shutdown an executor service and wait for everything to finish.
+	 * @param inPool
+	 */
+	public static void waitForever(ExecutorService inPool) {
+		inPool.shutdown();
+		try {
+			inPool.awaitTermination(100, TimeUnit.DAYS);
+		} catch(Exception e) {
+			e.printStackTrace();
+			throw new IllegalArgumentException(inPool+" executorservice crashed:"+e.getMessage());
+		}
+	}
 	/**
 	 * the current runtime being used (whatever that is)
 	 */

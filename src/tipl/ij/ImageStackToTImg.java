@@ -45,19 +45,7 @@ public class ImageStackToTImg implements TImg {
 				inStack.getSize() + 1));
 		stack=inStack.getImageArray();
 		// Figure out what is in the stack
-		if (stack[0] instanceof char[])
-			imageType = TImgTools.IMAGETYPE_CHAR;
-		else if (stack[0] instanceof short[])
-			imageType = TImgTools.IMAGETYPE_SHORT;
-		else if (stack[0] instanceof int[])
-			imageType = TImgTools.IMAGETYPE_INT;
-		else if (stack[0] instanceof float[])
-			imageType = TImgTools.IMAGETYPE_FLOAT;
-		else if (stack[0] instanceof boolean[])
-			imageType = TImgTools.IMAGETYPE_BOOL;
-		else {
-			throw new IllegalArgumentException(this+"Unreadable!!!"+inStack);
-		}
+		imageType=TImgTools.identifySliceType(stack[0]);
 	}
 
 	@Override

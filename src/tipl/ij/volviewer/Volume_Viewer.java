@@ -28,6 +28,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JFrame;
 
@@ -38,6 +43,7 @@ import tipl.ij.ImageStackToTImg;
 import tipl.ij.TImgToImagePlus;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPluginIn;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
@@ -74,7 +80,29 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 		control = new Control(this);
 		control.xloc=100;
 		control.yloc=50;
+		
 	}
+	protected Volume_Viewer(Volume invol,TImgRO inInternalImage) {
+		if (ijcore==null) ijcore=new ImageJ(ImageJ.NO_SHOW); // open the ImageJ window to see images and results
+		
+		// This should be created at the very beginning
+		control = new Control(this);
+		control.xloc=100;
+		control.yloc=50;
+		vol=invol;
+		internalImage=inInternalImage;
+		
+		if (internalImage==null) throw new IllegalArgumentException(this+": No image has been loaded, aborting");
+		
+		imp=TImgToImagePlus.MakeImagePlus(internalImage);
+		if (imp == null  || !(imp.getStackSize() > 1)) {
+			IJ.showMessage("Stack required");
+			return;
+		}
+		if(imp.getType()==ImagePlus.COLOR_RGB) 	// Check for RGB stack.
+			control.isRGB = true;
+	}
+	
 	@Override
 	public boolean execute() {
 		
@@ -123,6 +151,9 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 	public static String join(String[] a) {return join(a,", ");}
 	protected String snapshotPath="";
 	protected boolean customRange=false;
+	protected String animatedVariable="";
+	protected double animatedStart=0,animatedEnd=1;
+	protected int animatedSteps=10;
 	protected int crMin=0,crMax=0;
 	@Override
 	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
@@ -163,6 +194,11 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 		control.lightBlue = p.getOptionInt(prefix+"lightBlue", control.lightBlue,"");
 		control.snapshot =  p.getOptionBoolean(prefix+"snapshot",control.snapshot,"Take a snapshot");
 		snapshotPath=p.getOptionPath(prefix+"output", snapshotPath, "Location to save the output image(s)");
+		animatedVariable=p.getOptionString(prefix+"animatedarg", animatedVariable, "Argument to animate with");
+		animatedStart=p.getOptionDouble(prefix+"aa_start", animatedStart, "Starting value for the animated argument");
+		animatedEnd=p.getOptionDouble(prefix+"aa_end", animatedStart, "Ending value for the animated argument");
+		animatedSteps=p.getOptionInt(prefix+"aa_steps", animatedSteps, "Number of steps for the animated argument");
+		
 		return p;
 	}
 	@Override
@@ -180,6 +216,7 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 		assert(inImages.length>0);
 		assert(inImages.length<2);
 		internalImage=inImages[0];
+		load_image();
 	}
 	
 	public static void main(String args[]) {
@@ -193,7 +230,7 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 		cArgs.checkForInvalid();
 		TImg inData=TImgTools.ReadTImg(inpath);
 		vv.LoadImages(new TImgRO[] {inData});
-		vv.run(cArgs.toString());
+		vv.run("");
 		
 		vv.waitForClose();
 	}
@@ -208,27 +245,89 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 		run("");
 		waitForClose();
 	}
-	/**
-	 * run the plugin with a starting image
-	 * @param args commands for plugin
-	 * @param inImp the image to use
-	 */
-	public void run(String args) {
-		if (internalImage==null) internalImage=ImageStackToTImg.FromImagePlus(WindowManager.getCurrentImage());
+	protected Future<Volume> fVol;
+	protected void load_image() {
+		if (internalImage==null) throw new IllegalArgumentException(this+": No image has been loaded, aborting");
 		
 		imp=TImgToImagePlus.MakeImagePlus(internalImage);
-
 		if (imp == null  || !(imp.getStackSize() > 1)) {
 			IJ.showMessage("Stack required");
 			return;
 		}
 		if(imp.getType()==ImagePlus.COLOR_RGB) 	// Check for RGB stack.
 			control.isRGB = true;
+		ExecutorService myPool = Executors.newFixedThreadPool(1,TIPLGlobal.daemonFactory);
+		final Volume_Viewer cVV=this;
 		if (customRange) {
-			vol = Volume.create(control, this,crMin,crMax);
+			fVol = myPool.submit(new Callable<Volume>() {
+				public Volume call() {
+					return Volume.create(control, cVV,crMin,crMax);
+				}
+			});
 		} else {
-			vol = Volume.create(control, this);
+			fVol = myPool.submit(new Callable<Volume>() {
+				public Volume call() {
+					return Volume.create(control, cVV);
+				}
+			});
 		}
+		myPool.shutdown();
+	}
+	/**
+	 * run the plugin with a starting image
+	 * @param args commands for plugin
+	 * @param inImp the image to use
+	 */
+	public void run(String args) {
+		// make sure all of the data is loaded
+		try {
+			vol=fVol.get();
+		} catch(Exception e) {
+			e.printStackTrace();
+			throw new IllegalArgumentException(this+" volume loading crashed:"+e.getMessage());
+		}
+		if (animatedVariable.length()>0) {
+			batch=true; // no sense in making a whole crap ton of windows
+			double curValue=animatedStart;
+			double stepSize=(animatedEnd-animatedStart)/(animatedSteps-1);
+			String rootName=snapshotPath;
+			String cAnimatedArgument="-"+animatedVariable+"=";
+			ExecutorService myPool = Executors.newFixedThreadPool(TIPLGlobal.availableCores,TIPLGlobal.daemonFactory);
+			
+			for(int i=0;i<animatedSteps;i++) {
+				ArgumentParser p=setParameter(cAnimatedArgument+curValue+" -output="+rootName+"_"+String.format("%04d",i)+".tif");
+				p.checkForInvalid();
+				final String finalArgs=p.toString();
+				final Volume finalVol=vol;
+				final TImgRO itImg=internalImage;
+				 myPool.submit(new Runnable() {
+					public void run() {
+					Volume_Viewer cPlug=new Volume_Viewer(finalVol,itImg);
+					cPlug.setParameter(finalArgs);
+					cPlug.run_plugin();
+					}
+					
+				}); 
+				
+				
+				//run_plugin();
+				curValue+=stepSize;
+			}
+			
+			TIPLGlobal.waitForever(myPool);
+			
+		} else run_plugin();
+		cleanup();
+	}
+	protected void flush_plugin() {
+		lookupTable=null;
+		cube=null;
+		tr=null;
+		trLight=null;
+		gui=null;
+		System.gc();
+	}
+	public void run_plugin() {
 
 		lookupTable = new LookupTable(control, this);
 		lookupTable.readLut();
@@ -268,7 +367,7 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 			} while (!control.isReady);
 			if (snapshotPath.length()>0) gui.imageRegion.saveToImageFile(snapshotPath, this.toString());
 			else gui.imageRegion.saveToImage();
-			cleanup();
+			
 		}
 		else {
 			frame = new JFrame("3D Preview " +  version + " ");
@@ -277,7 +376,7 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 				public void windowClosing(WindowEvent e) {
 					if (control.snapshot)
 						gui.imageRegion.saveToImage();
-					writePrefs();
+					
 					cleanup();
 					frame.dispose();
 				}
@@ -438,7 +537,7 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 		control.lightBlue = (int) Prefs.get("VolumeViewer.lightBlue", control.lightBlue);
 	}
 
-	private void writePrefs() {
+	private void writePrefsOLD() {
 		Prefs.set("VolumeViewer.xloc", frame.getLocation().x);
 		Prefs.set("VolumeViewer.yloc", frame.getLocation().y);
 		Prefs.set("VolumeViewer.showTF", true);
