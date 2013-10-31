@@ -13,6 +13,8 @@ import tipl.util.D3int;
  */
 public abstract class TIPLTestingLibrary {
 	public static final boolean verbose=false;
+	public final TImgRO emptyImg = TestPosFunctions.wrapIt(0,
+			new TestPosFunctions.SinglePointFunction(0, 0, 0));
 	public static void checkDimensions(final TImgRO img, final D3int dim,final D3int pos) {
 		checkDim(img,dim);
 		checkDim(img,pos);

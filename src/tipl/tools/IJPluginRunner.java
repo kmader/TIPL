@@ -9,6 +9,7 @@ import ij.plugin.filter.PlugInFilter;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
+import tipl.ij.ImageStackToTImg;
 
 /**
  * IJPluginRunner is a framework for using ImageJ plugins inside the TIPL
@@ -201,8 +202,11 @@ public class IJPluginRunner extends BaseTIPLPluginMult {
 	/** Export result as an Aim file */
 	@Override
 	public TImg ExportAim(final TImgRO.CanExport templateAim) {
-
-		final TImg outImage = templateAim.inheritedAim(ipImg.getStack());
+		final TImg outImage=ImageStackToTImg.FromImagePlus(ipImg);
+		outImage.setPos(templateAim.getPos());
+		outImage.setOffset(templateAim.getOffset());
+		outImage.setElSize(templateAim.getElSize());
+		outImage.appendProcLog(templateAim.getProcLog());
 		outImage.appendProcLog(procLog);
 		return outImage;
 	}

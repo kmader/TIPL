@@ -364,10 +364,6 @@ public class TiffDirectory implements TImg {
 				offset);
 	}
 
-	@Override
-	public TImg inheritedAim(final ImageStack iStack) {
-		return TImgTools.makeTImgExportable(this).inheritedAim(iStack);
-	}
 
 	@Override
 	public TImg inheritedAim(final int[] imgArray, final D3int dim,

@@ -28,7 +28,6 @@ public interface TImgRO extends TImgTools.HasDimensions {
 		@Deprecated
 		public TImg inheritedAim(float[] imgArray, D3int dim, D3int offset);
 
-		public TImg inheritedAim(ImageStack iStack);
 
 		@Deprecated
 		public TImg inheritedAim(int[] imgArray, D3int dim, D3int offset);

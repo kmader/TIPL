@@ -9,7 +9,10 @@ import ij.gui.HistogramWindow;
 import ij.measure.Calibration;
 import ij.process.ImageProcessor;
 
+import java.awt.Frame;
 import java.awt.Image;
+
+import javax.swing.JFrame;
 
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
@@ -20,8 +23,21 @@ import tipl.ij.volviewer.Volume_Viewer;
  * 
  */
 public class TImgToImagePlus extends ImagePlus {
-
-	/**
+	/** 
+	 * wait for the frame to close
+	 */
+	public static void waitForFrameClose(Frame iframe) {
+		if (iframe!=null) {
+			do {
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			} while (iframe.isVisible());
+		} else System.out.println(iframe+" Frame doesn't even exist");
+	}
+	/**	
 	 * Autoranger class is a thread which runs in the background and calculates
 	 * means and std
 	 */
@@ -197,10 +213,5 @@ public class TImgToImagePlus extends ImagePlus {
 		// TODO Auto-generated constructor stub
 	}
 	
-	//fun functions
-	public void render(String args) {
-		Volume_Viewer cViewer = new Volume_Viewer();
-		cViewer.tiplShowView("",this);
-	}
 
 }

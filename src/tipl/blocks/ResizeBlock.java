@@ -76,7 +76,7 @@ public class ResizeBlock extends BaseTIPLBlock {
 	}
 
 	public void resizeGUI(final ArgumentParser p) {
-		p.getOptionBoolean("showslice",
+		p.getOptionBoolean("showslice",false,
 				"Show the slice and select the region using the ROI tool",
 				new ArgumentList.ArgumentCallback() {
 

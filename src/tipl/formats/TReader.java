@@ -236,11 +236,6 @@ public interface TReader {
 		}
 
 		@Override
-		public TImg inheritedAim(final ImageStack iStack) {
-			return TImgTools.makeTImgExportable(this).inheritedAim(iStack);
-		}
-
-		@Override
 		public TImg inheritedAim(final int[] imgArray, final D3int dim,
 				final D3int offset) {
 			return TImgTools.makeTImgExportable(this).inheritedAim(imgArray,

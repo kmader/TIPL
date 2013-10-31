@@ -198,17 +198,29 @@ class ImageRegion extends JPanel {
 	 * Save the current image as a file (for when the tool is not used inside imageJ
 	 * @param path path to save to
 	 */
-	public synchronized void saveToImageFile(String path) {
+	public synchronized void saveToImageFile(String path, String procLog) {
 		ImagePlus plotImage = getImageAsImagePlus();
-		IJ.save(plotImage,path);
+		saveWithLog(plotImage,path,procLog);
 	}
-	public synchronized void saveToImageFile() {
+	public synchronized void saveToImageFile(String procLog) {
 		ImagePlus plotImage = getImageAsImagePlus();
-		SaveDialog sd=new SaveDialog("Save snapshot as...",plotImage.getTitle(),".jpg");
+		SaveDialog sd=new SaveDialog("Save snapshot as...",plotImage.getTitle(),".tif");
 		String fileName=sd.getDirectory()+sd.getFileName();
 		System.out.println(this+": Saving as "+fileName);
-		IJ.save(plotImage,fileName);
 		
+		saveWithLog(plotImage,fileName,procLog);
+		
+	}
+	/**
+	 * Write the output image in the given path and save the command to reproduce it as a pl.txt
+	 * @param outImage
+	 * @param path
+	 * @param procLog command to reproduce the image
+	 */
+	public static synchronized void saveWithLog(ImagePlus outImage,String path, String procLog) {
+		IJ.save(outImage,path);
+		
+		IJ.saveString(procLog, path+".pl.log"); //TODO write image
 	}
 	
 	public synchronized void saveToImage() {

@@ -307,7 +307,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 		JButton buttonSaveView = new JButton("Snapshot");
 		buttonSaveView.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				imageRegion.saveToImageFile();
+				imageRegion.saveToImageFile(vv.toString());
 			}
 		});
 		upperButtonPanel.add(buttonSaveView); 

@@ -1,5 +1,6 @@
 package tipl.formats;
 
+import ij.ImageJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.HistogramWindow;
@@ -383,31 +384,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		GenerateHeader(idim, ioffset, ipos, ielSize);
 	}
 
-	/** Create new aim from stack of images and element size */
-	public VirtualAim(final ImageStack inStack, final D3float ielSize) {
-		_vaLoadStack(inStack, new D3int(0), ielSize);
-	}
-
-	/** Create new aim from stack of images, pos, and element size */
-	public VirtualAim(final ImageStack inStack, final D3int ipos,
-			final D3float ielSize) {
-		_vaLoadStack(inStack, ipos, ielSize);
-	}
-
-	/** Create a new aim file from a stack of images and imageplus */
-	public VirtualAim(final ImageStack inStack, final ImagePlus imp) {
-
-		// Read in element size
-		final Calibration cal = imp.getCalibration();
-		final double pw = cal.pixelWidth;
-		final double ph = cal.pixelHeight;
-		final double pd = cal.pixelDepth;
-
-		final D3float ielSize = new D3float(pw, ph, pd);
-		final D3int ipos = new D3int(0);
-		_vaLoadStack(inStack, ipos, ielSize);
-
-	}
 
 	/**
 	 * Creates a new, aim from a 1d int array and dimensions, offset, position,
@@ -453,15 +429,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		WrapTImg(inTImg);
 	}
 
-	// Generic code for loading a stack
-	private void _vaLoadStack(final ImageStack inStack, final D3int ipos,
-			final D3float ielSize) {
-		final D3int idim = new D3int(inStack.getWidth(), inStack.getHeight(),
-				inStack.getSize() + 1);
-		final D3int ioffset = new D3int(0);
-		loadAimfromStack(inStack.getImageArray());
-		GenerateHeader(idim, ioffset, ipos, ielSize);
-	}
 
 	/**
 	 * Creates a buffered image for the given slice which can be used to save as
@@ -1824,29 +1791,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	/**
-	 * Creates a new aim based on the current aim and using the information in
-	 * the given ImageStack
-	 */
-	@Override
-	public VirtualAim inheritedAim(final ImageStack inStack) {
-		// Clone aim with new elements inside
-		final VirtualAim outImage = new VirtualAim();
-
-		outImage.dim = new D3int(inStack.getWidth(), inStack.getHeight(),
-				inStack.getSize() + 1);
-		outImage.offset = new D3int(0);
-
-		outImage.width = inStack.getWidth();
-		outImage.height = inStack.getHeight();
-
-		outImage.loadAimfromStack(inStack.getImageArray());
-
-		inheritedAimHelper(outImage);
-
-		return outImage;
-	}
-
-	/**
 	 * Creates a new, aim the given Aim and a 1d int array with the same length
 	 * as the existing data
 	 */
@@ -2702,6 +2646,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	/** Show aim as a stack */
 	public ImagePlus show() {
 		final ImagePlus curImPlus = TImgToImagePlus.MakeImagePlus(this);
+		ImageJ ijcore=new ImageJ();
 		System.out.println("Show Aim... " + getDim().z);
 		if (getDim().z > 0) {
 
@@ -2740,6 +2685,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 			// curHistWind=new
 			// HistogramWindow("Slice Histogram:",curImPlus,255,-Double.MAX_VALUE,Double.MAX_VALUE);
 		}
+		ijcore.show();
+		TImgToImagePlus.waitForFrameClose(ijcore);
 		return curImPlus;
 	}
 

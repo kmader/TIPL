@@ -8,7 +8,9 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import tipl.formats.TImgRO;
+import tipl.ij.ImageStackToTImg;
 import tipl.ij.TImgToImagePlus;
+import tipl.ij.volviewer.Volume_Viewer;
 
 /**
  * @author mader
@@ -30,7 +32,9 @@ public class VolumeViewerTests {
 				.wrapIt(150, comboFun);
 		final TImgToImagePlus curImg = TImgToImagePlus.MakeImagePlus(testImg);
 		curImg.setDisplayRange(comboFun.getRange()[0], comboFun.getRange()[1]);
-		curImg.render("");
+		
+		Volume_Viewer vv=new Volume_Viewer();
+		vv.tiplShowView(ImageStackToTImg.FromImagePlus(curImg));
 		
 		fail("Not yet implemented"); // TODO
 	}

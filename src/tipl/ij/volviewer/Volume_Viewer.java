@@ -9,6 +9,7 @@ package tipl.ij.volviewer;
  */
 
 import ij.IJ;
+import ij.ImageJ;
 //import ij.ImageJ;
 import ij.ImagePlus;
 import ij.Macro;
@@ -29,31 +30,21 @@ import java.util.StringTokenizer;
 
 import javax.swing.JFrame;
 
+import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.formats.VirtualAim;
+import tipl.ij.ImageStackToTImg;
 import tipl.ij.TImgToImagePlus;
+import tipl.util.ArgumentParser;
+import tipl.util.ITIPLPluginIn;
+import tipl.util.TImgTools;
 
-public final class Volume_Viewer implements PlugIn {
-	//private static String volumePath = "/Users/barthel/Applications/ImageJ/_images/_stacks/16x16x16cube0.tif"; //2.tif
-	//private static String volumePath = "/Users/barthel/Applications/ImageJ/_images/_stacks/mri-stack_k.tif";
-	private static String volumePath = "/Users/barthel/Applications/ImageJ/_images/_stacks/engine.zip";
-	//private static String volumePath = "/Users/barthel/Applications/ImageJ/_images/_stacks/daisy.zip";
-	//private static String volumePath = "/Users/barthel/Applications/ImageJ/_images/_stacks/tooth_128x128x160.tif";
-	//private static String volumePath = "/Users/barthel/Applications/ImageJ/_images/_stacks/bonsai2.tif";
-	//private static String volumePath = "/Users/barthel/Applications/ImageJ/_images/_stacks/lobster.tif";
-	//private static String volumePath = "/Users/barthel/Applications/ImageJ/_images/_stacks/porsche_2.tif";
-	//private static String volumePath = "/Users/barthel/Applications/ImageJ/_images/_stacks/t1-head.tif";
-	//private static String volumePath = "/Users/barthel/Applications/ImageJ/_images/_stacks/present492x492x442.zip";
-	//private static String volumePath = "/Users/barthel/Applications/ImageJ/_images/_stacks/C1-2CH-ZSTACK-07.tif";
-	//private static String volumePath = "/Users/barthel/Applications/ImageJ/_images/_stacks/sphere1.tif";
+public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 
-	// RGB stacks
-	//private static String volumePath = "/Users/barthel/Applications/ImageJ/_images/_stacks/flybrain.tif";
-	//private static String volumePath = "/Users/barthel/Applications/ImageJ/_images/_stacks/RGB_Stack_2.tif";
-	
 	private final static String version = "2.01"; 
 	private Control control;
 	private JFrame frame;	
-	
+
 	final float[]   a1_R = new float[256];
 	final float[][] a2_R = new float[256][128];
 	final float[][] a3_R = new float[256][128];
@@ -63,7 +54,7 @@ public final class Volume_Viewer implements PlugIn {
 	LookupTable lookupTable = null;
 	private Transform tr = null;
 	private Transform trLight = null;
-	
+
 	ImagePlus imp;
 	Gui gui;
 	Gradient gradientLUT, gradient2, gradient3, gradient4;
@@ -74,57 +65,149 @@ public final class Volume_Viewer implements PlugIn {
 	TFalpha4 tf_a4 = null;
 
 	private boolean batch = false;
+	protected static ImageJ ijcore=null;
+	public Volume_Viewer() {
+		if (ijcore==null) ijcore=new ImageJ(ImageJ.NO_SHOW); // open the ImageJ window to see images and results
+		
+		// This should be created at the very beginning
+		control = new Control(this);
+		control.xloc=100;
+		control.yloc=50;
+	}
+	@Override
+	public boolean execute() {
+		
+		batch=true;
+		assert(internalImage!=null);
+		run("");
+		return true;
+	}
+	@Override
+	public boolean execute(String actionToExecute)
+			throws IllegalArgumentException {
+		// TODO Implement Method
+		throw new IllegalArgumentException(this+" is not implemented yet!");
+	}
+	@Override
+	public boolean execute(String actionToExecute, Object objectToUse)
+			throws IllegalArgumentException {
+		// TODO Implement Method
+		throw new IllegalArgumentException(this+" is not implemented yet!");
+	}
+	@Override
+	public Object getInfo(String request) {
+		// TODO Implement Method
+		throw new IllegalArgumentException(this+" is not implemented yet!");
+	}
+	@Override
+	public String getPluginName() {
+		return "Volume_Viewer";
+	}
+	@Override
+	public String getProcLog() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public ArgumentParser setParameter(String inp) {
+		return setParameter(new ArgumentParser(inp.split(" ")),"");
+	}
+	@Override
+	public void setParameter(String parameterName, Object parameterValue)
+			throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+
+	}
+	@Override
+	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
+		// TODO Update help descriptions
+		batch = p.getOptionBoolean(prefix+"batch", batch,"Run in batch mode");
+		control.xloc = p.getOptionInt(prefix+"xloc", control.xloc,"x location");
+		control.yloc = p.getOptionInt(prefix+"yloc", control.yloc,"y location");
+		control.showTF = p.getOptionBoolean(prefix+"showTF",true, "Show the Transfer function");
+		control.renderMode =  p.getOptionInt(prefix+"renderMode", control.renderMode,"mode to render in");
+		control.interpolationMode =p.getOptionInt(prefix+"interpolationMode", control.interpolationMode," mode ot use for interpolation");
+		control.backgroundColor =  new Color(p.getOptionInt(prefix+"backgroundColor", control.backgroundColor.getRGB(),"Background Color"));
+		control.lutNr = p.getOptionInt(prefix+"lutNr", control.lutNr,"look up table number");
+		control.zAspect =  p.getOptionFloat(prefix+"zAspect", control.zAspect,"z aspect ratio");
+		control.sampling = p.getOptionFloat(prefix+"sampling", control.sampling,"sampling of image");
+		control.dist = p.getOptionFloat(prefix+"dist", control.dist,"distance to slice through the sample");
+		control.showAxes = p.getOptionBoolean(prefix+"showAxes", control.showAxes,"Show the axes");
+		control.showSlices = p.getOptionBoolean(prefix+"showSlices", control.showSlices,"Show the slices");
+		control.showClipLines = p.getOptionBoolean(prefix+"showClipLines", control.showClipLines,"show the clip lines");
+		control.scale = p.getOptionFloat(prefix+"scale", control.scale,"how much to scale the image");
+		control.degreeX = p.getOptionFloat(prefix+"degreeX", control.degreeX,"degree of rotation in x(?)");
+		control.degreeY = p.getOptionFloat(prefix+"degreeY", control.degreeY,"degree of rotation in y");
+		control.degreeZ = p.getOptionFloat(prefix+"degreeZ", control.degreeZ,"degree of rotation in z");
+		control.alphaMode = p.getOptionInt(prefix+"alphaMode", control.alphaMode,"alpha mode to use");
+		control.windowWidthImageRegion = p.getOptionInt(prefix+"windowWidthImageRegion", control.windowWidthImageRegion,"width of image region");
+		control.windowWidthSlices = p.getOptionInt(prefix+"windowWidthSlices", control.windowWidthSlices,"width of slices region");
+		control.windowHeight = p.getOptionInt(prefix+"windowHeight", control.windowHeight,"window height");
+		control.useLight = p.getOptionBoolean(prefix+"useLight", control.useLight,"use light (solid/surface rendering");
+		control.ambientValue = p.getOptionFloat(prefix+"ambientValue", control.ambientValue,"");
+		control.diffuseValue = p.getOptionFloat(prefix+"diffuseValue", control.diffuseValue,"diffuse value");
+		control.specularValue = p.getOptionFloat(prefix+"specularValue", control.specularValue,"specular value");
+		control.shineValue = p.getOptionFloat(prefix+"shineValue", control.shineValue,"");
+		control.objectLightValue =  p.getOptionFloat(prefix+"objectLightValue", control.objectLightValue,"");
+		control.lightRed = p.getOptionInt(prefix+"lightRed", control.lightRed,"");
+		control.lightGreen = p.getOptionInt(prefix+"lightGreen", control.lightGreen,"");
+		control.lightBlue = p.getOptionInt(prefix+"lightBlue", control.lightBlue,"");
+		control.snapshot =  p.getOptionBoolean(prefix+"snapshot",control.snapshot,"Take a snapshot");
+		return p;
+	}
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName()+" -input="+internalImage.getPath()+" "+setParameter("").toString();
+	}
+	@Override
+	public void run() {
+		run("");
+	}
+	
+	protected TImgRO internalImage=null;
+	@Override
+	public void LoadImages(TImgRO[] inImages) {
+		assert(inImages.length>0);
+		assert(inImages.length<2);
+		internalImage=inImages[0];
+	}
 	
 	public static void main(String args[]) {
-		//new ImageJ(); // open the ImageJ window to see images and results
 		
 		Volume_Viewer vv = new Volume_Viewer();
-		IJ.open(volumePath);
-		vv.run("");
+		ArgumentParser cArgs=new ArgumentParser(args);
+		
+		String inpath=cArgs.getOptionPath("input", "", "Image to be opened");
+		String outpath=cArgs.getOptionPath("output", "", "Location to save the output image(s)");
+		vv.setParameter(cArgs,"");
+		cArgs.checkForInvalid();
+		TImg inData=TImgTools.ReadTImg(inpath);
+		vv.LoadImages(new TImgRO[] {inData});
+		vv.run(cArgs.toString());
+		
+		vv.waitForClose();
 	}
-	/** 
-	 * standard imagej plugin access
-	 */
-	public void run(String args) {run(args,WindowManager.getCurrentImage());}
-	/**
-	 * standard access from tipl based tools
-	 * @param args
-	 * @param inImg imageplus to be rendered
-	 */
-	public void tiplShowView(String args,ImagePlus inImg) {
-		run(args,inImg);
-		waitForClose();
-	}
+
 	/**
 	 * standard access from tipl based tools
 	 * @param args
 	 * @param inTImg TImgRO to be rendered
 	 */
-	public void tiplShowView(String args,TImgRO inTImg) {
-		tiplShowView(args,TImgToImagePlus.MakeImagePlus(inTImg));
+	public void tiplShowView(TImgRO inTImg) {
+		LoadImages(new TImgRO[] {inTImg});
+		run("");
+		waitForClose();
 	}
 	/**
 	 * run the plugin with a starting image
 	 * @param args commands for plugin
 	 * @param inImp the image to use
 	 */
-	protected void run(String args,ImagePlus inImp) {
+	public void run(String args) {
+		if (internalImage==null) internalImage=ImageStackToTImg.FromImagePlus(WindowManager.getCurrentImage());
+		
+		imp=TImgToImagePlus.MakeImagePlus(internalImage);
 
-		control = new Control(this);
-		
-		String str = Macro.getOptions();
-		//str = "display_mode=4 axes=0 markers=0 z-aspect=4 sampling=1 lut=0 scale=0.75 dist=-300 angle_x=115 angle_z=41";
-		//str = "display_mode=4 scale=1 width=700 height=700 shineValue=100 specularValue=0.1 useLight=1 snapshot=1";
-		//str = "display_mode=4 axes=1 z-aspect=4 scale=1 angle_x=110 angle_z=22";
-		if (str != null) {
-			if (!getMacroParameters(str))
-				return;
-		} 
-		else {
-			readPrefs();
-		}
-		imp=inImp;
-		
 		if (imp == null  || !(imp.getStackSize() > 1)) {
 			IJ.showMessage("Stack required");
 			return;
@@ -133,13 +216,13 @@ public final class Volume_Viewer implements PlugIn {
 			control.isRGB = true;
 
 		vol = new Volume(control, this);
-		
+
 		lookupTable = new LookupTable(control, this);
 		lookupTable.readLut();
-		
+
 		cube = new Cube(control, vol.widthV, vol.heightV, vol.depthV);
 		cube.setSlicePositions(control.positionFactorX, control.positionFactorY, control.positionFactorZ, control.zAspect);
-		
+
 		tr = new Transform(control, control.windowWidthImageRegion, control.windowHeight, vol.xOffa, vol.yOffa, vol.zOffa);	
 		tr.setScale(control.scale);
 		tr.setZAspect(control.zAspect);
@@ -149,7 +232,7 @@ public final class Volume_Viewer implements PlugIn {
 		cube.setTextPositions(control.scale, control.zAspect);
 		trLight = new Transform(control, -1, -1, 0, 0, 0);
 		trLight.initializeTransformation();
-		
+
 		gradientLUT = new Gradient(control, this, 256, 18);
 
 		gui = new Gui(control, this);
@@ -158,7 +241,7 @@ public final class Volume_Viewer implements PlugIn {
 
 		lookupTable.setLut();
 		lookupTable.orig();
-		
+
 		if (Interpreter.isBatchMode()) 
 			batch = true;
 
@@ -197,25 +280,17 @@ public final class Volume_Viewer implements PlugIn {
 					buildFrame();
 				}
 			});
-			
+
 		}
 	}
 	/** 
 	 * wait for the frame to close
 	 */
 	public void waitForClose() {
-		if (frame!=null) {
-			do {
-				try {
-					Thread.sleep(50);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			} while (frame.isVisible());
-		} else System.out.println(this+" Frame doesn't even exist");
+		TImgToImagePlus.waitForFrameClose(frame);
 		cleanup();
 	}
-	
+
 	void reset() {
 		tf_rgb = null;
 		tf_a1 = null;
@@ -226,12 +301,12 @@ public final class Volume_Viewer implements PlugIn {
 
 		buildFrame();
 	}
-	
+
 	void buildFrame() {
 		Insets insets = frame.getInsets();				
 		int ww = frame.getWidth() - insets.left - insets.right;
 		int wh = frame.getHeight() - insets.bottom - insets.top;
-		
+
 		int h  = wh - (gui.upperButtonPanel.getHeight() + gui.lowerButtonPanel.getHeight());
 		if (h < control.windowMinHeight) h = control.windowMinHeight;
 		Dimension dim = gui.picSlice.getSliceViewSize((int) (0.25*ww), h-130);
@@ -244,21 +319,21 @@ public final class Volume_Viewer implements PlugIn {
 			wl -= diff;
 			if (wl < 200) wl = 200;
 		}
-		
+
 		if (control.windowHeight > 0 && ww > 0) {
 			control.windowHeight  = h;
 			control.windowWidthSlices = wl;
 			control.windowWidthImageRegion = wr;
-			
+
 			frame.getContentPane().remove(gui);
-			
+
 			tr = new Transform(control, control.windowWidthImageRegion, control.windowHeight, vol.xOffa, vol.yOffa, vol.zOffa);	
 			tr.setScale(control.scale);
 			tr.setZAspect(control.zAspect);
 			setRotation(control.degreeX, control.degreeY, control.degreeZ);
 			initializeTransformation();
 			cube.setTransform(tr);
-			
+
 			gui = new Gui(control, this);
 			gui.makeGui();
 			frame.getContentPane().add(gui);
@@ -271,14 +346,14 @@ public final class Volume_Viewer implements PlugIn {
 	 * just remove all the variables by setting them to null and 'force' a garbage collect 
 	 */
 	private void cleanup() {
-		
+
 		vol.data3D = null;
 
 		vol.grad3D = null;
-		
+
 		vol.mean3D = null;
 		vol.diff3D = null;
-		
+
 		vol.col_3D = null;
 		vol.aPaint_3D = null;  	
 		vol.aPaint_3D2 = null;  	
@@ -291,16 +366,16 @@ public final class Volume_Viewer implements PlugIn {
 		vol.histMeanDiff = null; 
 		vol.histVal =  null;			
 		vol = null;
-		
+
 		gui.pic = null;
 		gui.picSlice = null;
 		gui = null;
-		
+
 		cube = null;
 		lookupTable = null;
 		tr = null;
 		trLight = null;
-		
+
 		imp = null;
 		gradientLUT = gradient2 = gradient3 = gradient4 = null;
 		tf_rgb = null;
@@ -308,13 +383,13 @@ public final class Volume_Viewer implements PlugIn {
 		tf_a2 = null;
 		tf_a3 = null;
 		tf_a4 = null;
-		
+
 		control = null;
-		
+
 		System.gc();
 	}
-	
-	private void readPrefs() {
+
+	private void readPrefsOLD() {
 
 		control.xloc = (int) Prefs.get("VolumeViewer.xloc", 100);
 		control.yloc = (int) Prefs.get("VolumeViewer.yloc", 50);
@@ -348,66 +423,66 @@ public final class Volume_Viewer implements PlugIn {
 		control.lightGreen = (int) Prefs.get("VolumeViewer.lightGreen", control.lightGreen);
 		control.lightBlue = (int) Prefs.get("VolumeViewer.lightBlue", control.lightBlue);
 	}
-	 
-		private void writePrefs() {
-	        Prefs.set("VolumeViewer.xloc", frame.getLocation().x);
-	        Prefs.set("VolumeViewer.yloc", frame.getLocation().y);
-			Prefs.set("VolumeViewer.showTF", true);
-	        
-			Prefs.set("VolumeViewer.renderMode", control.renderMode);
-			Prefs.set("VolumeViewer.interpolationMode", control.interpolationMode);
-			Prefs.set("VolumeViewer.backgroundColor", control.backgroundColor.getRGB());
-			Prefs.set("VolumeViewer.lutNr", control.lutNr);
-			//Prefs.set("VolumeViewer.zAspect", control.zAspect);
-			Prefs.set("VolumeViewer.sampling", control.sampling);
-			Prefs.set("VolumeViewer.dist", control.dist);
-			Prefs.set("VolumeViewer.showAxes", control.showAxes);
-			Prefs.set("VolumeViewer.showSlices", control.showSlices);
-			Prefs.set("VolumeViewer.showClipLines", control.showClipLines);
-			Prefs.set("VolumeViewer.scale", control.scale);
-			Prefs.set("VolumeViewer.degreeX", control.degreeX);
-			Prefs.set("VolumeViewer.degreeY", control.degreeY);
-			Prefs.set("VolumeViewer.degreeZ", control.degreeZ);
-			Prefs.set("VolumeViewer.alphaMode", control.alphaMode);
-			Prefs.set("VolumeViewer.windowWidthImageRegion", control.windowWidthImageRegion);
-			Prefs.set("VolumeViewer.windowWidthSlices", control.windowWidthSlices);
-			Prefs.set("VolumeViewer.windowHeight", control.windowHeight);
-			Prefs.set("VolumeViewer.useLight", control.useLight);
-			Prefs.set("VolumeViewer.ambientValue", control.ambientValue);
-			Prefs.set("VolumeViewer.diffuseValue", control.diffuseValue);
-			Prefs.set("VolumeViewer.specularValue", control.specularValue);
-			Prefs.set("VolumeViewer.shineValue", control.shineValue);
-			Prefs.set("VolumeViewer.objectLightValue", control.objectLightValue);
-			Prefs.set("VolumeViewer.lightRed", control.lightRed);
-			Prefs.set("VolumeViewer.lightGreen", control.lightGreen);
-			Prefs.set("VolumeViewer.lightBlue", control.lightBlue);
-	    }
 
-	
+	private void writePrefs() {
+		Prefs.set("VolumeViewer.xloc", frame.getLocation().x);
+		Prefs.set("VolumeViewer.yloc", frame.getLocation().y);
+		Prefs.set("VolumeViewer.showTF", true);
+
+		Prefs.set("VolumeViewer.renderMode", control.renderMode);
+		Prefs.set("VolumeViewer.interpolationMode", control.interpolationMode);
+		Prefs.set("VolumeViewer.backgroundColor", control.backgroundColor.getRGB());
+		Prefs.set("VolumeViewer.lutNr", control.lutNr);
+		//Prefs.set("VolumeViewer.zAspect", control.zAspect);
+		Prefs.set("VolumeViewer.sampling", control.sampling);
+		Prefs.set("VolumeViewer.dist", control.dist);
+		Prefs.set("VolumeViewer.showAxes", control.showAxes);
+		Prefs.set("VolumeViewer.showSlices", control.showSlices);
+		Prefs.set("VolumeViewer.showClipLines", control.showClipLines);
+		Prefs.set("VolumeViewer.scale", control.scale);
+		Prefs.set("VolumeViewer.degreeX", control.degreeX);
+		Prefs.set("VolumeViewer.degreeY", control.degreeY);
+		Prefs.set("VolumeViewer.degreeZ", control.degreeZ);
+		Prefs.set("VolumeViewer.alphaMode", control.alphaMode);
+		Prefs.set("VolumeViewer.windowWidthImageRegion", control.windowWidthImageRegion);
+		Prefs.set("VolumeViewer.windowWidthSlices", control.windowWidthSlices);
+		Prefs.set("VolumeViewer.windowHeight", control.windowHeight);
+		Prefs.set("VolumeViewer.useLight", control.useLight);
+		Prefs.set("VolumeViewer.ambientValue", control.ambientValue);
+		Prefs.set("VolumeViewer.diffuseValue", control.diffuseValue);
+		Prefs.set("VolumeViewer.specularValue", control.specularValue);
+		Prefs.set("VolumeViewer.shineValue", control.shineValue);
+		Prefs.set("VolumeViewer.objectLightValue", control.objectLightValue);
+		Prefs.set("VolumeViewer.lightRed", control.lightRed);
+		Prefs.set("VolumeViewer.lightGreen", control.lightGreen);
+		Prefs.set("VolumeViewer.lightBlue", control.lightBlue);
+	}
+
+
 	void setRotation(float degreeX, float degreeY, float degreeZ) {
 		tr.setView(Math.toRadians(degreeX), Math.toRadians(degreeY), Math.toRadians(degreeZ));
 		updateGuiSpinners();
 	}
-	
+
 	void initializeTransformation() {	
 		tr.initializeTransformation();
 		cube.transformCorners(tr);
 		updateGuiSpinners();
 	}
-	
+
 	void setScale() {
 		tr.setScale(control.scale);
 	}
-	
+
 	void changeRotation(int xStart, int yStart, int xAct, int yAct, int width) {
 		tr.setMouseMovement(xStart, yStart, xAct, yAct, width);
 		updateGuiSpinners();
 	}
-	
+
 	void changeRotationLight(int xStart, int yStart, int xAct, int yAct, int width) {
 		trLight.setMouseMovement(xStart, yStart, xAct, yAct, width);
 	}
-	
+
 	void setZAspect() {
 		gui.updateDistSlider();
 		tr.setZAspect(control.zAspect);
@@ -416,24 +491,24 @@ public final class Volume_Viewer implements PlugIn {
 
 		cube.setTextPositions(control.scale, control.zAspect);
 	}	
-	
+
 	void changeTranslation(int dx, int dy) {
 		tr.setMouseMovementOffset(dx, dy);	
 		updateGuiSpinners();
 	}
-	
+
 	void updateGuiSpinners() {
-		
+
 		control.degreeX = tr.getDegreeX();
 		control.degreeY = tr.getDegreeY();
 		control.degreeZ = tr.getDegreeZ();	
-		
+
 		if (!control.spinnersAreChanging && gui != null) 
 			gui.setSpinners();	
-		
+
 		cube.transformCorners(tr);
 	}
-	
+
 	private boolean getMacroParameters(String st) {		// read macro parameters
 		String[] paramStrings   = {
 				"display_mode=",
@@ -466,7 +541,7 @@ public final class Volume_Viewer implements PlugIn {
 				"lightBlue=",
 				"snapshot="
 		};
-	
+
 		float[] paramVals = {
 				control.renderMode,
 				control.interpolationMode,
@@ -478,25 +553,25 @@ public final class Volume_Viewer implements PlugIn {
 				control.sampling,
 				control.dist,
 				(control.showAxes == true) ? 1 : 0,
-				(control.showSlices == true) ? 1 : 0,
-				(control.showClipLines == true) ? 1 : 0,
-				control.scale,
-				control.degreeX,
-				control.degreeY,
-				control.degreeZ,
-				control.alphaMode,
-				control.windowWidthImageRegion,
-				control.windowHeight,
-				(control.useLight == true) ? 1 : 0,
-				control.ambientValue,
-				control.diffuseValue,
-				control.specularValue,
-				control.shineValue,
-				control.objectLightValue,
-				control.lightRed,
-				control.lightGreen,
-				control.lightBlue,
-				(control.snapshot == true) ? 1 : 0
+						(control.showSlices == true) ? 1 : 0,
+								(control.showClipLines == true) ? 1 : 0,
+										control.scale,
+										control.degreeX,
+										control.degreeY,
+										control.degreeZ,
+										control.alphaMode,
+										control.windowWidthImageRegion,
+										control.windowHeight,
+										(control.useLight == true) ? 1 : 0,
+												control.ambientValue,
+												control.diffuseValue,
+												control.specularValue,
+												control.shineValue,
+												control.objectLightValue,
+												control.lightRed,
+												control.lightGreen,
+												control.lightBlue,
+												(control.snapshot == true) ? 1 : 0
 		};
 		boolean distWasSet = false;
 		try {
@@ -556,7 +631,7 @@ public final class Volume_Viewer implements PlugIn {
 			IJ.error("Error in macro parameter list");
 			return false;
 		}
-		
+
 
 		control = new Control(this);
 		control.distWasSet = distWasSet;
@@ -587,9 +662,9 @@ public final class Volume_Viewer implements PlugIn {
 		control.lightGreen=		(int) Math.max(0, Math.min(255, paramVals[26]));
 		control.lightBlue=		(int) Math.max(0, Math.min(255, paramVals[27]));
 		control.snapshot= 	    ((int) paramVals[28] == 0)? false : true;
-		
+
 		control.scaledDist = control.dist*control.scale;
-		
+
 		return true;
 	}
 
@@ -601,19 +676,20 @@ public final class Volume_Viewer implements PlugIn {
 	public float[] trScreen2Volume(float[] xyzS) {
 		return tr.trScreen2Vol(xyzS[0], xyzS[1], xyzS[2]);
 	}
-	
+
 	public float[] trVolume2Screen(float[] xyzV) {
 		return tr.trVol2Screen(xyzV[0], xyzV[1], xyzV[2]);
 	}
 	public float[] trVolume2Screen(float xV, float yV, float zV) {
 		return tr.trVol2Screen(xV, yV, zV);
 	}
-	
+
 	public float[] trLightScreen2Vol(float xS, float yS, float zS) {
 		return trLight.trScreen2Vol(xS, yS, zS);
 	}
 	public float[] trLightVolume2Screen(float xV, float yV, float zV) {
 		return trLight.trVol2Screen(xV, yV, zV);
 	}
+	
 
 }	

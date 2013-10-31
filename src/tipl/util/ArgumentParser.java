@@ -117,20 +117,23 @@ public class ArgumentParser extends ArgumentList {
 		return getOption(opt).getValueAsString();
 	}
 
+	public boolean getOptionBoolean(final String inOpt,final boolean defValue, final String helpString) {
+		return getOptionBoolean(inOpt,defValue, helpString, emptyCallback);
+	}
 	public boolean getOptionBoolean(final String inOpt, final String helpString) {
-		return getOptionBoolean(inOpt, helpString, emptyCallback);
+		return getOptionBoolean(inOpt,false, helpString, emptyCallback);
 	}
 
-	public boolean getOptionBoolean(final String inOpt,
+	public boolean getOptionBoolean(final String inOpt, final boolean defValue,
 			final String helpString, final ArgumentCallback inCallback) {
 		final String opt = formatKey(inOpt);
 		ArgumentList.TypedArgument<Boolean> cArg;
-		final Boolean bF = new Boolean(false);
+		final Boolean defBooleanValue = new Boolean(defValue);
 		if (hasOption(opt)) {
 			cArg = new ArgumentList.TypedArgument<Boolean>(getOption(opt),
-					helpString, bF, boolParse);
+					helpString, defBooleanValue, boolParse);
 		} else {
-			cArg = new ArgumentList.TypedArgument<Boolean>(opt, helpString, bF);
+			cArg = new ArgumentList.TypedArgument<Boolean>(opt, helpString, defBooleanValue);
 		}
 		cArg.setCallback(inCallback);
 		putArg(opt, cArg);
