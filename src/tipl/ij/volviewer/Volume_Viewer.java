@@ -26,6 +26,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 import javax.swing.JFrame;
@@ -118,6 +119,9 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 		// TODO Auto-generated method stub
 
 	}
+	public static String join(String[] a,String delim) {return Arrays.asList(a).toString().replaceAll(", ", delim).replaceAll("^\\[|\\]$", "");}
+	public static String join(String[] a) {return join(a,", ");}
+	protected String snapshotPath="";
 	@Override
 	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
 		// TODO Update help descriptions
@@ -125,10 +129,10 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 		control.xloc = p.getOptionInt(prefix+"xloc", control.xloc,"x location");
 		control.yloc = p.getOptionInt(prefix+"yloc", control.yloc,"y location");
 		control.showTF = p.getOptionBoolean(prefix+"showTF",true, "Show the Transfer function");
-		control.renderMode =  p.getOptionInt(prefix+"renderMode", control.renderMode,"mode to render in");
-		control.interpolationMode =p.getOptionInt(prefix+"interpolationMode", control.interpolationMode," mode ot use for interpolation");
+		control.renderMode =  p.getOptionInt(prefix+"renderMode", control.renderMode,"mode to render in :"+join(Control.renderName));
+		control.interpolationMode =p.getOptionInt(prefix+"interpolationMode", control.interpolationMode," mode ot use for interpolation: "+join(Control.interpolationName));
 		control.backgroundColor =  new Color(p.getOptionInt(prefix+"backgroundColor", control.backgroundColor.getRGB(),"Background Color"));
-		control.lutNr = p.getOptionInt(prefix+"lutNr", control.lutNr,"look up table number");
+		control.lutNr = p.getOptionInt(prefix+"lutNr", control.lutNr,"look up table number: "+join(Control.lutName));
 		control.zAspect =  p.getOptionFloat(prefix+"zAspect", control.zAspect,"z aspect ratio");
 		control.sampling = p.getOptionFloat(prefix+"sampling", control.sampling,"sampling of image");
 		control.dist = p.getOptionFloat(prefix+"dist", control.dist,"distance to slice through the sample");
@@ -136,7 +140,7 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 		control.showSlices = p.getOptionBoolean(prefix+"showSlices", control.showSlices,"Show the slices");
 		control.showClipLines = p.getOptionBoolean(prefix+"showClipLines", control.showClipLines,"show the clip lines");
 		control.scale = p.getOptionFloat(prefix+"scale", control.scale,"how much to scale the image");
-		control.degreeX = p.getOptionFloat(prefix+"degreeX", control.degreeX,"degree of rotation in x(?)");
+		control.degreeX = p.getOptionFloat(prefix+"degreeX", control.degreeX,"degree of rotation in x");
 		control.degreeY = p.getOptionFloat(prefix+"degreeY", control.degreeY,"degree of rotation in y");
 		control.degreeZ = p.getOptionFloat(prefix+"degreeZ", control.degreeZ,"degree of rotation in z");
 		control.alphaMode = p.getOptionInt(prefix+"alphaMode", control.alphaMode,"alpha mode to use");
@@ -153,11 +157,12 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 		control.lightGreen = p.getOptionInt(prefix+"lightGreen", control.lightGreen,"");
 		control.lightBlue = p.getOptionInt(prefix+"lightBlue", control.lightBlue,"");
 		control.snapshot =  p.getOptionBoolean(prefix+"snapshot",control.snapshot,"Take a snapshot");
+		snapshotPath=p.getOptionPath("output", snapshotPath, "Location to save the output image(s)");
 		return p;
 	}
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName()+" -input="+internalImage.getPath()+" "+setParameter("").toString();
+		return this.getClass().getName()+" -input="+internalImage.getPath()+" "+setParameter("").toString();
 	}
 	@Override
 	public void run() {
@@ -178,7 +183,7 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 		ArgumentParser cArgs=new ArgumentParser(args);
 		
 		String inpath=cArgs.getOptionPath("input", "", "Image to be opened");
-		String outpath=cArgs.getOptionPath("output", "", "Location to save the output image(s)");
+		
 		vv.setParameter(cArgs,"");
 		cArgs.checkForInvalid();
 		TImg inData=TImgTools.ReadTImg(inpath);
@@ -253,7 +258,8 @@ public final class Volume_Viewer implements PlugIn,ITIPLPluginIn {
 					e.printStackTrace();
 				}
 			} while (!control.isReady);
-			gui.imageRegion.saveToImage();
+			if (snapshotPath.length()>0) gui.imageRegion.saveToImageFile(snapshotPath, this.toString());
+			else gui.imageRegion.saveToImage();
 			cleanup();
 		}
 		else {

@@ -26,13 +26,6 @@ public class Control {
 	final static int PROJECTION = 3;
 	final static int VOLUME = 4;
 	
-//	final static String [] renderName = { 
-//		"Slice", 
-//		"Slice & Borders", 
-//		"Max Projection", 
-//		"Projection", 
-//		"Volume" 
-//	};
 	final static String [] renderName = { 
 		"Slice (0)", 
 		"Slice & Borders (1)", 
@@ -46,12 +39,7 @@ public class Control {
 	static final int TRICUBIC_SPLINE = 2;
 	static final int TRICUBIC_POLYNOMIAL = 3;
 
-//	static final String [] interpolationName = { 
-//		"Nearest Neighbor", 
-//		"Trilinear",
-//		"Tricubic smooth",
-//		"Tricubic sharp"
-//	};
+	
 	static final String [] interpolationName = { 
 		"Nearest Neighbor (0)", 
 		"Trilinear (1)",
