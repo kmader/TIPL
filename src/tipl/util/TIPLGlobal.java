@@ -14,6 +14,10 @@ import tipl.formats.VirtualAim;
 import tipl.tools.BaseTIPLPluginIn;
 
 public class TIPLGlobal {
+	public static ExecutorService requestSimpleES(int numOfCores) {
+		return Executors.newFixedThreadPool(Math.min(TIPLGlobal.availableCores,numOfCores),TIPLGlobal.daemonFactory);
+	}
+	public static ExecutorService requestSimpleES() { return requestSimpleES(TIPLGlobal.availableCores);}
 	/**
 	 * shutdown an executor service and wait for everything to finish.
 	 * @param inPool

@@ -7,6 +7,9 @@ package tipl.ij.volviewer;
  * (C) Kai Uwe Barthel
  */
 
+import tipl.formats.TImg;
+import tipl.formats.TImgRO;
+import tipl.util.D3int;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -14,8 +17,8 @@ import ij.measure.Calibration;
 import ij.process.ImageProcessor;
 
 
-public class Volume {
-	
+public abstract class Volume {
+
 	int widthV;		// size of the volume
 	int heightV;
 	int depthV;
@@ -24,24 +27,24 @@ public class Volume {
 	float yOffa;  	 	   
 	float zOffa; 
 
-	byte[][][][] data3D = null;
-	
-	byte[][][] grad3D = null;
-	
-	byte[][][] mean3D = null;
-	byte[][][] diff3D = null;
+	final byte[][][][] data3D;
 
-	byte[][][] col_3D = null;
-	
-	byte[][][] aPaint_3D = null;  	
-	byte[][][] aPaint_3D2 = null;  	// -254 .. 254 
+	final byte[][][] grad3D;
 
-	byte[][][] nx_3D = null;
-	byte[][][] ny_3D = null;
-	byte[][][] nz_3D = null;
+	final byte[][][] mean3D;
+	final byte[][][] diff3D;
 
-	private double a = 0, b = 1;
-	private double min, max;
+	final byte[][][] col_3D;
+
+	final byte [][][] aPaint_3D;  	
+	final byte[][][] aPaint_3D2;  	// -254 .. 254 
+
+	final byte[][][] nx_3D;
+	final byte[][][] ny_3D;
+	final byte[][][] nz_3D;
+
+	protected double a = 0, b = 1;
+	protected double min, max;
 
 	boolean firstTime = true;
 
@@ -50,34 +53,43 @@ public class Volume {
 	int[] histVal = new int[256];			// lum
 
 	private ImageProcessor ip;
-	private Control control;
-	private ImagePlus imp;
+	protected Control control;
+
 	private Volume_Viewer vv; 
-	
-	public static Volume create(Control control, Volume_Viewer vv) {
-		Volume outV=new Volume(control, vv);
+
+	public double[] getRange() { return new double[] {min,max};}
+
+	public static Volume create(Control control, Volume_Viewer vv,ImagePlus imp) {
+		Volume outV=new StackVolume(control, vv,imp);
 		outV.getMinMax();
 		outV.readVolumeData();
 		return outV;
 	}
-	public static Volume create(Control control, Volume_Viewer vv,int imin,int imax) {
-		Volume outV=new Volume(control, vv);
+	public static Volume create(Control control, Volume_Viewer vv,ImagePlus imp,int imin,int imax) {
+		Volume outV=new StackVolume(control, vv,imp);
 		outV.rescaleImage(imin, imax);
 		return outV;
 	}
-	
-	public double[] getRange() { return new double[] {min,max};}
-	
-	private Volume(Control control, Volume_Viewer vv){
+	public static Volume create(Control control, Volume_Viewer vv,TImgRO inImg) {
+		Volume outV=new TImgVolume(control, vv,inImg);
+		outV.getMinMax();
+		outV.readVolumeData();
+		return outV;
+	}
+	public static Volume create(Control control, Volume_Viewer vv,TImgRO inImg,int imin,int imax) {
+		Volume outV=new TImgVolume(control, vv,inImg);
+		outV.rescaleImage(imin, imax);
+		return outV;
+	}
+
+
+	protected Volume(Control control, Volume_Viewer vv,D3int dim) {
 		this.control = control;
 		this.vv = vv;
-		this.imp = vv.imp;
-		
-		ip = imp.getProcessor();
 
-		widthV = imp.getWidth();
-		heightV = imp.getHeight();
-		depthV = imp.getStackSize();
+		widthV = dim.x;
+		heightV = dim.y;
+		depthV = dim.z;
 
 		// the volume data
 		if (control.isRGB )
@@ -97,7 +109,7 @@ public class Volume {
 		aPaint_3D = new byte[depthV+4][heightV+4][widthV+4]; //z y x
 		col_3D = new byte[depthV+4][heightV+4][widthV+4]; //z y x
 
-		
+
 		// for the illumination		
 		nx_3D = new byte[depthV+4][heightV+4][widthV+4]; //z y x
 		ny_3D = new byte[depthV+4][heightV+4][widthV+4]; //z y x
@@ -106,35 +118,11 @@ public class Volume {
 		xOffa  = widthV/2.f;   				
 		yOffa  = heightV/2.f;  	 	   
 		zOffa  = depthV/2.f;
-
-		
 	}
-	
-	protected void getMinMax() {
-		min = ip.getMin();
-		max = ip.getMax();
 
-		Calibration cal = imp.getCalibration();
 
-		if (cal != null) {
-			if (cal.calibrated()) {
+	protected abstract void getMinMax();
 
-				min = cal.getCValue((int)min);
-				max = cal.getCValue((int)max);
-
-				double[] coef = cal.getCoefficients();
-				if (coef != null) {		
-					a = coef[0];
-					b = coef[1];
-				}
-			}
-			if (control.zAspect == 1) 
-				control.zAspect = (float) (cal.pixelDepth / cal.pixelWidth);
-		}
-
-		if (control.zAspect == 0)
-			control.zAspect = 1;
-	}
 	public void resetImage() {
 		getMinMax();
 		readVolumeData();
@@ -144,119 +132,15 @@ public class Volume {
 		max=imax;
 		readVolumeData();
 	}
+
 	protected void readVolumeData() {
+		if (control.LOG) System.out.println("Read data:"+this);
+		customReadVolume();
+		finishReadingVolume();
+	}	
+	protected abstract void customReadVolume();
 
-		if (control.LOG) System.out.println("Read data");
-
-		ImageStack stack = imp.getStack();
-
-		int bitDepth = imp.getBitDepth();
-		if (bitDepth == 8 || bitDepth == 16 || bitDepth == 32) {
-			float scale = (float) (255f/(max-min));
-
-			for (int z=1;z<=depthV;z++) {
-				IJ.showStatus("Reading stack, slice: " + z + "/" + depthV);
-				IJ.showProgress(0.6*z/depthV);
-
-				byte[] bytePixels = null;
-				short[] shortPixels = null;
-				float[] floatPixels = null;
-
-				if (bitDepth == 8)
-					bytePixels = (byte[]) stack.getPixels(z);
-				else if (bitDepth == 16) 
-					shortPixels = (short[]) stack.getPixels(z);
-				else if ( bitDepth == 32)
-					floatPixels = (float[]) stack.getPixels(z);
-
-				int pos = 0;
-				for (int y = 2; y < heightV+2; y++) {
-					for (int x = 2; x < widthV+2; x++) {
-						int val;
-
-						if (bitDepth == 32) {
-							float value = (float) (floatPixels[pos++] - min);
-							val = (int)(value*scale);
-						}
-						else if (bitDepth == 16) {
-							val = (int) ((int)(0xFFFF & shortPixels[pos++])*b + a - min);
-							val = (int)(val*scale);
-						}
-						else { // 8 bits 
-							val = 0xff & bytePixels[pos++];
-							val = (int)((val-min)*scale);
-						}
-						if (val<0f) val = 0;
-						if (val>255) val = 255;
-
-						data3D[0][z+1][y][x] = (byte)val; 
-					}
-					data3D[0][z+1][y][0] = data3D[0][z+1][y][1] = data3D[0][z+1][y][2]; 						// duplicate first 2 pixels
-					data3D[0][z+1][y][widthV+3] = data3D[0][z+1][y][widthV+2] = data3D[0][z+1][y][widthV+1]; 	// duplicate last 2 pixels
-				}
-				for (int x = 0; x < widthV+4; x++) {
-					data3D[0][z+1][0][x] = data3D[0][z+1][1][x] = data3D[0][z+1][2][x]; 						// duplicate first 2 rows
-					data3D[0][z+1][heightV+3][x] = data3D[0][z+1][heightV+2][x] = data3D[0][z+1][heightV+1][x];	// duplicate last 2 rows
-				}
-			}
-			for (int y = 0; y < heightV+4; y++) 
-				for (int x = 0; x < widthV+4; x++) {
-					data3D[0][depthV+3][y][x] = data3D[0][depthV+2][y][x] = data3D[0][depthV+1][y][x];	// duplicate last 2 layers
-					data3D[0][0][y][x] = data3D[0][1][y][x] = data3D[0][2][y][x];						// duplicate first 2 layers
-				}
-		}
-
-		else if (bitDepth == 24) {
-			for (int z=1; z<=depthV; z++) {
-				IJ.showStatus("Reading stack, slice: " + z + "/" + depthV);
-				IJ.showProgress(0.6*z/depthV);
-				int[] pixels = (int[]) stack.getPixels(z);
-
-				int pos = 0;
-				for (int y = 2; y < heightV+2; y++) {
-					for (int x = 2; x < widthV+2; x++) {
-						int val = pixels[pos++];
-						int r = (val>>16)&0xFF;  
-						int g = (val>> 8)&0xFF;  
-						int b =  val&0xFF; 
-						data3D[1][z+1][y][x] = (byte)r;  
-						data3D[2][z+1][y][x] = (byte)g;  
-						data3D[3][z+1][y][x] = (byte)b;  
-						data3D[0][z+1][y][x] = (byte)((r+2*g+b)>>2);
-					}
-					data3D[0][z+1][y][0] = data3D[0][z+1][y][1] = data3D[0][z+1][y][2]; 						// duplicate first 2 pixels
-					data3D[1][z+1][y][0] = data3D[1][z+1][y][1] = data3D[1][z+1][y][2]; 						// duplicate first 2 pixels
-					data3D[2][z+1][y][0] = data3D[2][z+1][y][1] = data3D[2][z+1][y][2]; 						// duplicate first 2 pixels
-					data3D[3][z+1][y][0] = data3D[3][z+1][y][1] = data3D[3][z+1][y][2]; 						// duplicate first 2 pixels
-					data3D[0][z+1][y][widthV+3] = data3D[0][z+1][y][widthV+2] = data3D[0][z+1][y][widthV+1]; 	// duplicate last 2 pixels
-					data3D[1][z+1][y][widthV+3] = data3D[1][z+1][y][widthV+2] = data3D[1][z+1][y][widthV+1]; 	// duplicate last 2 pixels
-					data3D[2][z+1][y][widthV+3] = data3D[2][z+1][y][widthV+2] = data3D[2][z+1][y][widthV+1]; 	// duplicate last 2 pixels
-					data3D[3][z+1][y][widthV+3] = data3D[3][z+1][y][widthV+2] = data3D[3][z+1][y][widthV+1]; 	// duplicate last 2 pixels
-				}
-				for (int x = 0; x < widthV+4; x++) {
-					data3D[0][z+1][0][x] = data3D[0][z+1][1][x] = data3D[0][z+1][2][x]; 						// duplicate first 2 rows
-					data3D[1][z+1][0][x] = data3D[1][z+1][1][x] = data3D[1][z+1][2][x]; 						// duplicate first 2 rows
-					data3D[2][z+1][0][x] = data3D[2][z+1][1][x] = data3D[2][z+1][2][x]; 						// duplicate first 2 rows
-					data3D[3][z+1][0][x] = data3D[3][z+1][1][x] = data3D[3][z+1][2][x]; 						// duplicate first 2 rows
-					data3D[0][z+1][heightV+3][x] = data3D[0][z+1][heightV+2][x] = data3D[0][z+1][heightV+1][x];	// duplicate last 2 rows
-					data3D[1][z+1][heightV+3][x] = data3D[1][z+1][heightV+2][x] = data3D[1][z+1][heightV+1][x];	// duplicate last 2 rows
-					data3D[2][z+1][heightV+3][x] = data3D[2][z+1][heightV+2][x] = data3D[2][z+1][heightV+1][x];	// duplicate last 2 rows
-					data3D[3][z+1][heightV+3][x] = data3D[3][z+1][heightV+2][x] = data3D[3][z+1][heightV+1][x];	// duplicate last 2 rows
-				}
-			}
-			for (int y = 0; y < heightV+4; y++) 
-				for (int x = 0; x < widthV+4; x++) {
-					data3D[0][depthV+3][y][x] = data3D[0][depthV+2][y][x] = data3D[0][depthV+1][y][x];	// duplicate last 2 layers
-					data3D[1][depthV+3][y][x] = data3D[1][depthV+2][y][x] = data3D[1][depthV+1][y][x];	// duplicate last 2 layers
-					data3D[2][depthV+3][y][x] = data3D[2][depthV+2][y][x] = data3D[2][depthV+1][y][x];	// duplicate last 2 layers
-					data3D[3][depthV+3][y][x] = data3D[3][depthV+2][y][x] = data3D[3][depthV+1][y][x];	// duplicate last 2 layers
-					data3D[0][0][y][x] = data3D[0][1][y][x] = data3D[0][2][y][x];						// duplicate first 2 layers
-					data3D[1][0][y][x] = data3D[1][1][y][x] = data3D[1][2][y][x];						// duplicate first 2 layers
-					data3D[2][0][y][x] = data3D[2][1][y][x] = data3D[2][2][y][x];						// duplicate first 2 layers
-					data3D[3][0][y][x] = data3D[3][1][y][x] = data3D[3][2][y][x];						// duplicate first 2 layers
-				}
-		}
-
+	protected void finishReadingVolume() {
 		// calculate variance etc. and fill histograms
 		int[] va = new int[7];
 		int[] vb = new int[7];
@@ -316,12 +200,13 @@ public class Volume {
 
 		IJ.showProgress(1.0);
 		IJ.showStatus("");
+
 	}
-	
-	
+
+
 	void calculateGradients() {
 		control.alphaWasChanged = false;
-		
+
 		byte[][][] alpha_3D = new byte[depthV+4][heightV+4][widthV+4]; //z y x 
 		byte[][][] alpha_3D_smooth = new byte[depthV+4][heightV+4][widthV+4]; //z y x
 
@@ -418,16 +303,16 @@ public class Volume {
 					a222 = 0xff & alpha_3D[z+1][y+1][x+1];
 
 					int a = (a000 + a001 + a002 + a010 + a011 + a012 + a020 + a021 + a022 +
-						 	 a100 + a101 + a102 + a110 + a111 + a112 + a120 + a121 + a122 +
-							 a200 + a201 + a202 + a210 + a211 + a212 + a220 + a221 + a222) >> 5;
+							a100 + a101 + a102 + a110 + a111 + a112 + a120 + a121 + a122 +
+							a200 + a201 + a202 + a210 + a211 + a212 + a220 + a221 + a222) >> 5;
 
-					alpha_3D_smooth[z][y][x] = (byte)a;
+				alpha_3D_smooth[z][y][x] = (byte)a;
 				}
 			}
 		}
 
 		//alpha_3D_smooth = alpha_3D;
-		
+
 		// gradient
 		for(int z=1; z < depthV+3; z++) {
 			for (int y = 1; y < heightV+3; y++) {			
@@ -473,25 +358,25 @@ public class Volume {
 					a222 = 0xff & alpha_3D_smooth[z+1][y+1][x+1];
 
 					int dx = ((a002 + a012 + a022 + a102 + a112 + a122 + a202 + a212 + a222) >> 2) - 
-							 ((a000 + a010 + a020 + a100 + a110 + a120 + a200 + a210 + a220) >> 2);
+							((a000 + a010 + a020 + a100 + a110 + a120 + a200 + a210 + a220) >> 2);
 
 					int dy = ((a020 + a021 + a022 + a120 + a121 + a122 + a220 + a221 + a222) >> 2) -
-							 ((a000 + a001 + a002 + a100 + a101 + a102 + a200 + a201 + a202) >> 2);
-					
-					int dz = ((a200 + a201 + a202 + a210 + a211 + a212 + a220 + a221 + a222) >> 2) -
-							 ((a000 + a001 + a002 + a010 + a011 + a012 + a020 + a021 + a022) >> 2);
+							((a000 + a001 + a002 + a100 + a101 + a102 + a200 + a201 + a202) >> 2);
 
-//					int dx = (a102 + 2*a112 + a122 - a100 - 2*a110 - a120) / 4;
-//					int dy = (a021 + 2*a121 + a221 - a001 - 2*a101 - a201) / 4;
-//					int dz = (a210 + 2*a211 + a212 - a010 - 2*a011 - a012) / 4;
-					
+					int dz = ((a200 + a201 + a202 + a210 + a211 + a212 + a220 + a221 + a222) >> 2) -
+							((a000 + a001 + a002 + a010 + a011 + a012 + a020 + a021 + a022) >> 2);
+
+					//					int dx = (a102 + 2*a112 + a122 - a100 - 2*a110 - a120) / 4;
+					//					int dy = (a021 + 2*a121 + a221 - a001 - 2*a101 - a201) / 4;
+					//					int dz = (a210 + 2*a211 + a212 - a010 - 2*a011 - a012) / 4;
+
 					nx_3D[z][y][x] = (byte)(Math.max(-127, Math.min(127,dx))+128);
 					ny_3D[z][y][x] = (byte)(Math.max(-127, Math.min(127,dy))+128);
 					nz_3D[z][y][x] = (byte)(Math.max(-127, Math.min(127,dz))+128);
 				}
 			}
 		}
-		
+
 		alpha_3D = null;
 		alpha_3D_smooth = null;
 
@@ -500,9 +385,9 @@ public class Volume {
 			System.out.println("  Execution time "+(end-start)+" ms.");
 		}
 	}
-	
+
 	private static final byte YES = 1;
-	
+
 	void findAndSetSimilarInVolume(int lum, int alpha, int z0, int y0, int x0) {
 
 		int width  = vv.vol.widthV+4;
@@ -581,7 +466,7 @@ public class Volume {
 		if (regionSize < 100)
 			IJ.error("Found only " + regionSize + " connected voxel(s).\n Try changing the tolerance values.");
 	}
-		
+
 
 	private void setAlphaAndColorInVolume(int alpha, int z, int y, int x) {
 		vv.vol.aPaint_3D[z][y][x] = (byte)alpha;
@@ -595,5 +480,5 @@ public class Volume {
 
 		col_3D[z][y][x] = (byte)control.indexPaint;
 	}
-	
+
 }

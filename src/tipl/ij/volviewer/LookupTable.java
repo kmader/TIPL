@@ -60,8 +60,14 @@ public class LookupTable {
 		if (vv.tf_a3  != null) vv.tf_a3.repaint();
 		if (vv.tf_rgb != null) vv.tf_rgb.repaint();
 	}
-
+	static boolean forceIgnoreLut=false;
+	void generateSimpleLut() {
+		for (int i=0; i<256; i++) {
+			origColors[i] = colors[i] = 0xff000000  | (i << 16) | (i << 8) | i;
+		}
+	}
 	void readLut() {
+		if (forceIgnoreLut) { generateSimpleLut(); return;}
 		LookUpTable lut_ = vv.imp.createLut();
 		int mapSize = 0;
 		java.awt.image.ColorModel cm = lut_.getColorModel();
@@ -85,9 +91,7 @@ public class LookupTable {
 			}
 		} 
 		else {
-			for (int i=0; i<256; i++) {
-				origColors[i] = colors[i] = 0xff000000  | (i << 16) | (i << 8) | i;
-			}
+			generateSimpleLut();
 		}
 	}
 

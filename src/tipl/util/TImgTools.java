@@ -534,6 +534,29 @@ public class TImgTools {
 		throw new IllegalArgumentException("Type of object:" + iData
 				+ " cannot be determined!! Proceed with extreme caution");
 	}
+	/**
+	 * get the range of values for a given image type
+	 * @param inType
+	 * @return
+	 */
+	public static double[] identifyTypeRange(final int inType) {
+		assert(isValidType(inType));
+		switch(inType) {
+		case IMAGETYPE_BOOL:
+			return new double[] {0,1};
+		case IMAGETYPE_CHAR:
+			return new double[] {0,127};
+		case IMAGETYPE_SHORT:
+			return new double[] {Short.MIN_VALUE,Short.MAX_VALUE};
+		case IMAGETYPE_INT:
+			return new double[] {Integer.MIN_VALUE,Integer.MAX_VALUE};
+		case IMAGETYPE_FLOAT:
+			return new double[] {Float.MIN_VALUE,Float.MAX_VALUE};
+		default:
+			throw new IllegalArgumentException("Type of object:" + inType
+					+ " cannot be determined!! Proceed with extreme caution");
+		}
+	}
 
 	/**
 	 * Check to see if the type chosen is valid
@@ -630,6 +653,8 @@ public class TImgTools {
 		case IMAGETYPE_SHORT:
 			return 2;
 		case IMAGETYPE_INT:
+			return 4;
+		case IMAGETYPE_FLOAT:
 			return 4;
 		case IMAGETYPE_BOOL:
 			return 1;
