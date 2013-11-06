@@ -1,6 +1,40 @@
 library("ggplot2")
 library("plyr")
-
+Sys.glob.minsize<-function(...,min.size=1000) {
+  cur.list<-Sys.glob(...)
+  cur.list[which(sapply(cur.list,function(x) file.info(x)$size>min.size))]
+}
+rbind.inter<-function(a,b,...) {
+  a.nm<-names(a)
+  b.nm<-names(b)
+  keep.cols<-intersect(a.nm,b.nm)
+  rbind(a[,which(a.nm %in% keep.cols)],b[,which(b.nm %in% keep.cols)],...)
+}
+stdPrint<-function(dig) {function (x) {paste(round(mean(x),dig)," +- ",round(sd(x),dig))}}
+ddply.cutcols<-function(...,cols=1) {
+  # run standard ddply command
+  cur.table<-ddply(...)
+  cutlabel.fixer<-function(oVal) {
+    sapply(oVal,function(x) {
+      cnv<-as.character(x)
+      mean(as.numeric(strsplit(substr(cnv,2,nchar(cnv)-1),",")[[1]]))
+    })
+  }
+  cutname.fixer<-function(c.str) {
+    s.str<-strsplit(c.str,"(",fixed=T)[[1]]
+    t.str<-strsplit(paste(s.str[c(2:length(s.str))],collapse="("),",")[[1]]
+    paste(t.str[c(1:length(t.str)-1)],collapse=",")
+  }
+  for(i in c(1:cols)) {
+    cur.table[,i]<-cutlabel.fixer(cur.table[,i])
+    names(cur.table)[i]<-cutname.fixer(names(cur.table)[i])
+  }
+  cur.table
+}
+pathExtFcn<-function(filename,ele=1,spchr="/") { # extract path name from filename
+  strList<-strsplit(filename,spchr)[[1]]
+  paste(strList[length(strList)-ele])
+}
 # write to match or at least be clsoe to the old output files
 write.csv.chris<-function(raw.in.data,file.name,skip.cols=c("TRIANGLES","D_TRIANGLES","Chain","MChain","Count","Frame"),...) {
   in.data<-ddply(raw.in.data,.(MChain), # calculate the statistics for each chain
@@ -44,6 +78,8 @@ fix.pca.direction<-function(poros.table,with.density=T,with.volume=T) {
   if (with.density) poros.table$Density<-1/(poros.table$DENSITY_CNT) # per um3
   poros.table
 }
+sample.name.fcn<-function(path.pos=9,name.pos=2) {function(x) strsplit(strsplit(x,split="/")[[1]][path.pos],split="_")[[1]][name.pos]}
+sample.number.fcn<-function(path.pos=9,name.pos=2) {function(x) as.numeric(sample.name.fcn(path.pos,name.pos)(x))}
 # Rescale the correct data columns by the scale factor
 scaleData<-function(inData,skip.cols=c(),force.scale=NULL) {
   outData<-inData

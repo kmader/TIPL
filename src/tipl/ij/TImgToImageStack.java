@@ -19,9 +19,14 @@ import tipl.formats.TImgRO;
  * 
  */
 public class TImgToImageStack extends ImageStack {
+	
+	
 	public static ImageStack MakeImageStack(final TImgRO inputImage) {
 		return new TImgToImageStack(inputImage);
 	}
+	
+	
+	
 
 	final protected TImgRO coreTImg;
 	final protected TImgRO.TImgFull coreTFull;

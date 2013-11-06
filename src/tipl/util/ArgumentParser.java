@@ -1,5 +1,7 @@
 package tipl.util;
 
+import tipl.formats.VirtualAim;
+
 
 // to make a dialog from the arguments
 
@@ -52,7 +54,7 @@ public class ArgumentParser extends ArgumentList {
 	 * protected ArgumentParser(LinkedHashMap<String,ArgumentList.Argument>
 	 * inOptions) { super(inOptions); }
 	 */
-
+	
 	/**
 	 * Creates a new arguments parser class from the standard string array input
 	 * to the static main function in a Java Class

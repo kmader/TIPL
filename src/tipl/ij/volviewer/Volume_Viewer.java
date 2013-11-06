@@ -295,8 +295,8 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 	public static void main(String args[]) {
 
 		Volume_Viewer vv = new Volume_Viewer();
-		ArgumentParser cArgs = new ArgumentParser(args);
-
+		ArgumentParser cArgs = TIPLGlobal.activeParser(args);
+		
 		String inpath = cArgs.getOptionPath("input", "", "Image to be opened");
 
 		vv.setParameter(cArgs, "");
@@ -381,7 +381,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 			for (int i = 0; i < animatedSteps; i++) {
 				ArgumentParser p = setParameter(cAnimatedArgument + curValue
 						+ " -output=" + rootName + "_"
-						+ String.format("%04d", i) + ".tif");
+						+ String.format("%04d", i) + ".tiff");
 				p.checkForInvalid();
 				final String finalArgs = p.toString();
 				final Volume finalVol = vol;

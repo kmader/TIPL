@@ -14,10 +14,38 @@ import tipl.formats.VirtualAim;
 import tipl.tools.BaseTIPLPluginIn;
 
 public class TIPLGlobal {
+	/**
+	 * simple method to get an executor service, eventually allows this to be changed to another / distributed option
+	 * @param numOfCores
+	 * @return
+	 */
 	public static ExecutorService requestSimpleES(int numOfCores) {
 		return Executors.newFixedThreadPool(Math.min(TIPLGlobal.availableCores,numOfCores),TIPLGlobal.daemonFactory);
 	}
 	public static ExecutorService requestSimpleES() { return requestSimpleES(TIPLGlobal.availableCores);}
+	
+	public static ArgumentParser activeParser(String[] args) {return activeParser(new ArgumentParser(args));}
+	/**
+	 * parser which actively changes local, maxcores, maxiothread and other TIPL wide parameters
+	 * @param sp input argumentparser
+	 * @return
+	 */
+	public static ArgumentParser activeParser(ArgumentParser sp) {
+		VirtualAim.scratchDirectory = sp.getOptionString("@localdir",
+				VirtualAim.scratchDirectory, "Directory to save local data to");
+		VirtualAim.scratchLoading=sp.getOptionBoolean("@local", VirtualAim.scratchLoading,"Load image data from local filesystems");
+		TIPLGlobal.availableCores = sp.getOptionInt("@maxcores",
+				TIPLGlobal.availableCores,
+				"Number of cores/threads to use for processing");
+
+		TIPLGlobal.supportedIOThreads = sp.getOptionInt("@maxiothread",
+				TIPLGlobal.supportedIOThreads,
+				"Number of cores/threads to use for read/write operations");
+		if (sp.hasOption("?")) System.out.println(sp.getHelp());		
+		return sp.subArguments("@");
+	}
+	
+	
 	/**
 	 * shutdown an executor service and wait for everything to finish.
 	 * @param inPool

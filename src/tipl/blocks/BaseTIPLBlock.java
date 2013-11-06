@@ -12,6 +12,7 @@ import tipl.tools.Resize;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.SGEJob;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 /**
@@ -145,7 +146,8 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 		System.out.println("BlockRunner v" + kVer);
 		System.out.println("Runs a block by its name");
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		ArgumentParser p = new ArgumentParser(args);
+		
+		ArgumentParser p = TIPLGlobal.activeParser(args);
 		final String blockname = p.getOptionString("blockname", "",
 				"Class name of the block to run");
 		// black magic
