@@ -27,6 +27,10 @@ from jarray import array,zeros # matrix library
 
 p=AP(sys.argv[1:])
 p.blockOverwrite()  
+TIPLGlobal.availableCores=p.getOptionInt("maxcores",TIPLGlobal.availableCores,"Number of cores/threads to use for processing"); 
+VA.scratchLoading = p.getOptionBoolean("local","Load image data from local filesystems");
+VA.scratchDirectory = p.getOptionString("localdir","/home/scratch/", "Directory to save local data to");	
+
 blocklist=[FilterB("filt:"),Threshold("thresh:")]
 # set defaults
 p.getOptionD3int("filt:downfactor",D3int(1,1,1),"Default should be 1 since this script isnt about scaling")
@@ -42,10 +46,7 @@ sphKernelRadius=p.getOptionDouble("sphkernelradius",1.74,"Radius of spherical ke
 writeShapeTensor=p.getOptionBoolean("shapetensor","Include Shape Tensor")
 phaseName=p.getOptionString("phase","pores","Phase name")
 
-TIPLGlobal.availableCores=p.getOptionInt("maxcores",TIPLGlobal.availableCores,"Number of cores/threads to use for processing"); 
 
-VA.scratchLoading = p.getOptionBoolean("local","Load image data from local filesystems");
-VA.scratchDirectory = p.getOptionString("localdir","/home/scratch/", "Directory to save local data to");	
 startSlice=p.getOptionInt("startslice",-1,"Starting Z Slice")
 endSlice=p.getOptionInt("endslice",-2,"Ending Z Slice")
 runAsJob=p.getOptionBoolean("sge:runasjob","Run Program as a Job")
