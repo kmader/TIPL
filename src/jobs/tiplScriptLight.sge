@@ -7,13 +7,12 @@
 # shell script because it will start all processes on the local node.   
 # Define your job name, parallel environment with the number of slots, and run time: 
 #$ -cwd
-#$ -M kevinmader+merlinsge@gmail.com
-#$ -m ae
-#$ -N UFOAM6
 #$ -j y
 #$ -pe smp 4
-#$ -o UFOAM_AFS.log
-#$ -l mem_free=24G,ram=6G,s_rt=23:59:00,h_rt=24:00:00
+#$ -M kevinmader+merlinsge@gmail.com
+#$ -m ae
+#$ -o TIPLJob.log
+#$ -l mem_free=22G,ram=8G,s_rt=10:59:00,h_rt=11:00:00
 ###################################################
 # Fix the SGE environment-handling bug (bash):
 source /usr/share/Modules/init/sh
@@ -25,14 +24,11 @@ export -n -f module
 ###################################################
 # Set the environment variables:
 
-
-export CLASSPATH=/afs/psi.ch/project/tipl/jar/TIPL.jar
+#export CLASSPATH=/afs/psi.ch/project/tipl/jar/TIPL.jar
 
 JCMD="/usr/bin/java"
 JCMD="/afs/psi.ch/project/tipl/jvm/bin/java"
-JARGS="-d64 -Xmx18G -Xms10G" 
-
-
+JARGS="-d64 -Xmx18G -Xms15G -jar /afs/psi.ch/project/tipl/jar/TIPL.jar" 
 
 ##############
 # BEGIN DEBUG 
@@ -46,14 +42,12 @@ echo PWD=`pwd`
 echo "NSLOTS=$NSLOTS"
 echo "PE_HOSTFILE=$PE_HOSTFILE"
 cat $PE_HOSTFILE
-free -m
 echo "================================================================"
-echo "Running environment: $@"
-echo "================================================================"
-echo "Running Program"
-TIPLCMD="tipl.scripts.UFOAM -resample -maxcores=5 -downsampleFactor=2 -upsampleFactor=1 -gauss -outdir=./ -ufilt=$@"
-JCMD="$JCMD $JARGS $TIPLCMD"
-echo "$JCMD"
-$JCMD
+echo "Running Program : $@"
+TIPLCMD="$JCMD $JARGS $@"
+echo "$TIPLCMD"
+$TIPLCMD
+echo "+++++ Script Complete, Remaining TempFiles"
+ls -lh /scratch/
 
 ###################################################

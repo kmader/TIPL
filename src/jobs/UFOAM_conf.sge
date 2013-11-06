@@ -51,7 +51,7 @@ echo "================================================================"
 echo "Running environment: $@"
 echo "================================================================"
 echo "Running Program"
-TIPLCMD="tipl.scripts.UFOAM -resample -maxcores=5 -downsampleFactor=2 -upsampleFactor=1 -gauss -outdir=./ -ufilt=$@"
+TIPLCMD="tipl.scripts.UFOAM -maxcores=5 -ufilt=$@"
 JCMD="$JCMD $JARGS $TIPLCMD"
 echo "$JCMD"
 $JCMD
