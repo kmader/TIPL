@@ -20,7 +20,6 @@ public class SGEJob {
 
 		p.checkForInvalid();
 		test.submit();
-		// test.submitJob("","Hello!",4,false);
 	}
 
 	/**

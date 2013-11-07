@@ -86,6 +86,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 			final String[] outputArgs, final Runnable job,
 			final ArgumentParser.IsetParameter parFunc) {
 		final ITIPLBlock cBlock = new BaseTIPLBlock(name, earlierBlocks) {
+			protected String cPrefix=prefix;
 			@Override
 			protected IBlockImage[] bGetInputNames() {
 				final IBlockImage[] inNames = new BlockImage[earlierPathArgs.length];
@@ -129,7 +130,11 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 
 			@Override
 			public String getPrefix() {
-				return prefix;
+				return cPrefix;
+			}
+			@Override
+			public void setPrefix(String setValue) {
+				cPrefix=setValue;
 			}
 
 			@Override
@@ -171,7 +176,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 							"Run this script as an SGE job (adds additional settings to this task");
 			SGEJob jobToRun = null;
 			if (runAsJob)
-				jobToRun = SGEJob.runAsJob("tipl.blocks.BaseTIPLBlock", p,
+				jobToRun = SGEJob.runAsJob(BaseTIPLBlock.class.getName(), p,
 						"sge:");
 
 			checkHelp(p);
@@ -300,10 +305,8 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 		myResize.execute();
 		return myResize.ExportImages(fullImage)[0];
 	}
-	/**
-	 * Set the maximum number of slices to read in when using the get input file command
-	 * @param maxNumberOfSlices
-	 */
+
+	@Override
 	public void setSliceRange(int startSlice,int finishSlice) {
 		startReadSlices=startSlice;
 		lastReadSlices=finishSlice;
@@ -342,9 +345,6 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 
 		};
 	}
-
-	@Override
-	public abstract String getPrefix();
 
 	@Override
 	public boolean isComplete() {

@@ -25,7 +25,7 @@ import tipl.util.TImgTools;
  * 
  */
 public class ResizeBlock extends BaseTIPLBlock {
-	public final String prefix;
+	public String prefix;
 	protected final static String blockName = "Resize";
 	public final IBlockImage[] inImages = new IBlockImage[] { new BlockImage(
 			"input", "", "Input unfiltered image", true) };
@@ -73,6 +73,11 @@ public class ResizeBlock extends BaseTIPLBlock {
 	@Override
 	public String getPrefix() {
 		return prefix;
+	}
+	@Override
+	public void setPrefix(String newPrefix) {
+		prefix=newPrefix;
+		
 	}
 
 	public void resizeGUI(final ArgumentParser p) {

@@ -38,7 +38,7 @@ public class GrowRegions extends BaseTIPLBlock {
 
 	}
 
-	public final String prefix;
+	public String prefix;
 	public String phaseName;
 	protected boolean writeShapeTensor;
 	protected double sphKernelRadius;
@@ -92,6 +92,11 @@ public class GrowRegions extends BaseTIPLBlock {
 	@Override
 	public String getPrefix() {
 		return prefix;
+	}
+	@Override
+	public void setPrefix(String newPrefix) {
+		prefix=newPrefix;
+		
 	}
 
 	@Override

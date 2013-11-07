@@ -72,7 +72,7 @@ public class AnalyzePhase extends BaseTIPLBlock {
 		}
 	}
 
-	public final String prefix;
+	public String prefix;
 	public int minVoxCount;
 	public String phaseName;
 	// public double sphKernelRadius;
@@ -140,6 +140,11 @@ public class AnalyzePhase extends BaseTIPLBlock {
 	public String getPrefix() {
 		return prefix;
 	}
+	@Override
+	public void setPrefix(String newPrefix) {
+		prefix=newPrefix;
+		
+	}
 
 	@Override
 	public ArgumentParser setParameterBlock(final ArgumentParser p) {
@@ -155,5 +160,7 @@ public class AnalyzePhase extends BaseTIPLBlock {
 				prefix);
 		return CL.setParameter(p2, prefix);
 	}
+
+	
 
 }

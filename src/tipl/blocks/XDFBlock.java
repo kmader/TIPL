@@ -24,7 +24,7 @@ public class XDFBlock extends BaseTIPLBlock {
 	 * 
 	 */
 
-	public final String prefix;
+	public String prefix;
 	public int minVoxCount;
 	public String phaseName;
 	// public double sphKernelRadius;
@@ -83,6 +83,11 @@ public class XDFBlock extends BaseTIPLBlock {
 	@Override
 	public String getPrefix() {
 		return prefix;
+	}
+	@Override
+	public void setPrefix(String newPrefix) {
+		prefix=newPrefix;
+		
 	}
 
 	@Override

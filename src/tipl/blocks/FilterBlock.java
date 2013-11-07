@@ -15,7 +15,7 @@ import tipl.util.TImgTools;
  * 
  */
 public class FilterBlock extends BaseTIPLBlock {
-	public final String prefix;
+	public String prefix;
 	protected final static String blockName = "Filter";
 	public final IBlockImage[] inImages = new IBlockImage[] { new BlockImage(
 			"ufilt", "", "Input unfiltered image", true) };
@@ -70,12 +70,16 @@ public class FilterBlock extends BaseTIPLBlock {
 	protected String getDescription() {
 		return "Generic Block for filtering and rescaling an image";
 	}
-
+	
 	@Override
 	public String getPrefix() {
 		return prefix;
 	}
-	
+	@Override
+	public void setPrefix(String newPrefix) {
+		prefix=newPrefix;
+		
+	}
 	@Override
 	public ArgumentParser setParameterBlock(final ArgumentParser p) {
 		changeElSize = p.getOptionBoolean(prefix+"changeelsize", changeElSize,

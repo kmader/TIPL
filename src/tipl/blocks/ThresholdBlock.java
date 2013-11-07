@@ -30,7 +30,7 @@ public class ThresholdBlock extends BaseTIPLBlock {
 
 	protected double threshVal, remEdgesRadius;
 	protected boolean rmEdges,flipThreshold;
-	public final String prefix;
+	public String prefix;
 	
 	public final IBlockImage[] inImages = new IBlockImage[] { new BlockImage(
 			"gfilt", "", "Input filtered image", true) };
@@ -154,6 +154,11 @@ public class ThresholdBlock extends BaseTIPLBlock {
 	@Override
 	public String getPrefix() {
 		return prefix;
+	}
+	@Override
+	public void setPrefix(String newPrefix) {
+		prefix=newPrefix;
+		
 	}
 
 	@Override

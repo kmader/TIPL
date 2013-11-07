@@ -2,9 +2,17 @@ import os,sys
 from paraview.simple import *
 from paraview import vtk
 from paraview import servermanager as sm
+import tempfile
 doCenter=True
-filename=sys.argv[1]
-
+filenameIn=sys.argv[1]
+oname=None
+if filenameIn.upper()[-3:]=='TIF': # convert the file
+	ofile=tempfile.NamedTemporaryFile(mode='r',dir='/scratch/mader')
+	oname=ofile.name+'.raw'
+	os.system('java -cp /gpfs/home/mader/jar/TIPLPro.jar ch.psi.tomcat.tipl.VirtualAim -convert=%s -output=%s' % (filenameIn,oname))
+	filename=oname
+else:
+	filename=filenameIn	
 headername=filename+'-raw.dat'
 header=open(headername).readlines()
 
@@ -113,22 +121,6 @@ else:
 
 #VolumeColoring(DataRepresentation2)
 #DataRepresentation2.CubeAxesVisibility = 0
-if 0:
-	SQ = Superquadric()
-	SQ.Toroidal = 0
-	SQ.Size=1
-	SQ.Scale=[20,20,20]
-	
-	DataRepresentation1 = GetDisplayProperties(SQ)
-	DataRepresentation1.Opacity = 0.5
-	DataRepresentation1.EdgeColor = [0.0, 0.0, 0.5000076295109483]
-	DataRepresentation1.SelectionPointFieldDataArrayName = 'Normals'
-	DataRepresentation1.DiffuseColor = [0.0, 0.0, 0.0]
-	DataRepresentation1.AmbientColor = [0.0, 0.0, 0.0]
-	DataRepresentation1.BackfaceDiffuseColor = [0.0, 0.0, 0.0]
-	DataRepresentation1.CubeAxesColor = [0.0, 0.0, 0.0]
-	DataRepresentation1.ScaleFactor = 0.1
-	DataRepresentation1.DiffuseColor = [0.1411764705882353, 1.0, 0.0]
 
 
 RenderView1 = GetRenderView()
@@ -156,8 +148,19 @@ if filename.upper().find('ROIRDF')>=0:
 	RenderView.CameraPosition=[60.02764585610261, 60.7192258270945, 75.52431025096308]
 	Render()
 print RenderView.CameraPosition
-WriteImage(filename+'.png')
-sm.SaveState(filename+'.pvsm')
+WriteImage(filenameIn+'.png')
+sm.SaveState(filenameIn+'.pvsm')
 print (RenderView.CameraPosition)
+# Add Image to Database
+
+from dbAddSample import *
+from glob import glob
+cImgName=os.path.abspath(filenameIn+'.png')
+print cImgName+' is being written to DB'
+cur=StartDatabase(dorw=True)
+view=cImgName.split('/')[-1].split('.')[0]
+sampleName='_'.join(cImgName.split('/')[-3:-1])
+dbAddImage(cur,cImgName,sampleNum=sampleName,projNum='BETA',view=view,imgSize=None,doInsert=True)
+if oname is not None: os.system('rm '+oname+'*')
 #RenderView.WriteImage('/Users/maderk/test3.png',"vtkPNGWriter",1)
 

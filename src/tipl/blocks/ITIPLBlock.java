@@ -146,7 +146,18 @@ public interface ITIPLBlock {
 	 * @return block prefix (for commandline arguments)
 	 */
 	public String getPrefix();
-
+	/**
+	 * Set the prefix for the block
+	 * @param newPrefix the new prefix
+	 */
+	public void setPrefix(String newPrefix);
+	
+	/**
+	 * Set the maximum number of slices to read in when using the get input file command
+	 * @param maxNumberOfSlices
+	 */
+	public void setSliceRange(int startSlice,int finishSlice);
+	
 	/**
 	 * has the block completed or are all of the files, etc present which
 	 * indicate completion
