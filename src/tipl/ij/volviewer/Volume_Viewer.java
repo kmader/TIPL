@@ -43,12 +43,15 @@ import tipl.ij.ImageStackToTImg;
 import tipl.ij.TImgToImagePlus;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPluginIn;
+import tipl.util.SGEJob;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
-
-	private final static String version = "2.01";
+	/**
+	 * my version of the code which is originally forked from 2.01
+	 */
+	private final static String version = "0.2"; 
 	private Control control;
 	private JFrame frame;
 
@@ -73,13 +76,9 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 
 	private boolean batch = false;
 	protected static ImageJ ijcore = null;
-	public static int imageJmode=ImageJ.NO_SHOW;
 
 	public Volume_Viewer() {
-		if (ijcore == null)
-			ijcore = new ImageJ(imageJmode); // open the ImageJ window to
-		// see images and results
-
+		ijcore=TIPLGlobal.getIJInstance(); // open the ImageJ window to see images and results
 		// This should be created at the very beginning
 		control = new Control(this);
 		control.xloc = 100;
@@ -88,9 +87,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 	}
 
 	protected Volume_Viewer(Volume invol, TImgRO inInternalImage) {
-		if (ijcore == null)
-			ijcore = new ImageJ(imageJmode); // open the ImageJ window to
-		// see images and results
+		ijcore=TIPLGlobal.getIJInstance(); // open the ImageJ window to see images and results
 
 		// This should be created at the very beginning
 		control = new Control(this);
@@ -178,7 +175,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 	protected String animatedVariable = "";
 	protected double animatedStart = 0, animatedEnd = 1;
 	protected int animatedSteps = 10;
-	protected int crMin = 0, crMax = 0;
+	protected double crMin = 0, crMax = 0;
 
 	@Override
 	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
@@ -187,8 +184,8 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 				.getOptionBoolean(prefix + "batch", batch, "Run in batch mode");
 		customRange = p.getOptionBoolean(prefix + "usecr", customRange,
 				"Use custom ranges");
-		crMin = p.getOptionInt(prefix + "crmin", crMin, "Minimum value");
-		crMax = p.getOptionInt(prefix + "crmax", crMax, "Maximum value");
+		crMin = p.getOptionDouble(prefix + "crmin", crMin, "Minimum value");
+		crMax = p.getOptionDouble(prefix + "crmax", crMax, "Maximum value");
 		control.xloc = p.getOptionInt(prefix + "xloc", control.xloc,
 				"x location");
 		control.yloc = p.getOptionInt(prefix + "yloc", control.yloc,
@@ -211,8 +208,11 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 				"z aspect ratio");
 		control.sampling = p.getOptionFloat(prefix + "sampling",
 				control.sampling, "sampling of image");
+		
 		control.dist = p.getOptionFloat(prefix + "dist", control.dist,
 				"distance to slice through the sample");
+		control.distWasSet = p.getOptionBoolean(prefix + "forcedist", control.distWasSet ,
+				"force the distance value given (otherwise it is automatically set)");
 		control.showAxes = p.getOptionBoolean(prefix + "showAxes",
 				control.showAxes, "Show the axes");
 		control.showSlices = p.getOptionBoolean(prefix + "showSlices",
@@ -270,11 +270,13 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 
 		return p;
 	}
-
+	/**
+	 * the command line needed to reproduce this image
+	 */
 	@Override
 	public String toString() {
 		return this.getClass().getName() + " -input=" + internalImage.getPath()
-				+ " " + setParameter("").toString();
+				+ " " + setParameter(TIPLGlobal.activeParser(new String[]{}),"").toString();
 	}
 
 	@Override
@@ -300,12 +302,19 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 		String inpath = cArgs.getOptionPath("input", "", "Image to be opened");
 
 		vv.setParameter(cArgs, "");
+		boolean runAsJob = cArgs.getOptionBoolean("sge:runasjob",
+						"Run this script as an SGE job (adds additional settings to this task");
+		SGEJob jobToRun=null;
+		if (runAsJob) jobToRun = SGEJob.runAsJob(Volume_Viewer.class.getName(), cArgs, "sge:");
+		
 		cArgs.checkForInvalid();
-		TImg inData = TImgTools.ReadTImg(inpath);
-		vv.LoadImages(new TImgRO[] { inData });
-		vv.run("");
-
-		vv.waitForClose();
+		if (runAsJob) jobToRun.submit();
+		else {
+			TImg inData = TImgTools.ReadTImg(inpath);
+			vv.LoadImages(new TImgRO[] { inData });
+			vv.run("");
+			vv.waitForClose();
+		}
 	}
 
 	/**
@@ -418,8 +427,8 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 	}
 
 	public void run_plugin() {
-
 		lookupTable = new LookupTable(control, this);
+		
 		lookupTable.readLut();
 
 		cube = new Cube(control, vol.widthV, vol.heightV, vol.depthV);
@@ -437,15 +446,14 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 		cube.setTextPositions(control.scale, control.zAspect);
 		trLight = new Transform(control, -1, -1, 0, 0, 0);
 		trLight.initializeTransformation();
-
+		
 		gradientLUT = new Gradient(control, this, 256, 18);
-
 		gui = new Gui(control, this);
 		gui.makeGui();
 		gui.newDisplayMode();
-
+		
+		lookupTable.loadLut(control.lutNr);
 		lookupTable.setLut();
-		lookupTable.orig();
 
 		if (Interpreter.isBatchMode())
 			batch = true;

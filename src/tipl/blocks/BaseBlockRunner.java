@@ -3,14 +3,17 @@
  */
 package tipl.blocks;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.SGEJob;
 import tipl.util.TIPLGlobal;
 
 /**
+ * Standard base block runner that runs the separate blocks in a serial fashion
  * @author mader
  *
  */
@@ -35,13 +38,13 @@ public class BaseBlockRunner implements IBlockRunner {
 	 * @see tipl.blocks.IBlockRunner#execute()
 	 */
 	@Override
-	public void execute() {
-		if (blockList.size()>0) {
-			ITIPLBlock cBlock=blockList.pop();
-			cBlock.execute();
-			System.gc();	
-			execute();
+	public boolean execute() {
+		boolean success=true;
+		while (blockList.size()>0) {
+			System.gc();
+			success&=blockList.pop().execute();	
 		}
+		return success;
 	}
 
 	@Override
@@ -64,6 +67,94 @@ public class BaseBlockRunner implements IBlockRunner {
 		for(ITIPLBlock cBlock : blockList) s=cBlock.setParameter(s);
 		return s;
 	}
+	@Override
+	public void connectInput(String inputName, ITIPLBlock outputBlock,
+			String outputName) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getFileParameter(String argument) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public TImgRO getInputFile(String argument) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IBlockInfo getInfo() {
+		final List<IBlockImage> inputs=new LinkedList<IBlockImage>();
+		final List<IBlockImage> outputs=new LinkedList<IBlockImage>();
+		String totDesc="";
+		for(ITIPLBlock cBlock : blockList) {
+			IBlockInfo cInfo=cBlock.getInfo();
+			totDesc+=cInfo.getDesc();
+			inputs.addAll(Arrays.asList(cInfo.getInputNames()));
+			outputs.addAll(Arrays.asList(cInfo.getInputNames()));
+		}
+		final String finDesc=totDesc;
+		return new IBlockInfo() {
+			@Override
+			public String getDesc() {
+				return finDesc;
+			}
+
+			@Override
+			public IBlockImage[] getInputNames() {
+				return inputs.toArray(new IBlockImage[] {});
+			}
+
+			@Override
+			public IBlockImage[] getOutputNames() {
+				return outputs.toArray(new IBlockImage[] {});
+			}
+
+		};
+	}
+	protected String prefix="";
+	@Override
+	public String getPrefix() {
+		// TODO Auto-generated method stub
+		return prefix;
+	}
+
+	@Override
+	public void setPrefix(String newPrefix) {
+		prefix=newPrefix;
+	}
+	@Override
+	public double memoryFactor() {
+		System.out.println("Assuming the blockrunner requires just the maximum of its parts (probably not true)");
+		double maxFactor=0;
+		for(ITIPLBlock cBlock : blockList) if (cBlock.memoryFactor()>maxFactor) maxFactor=cBlock.memoryFactor();
+		return maxFactor;
+	}
+	@Override
+	public long neededMemory() {
+		System.out.println("Assuming the blockrunner requires just the maximum of its parts (probably not true)");
+		long cneededMemory=0;
+		for(ITIPLBlock cBlock : blockList) if (cBlock.neededMemory()>cneededMemory) cneededMemory=cBlock.neededMemory();
+		return cneededMemory;
+	}
+	
+	@Override
+	public boolean isComplete() {
+		boolean allComplete=true;
+		for(ITIPLBlock cBlock : blockList) allComplete&=cBlock.isComplete();
+		return allComplete;
+	}
+
+	@Override
+	public boolean isReady() {
+		if (blockList.size()<1) return false;		
+		return blockList.getFirst().isReady();
+	}
+
 	public final static String kVer="131107_01";
 	protected static void checkHelp(final ArgumentParser p) {
 		if (p.hasOption("?")) {
@@ -76,6 +167,7 @@ public class BaseBlockRunner implements IBlockRunner {
 		}
 		p.checkForInvalid();
 	}
+	
 	/**
 	 * @param args
 	 */
@@ -86,9 +178,7 @@ public class BaseBlockRunner implements IBlockRunner {
 		
 		ArgumentParser p = TIPLGlobal.activeParser(args);
 		final String blocknames = p.getOptionString("blocknames", "",
-				"Class names of the block to run");
-		// black magic
-		
+				"Class names of the blocks to run");
 		if (blocknames.length() > 0) {
 			IBlockRunner cr=new BaseBlockRunner(); 
 			int blockIndex=1;
@@ -133,5 +223,4 @@ public class BaseBlockRunner implements IBlockRunner {
 		} else
 			checkHelp(p);
 	}
-
 }

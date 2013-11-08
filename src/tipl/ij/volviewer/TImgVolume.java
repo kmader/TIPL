@@ -49,9 +49,11 @@ public class TImgVolume extends Volume {
 				float[] floatPixels = null;
 				int[] intPixels = null;
 				
-				if (getImageType==TImgTools.IMAGETYPE_CHAR)
-					bytePixels = (byte[]) (inTImg.getPolyImage(z-1, getImageType));
-				else if (getImageType==TImgTools.IMAGETYPE_SHORT) 
+				if (getImageType==TImgTools.IMAGETYPE_CHAR) {
+					char[] tempChar=(char[]) (inTImg.getPolyImage(z-1, getImageType));
+					bytePixels=new byte[tempChar.length];
+					for(int ii=0;ii<tempChar.length;ii++) bytePixels[ii]=(byte) tempChar[ii];
+				} else if (getImageType==TImgTools.IMAGETYPE_SHORT) 
 					shortPixels = (short[]) (inTImg.getPolyImage(z-1, getImageType));
 				else if ( getImageType==TImgTools.IMAGETYPE_INT)
 					intPixels=(int[]) (inTImg.getPolyImage(z-1, getImageType));

@@ -204,7 +204,7 @@ class ImageRegion extends JPanel {
 	}
 	public synchronized void saveToImageFile(String procLog) {
 		ImagePlus plotImage = getImageAsImagePlus();
-		SaveDialog sd=new SaveDialog("Save snapshot as...",plotImage.getTitle(),".tif");
+		SaveDialog sd=new SaveDialog("Save snapshot as...",plotImage.getTitle(),".tiff");
 		String fileName=sd.getDirectory()+sd.getFileName();
 		System.out.println(this+": Saving as "+fileName);
 		

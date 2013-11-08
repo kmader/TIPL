@@ -63,10 +63,10 @@ public class Control {
 
 	
 	// stored vaiables (in prefs) //////////////////
-	int renderMode = SLICE;
-	int interpolationMode = TRILINEAR;
-	Color backgroundColor = new Color(0xFF003465);
-	int lutNr = ORIG;
+	int renderMode = VOLUME;
+	int interpolationMode = TRICUBIC_POLYNOMIAL;
+	Color backgroundColor = Color.black;
+	int lutNr = GRAY;
 	float zAspect = 1;
 	float sampling = 1;
 	float dist = 0;

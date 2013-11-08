@@ -66,6 +66,29 @@ public class LookupTable {
 			origColors[i] = colors[i] = 0xff000000  | (i << 16) | (i << 8) | i;
 		}
 	}
+	/** 
+	 * keep the lut relavant code inside the lookup table itself
+	 * @param curLutVal
+	 */
+	void loadLut(final int curLutVal) {
+		switch (curLutVal) {
+		case Control.ORIG:	 
+			orig();
+			break;
+		case Control.GRAY:	 
+			gray();
+			break;
+		case Control.SPECTRUM:  
+			spectrum();
+			break;
+		case Control.FIRE:  
+			fire();
+			break;
+		case Control.THERMAL:  
+			thermal();
+			break;
+		}
+	}
 	void readLut() {
 		if (forceIgnoreLut) { generateSimpleLut(); return;}
 		LookUpTable lut_ = vv.imp.createLut();

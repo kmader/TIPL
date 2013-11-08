@@ -239,6 +239,17 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 		blockName = inName;
 		prereqBlocks = earlierBlocks;
 	}
+	
+	@Override
+	public double memoryFactor() {
+		System.err.println("Defaulting to "+this+" probably not what you wanted");
+		return 2;
+	}
+	@Override
+	public long neededMemory() {
+		System.err.println("Defaulting to "+this+" probably not what you wanted");
+		return 22*1024; //22 gigabytes 
+	}
 
 	protected abstract IBlockImage[] bGetInputNames();
 
@@ -266,7 +277,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 		}
 		return true;
 	}
-
+	
 	/**
 	 * Local block code for running
 	 * 

@@ -65,7 +65,7 @@ public abstract class Volume {
 		outV.readVolumeData();
 		return outV;
 	}
-	public static Volume create(Control control, Volume_Viewer vv,ImagePlus imp,int imin,int imax) {
+	public static Volume create(Control control, Volume_Viewer vv,ImagePlus imp,double imin,double imax) {
 		Volume outV=new StackVolume(control, vv,imp);
 		outV.rescaleImage(imin, imax);
 		return outV;
@@ -76,7 +76,7 @@ public abstract class Volume {
 		outV.readVolumeData();
 		return outV;
 	}
-	public static Volume create(Control control, Volume_Viewer vv,TImgRO inImg,int imin,int imax) {
+	public static Volume create(Control control, Volume_Viewer vv,TImgRO inImg,double imin,double imax) {
 		Volume outV=new TImgVolume(control, vv,inImg);
 		outV.rescaleImage(imin, imax);
 		return outV;

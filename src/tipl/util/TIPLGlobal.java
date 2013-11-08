@@ -1,5 +1,7 @@
 package tipl.util;
 
+import ij.ImageJ;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -41,8 +43,8 @@ public class TIPLGlobal {
 		TIPLGlobal.supportedIOThreads = sp.getOptionInt("@maxiothread",
 				TIPLGlobal.supportedIOThreads,
 				"Number of cores/threads to use for read/write operations");
-		if (sp.hasOption("?")) System.out.println(sp.getHelp());		
-		return sp.subArguments("@");
+		//if (sp.hasOption("?")) System.out.println(sp.getHelp());		
+		return sp;//.subArguments("@");
 	}
 	
 	
@@ -222,5 +224,17 @@ public class TIPLGlobal {
 		}
 
 	}
+	protected static ImageJ IJcore = null;
+	public static int IJmode=ImageJ.NO_SHOW;
+	public static ImageJ getIJInstance() {
+		if (Boolean.parseBoolean(System.getProperty("java.awt.headless"))) {
+			System.err.println("JVM is running in headless mode, IJcore will be returned as null, careful");
+			return null;
+		}
+		if (IJcore==null) IJcore=new ImageJ(IJmode);
+		return IJcore;
+	}
+	
+	
 
 }

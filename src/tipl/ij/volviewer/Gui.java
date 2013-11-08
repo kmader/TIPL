@@ -1227,23 +1227,7 @@ MouseListener, MouseMotionListener, ChangeListener, ActionListener, ItemListener
 			JComboBox cb = (JComboBox)e.getSource();
 			if (cb == lutChoice) {
 				control.lutNr = cb.getSelectedIndex();
-				switch (control.lutNr) {
-				case Control.ORIG:	 
-					vv.lookupTable.orig();
-					break;
-				case Control.GRAY:	 
-					vv.lookupTable.gray();
-					break;
-				case Control.SPECTRUM:  
-					vv.lookupTable.spectrum();
-					break;
-				case Control.FIRE:  
-					vv.lookupTable.fire();
-					break;
-				case Control.THERMAL:  
-					vv.lookupTable.thermal();
-					break;
-				}
+				vv.lookupTable.loadLut(control.lutNr);
 				vv.lookupTable.setLut();
 
 				if (checkPickColor2 != null) checkPickColor2.setSelected(control.pickColor);

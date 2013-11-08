@@ -3,6 +3,8 @@
  */
 package tipl.blocks;
 
+import java.util.concurrent.Callable;
+
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 
@@ -169,6 +171,16 @@ public interface ITIPLBlock {
 	 */
 	public boolean isReady();
 
+	/** 
+	 * how many times the first input image dimensions are required
+	 * @return
+	 */
+	public double memoryFactor();
+	/**
+	 * how much memory does this block require (total in megabytes)
+	 * @return
+	 */
+	public long neededMemory();
 	/**
 	 * Inputs can be given to the block through the setParameters command using
 	 * the ArgumentParser class

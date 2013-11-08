@@ -375,11 +375,11 @@ public class SGEJob {
 		javaString += "export CLASSPATH=" + tiplPath + "\n";
 		javaString += "JAVACMD=\"" + javaCmdPath + "\"\n";
 		javaString += "JARGS=\"-d64 -Xmx" + jvmMaxMemory + " -Xms"
-				+ jvmStartMemory + "\" \n";
-		javaString += "JCMD=\"$JAVACMD $JARGS\" \n";
+				+ jvmStartMemory +" -Djava.awt.headless=true" + "\" \n";
+		javaString += "JCMD=\"time $JAVACMD $JARGS\" \n";
 		javaString += "JTEST=\"$JCMD -version\"\n";
-		javaString += "TIPLCMD=\"$JCMD -jar " + tiplPath + " \"\n ";
-		javaString += "$JTEST\n";
+		javaString += "TIPLCMD=\"time $JCMD -jar " + tiplPath + " \"\n ";
+		javaString += "$JTEST\n sleep 1.5\n";
 		return javaString;
 	}
 
