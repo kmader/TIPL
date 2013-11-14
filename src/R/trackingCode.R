@@ -1,4 +1,4 @@
-
+library(plyr)
 compare.foam<-function(cDir,goldFile='glpor_1.csv',kevinFile='clpor_2.csv') {
   kbubs<-read.csv(paste(cDir,kevinFile,sep='/'),skip=1)
   gbubs<-read.csv(paste(cDir,goldFile,sep='/'),skip=1)
@@ -62,6 +62,45 @@ edges.append.mchain<-function(in.edges,in.bubbles) {
   merge(o.merge1,sub.bubbles,
         by.x=c("sample","Component.2"),by.y=c("sample","LACUNA_NUMBER"))
 }
+# calculate statistics
+chain.life.stats.fn<-function(in.data) ddply(in.data,.(MChain),function(c.chain) {
+  data.frame(MChain=c.chain$MChain[1],min.sample=min(c.chain$sample),max.sample=max(c.chain$sample),cnt.sample=length(unique(c.chain$sample)),sample=c.chain$sample)
+}) 
+# calculate the bubble life stats from the chains
+bubble.life.stats.fn<-function(in.chains,chain.life.stats,sample.vec) { 
+  out.val<-ddply(in.chains,.(MChain.1,MChain.2),function(c.edge) {
+    a.chain<-c.edge$MChain.1[1]
+    b.chain<-c.edge$MChain.2[1]
+    sample.range<-subset(chain.life.stats,MChain %in% c(a.chain,b.chain))
+    sample.cnt<-ddply(sample.range,.(sample),function(c.sample) data.frame(cnt=nrow(c.sample)))
+    both.present<-intersect(subset(sample.cnt,cnt>1)$sample,sample.vec)
+    # max of the min and the min of the max make the smallest range
+    data.frame(c.edge[1,],min.sample=min(both.present),max.sample=max(both.present),cnt.sample=length(both.present))
+  })
+  out.val$range.sample<-out.val$max.sample-out.val$min.sample
+  out.val
+}
+bubble.samples.exists.fn<-function(edge.chains,chain.life.stats,sample.vec) {
+  # calculate the full lifetime information
+  bubble.life.full<-bubble.life.stats.fn(edge.chains,chain.life.stats,sample.vec)
+  # only the possible topological events
+  # the bubbles must have been mutually alive more than 2 frames 
+  # the number of number of frames they are connected much be less than the mutual lifetime
+  bubble.life.good<-subset(bubble.life.full,range.sample>=2 & Connections<(range.sample))
+  # give the bubbles an id
+  bubble.life.good$id<-as.factor(paste(bubble.life.good$MChain.1,bubble.life.good$MChain.2))
+  
+  bubble.samples.exists<-ddply(bubble.life.good,.(MChain.1,MChain.2,id),function(c.edge) {
+    a.chain<-c.edge$MChain.1[1]
+    b.chain<-c.edge$MChain.2[1]
+    sample.range<-subset(chain.life.stats,MChain %in% c(a.chain,b.chain))
+    sample.cnt<-ddply(sample.range,.(sample),function(c.sample) data.frame(cnt=nrow(c.sample)))
+    both.present<-intersect(subset(sample.cnt,cnt>1)$sample,sample.vec)
+    data.frame(sample=both.present)
+  })
+  rbind(cbind(bubble.life.good[,names(bubble.life.good) %in% c("MChain.1","MChain.2","id","sample","Voxels")],connection="Touching"),cbind(bubble.samples.exists,Voxels=0,connection="Separated"))
+}
+
 # Add position (or other columns to the edge file)
 # it can be used like this edge.w.pos<-edges.append.pos(bubbles.join,mini.edges)
 edges.append.pos<-function(in.bubbles,in.edges,pos.cols=c("POS_X","POS_Y","POS_Z"),add.cols=c()) {
