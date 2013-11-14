@@ -13,6 +13,7 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.CSVFile;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 /**
@@ -1362,7 +1363,7 @@ public class GrayAnalysis implements Runnable {
 									+ mapA.getPos().z);
 			}
 
-			System.gc();
+			TIPLGlobal.runGC();
 			try {
 
 				final FileWriter out = new FileWriter(csvName, true);

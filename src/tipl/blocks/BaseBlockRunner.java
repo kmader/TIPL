@@ -41,7 +41,7 @@ public class BaseBlockRunner implements IBlockRunner {
 	public boolean execute() {
 		boolean success=true;
 		while (blockList.size()>0) {
-			System.gc();
+			TIPLGlobal.runGC();
 			success&=blockList.pop().execute();	
 		}
 		return success;

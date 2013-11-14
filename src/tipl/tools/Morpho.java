@@ -3,6 +3,7 @@ package tipl.tools;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.TIPLGlobal;
 
 // Used as a replacement for the moment function as it allows much more control over data
 // and communication with webservices (potentially?)
@@ -112,7 +113,7 @@ public class Morpho extends BaseTIPLPluginBW {
 	public void dilate() {
 		if (lastInOutput) {
 			System.arraycopy(outAim, 0, inAim, 0, aimLength);
-			System.gc();
+			TIPLGlobal.runGC();
 			lastInOutput = false;
 		}
 		curOperation = 1;
@@ -246,7 +247,7 @@ public class Morpho extends BaseTIPLPluginBW {
 
 		if (lastInOutput) {
 			System.arraycopy(outAim, 0, inAim, 0, aimLength);
-			System.gc();
+			TIPLGlobal.runGC();
 			lastInOutput = false;
 		}
 		curOperation = -1;
@@ -388,7 +389,7 @@ public class Morpho extends BaseTIPLPluginBW {
 					.println("Warning : 'Morpho' is not really a plug-in in that sense of the word, but will update the output anyways....");
 			if (lastInOutput) {
 				System.arraycopy(outAim, 0, inAim, 0, aimLength);
-				System.gc();
+				TIPLGlobal.runGC();
 				lastInOutput = false;
 			}
 			return false;
@@ -533,7 +534,7 @@ public class Morpho extends BaseTIPLPluginBW {
 							+ ">");
 			if (lastInOutput) {
 				System.arraycopy(outAim, 0, inAim, 0, aimLength);
-				System.gc();
+				TIPLGlobal.runGC();
 				lastInOutput = false;
 			}
 		}

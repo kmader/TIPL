@@ -23,8 +23,24 @@ import tipl.formats.VirtualAim;
  * <pre> v2 04Feb13 Added elSize to the mirrorImage function
  */
 public class TImgTools {
+	protected static ITIPLStorage storageBackend=null;
 	/**
-	 * put just the relevant dimension reading code in a seperate interface
+	 * get the current backend for storage / memory management, if none exists create a new one
+	 * @return
+	 */
+	public static ITIPLStorage getStorage() {
+		if (storageBackend==null) storageBackend=new TIPLStorage();
+		return storageBackend;
+	}
+	public static void setStorage(final ITIPLStorage inStorage) {
+		storageBackend=inStorage;
+	}
+	@Deprecated
+	public static TImgRO CacheImage(final TImgRO inImage) {
+		return getStorage().CacheImage(inImage);
+	}
+	/**
+	 * put just the relevant dimension reading code in a separate interface
 	 * 
 	 * @author mader
 	 * 
@@ -102,13 +118,7 @@ public class TImgTools {
 
 	}
 
-	//
-	public static final int FAST_TIFF_BASED = 0;
-	public static final int FAST_MEMORY_MAP_BASED = 1;
-	public static final int FAST_MEMORY_COMPUTATION_BASED = 2;
-	public static final int FAST_MEMORY_BASED = 3;
-	/** minimum isfast level to count as being cached */
-	public static int FAST_CACHED = FAST_MEMORY_MAP_BASED;
+
 
 	public static final int IMAGETYPE_BOOL = 10;
 	public static final int IMAGETYPE_CHAR = 0;
@@ -122,27 +132,12 @@ public class TImgTools {
 	
 	public static final String IMAGETYPE_HELP = "(boolean image/1bit="+IMAGETYPE_BOOL+", character image/8bit="+IMAGETYPE_CHAR+", short image/16bit="+IMAGETYPE_SHORT+", integer image/32bit="+IMAGETYPE_INT+", float image/32bit="+IMAGETYPE_FLOAT+")";
 
-	/**
-	 * A global image cache so images can be referenced until they are unloaded
-	 * by just their name
-	 */
-	protected static LinkedHashMap<String, TImg> cachedImages = new LinkedHashMap<String, TImg>();
 
 	public static String appendProcLog(final String curLog, final String appText) {
 		return curLog + "\n" + new Date() + "\t" + appText;
 	}
 
-	/**
-	 * check to see if the image is faster than loading a tiff, if it is not
-	 * fast and there is enough memory (not yet implemented), than cache it
-	 */
-	@Deprecated
-	public static TImgRO CacheImage(final TImgRO inImage) {
-		if (inImage.isFast() > FAST_TIFF_BASED)
-			return inImage;
-		else
-			return ConcurrentReader.CacheImage(inImage, inImage.getImageType());
-	}
+	
 	
 	public static TImgRO[] fillListWithNull(TImgRO[] inImages,int keepLength) {
 		TImgRO[] outImages=new TImgRO[keepLength];
@@ -535,6 +530,32 @@ public class TImgTools {
 				+ " cannot be determined!! Proceed with extreme caution");
 	}
 	/**
+	 * Calculate the type of object it is from the type name
+	 * 
+	 * @param inType the type of the object
+	 *            
+	 * @return the normal name for the slice type
+	 */
+	public static String getImageTypeName(final int inType) {
+		assert(isValidType(inType));
+		switch(inType) {
+		case IMAGETYPE_BOOL:
+			return "1bit";
+		case IMAGETYPE_CHAR:
+			return "8bit";
+		case IMAGETYPE_SHORT:
+			return "16bit";
+		case IMAGETYPE_INT:
+			return "32bit-integer";
+		case IMAGETYPE_FLOAT:
+			return "32bit-float";
+		default:
+			throw new IllegalArgumentException("Type of object:" + inType
+					+ " cannot be determined!! Proceed with extreme caution");
+		}
+	}
+	
+	/**
 	 * get the range of values for a given image type
 	 * @param inType
 	 * @return
@@ -556,6 +577,46 @@ public class TImgTools {
 			throw new IllegalArgumentException("Type of object:" + inType
 					+ " cannot be determined!! Proceed with extreme caution");
 		}
+	}
+	/** 
+	 * calcualte how much memory is used when allocating large arrays
+	 * @param inType
+	 * @param arrSize
+	 * @return
+	 */
+	public static Object watchBigAlloc(int inType,int arrSize) {
+		long usedBefore=TIPLGlobal.getUsedMB();
+		Object out=bigAlloc(inType, arrSize);
+		long usedAfter=TIPLGlobal.getUsedMB();
+		long expectedSize=(long) (arrSize/(1024.0*1024.0)*typeSize(inType));
+		if (TIPLGlobal.TIPLDebugLevel>=TIPLGlobal.DEBUG_GC) System.out.println("Alloc: "+getImageTypeName(inType)+":["+(arrSize/1e6)+"M], used "+(usedAfter-usedBefore)+" (E:"+expectedSize+"), free:"+TIPLGlobal.getFreeMB());
+		
+		return out;
+	}
+	/**
+	 * allocate large arrays (important for old model)
+	 * @param inType
+	 * @param arrSize
+	 * @return
+	 */
+	protected static Object bigAlloc(int inType,int arrSize) {
+		assert(isValidType(inType));
+		switch(inType) {
+		case IMAGETYPE_BOOL:
+			return new boolean[arrSize];
+		case IMAGETYPE_CHAR:
+			return new char[arrSize];
+		case IMAGETYPE_SHORT:
+			return new short[arrSize];
+		case IMAGETYPE_INT:
+			return new int[arrSize];
+		case IMAGETYPE_FLOAT:
+			return new float[arrSize];
+		default:
+			throw new IllegalArgumentException("Type of object:" + inType
+					+ " cannot be determined!! Proceed with extreme caution");
+		}
+		
 	}
 
 	/**
@@ -604,7 +665,7 @@ public class TImgTools {
 	}
 
 	public static TImg ReadTImg(final String path) {
-		return ReadTImg(path, false, false);
+		return getStorage().readTImg(path);
 	}
 
 	/**
@@ -620,23 +681,11 @@ public class TImgTools {
 	 */
 	public static TImg ReadTImg(final String path, final boolean readFromCache,
 			final boolean saveToCache) {
-		if (readFromCache)
-			if (cachedImages.containsKey(path))
-				return cachedImages.get(path);
-		final TImg curImg = new VirtualAim(path);
-		if (saveToCache)
-			cachedImages.put(path, curImg);
-		return curImg;
+		return getStorage().readTImg(path,readFromCache,saveToCache);
 	}
 
-	public static void RemoveTImgFromCache(final String path) {
-		try {
-			cachedImages.remove(path);
-			System.gc();
-		} catch (final Exception e) {
-			e.printStackTrace();
-			System.err.println("Image:" + path + " is not in the cache!");
-		}
+	public static boolean RemoveTImgFromCache(final String path) {
+		return getStorage().RemoveTImgFromCache(path);
 	}
 
 	/**

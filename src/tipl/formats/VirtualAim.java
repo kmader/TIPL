@@ -33,6 +33,7 @@ import tipl.ij.TImgToImagePlus;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
+import tipl.util.ITIPLStorage;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
@@ -443,7 +444,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	protected BufferedImage aimSlice(final int n, final int cType) {
 
 		BufferedImage image = null;
-		System.gc();
+		TIPLGlobal.runGC();
 		int maxVal = 255;
 		if (cType == BufferedImage.TYPE_BYTE_GRAY)
 			maxVal = 127;
@@ -585,7 +586,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		} else {
 			System.out.println("Error, Full Aim data has not yet been loaded!");
 		}
-		System.gc();
+		TIPLGlobal.runGC();
 
 		return image;
 
@@ -665,7 +666,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		PlanarImage.wrapRenderedImage(im).getAsBufferedImage();
 		final BufferedImage bim = PlanarImage.wrapRenderedImage(im)
 				.getAsBufferedImage();
-		System.gc();
+		TIPLGlobal.runGC();
 		final Raster activeRaster = bim.getData();
 		if (dim.x != activeRaster.getWidth()) {
 			if (dim.x < 1) {
@@ -751,7 +752,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 			if (scratchFilename.length() > 0)
 				TIPLGlobal.DeleteFile(scratchFilename, "Finalizer");
 
-		System.gc();
+		TIPLGlobal.runGC();
 	}
 
 	public void free() {
@@ -804,27 +805,27 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		switch (asType) {
 		case 0:
 			aimByte = null;
-			System.gc();
+			TIPLGlobal.runGC();
 			aimByte = new char[aimLength];
 			break;
 		case 1:
 			aimShort = null;
-			System.gc();
+			TIPLGlobal.runGC();
 			aimShort = new short[aimLength];
 			break;
 		case 2:
 			aimInt = null;
-			System.gc();
+			TIPLGlobal.runGC();
 			aimInt = new int[aimLength];
 			break;
 		case 3:
 			aimFloat = null;
-			System.gc();
+			TIPLGlobal.runGC();
 			aimFloat = new float[aimLength];
 			break;
 		case 10:
 			aimMask = null;
-			System.gc();
+			TIPLGlobal.runGC();
 			aimMask = new boolean[aimLength];
 			break;
 		default:
@@ -1897,19 +1898,19 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 
 		switch (imageType) {
 		case 10:
-			aimMask = new boolean[imgVoxCnt * dim.z];
+			aimMask=(boolean[]) TImgTools.watchBigAlloc(TImgTools.IMAGETYPE_BOOL, imgVoxCnt * dim.z);
 			break;
 		case 0:
-			aimByte = new char[imgVoxCnt * dim.z];
+			aimByte=(char[]) TImgTools.watchBigAlloc(TImgTools.IMAGETYPE_CHAR, imgVoxCnt * dim.z);
 			break;
 		case 1:
-			aimShort = new short[imgVoxCnt * dim.z];
+			aimShort=(short[]) TImgTools.watchBigAlloc(TImgTools.IMAGETYPE_SHORT, imgVoxCnt * dim.z);
 			break;
 		case 2:
-			aimInt = new int[imgVoxCnt * dim.z];
+			aimInt=(int[]) TImgTools.watchBigAlloc(TImgTools.IMAGETYPE_INT, imgVoxCnt * dim.z);
 			break;
 		case 3:
-			aimFloat = new float[imgVoxCnt * dim.z];
+			aimFloat=(float[]) TImgTools.watchBigAlloc(TImgTools.IMAGETYPE_FLOAT, imgVoxCnt * dim.z);
 			break;
 		default:
 			System.out.println("Hats dir im gring gschisse? So s'typ hans ned "
@@ -1924,9 +1925,9 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	@Override
 	public int isFast() {
 		if (fullAimLoaded)
-			return TImgTools.FAST_MEMORY_BASED;
+			return ITIPLStorage.FAST_MEMORY_BASED;
 		else
-			return TImgTools.FAST_TIFF_BASED;
+			return ITIPLStorage.FAST_TIFF_BASED;
 	}
 
 	/** Is the data in good shape */
@@ -1986,7 +1987,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		aimShort = null;
 		aimInt = null;
 		aimFloat = null;
-		System.gc();
+		TIPLGlobal.runGC();
 
 		// Pre allocate array and read in data
 		switch (imageType) {
@@ -2069,7 +2070,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		aimShort = null;
 		aimInt = null;
 		aimFloat = null;
-		System.gc();
+		TIPLGlobal.runGC();
 
 		fullAimLoaded = false;
 		fullAimLoadedAs = -1;
@@ -2188,7 +2189,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 			if (force) {
 				System.out.println("Already loaded, loading again?...");
 				stack = null;
-				System.gc();
+				TIPLGlobal.runGC();
 			} else {
 				System.out.println("Already loaded, done...");
 				return;
@@ -2488,7 +2489,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 			ischGuet = true;
 			// myISQ=null;
 			isSigned = false;
-			System.gc();
+			TIPLGlobal.runGC();
 
 			return true;
 		} else {
@@ -2697,7 +2698,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	public void unloadStack() {
 		stack = null;
 		isLoaded = false;
-		System.gc();
+		TIPLGlobal.runGC();
 	}
 
 	/**
@@ -2796,7 +2797,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 					imageList.add(aimSlice(n, cType));
 				}
 				tparam.setExtraImages(imageList.iterator());
-				System.gc();
+				TIPLGlobal.runGC();
 				// Assign TiffHeaders
 				setTIFFheader(tparam);
 				// Write image
@@ -2851,7 +2852,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 					System.out.println("Cannot write slice " + n);
 					e.printStackTrace();
 				}
-				System.gc();
+				TIPLGlobal.runGC();
 			}
 			plPath = outpath + "/procLog.txt";
 		}

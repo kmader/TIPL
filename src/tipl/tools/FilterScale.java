@@ -242,20 +242,20 @@ public class FilterScale extends BaseTIPLPluginMult {
 			oimageType = imageType;
 		// Initialize aimArray
 		switch (oimageType) {
-		case 0: // Byte
-			outAimByte = new char[(int) odim.prod()];
+		case TImgTools.IMAGETYPE_CHAR: // Byte
+			outAimByte =(char[]) TImgTools.watchBigAlloc(oimageType, (int) odim.prod());
 			break;
-		case 1: // Short
-			outAimShort = new short[(int) odim.prod()];
+		case TImgTools.IMAGETYPE_SHORT: // Short
+			outAimShort = (short[]) TImgTools.watchBigAlloc(oimageType, (int) odim.prod());
 			break;
-		case 2: // Int
-			outAimInt = new int[(int) odim.prod()];
+		case TImgTools.IMAGETYPE_INT: // Int
+			outAimInt = (int[]) TImgTools.watchBigAlloc(oimageType, (int) odim.prod());
 			break;
-		case 3: // Float
-			outAimFloat = new float[(int) odim.prod()];
+		case TImgTools.IMAGETYPE_FLOAT: // Float
+			outAimFloat=(float[]) TImgTools.watchBigAlloc(oimageType, (int) odim.prod());
 			break;
-		case 10: // Boolean
-			outAimMask = new boolean[(int) odim.prod()];
+		case TImgTools.IMAGETYPE_BOOL: // Boolean
+			outAimMask = (boolean[]) TImgTools.watchBigAlloc(oimageType, (int) odim.prod());
 			break;
 		}
 

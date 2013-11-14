@@ -7,6 +7,7 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.D3float;
 import tipl.util.D3int;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 /**
@@ -818,7 +819,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 
 	private void resetRemap() {
 		labelremap = null;
-		System.gc();
+		TIPLGlobal.runGC();
 		labelremap = new ArrayList<Integer>(maxlabel);
 		for (int ir = 0; ir <= maxlabel; ir++)
 			labelremap.add(new Integer(ir));

@@ -16,6 +16,36 @@ import tipl.formats.VirtualAim;
 import tipl.tools.BaseTIPLPluginIn;
 
 public class TIPLGlobal {
+	public static final int DEBUG_ALL=5;
+	public static final int DEBUG_GC=4;
+	public static final int DEBUG_BASIC=1;
+	public static final int DEBUG_OFF=0;
+	protected static int TIPLDebugLevel=DEBUG_BASIC;
+	
+	/**
+	 * Run (encourage to run) the garbage collector and provide more feedback on the current memory status (makes debugging easier)
+	 */
+	public static void runGC() {
+		long memBefore=getFreeMB();
+		System.gc();
+		try {Thread.sleep(10);}
+		catch (Exception e){ 
+			e.printStackTrace();
+			System.out.println("Sleep during GC was aborted");
+		}
+		long memAfter=getFreeMB();
+		if (TIPLDebugLevel>=DEBUG_GC) System.out.println("GC Run: "+(memAfter-memBefore)+" MB freed, "+memAfter+"MB avail of "+getTotalMB()+"MB");
+	}
+	public static long getFreeMB() {
+		return curRuntime.freeMemory()/(1024*1024);
+	}
+	public static long getTotalMB() {
+		return curRuntime.totalMemory()/(1024*1024);
+	}
+	public static long getUsedMB() {
+		return getTotalMB()-getFreeMB();
+	}
+
 	/**
 	 * simple method to get an executor service, eventually allows this to be changed to another / distributed option
 	 * @param numOfCores
@@ -43,6 +73,9 @@ public class TIPLGlobal {
 		TIPLGlobal.supportedIOThreads = sp.getOptionInt("@maxiothread",
 				TIPLGlobal.supportedIOThreads,
 				"Number of cores/threads to use for read/write operations");
+		TIPLGlobal.TIPLDebugLevel = sp.getOptionInt("@debug",
+				TIPLGlobal.TIPLDebugLevel,
+				"Debug level from "+DEBUG_OFF+" to "+DEBUG_ALL);
 		//if (sp.hasOption("?")) System.out.println(sp.getHelp());		
 		return sp;//.subArguments("@");
 	}
@@ -120,7 +153,7 @@ public class TIPLGlobal {
 			e.printStackTrace();
 			System.out.println("Copy file failed (disk full?) " + sourceFile
 					+ ", " + destFile);
-			System.gc();
+			TIPLGlobal.runGC();
 		}
 	}
 
@@ -219,7 +252,7 @@ public class TIPLGlobal {
 			return (tempAim.ischGuet);
 		} catch (final Exception e) {
 			tempAim = null;
-			System.gc();
+			TIPLGlobal.runGC();
 			return false;
 		}
 

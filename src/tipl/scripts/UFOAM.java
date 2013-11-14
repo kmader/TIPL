@@ -434,7 +434,7 @@ public class UFOAM {
 				bubblesAim.getOffset());
 		platAim.appendProcLog("CMD:Invert");
 
-		System.gc();
+		TIPLGlobal.runGC();
 
 	}
 
@@ -612,7 +612,7 @@ public class UFOAM {
 		fs.runFilter();
 		floatAim = fs.ExportAim(ufiltAim);
 		ufiltAim = null;
-		System.gc();
+		TIPLGlobal.runGC();
 	}
 
 	/** Run the script */
@@ -631,7 +631,7 @@ public class UFOAM {
 				System.out.println("Running Stage #" + cStage + " (" + scount
 						+ "/" + stages.length + ")");
 				runSection(Integer.valueOf(cStage).intValue());
-				System.gc();
+				TIPLGlobal.runGC();
 				scount++;
 			}
 			System.out.println("Job Finished in "
@@ -663,7 +663,7 @@ public class UFOAM {
 			}
 
 			ufiltAim = null;
-			System.gc();
+			TIPLGlobal.runGC();
 			break;
 		case 1: // Cleaning masks
 			System.out.println("UFOAM--" + new Date()
@@ -680,14 +680,14 @@ public class UFOAM {
 			if (p.hasOption("threshout"))
 				threshoutAim.WriteAim(threshoutAimFile);
 			floatAim = null;
-			System.gc();
+			TIPLGlobal.runGC();
 			cleanMasks();
 			threshoutAim = null;
 			if (platAimFile.length() > 0)
 				platAim.WriteAim(platAimFile);
 			if (bubblesAimFile.length() > 0)
 				bubblesAim.WriteAim(bubblesAimFile);
-			System.gc();
+			TIPLGlobal.runGC();
 			break;
 		case 2: // Contour and peeling masks
 			System.out.println("UFOAM--" + new Date()
@@ -713,7 +713,7 @@ public class UFOAM {
 				bubblesAim.WriteAim(bubblesAimFile);
 
 			maskAim = null; // Won't be needing that for the next step
-			System.gc();
+			TIPLGlobal.runGC();
 			break;
 		case 3: // Plateau border distance maps
 			System.out.println("UFOAM--" + new Date()
@@ -728,7 +728,7 @@ public class UFOAM {
 			distmapAim = KV.ExportDistanceAim(platAim);
 			platAim = null; // Won't be needing these for the next step
 			KV = null;
-			System.gc();
+			TIPLGlobal.runGC();
 			if (bubblesAim == null)
 				bubblesAim = TImgTools.ReadTImg(bubblesAimFile);
 			distmapAim = peelAim(distmapAim, bubblesAim, 0);
@@ -757,7 +757,7 @@ public class UFOAM {
 					labelsAim.WriteAim(labelsAimFile);
 			}
 
-			System.gc();
+			TIPLGlobal.runGC();
 			break;
 		case 5: // Fill label map completely
 
@@ -790,7 +790,7 @@ public class UFOAM {
 			labelsAim = null;
 			bubblelabelsAim = null;
 			bubblesAim = null;
-			System.gc();
+			TIPLGlobal.runGC();
 			break;
 		case 6: // Calculate thickness
 			System.out.println("UFOAM--" + new Date()
@@ -845,7 +845,7 @@ public class UFOAM {
 					nameVersion(clporCsv, 0), nameVersion(clporCsv, 1),
 					"Thickness");
 			thickmapAim = null;
-			System.gc();
+			TIPLGlobal.runGC();
 
 			break;
 		case 9: // Neighborhood
@@ -869,7 +869,7 @@ public class UFOAM {
 			if (labelnhAimFile.length() > 0)
 				labelnhAim.WriteAim(labelnhAimFile);
 			labelnhAim = null;
-			System.gc();
+			TIPLGlobal.runGC();
 
 			// Curvature
 			if (ccup == ccdown) {
@@ -879,7 +879,7 @@ public class UFOAM {
 						nameVersion(clporCsv, 1), nameVersion(clporCsv, 2),
 						"Curvature");
 				curveAim = null;
-				System.gc();
+				TIPLGlobal.runGC();
 			}
 
 			break;

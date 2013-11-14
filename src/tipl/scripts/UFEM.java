@@ -330,14 +330,14 @@ public class UFEM implements Runnable {
 		}
 		inImg = null;
 
-		System.gc();
+		TIPLGlobal.runGC();
 		TImg outAim = inAim.inheritedAim(scdat, inAim.getDim(),
 				inAim.getOffset());
 		if (rmEdges)
 			outAim = removeEdges(outAim, remEdgesRadius);
 
 		scdat = null;
-		System.gc();
+		TIPLGlobal.runGC();
 		outAim.appendProcLog("CMD:Threshold, Value:" + threshVal);
 		return outAim;
 	}
@@ -664,7 +664,7 @@ public class UFEM implements Runnable {
 		lmaskAim = clObjects.ExportMaskAimVolume(porosAim,
 				porosAim.getElSize(), lacMinVol, lacMaxVol);
 		clObjects = null;
-		System.gc();
+		TIPLGlobal.runGC();
 	}
 
 	/** create the voronoi volumes for the canals and canal distance */
@@ -689,7 +689,7 @@ public class UFEM implements Runnable {
 		canalVolsAim = null;
 		canalDistAim = null;
 		canaldistAimReady = true;
-		System.gc();
+		TIPLGlobal.runGC();
 	}
 
 	/** create the voronoi volumes for the lacuna */
@@ -714,7 +714,7 @@ public class UFEM implements Runnable {
 		lacunAim = null;
 		boneAim = null;
 		lacundistAimReady = true;
-		System.gc();
+		TIPLGlobal.runGC();
 	}
 
 	/** create the voronoi volumes for the canals and canal distance */
@@ -740,7 +740,7 @@ public class UFEM implements Runnable {
 		vTransform = null;
 		maskdistAim = null;
 		maskdistAimReady = true;
-		System.gc();
+		TIPLGlobal.runGC();
 	}
 
 	/** Code to make preview (slices every 20 slides of the data) */
@@ -762,7 +762,7 @@ public class UFEM implements Runnable {
 		clObjects.runVoxels(0);
 		final TImg outAim = clObjects.ExportLabelsAim(inputImage);
 		clObjects = null;
-		System.gc();
+		TIPLGlobal.runGC();
 		return outAim;
 	}
 
@@ -924,7 +924,7 @@ public class UFEM implements Runnable {
 				System.out.println("Running Stage #" + cStage + " (" + scount
 						+ "/" + stages.length + ")");
 				runSection(Integer.valueOf(cStage).intValue());
-				System.gc();
+				TIPLGlobal.runGC();
 				scount++;
 			}
 		}
@@ -983,7 +983,7 @@ public class UFEM implements Runnable {
 			boneAim = threshAim; // bone comes from the threshold image
 			maskAim = segment(threshAim, morphRadius, closeIter);
 
-			System.gc();
+			TIPLGlobal.runGC();
 			porosAim = makePoros(threshAim);
 
 			maskAim = boundbox(maskAim);
@@ -991,7 +991,7 @@ public class UFEM implements Runnable {
 
 			boneAim = boundbox(boneAim, maskAim);
 			boneAim.WriteAim(boneAimFile);
-			System.gc();
+			TIPLGlobal.runGC();
 
 			porosAim = boundbox(porosAim, maskAim);
 			porosAim.WriteAim(porosAimFile);
@@ -1055,7 +1055,7 @@ public class UFEM implements Runnable {
 			// subsequent datasets
 			maskAim = peelAim(maskAim, maskAim, porosMaskPeel, true);
 
-			System.gc();
+			TIPLGlobal.runGC();
 			// The code for mask data
 			for (final String imgFile : imgListBW) {
 				if (tryOpenAimFile(imgFile)) {
@@ -1064,7 +1064,7 @@ public class UFEM implements Runnable {
 					tempAim = peelAim(tempAim, maskAim, 0, true);
 					tempAim.WriteAim(imgFile);
 					tempAim = null;
-					System.gc();
+					TIPLGlobal.runGC();
 				}
 			}
 			// Te code for color data
@@ -1074,7 +1074,7 @@ public class UFEM implements Runnable {
 					tempAim = peelAim(tempAim, maskAim, 0);
 					tempAim.WriteAim(imgFile);
 					tempAim = null;
-					System.gc();
+					TIPLGlobal.runGC();
 				}
 			}
 
@@ -1106,7 +1106,7 @@ public class UFEM implements Runnable {
 
 			lacunAim = null;
 			lmaskAim = null;
-			System.gc();
+			TIPLGlobal.runGC();
 
 			if (cmaskAim == null)
 				cmaskAim = TImgTools.ReadTImg(cmaskAimFile);
@@ -1222,7 +1222,7 @@ public class UFEM implements Runnable {
 					nameVersion(lacunCsv, 3), nameVersion(lacunCsv, 4),
 					"Neighbors");
 			lacunVolsAim = null;
-			System.gc();
+			TIPLGlobal.runGC();
 			break;
 		case 15:
 			// Canal Version Scheme 0 = mask distance, 1 = density, 2 =
@@ -1439,7 +1439,7 @@ public class UFEM implements Runnable {
 			return (tempAim.isGood());
 		} catch (final Exception e) {
 			tempAim = null;
-			System.gc();
+			TIPLGlobal.runGC();
 			return false;
 		}
 

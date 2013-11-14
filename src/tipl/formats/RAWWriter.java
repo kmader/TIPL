@@ -6,6 +6,8 @@ import java.io.FileWriter;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
+import tipl.util.TIPLGlobal;
+
 /** Writes TImg data to a RAW file */
 public class RAWWriter implements TWriter {
 	OutputStream os;
@@ -33,7 +35,7 @@ public class RAWWriter implements TWriter {
 					+ outpath);
 			e.printStackTrace();
 		}
-		System.gc();
+		TIPLGlobal.runGC();
 	}
 
 	@Override

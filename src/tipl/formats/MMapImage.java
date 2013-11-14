@@ -3,8 +3,6 @@
  */
 package tipl.formats;
 
-import ij.ImageStack;
-
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
@@ -18,6 +16,7 @@ import java.util.concurrent.Future;
 
 import tipl.util.D3float;
 import tipl.util.D3int;
+import tipl.util.ITIPLStorage;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
@@ -186,7 +185,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 	}
 
 	public void close() throws IOException {
-		// A System.gc() is required to remove the memory mappings.
+		// A TIPLGlobal.runGC() is required to remove the memory mappings.
 		mappings.clear();
 		raf.close();
 	}
@@ -485,7 +484,7 @@ public class MMapImage implements TImg, TReader, TWriter {
 	 */
 	@Override
 	public int isFast() {
-		return TImgTools.FAST_MEMORY_MAP_BASED;
+		return ITIPLStorage.FAST_MEMORY_MAP_BASED;
 	}
 
 	/*

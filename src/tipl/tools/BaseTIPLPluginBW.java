@@ -112,7 +112,7 @@ abstract public class BaseTIPLPluginBW extends BaseTIPLPluginIO {
 	}
 
 	protected void InitLabels(final D3int idim, final D3int ioffset) {
-		outAim = new boolean[aimLength];
+		outAim=(boolean[]) TImgTools.watchBigAlloc(TImgTools.IMAGETYPE_BOOL, aimLength);
 		InitDims(idim, ioffset);
 		isInitialized = true;
 	}

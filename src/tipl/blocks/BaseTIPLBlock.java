@@ -225,7 +225,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 			return (tempAim.isGood());
 		} catch (final Exception e) {
 			tempAim = null;
-			System.gc();
+			TIPLGlobal.runGC();
 			return false;
 		}
 

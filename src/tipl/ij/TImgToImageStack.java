@@ -198,7 +198,7 @@ public class TImgToImageStack extends ImageStack {
 	 * 3; else { System.out.println("Unreadable!!!"); return; }
 	 * 
 	 * // Erase old data aimMask = null; aimByte = null; aimShort = null; aimInt
-	 * = null; aimFloat = null; System.gc();
+	 * = null; aimFloat = null; TIPLGlobal.runGC();
 	 * 
 	 * // Pre allocate array and read in data switch (imageType) { case 10:
 	 * aimMask = new boolean[imgVoxCnt * dim.z]; break; case 0: aimByte = new

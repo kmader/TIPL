@@ -1,12 +1,11 @@
 package tipl.formats;
 
-import ij.ImageStack;
-
 import java.io.File;
 import java.io.IOException;
 
 import tipl.util.D3float;
 import tipl.util.D3int;
+import tipl.util.ITIPLStorage;
 import tipl.util.TImgTools;
 
 /** Interface for reading TImg files from a data source */
@@ -263,7 +262,7 @@ public interface TReader {
 
 		@Override
 		public int isFast() {
-			return TImgTools.FAST_TIFF_BASED;
+			return ITIPLStorage.FAST_TIFF_BASED;
 		}
 
 		@Override

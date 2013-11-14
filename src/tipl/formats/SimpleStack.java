@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import tipl.formats.TImgRO.TImgStack;
 import tipl.util.D3float;
 import tipl.util.D3int;
+import tipl.util.ITIPLStorage;
 import tipl.util.TImgTools;
 
 /**
@@ -241,7 +242,7 @@ public class SimpleStack<T> extends TImgStack {
 	 */
 	@Override
 	public int isFast() {
-		return TImgTools.FAST_MEMORY_BASED;
+		return ITIPLStorage.FAST_MEMORY_BASED;
 	}
 
 	/*

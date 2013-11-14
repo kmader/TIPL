@@ -10,6 +10,7 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.D3float;
 import tipl.util.D3int;
+import tipl.util.ITIPLStorage;
 import tipl.util.TImgTools;
 
 /**
@@ -300,7 +301,7 @@ public class ImageStackToTImg implements TImg {
 	@Override
 	public int isFast() {
 		// TODO Auto-generated method stub
-		return TImgTools.FAST_MEMORY_COMPUTATION_BASED;
+		return ITIPLStorage.FAST_MEMORY_COMPUTATION_BASED;
 	}
 
 	/* (non-Javadoc)

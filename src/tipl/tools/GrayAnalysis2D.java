@@ -16,6 +16,7 @@ import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 // Used as a replacement for the moment function as it allows much more control over data
@@ -764,7 +765,7 @@ public class GrayAnalysis2D extends Hist2D {
 			processSlices();
 			System.currentTimeMillis();
 
-			System.gc();
+			TIPLGlobal.runGC();
 			String extraInfo = "";
 			if (gfiltAim != null)
 				extraInfo += "	Scaled By = " + 1.0

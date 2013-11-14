@@ -86,7 +86,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 
 	}
 
-	protected Volume_Viewer(Volume invol, TImgRO inInternalImage) {
+	protected Volume_Viewer(Volume invol,ImagePlus inImp, TImgRO inInternalImage) {
 		ijcore=TIPLGlobal.getIJInstance(); // open the ImageJ window to see images and results
 
 		// This should be created at the very beginning
@@ -100,7 +100,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 			throw new IllegalArgumentException(this
 					+ ": No image has been loaded, aborting");
 
-		imp = TImgToImagePlus.MakeImagePlus(internalImage);
+		imp = inImp; 
 		if (imp == null || !(imp.getStackSize() > 1)) {
 			IJ.showMessage("Stack required");
 			return;
@@ -387,30 +387,31 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 			String rootName = snapshotPath;
 			String cAnimatedArgument = "-" + animatedVariable + "=";
 			ExecutorService myPool = TIPLGlobal.requestSimpleES();
+			final Volume finalVol = vol;
+			final TImgRO itImg = internalImage;
+			final ImagePlus fimp=TImgToImagePlus.MakeImagePlus(internalImage);
+			
 			for (int i = 0; i < animatedSteps; i++) {
 				ArgumentParser p = setParameter(cAnimatedArgument + curValue
 						+ " -output=" + rootName + "_"
 						+ String.format("%04d", i) + ".tiff");
 				p.checkForInvalid();
 				final String finalArgs = p.toString();
-				final Volume finalVol = vol;
-				final TImgRO itImg = internalImage;
+				
 				myPool.submit(new Runnable() {
 					public void run() {
-						Volume_Viewer cPlug = new Volume_Viewer(finalVol, itImg);
+						Volume_Viewer cPlug = new Volume_Viewer(finalVol,fimp,itImg);
 						cPlug.setParameter(finalArgs);
+						System.out.println("Now executing:"+finalArgs);
 						cPlug.run_plugin();
 					}
 
 				});
-
-				// run_plugin();
 				curValue += stepSize;
 			}
-
 			TIPLGlobal.waitForever(myPool);
-			flush_plugin();
-			cleanup();
+			//flush_plugin();
+			//cleanup();
 		} else
 			run_plugin();
 		
@@ -423,7 +424,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 		tr = null;
 		trLight = null;
 		gui = null;
-		System.gc();
+		TIPLGlobal.runGC();
 	}
 
 	public void run_plugin() {
@@ -593,7 +594,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 
 		control = null;
 
-		System.gc();
+		TIPLGlobal.runGC();
 	}
 
 	private void readPrefsOLD() {

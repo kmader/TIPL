@@ -5,6 +5,7 @@ import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 /**
@@ -240,7 +241,7 @@ public class VFilterScale extends FilterScale {
 				} else
 					cachedSlices[iz - lowz] = null;
 			}
-			System.gc();
+			TIPLGlobal.runGC();
 			for (int oy = olowy; oy < ouppy; oy++) {
 
 				ooff = (oz * odim.y + oy) * odim.x + olowx;
