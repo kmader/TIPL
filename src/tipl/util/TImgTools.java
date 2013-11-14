@@ -712,8 +712,7 @@ public class TImgTools {
 	}
 
 	public static TImg WrapTImgRO(final TImgRO inImage) {
-		return new VirtualAim(inImage);
-		// return new TImgFromTImgRO(inImage);
+		return getStorage().wrapTImgRO(inImage);
 	}
 
 	/**
@@ -750,30 +749,10 @@ public class TImgTools {
 		return WriteTImg(curImg, path, false);
 	}
 
-	/**
-	 * Method to write an image to disk and return whether or not it was
-	 * successful
-	 * 
-	 * @param curImg
-	 * @param path
-	 * @param saveToCache
-	 * @return success
-	 */
+
 	public static boolean WriteTImg(final TImgRO curImg, final String path,
 			final boolean saveToCache) {
-
-		try {
-			if (curImg instanceof VirtualAim)
-				curImg.WriteAim(path);
-			else
-				VirtualAim.TImgToVirtualAim(curImg).WriteAim(path);
-			return true;
-		} catch (final Exception e) {
-			System.err.println("Image: " + curImg.getSampleName() + " @ "
-					+ curImg + ", could not be written to " + path);
-			e.printStackTrace();
-			return false;
-		}
+		return getStorage().writeTImg(curImg, path, saveToCache);
 	}
 
 	/**

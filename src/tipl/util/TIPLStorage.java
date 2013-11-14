@@ -32,25 +32,7 @@ public class TIPLStorage implements ITIPLStorage {
 				return false;
 		}
 	}
-	/**
-	 * A global image cache so images can be referenced until they are unloaded
-	 * by just their name
-	 */
-	protected static class StampedObj<T> {
-		public Date createdTime;
-		public Date lastAccessedTime;
-		final protected T curImg;
-		public StampedObj(T inImg) {
-			createdTime=new Date();
-			lastAccessedTime=new Date();
-			curImg=inImg;
-		}
-		public T get() {
-			lastAccessedTime=new Date();
-			return curImg;
-		}
-		
-	}
+
 	protected LinkedHashMap<String, StampedObj<TImg>> cachedImages = new LinkedHashMap<String,  StampedObj<TImg>>();
 
 	/**
@@ -96,7 +78,7 @@ public class TIPLStorage implements ITIPLStorage {
 				return cachedImages.get(path).get();
 		final TImg curImg = new VirtualAim(path);
 		if (saveToCache)
-			cachedImages.put(path, new StampedObj<TImg>(curImg));
+			cachedImages.put(path, new ITIPLStorage.StampedObj<TImg>(curImg));
 		return curImg;
 	}
 
@@ -112,18 +94,44 @@ public class TIPLStorage implements ITIPLStorage {
 		}
 	}
 	
-	
+	/**
+	 * Method to write an image to disk and return whether or not it was
+	 * successful
+	 * 
+	 * @param curImg
+	 * @param path
+	 * @param saveToCache
+	 * @return success
+	 */
+	public boolean writeTImg(final TImgRO curImg, final String path,
+			final boolean saveToCache) {
 
-	@Override
-	public boolean writeTImg(TImgRO outImg, String path) {
-		// TODO Auto-generated method stub
-		return false;
+		try {
+			if (curImg instanceof VirtualAim)
+				curImg.WriteAim(path);
+			else
+				VirtualAim.TImgToVirtualAim(curImg).WriteAim(path);
+			if (saveToCache)
+				cachedImages.put(path, new ITIPLStorage.StampedObj<TImg>(wrapTImgRO(curImg)));
+			return true;
+		} catch (final Exception e) {
+			System.err.println("Image: " + curImg.getSampleName() + " @ "
+					+ curImg + ", could not be written to " + path);
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	@Override
 	public TImg allocateTImg(D3int dims, int type) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new IllegalArgumentException(this+" allocTImg, NOT IMPLEMENTED YET");
+	}
+
+	@Override
+	public TImg wrapTImgRO(final TImgRO inImage) {
+		if (inImage instanceof TImg) return (TImg) inImage;
+		return new VirtualAim(inImage);
 	}
 
 }

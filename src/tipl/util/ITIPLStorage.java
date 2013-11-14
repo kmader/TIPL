@@ -3,6 +3,8 @@
  */
 package tipl.util;
 
+import java.util.Date;
+
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 
@@ -15,7 +17,26 @@ import tipl.formats.TImgRO;
  *
  */
 public interface ITIPLStorage {
-	//
+	/**
+	 * A global image cache so images can be referenced until they are unloaded
+	 * by just their name
+	 */
+	public static class StampedObj<T> {
+		public Date createdTime;
+		public Date lastAccessedTime;
+		final protected T curImg;
+		public StampedObj(T inImg) {
+			createdTime=new Date();
+			lastAccessedTime=new Date();
+			curImg=inImg;
+		}
+		public T get() {
+			lastAccessedTime=new Date();
+			return curImg;
+		}
+		
+	}
+	// enumerated memory states
 	public static final int FAST_TIFF_BASED = 0;
 	public static final int FAST_MEMORY_MAP_BASED = 1;
 	public static final int FAST_MEMORY_COMPUTATION_BASED = 2;
@@ -59,7 +80,7 @@ public interface ITIPLStorage {
 	 * @param path
 	 * @return
 	 */
-	public boolean writeTImg(final TImgRO outImg,final String path);
+	public boolean writeTImg(final TImgRO outImg,final String path,boolean saveToCache);
 	/**
 	 * allocate a new image and return the result
 	 * @param dims
@@ -73,6 +94,12 @@ public interface ITIPLStorage {
 	 * @return cached or pre-loaded image
 	 */
 	public TImgRO CacheImage(final TImgRO inImage);
+	/**
+	 * Converts a read-only TImg into a read-write TImg
+	 * @param inImage as read-only
+	 * @return rw image
+	 */
+	public TImg wrapTImgRO(final TImgRO inImage);
 	public boolean RemoveTImgFromCache(String path);
 	
 }
