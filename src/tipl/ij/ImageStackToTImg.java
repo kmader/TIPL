@@ -313,24 +313,4 @@ public class ImageStackToTImg implements TImg {
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see tipl.formats.TImgRO#WriteAim(java.lang.String)
-	 */
-	@Override
-	public void WriteAim(String path) {
-		// TODO Auto-generated method stub
-		throw new IllegalArgumentException(this+"Image cannot be written");
-	}
-
-	/* (non-Javadoc)
-	 * @see tipl.formats.TImgRO#WriteAim(java.lang.String, int, float, boolean)
-	 */
-	@Override
-	public void WriteAim(String outpath, int outType, float scaleVal,
-			boolean IisSigned) {
-		// TODO Auto-generated method stub
-		throw new IllegalArgumentException(this+"Image cannot be written");
-
-	}
-
 }

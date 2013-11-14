@@ -61,7 +61,7 @@ public class DistGrowT extends DistGrow {
 		DG1.runDG();
 		final TImg outlabelsAim = DG1.ExportAim(inlabelsAim); // Saves a bit of
 																// memory
-		outlabelsAim.WriteAim(outlabelsAimFile);
+		TImgTools.WriteTImg(outlabelsAim,outlabelsAimFile);
 	}
 
 	protected double MAXDIST;

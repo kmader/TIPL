@@ -179,13 +179,13 @@ public class Neighbors extends BaseTIPLPluginIO {
 
 			if (countimageAim.length() > 0) {
 				System.out.println("Writing counts ...");
-				nbor.ExportAim(inputAim).WriteAim(countimageAim, 0, 0, false);
+				TImgTools.WriteTImg(nbor.ExportAim(inputAim),countimageAim, 0, 0, false,false);
 			}
 			if (voxcountimageAim.length() > 0) {
 
 				System.out.println("Writing voxel counts ...");
-				nbor.ExportVoxCountImageAim(inputAim).WriteAim(
-						p.getOptionAsString("voximage"), 0, 0, false);
+				TImgTools.WriteTImg(nbor.ExportVoxCountImageAim(inputAim), p.getOptionAsString("voximage"), 0, 0, false,false);
+
 			}
 			if (outCSV.length() > 0) {
 				System.out.println("Writing csv neigbhor-list ...");

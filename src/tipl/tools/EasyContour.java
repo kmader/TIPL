@@ -584,7 +584,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 			myContour.execute();
 			final TImg contouredAim = myContour.ExportAim(maskAim);
 			if (outputFile.length() > 0)
-				maskAim.WriteAim(outputMaskFile);
+				TImgTools.WriteTImg(maskAim,outputMaskFile);
 			if (inputFile.length() > 0) { // Read in labels
 				System.out.println("Loading " + inputFile + " ...");
 				final TImg inputAim = TImgTools.ReadTImg(inputFile);
@@ -595,7 +595,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 				cPeel.run();
 				final TImg outputAim = cPeel.ExportAim(inputAim);
 				if (outputFile.length() > 0)
-					outputAim.WriteAim(outputFile);
+					TImgTools.WriteTImg(outputAim,outputFile);
 
 			}
 		}

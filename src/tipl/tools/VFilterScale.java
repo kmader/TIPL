@@ -67,7 +67,7 @@ public class VFilterScale extends FilterScale {
 			System.out.println("Resizing" + inputFile + " ...");
 			cmdLineFilter(myFilterScaler, p);
 			final TImg outputAim = myFilterScaler.ExportAim(inputAim);
-			outputAim.WriteAim(outputFile);
+			TImgTools.WriteTImg(outputAim,outputFile);
 
 		}
 

@@ -62,7 +62,7 @@ public class DistGrow extends BaseTIPLPluginIO {
 		DG1.runDG();
 		final TImg outlabels = DG1.ExportAim(inlabelsAim); // Saves a bit of
 															// memory
-		outlabels.WriteAim(outlabelsAimFile);
+		TImgTools.WriteTImg(outlabels,outlabelsAimFile);
 	}
 
 	protected int[] distmap; // Won't be edited

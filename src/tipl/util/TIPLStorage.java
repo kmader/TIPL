@@ -108,7 +108,7 @@ public class TIPLStorage implements ITIPLStorage {
 
 		try {
 			if (curImg instanceof VirtualAim)
-				curImg.WriteAim(path);
+				((VirtualAim) curImg).WriteAim(path);
 			else
 				VirtualAim.TImgToVirtualAim(curImg).WriteAim(path);
 			if (saveToCache)
@@ -122,6 +122,15 @@ public class TIPLStorage implements ITIPLStorage {
 		}
 	}
 
+	@Override
+	public boolean writeTImg( TImgRO inImg,  String outpath,
+			 int outType, float scaleVal, boolean IisSigned, boolean saveToCache) {
+		VirtualAim cAim=VirtualAim.TImgToVirtualAim(inImg);
+		cAim.WriteAim(outpath, outType, scaleVal,IisSigned);
+		if (saveToCache)
+			cachedImages.put(outpath, new ITIPLStorage.StampedObj<TImg>(cAim));
+		return true;
+	}
 	@Override
 	public TImg allocateTImg(D3int dims, int type) {
 		// TODO Auto-generated method stub

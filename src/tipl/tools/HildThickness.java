@@ -56,7 +56,7 @@ public class HildThickness extends Thickness {
 	public static boolean DTO(final String inAimFile, final String outAimFile,
 			final String histoFile) {
 		final TImg thickmapAim = DTO(TImgTools.ReadTImg(inAimFile));
-		thickmapAim.WriteAim(outAimFile);
+		TImgTools.WriteTImg(thickmapAim,outAimFile);
 		GrayAnalysis.StartHistogram(thickmapAim, histoFile + ".csv");
 		return true;
 	}
@@ -84,9 +84,9 @@ public class HildThickness extends Thickness {
 		final TImg maskAim = TImgTools.ReadTImg(inAimFile);
 		final TImg[] mapAims = DTOD(maskAim);
 		if (outDistFile.length() > 0)
-			mapAims[0].WriteAim(outDistFile);
+			TImgTools.WriteTImg(mapAims[0],outDistFile);
 		if (outAimFile.length() > 0)
-			mapAims[1].WriteAim(outAimFile);
+			TImgTools.WriteTImg(mapAims[1],outAimFile);
 		if (histoFile.length() > 0)
 			GrayAnalysis.StartHistogram(mapAims[1], histoFile + ".tsv");
 		if (profileFile.length() > 0) {

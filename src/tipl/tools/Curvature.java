@@ -435,7 +435,7 @@ public class Curvature extends BaseTIPLPluginIO {
 			final TImg inputAim = TImgTools.ReadTImg(inputFile);
 			final TImg outputAim = RunCC(inputAim, mySigma, myUp, myDown,
 					(float) myThresh);
-			outputAim.WriteAim(outputFile);
+			TImgTools.WriteTImg(outputAim, outputFile);
 
 		}
 

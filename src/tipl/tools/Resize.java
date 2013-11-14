@@ -150,7 +150,7 @@ public class Resize extends BaseTIPLPluginMult {
 
 			RS.execute();
 			final TImg outputAim = RS.ExportImages(inputAim)[0];
-			outputAim.WriteAim(outputFile);
+			TImgTools.WriteTImg(outputAim,outputFile);
 
 		}
 

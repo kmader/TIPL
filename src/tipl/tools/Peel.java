@@ -68,7 +68,7 @@ public class Peel extends BaseTIPLPluginMult {
 			cPeel.run();
 			final TImg outputAim = cPeel.ExportAim(inputAim);
 			if (outputFile.length() > 0)
-				outputAim.WriteAim(outputFile);
+				TImgTools.WriteTImg(outputAim,outputFile);
 
 		}
 

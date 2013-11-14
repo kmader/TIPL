@@ -7,6 +7,7 @@ import java.util.Date;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.formats.VirtualAim;
 
 /**
  * ITIPLStorage describes the commands a storage class needs to fulfill in order to be usable. 
@@ -81,6 +82,19 @@ public interface ITIPLStorage {
 	 * @return
 	 */
 	public boolean writeTImg(final TImgRO outImg,final String path,boolean saveToCache);
+	/**
+	 * Write a TImg with all of the appropriate parameters
+	 * 
+	 * @param inImg
+	 * @param outpath
+	 * @param outType
+	 * @param scaleVal
+	 * @param IisSigned
+	 */
+	@Deprecated
+	public boolean writeTImg(final TImgRO inImg, final String outpath,
+			final int outType, final float scaleVal, final boolean IisSigned,boolean saveToCache);
+		
 	/**
 	 * allocate a new image and return the result
 	 * @param dims

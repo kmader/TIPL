@@ -731,7 +731,7 @@ public class TImgTools {
 			public void run() {
 				System.out.println("BG Save Started for Image:" + inImg
 						+ " to path:" + filename);
-				inImg.WriteAim(filename);
+				TImgTools.WriteTImg(inImg, filename);
 			}
 		}).start();
 
@@ -763,11 +763,11 @@ public class TImgTools {
 	 * @param outType
 	 * @param scaleVal
 	 * @param IisSigned
+	 * @param toCache should the output value be cached
 	 */
 	@Deprecated
 	public static void WriteTImg(final TImgRO inImg, final String outpath,
-			final int outType, final float scaleVal, final boolean IisSigned) {
-		VirtualAim.TImgToVirtualAim(inImg).WriteAim(outpath, outType, scaleVal,
-				IisSigned);
+			final int outType, final float scaleVal, final boolean IisSigned,final boolean toCache) {
+		getStorage().writeTImg(inImg, outpath, outType,scaleVal,IisSigned,toCache);
 	}
 }

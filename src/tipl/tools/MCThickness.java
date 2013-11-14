@@ -31,7 +31,7 @@ public class MCThickness extends Thickness {
 	public static boolean DTO(final String inAimFile, final String outAimFile,
 			final String histoFile) {
 		final TImg thickmapAim = DTO(TImgTools.ReadTImg(inAimFile));
-		thickmapAim.WriteAim(outAimFile);
+		TImgTools.WriteTImg(thickmapAim,outAimFile);
 		GrayAnalysis.StartHistogram(thickmapAim, histoFile + ".csv");
 		return true;
 	}
@@ -84,8 +84,7 @@ public class MCThickness extends Thickness {
 			System.out.println("Calculating Thickness " + inputFile + " ...");
 			myThick.execute();
 			final TImg outputAim = myThick.ExportImages(inputAim)[0];
-			outputAim.WriteAim(outputFile, 1, (float) Thickness.distScalar,
-					false);
+			TImgTools.WriteTImg(outputAim,outputFile, 1, (float) Thickness.distScalar,false,false);
 
 		}
 

@@ -522,19 +522,6 @@ public class PureFImage implements TImgRO,TImgTools.ChangesDimensions {
 	public float readShortScaleFactor() {
 		return 1;
 	}
-	
-
-
-	@Override
-	public void WriteAim(final String path) {
-		TImgTools.WriteTImg(this, path);
-	}
-
-	@Override
-	public void WriteAim(final String outpath, final int outType,
-			final float scaleVal, final boolean IisSigned) {
-		TImgTools.WriteTImg(this, outpath, outType, scaleVal, IisSigned);
-	}
 
 	@Override
 	public void setDim(D3int inData) {

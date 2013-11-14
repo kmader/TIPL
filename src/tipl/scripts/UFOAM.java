@@ -444,7 +444,7 @@ public class UFOAM {
 			final ComponentLabel myCL = new ComponentLabel(platAim);
 			myCL.runRelativeVolume(minVolumePct, 101);
 			platAim = myCL.ExportMaskAim(platAim);
-			platAim.WriteAim(platAimFile);
+			TImgTools.WriteTImg(platAim,platAimFile);
 		}
 		if (!dontContour) {
 			final EasyContour myContour = new EasyContour(platAim);
@@ -577,7 +577,7 @@ public class UFOAM {
 
 		if (bubbleseedsAimFile.length() > 0) {
 			bubbleseedsAim = DL.ExportBubbleseedsAim(distmapAim);
-			bubbleseedsAim.WriteAim(bubbleseedsAimFile, 0, 1.0f, false);
+			TImgTools.WriteTImg(bubbleseedsAim,bubbleseedsAimFile,0,1.0f,false,false);
 		}
 		DL.run();
 		labelsAim = DL.ExportAim(distmapAim);
@@ -657,7 +657,7 @@ public class UFOAM {
 						+ " ======: Filtering");
 				runResample();
 				if (p.hasOption("floatout"))
-					floatAim.WriteAim(floatAimFile);
+					TImgTools.WriteTImg(floatAim,floatAimFile);
 			} else {
 				floatAim = ufiltAim;
 			}
@@ -678,15 +678,15 @@ public class UFOAM {
 			}
 			runThreshold();
 			if (p.hasOption("threshout"))
-				threshoutAim.WriteAim(threshoutAimFile);
+				TImgTools.WriteTImg(threshoutAim,threshoutAimFile);
 			floatAim = null;
 			TIPLGlobal.runGC();
 			cleanMasks();
 			threshoutAim = null;
 			if (platAimFile.length() > 0)
-				platAim.WriteAim(platAimFile);
+				TImgTools.WriteTImg(platAim,platAimFile);
 			if (bubblesAimFile.length() > 0)
-				bubblesAim.WriteAim(bubblesAimFile);
+				TImgTools.WriteTImg(bubblesAim,bubblesAimFile);
 			TIPLGlobal.runGC();
 			break;
 		case 2: // Contour and peeling masks
@@ -699,7 +699,7 @@ public class UFOAM {
 			makeContour();
 			boundbox();
 			if (maskAimFile.length() > 0)
-				maskAim.WriteAim(maskAimFile);
+				TImgTools.WriteTImg(maskAim,maskAimFile);
 
 			platAim = boundbox(platAim);
 			bubblesAim = boundbox(bubblesAim);
@@ -708,9 +708,9 @@ public class UFOAM {
 			bubblesAim = peelAim(bubblesAim, porosMaskPeel);
 
 			if (platAimFile.length() > 0)
-				platAim.WriteAim(platAimFile);
+				TImgTools.WriteTImg(platAim,platAimFile);
 			if (bubblesAimFile.length() > 0)
-				bubblesAim.WriteAim(bubblesAimFile);
+				TImgTools.WriteTImg(bubblesAim,bubblesAimFile);
 
 			maskAim = null; // Won't be needing that for the next step
 			TIPLGlobal.runGC();
@@ -733,7 +733,7 @@ public class UFOAM {
 				bubblesAim = TImgTools.ReadTImg(bubblesAimFile);
 			distmapAim = peelAim(distmapAim, bubblesAim, 0);
 			if (distmapAimFile.length() > 0)
-				distmapAim.WriteAim(distmapAimFile);
+				TImgTools.WriteTImg(distmapAim,distmapAimFile);
 			break;
 		case 4: // Label bubbles from plateau distance map
 			System.out.println("UFOAM--" + new Date()
@@ -745,7 +745,7 @@ public class UFOAM {
 					distmapAim = TImgTools.ReadTImg(distmapAimFile);
 				runDistLabel();
 				if (labelsAimFile.length() > 0)
-					labelsAim.WriteAim(labelsAimFile);
+					TImgTools.WriteTImg(labelsAim,labelsAimFile);
 
 				distmapAim = null;
 			} else {
@@ -754,7 +754,7 @@ public class UFOAM {
 				labelsAim = clObjects.ExportLabelsAim(bubblesAim);
 				clObjects = null;
 				if (labelsAimFile.length() > 0)
-					labelsAim.WriteAim(labelsAimFile);
+					TImgTools.WriteTImg(labelsAim,labelsAimFile);
 			}
 
 			TIPLGlobal.runGC();
@@ -775,7 +775,7 @@ public class UFOAM {
 					System.out.println("UFOAM--" + new Date()
 							+ " ======: Inflating (Gradient) Bubbles");
 					runDistGrow();
-					bubblelabelsAim.WriteAim(bubblelabelsAimFile);
+					TImgTools.WriteTImg(bubblelabelsAim,bubblelabelsAimFile);
 				} else {
 					if (maskAim == null)
 						maskAim = TImgTools.ReadTImg(maskAimFile);
@@ -783,7 +783,7 @@ public class UFOAM {
 							maskAim);
 					KV2.run();
 					bubblelabelsAim = KV2.ExportVolumesAim(labelsAim);
-					bubblelabelsAim.WriteAim(bubblelabelsAimFile);
+					TImgTools.WriteTImg(bubblelabelsAim,bubblelabelsAimFile);
 					KV2 = null;
 				}
 			}
@@ -803,7 +803,7 @@ public class UFOAM {
 			if (thickmapAimFile.length() > 0) { // only makes sense to calculate
 												// if it will be saved
 				runThickness();
-				thickmapAim.WriteAim(thickmapAimFile);
+				TImgTools.WriteTImg(thickmapAim,thickmapAimFile);
 				GrayAnalysis.StartHistogram(thickmapAim, thickmapAimFile
 						+ ".csv");
 			}
@@ -819,7 +819,7 @@ public class UFOAM {
 					bubblesAim = TImgTools.ReadTImg(bubblesAimFile);
 				curveAim = Curvature.RunCC(bubblesAim, ccsigma, ccup, ccdown,
 						(float) ccthresh);
-				curveAim.WriteAim(curveAimFile);
+				TImgTools.WriteTImg(curveAim,curveAimFile);
 				GrayAnalysis.StartHistogram(curveAim, curveAimFile + ".csv",
 						-1, 1, 32765);
 				curveAim = null;
@@ -867,7 +867,7 @@ public class UFOAM {
 
 			nbor = null;
 			if (labelnhAimFile.length() > 0)
-				labelnhAim.WriteAim(labelnhAimFile);
+				TImgTools.WriteTImg(labelnhAim,labelnhAimFile);
 			labelnhAim = null;
 			TIPLGlobal.runGC();
 
@@ -895,7 +895,7 @@ public class UFOAM {
 			cXDF.milMode = rdfMILmode; // for volanic rock this makes sense
 			cXDF.execute();
 			rdfAim = cXDF.ExportAim(bubblesAim);
-			rdfAim.WriteAim(rdfAimFile);
+			TImgTools.WriteTImg(rdfAim,rdfAimFile);
 			break;
 		case 11: // Z Profiles
 			if (maskAim == null)
@@ -954,7 +954,7 @@ public class UFOAM {
 	public void runThickness() {
 		HildThickness KT = new HildThickness(distmapAim);
 		if (ridgeAimFile.length() > 0)
-			KT.ExportRidgeAim(distmapAim).WriteAim(ridgeAimFile);
+			TImgTools.WriteTImg(KT.ExportRidgeAim(distmapAim),ridgeAimFile);
 		KT.run();
 		thickmapAim = KT.ExportAim(distmapAim);
 		KT = null;

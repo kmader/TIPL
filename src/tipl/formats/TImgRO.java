@@ -186,33 +186,4 @@ public interface TImgRO extends TImgTools.HasDimensions {
 	/** Is the data in good shape */
 	public boolean isGood();
 
-	/**
-	 * save TImg to a file
-	 * 
-	 * @param path
-	 */
-	public void WriteAim(String path);
-
-	/**
-	 * A bit confusing here since there are two different type integers being
-	 * thrown around
-	 * 
-	 * @param outpath
-	 *            The path of the file to be saved (.tif indicates one tif file
-	 *            instead of a directory containing many tiff files)
-	 * @param outType
-	 *            represents the VirtualAim notion of type (0=char, 1=short,
-	 *            2=int, 3=float, 10=bool, -1 same as input) <li>The internal
-	 *            cType is the java image libraries type notation described
-	 *            fully in the BufferedImage documentation
-	 * @param scaleVal
-	 *            is the value used to scale float images into short / int /
-	 *            char images
-	 * @param IisSigned
-	 *            indicates whether or not the data is representing a signed
-	 *            quantity
-	 */
-	public void WriteAim(String outpath, int outType, float scaleVal,
-			boolean IisSigned);
-
 }

@@ -294,17 +294,4 @@ public abstract class FuncImage implements TImgRO {
 		return false;
 	}
 
-
-
-	@Override
-	public void WriteAim(final String path) {
-		TImgTools.WriteTImg(this, path);
-	}
-
-	@Override
-	public void WriteAim(final String outpath, final int outType,
-			final float scaleVal, final boolean IisSigned) {
-		TImgTools.WriteTImg(this, outpath, outType, scaleVal, IisSigned);
-	}
-
 }

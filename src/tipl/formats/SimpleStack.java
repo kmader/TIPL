@@ -255,26 +255,5 @@ public class SimpleStack<T> extends TImgStack {
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see tipl.formats.TImgRO#WriteAim(java.lang.String)
-	 */
-	@Override
-	public void WriteAim(final String path) {
-		TImgTools.WriteTImg(this, path);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see tipl.formats.TImgRO#WriteAim(java.lang.String, int, float, boolean)
-	 */
-	@Override
-	public void WriteAim(final String outpath, final int outType,
-			final float scaleVal, final boolean IisSigned) {
-		TImgTools.WriteTImg(this, outpath, outType, scaleVal, IisSigned);
-
-	}
 
 }

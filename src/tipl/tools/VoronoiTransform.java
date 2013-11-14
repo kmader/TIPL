@@ -241,8 +241,7 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 	public void WriteDistanceAim(final TImg templateAim, final String outname) {
 		final TImg newAim = ExportDistanceAim(templateAim);
 		newAim.appendProcLog(procLog);
-
-		newAim.WriteAim(outname, 1, (float) distScalar, false);
+		TImgTools.WriteTImg(newAim,outname, 1, (float) distScalar, false,false);
 	}
 
 	/** Code for writing the voronoi volumes to an Aim file */
@@ -250,6 +249,6 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 			final String outname) {
 		final TImg newAim = ExportVolumesAim(templateAim);
 		newAim.appendProcLog(procLog);
-		newAim.WriteAim(outname, 1, 1.0f, false);
+		TImgTools.WriteTImg(newAim,outname, 1, 1.0f, false,false);
 	}
 }

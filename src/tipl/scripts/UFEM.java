@@ -679,9 +679,8 @@ public class UFEM implements Runnable {
 		canalVolsAim = vTransform.ExportVolumesAim(canalAim);
 		canalDistAim = vTransform.ExportDistanceAim(canalAim);
 		vTransform = null;
-
-		canalVolsAim.WriteAim(canalVolsAimFile);
-		canalDistAim.WriteAim(canalDistAimFile);
+		TImgTools.WriteTImg(canalVolsAim,canalVolsAimFile);
+		TImgTools.WriteTImg(canalDistAim,canalDistAimFile);
 
 		maskAim = null;
 		canalAim = null;
@@ -704,9 +703,8 @@ public class UFEM implements Runnable {
 		lacunVolsAim = vTransform.ExportVolumesAim(lacunAim);
 		lacunDistAim = vTransform.ExportDistanceAim(lacunAim);
 		vTransform = null;
-
-		lacunVolsAim.WriteAim(lacunVolsAimFile);
-		lacunDistAim.WriteAim(lacunDistAimFile);
+		TImgTools.WriteTImg(lacunVolsAim, lacunVolsAimFile);
+		TImgTools.WriteTImg(lacunDistAim, lacunDistAimFile);
 
 		lacunVolsAim = null;
 		lacunDistAim = null;
@@ -736,7 +734,7 @@ public class UFEM implements Runnable {
 		vTransform.run();
 		maskdistAim = vTransform.ExportDistanceAim(maskAim);
 		if (maskdistAimFile.length() > 0)
-			maskdistAim.WriteAim(maskdistAimFile);
+			TImgTools.WriteTImg(maskdistAim,maskdistAimFile);
 		vTransform = null;
 		maskdistAim = null;
 		maskdistAimReady = true;
@@ -749,7 +747,7 @@ public class UFEM implements Runnable {
 		fs.SetScale(1, 1, 1, 1, 1, 20);
 		fs.runFilter();
 		final TImg tempAim = fs.ExportAim(previewData);
-		tempAim.WriteAim(previewName);
+		TImgTools.WriteTImg(tempAim,previewName);
 	}
 
 	public String nameVersion(final String inName, final int verNumber) {
@@ -960,7 +958,7 @@ public class UFEM implements Runnable {
 			if (doResample) {
 				gfiltAim = filter(ufiltAim, doLaplace, doGradient, doGauss,doMedian,
 						upsampleFactor, downsampleFactor);
-				gfiltAim.WriteAim(gfiltAimFile);
+				TImgTools.WriteTImg(gfiltAim,gfiltAimFile);
 
 			} else
 				gfiltAim = ufiltAim;
@@ -972,7 +970,7 @@ public class UFEM implements Runnable {
 				gfiltAim = TImgTools.ReadTImg(gfiltAimFile);
 			threshAim = threshold(gfiltAim, threshVal, rmEdges, remEdgesRadius);
 			gfiltAim = null;
-			threshAim.WriteAim(threshAimFile);
+			TImgTools.WriteTImg(threshAim,threshAimFile);
 			break;
 		case 3:
 			System.out.println("Begin 3, Mask Morphological Segmentation ...");
@@ -987,14 +985,14 @@ public class UFEM implements Runnable {
 			porosAim = makePoros(threshAim);
 
 			maskAim = boundbox(maskAim);
-			maskAim.WriteAim(maskAimFile);
+			TImgTools.WriteTImg(maskAim,maskAimFile);
 
 			boneAim = boundbox(boneAim, maskAim);
-			boneAim.WriteAim(boneAimFile);
+			TImgTools.WriteTImg(boneAim,boneAimFile);
 			TIPLGlobal.runGC();
 
 			porosAim = boundbox(porosAim, maskAim);
-			porosAim.WriteAim(porosAimFile);
+			TImgTools.WriteTImg(porosAim,porosAimFile);
 
 			break;
 		case 4:
@@ -1005,7 +1003,7 @@ public class UFEM implements Runnable {
 			maskAim = contour(maskAim, rmEdges, remEdgesRadius, doCL,
 					minVolumePct, removeMarrowCore, maskContourSteps,
 					maskContourBW, justCircle, pureWhiteMask);
-			maskAim.WriteAim(maskAimFile);
+			TImgTools.WriteTImg(maskAim,maskAimFile);
 			// Now open the bone and porosity files to process them
 			if (boneAim == null)
 				boneAim = TImgTools.ReadTImg(boneAimFile);
@@ -1013,10 +1011,10 @@ public class UFEM implements Runnable {
 				porosAim = TImgTools.ReadTImg(porosAimFile);
 
 			boneAim = peelAim(boneAim, maskAim, 1, true);
-			boneAim.WriteAim(boneAimFile);
+			TImgTools.WriteTImg(boneAim,boneAimFile);
 
 			porosAim = peelAim(porosAim, maskAim, porosMaskPeel, true);
-			porosAim.WriteAim(porosAimFile);
+			TImgTools.WriteTImg(porosAim,porosAimFile);
 			// Do not need for the next steps
 			boneAim = null;
 			break;
@@ -1044,12 +1042,10 @@ public class UFEM implements Runnable {
 			maskAim = contour(maskAim, false, remEdgesRadius, doCL,
 					minVolumePct, removeMarrowCore, maskContourSteps,
 					maskContourBW, justCircle, pureWhiteMask);
-			
-			maskAim.WriteAim(maskAimFile);
+			TImgTools.WriteTImg(maskAim,maskAimFile);
 
 			boneAim = peelAim(boneAim, maskAim, 1, true);
-
-			boneAim.WriteAim(boneAimFile);
+			TImgTools.WriteTImg(boneAim,boneAimFile);
 			boneAim = null;
 			// Perform the 5 peels here and then just apply that mask to the
 			// subsequent datasets
@@ -1062,7 +1058,7 @@ public class UFEM implements Runnable {
 					TImg tempAim = TImgTools.ReadTImg(imgFile);
 
 					tempAim = peelAim(tempAim, maskAim, 0, true);
-					tempAim.WriteAim(imgFile);
+					TImgTools.WriteTImg(tempAim,imgFile);
 					tempAim = null;
 					TIPLGlobal.runGC();
 				}
@@ -1072,7 +1068,7 @@ public class UFEM implements Runnable {
 				if (tryOpenAimFile(imgFile)) {
 					TImg tempAim = TImgTools.ReadTImg(imgFile);
 					tempAim = peelAim(tempAim, maskAim, 0);
-					tempAim.WriteAim(imgFile);
+					TImgTools.WriteTImg(tempAim,imgFile);
 					tempAim = null;
 					TIPLGlobal.runGC();
 				}
@@ -1094,15 +1090,15 @@ public class UFEM implements Runnable {
 				porosAim = TImgTools.ReadTImg(porosAimFile);
 			componentLabeling();
 			porosAim = null;
-			lmaskAim.WriteAim(lmaskAimFile);
-			cmaskAim.WriteAim(cmaskAimFile);
+			TImgTools.WriteTImg(lmaskAim,lmaskAimFile);
+			TImgTools.WriteTImg(cmaskAim,cmaskAimFile);
 			break;
 		case 7:
 			System.out.println("Begin 7, Labeling objects ...");
 			if (lmaskAim == null)
 				lmaskAim = TImgTools.ReadTImg(lmaskAimFile);
 			lacunAim = objectLabeling(lmaskAim);
-			lacunAim.WriteAim(lacunAimFile);
+			TImgTools.WriteTImg(lacunAim,lacunAimFile);
 
 			lacunAim = null;
 			lmaskAim = null;
@@ -1111,7 +1107,7 @@ public class UFEM implements Runnable {
 			if (cmaskAim == null)
 				cmaskAim = TImgTools.ReadTImg(cmaskAimFile);
 			canalAim = objectLabeling(cmaskAim);
-			canalAim.WriteAim(canalAimFile);
+			TImgTools.WriteTImg(canalAim,canalAimFile);
 
 			// canalAim=null;
 			cmaskAim = null;
@@ -1287,7 +1283,7 @@ public class UFEM implements Runnable {
 				cmaskAim = TImgTools.ReadTImg(cmaskAimFile);
 			cdtoAim = HildThickness.DTO(cmaskAim);
 			cmaskAim = null;
-			cdtoAim.WriteAim(cdtoAimFile);
+			TImgTools.WriteTImg(cdtoAim,cdtoAimFile);
 			GrayAnalysis.StartHistogram(cdtoAim, cdtoAimFile + ".csv");
 
 			if (canalAim == null)
@@ -1307,7 +1303,7 @@ public class UFEM implements Runnable {
 			KT.run();
 			cdtbAim = KT.ExportAim(canalDistAim);
 			canalDistAim = null;
-			cdtbAim.WriteAim(cdtbAimFile);
+			TImgTools.WriteTImg(cdtbAim,cdtbAimFile);
 			GrayAnalysis.StartHistogram(cdtbAim, cdtbAimFile + ".csv");
 			cdtbAim = null;
 			break;
@@ -1319,7 +1315,7 @@ public class UFEM implements Runnable {
 			MKT.run();
 			mdtoAim = MKT.ExportAim(maskdistAim);
 			maskdistAim = null;
-			mdtoAim.WriteAim(mdtoAimFile);
+			TImgTools.WriteTImg(mdtoAim,mdtoAimFile);
 			GrayAnalysis.StartHistogram(mdtoAim, mdtoAimFile + ".csv");
 			mdtoAim = null;
 			break;

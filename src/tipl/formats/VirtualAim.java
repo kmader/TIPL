@@ -2718,7 +2718,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	/**
 	 * Write the output using the default settings for the given data-type
 	 */
-	@Override
 	public void WriteAim(final String outpath) {
 		WriteAim(outpath, -1);
 	}
@@ -2895,7 +2894,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	 *            indicates whether or not the data is representing a signed
 	 *            quantity
 	 */
-	@Override
 	public void WriteAim(final String outpath, final int outType,
 			final float scaleVal, final boolean IisSigned) {
 		ShortScaleFactor = scaleVal;
