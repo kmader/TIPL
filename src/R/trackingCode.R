@@ -92,7 +92,7 @@ bubble.samples.exists.fn<-function(edge.chains,chain.life.stats,sample.vec) {
   # only the possible topological events
   # the bubbles must have been mutually alive more than 2 frames 
   # the number of number of frames they are connected much be less than the mutual lifetime
-  bubble.life.good<-subset(bubble.life.full,range.sample>=2 & Connections<=(range.sample))
+  bubble.life.good<-subset(bubble.life.full,range.sample>=2 & Connections<=(range.sample+1))
   # give the bubbles an id
   bubble.life.good$id<-as.factor(paste(bubble.life.good$MChain.1,bubble.life.good$MChain.2))
   
@@ -113,22 +113,46 @@ bubble.samples.exists.fn<-function(edge.chains,chain.life.stats,sample.vec) {
   })
 }
 
+
+edge.status.change<-function(ic.edge) {
+  # sort the list appropriately
+  c.edge<-ic.edge[order(ic.edge$sample),]
+  c.info<-c.edge[,c("sample","connection")]
+  # true if the bubbles are touching
+  c.info$connection<-c.info$connection=="Touching"
+  # shift the list by one forwards to have the connection before
+  # in each column
+  c.info$cxn.before<-c(NA,c.info$connection[-nrow(c.info)])
+  # shift the list by one backwards
+  c.info$cxn.after<-c(c.info$connection[-1],NA)
+  # there are actually 4 possibilities
+  # was.created means it was created between t-1 and t
+  # will.created means it will be created between t and t+1
+  # was.destroyed means it was destroyed between t-1 and t
+  # will.destroyed means it will be destoryed between t and t+1
+  c.info$was.created<-(!c.info$cxn.before 
+                       & c.info$connection)
+  c.info$will.created<-(!c.info$connection & 
+                          c.info$cxn.after)
+  c.info$was.destroyed<-(c.info$cxn.before
+                         & !c.info$connection)
+  c.info$will.destroyed<-(c.info$connection &
+                            !c.info$cxn.after)
+  out.cols<-c.info[,c("was.created","will.created","was.destroyed","will.destroyed")]
+  cbind(c.edge,out.cols)
+}
+# Converts a topology into a list of status changes for each eedge
+topo2status.change<-function(in.topo) ddply(in.topo,.(id),edge.status.change,.parallel=T)
+
+
+
 # Add position (or other columns to the edge file)
 # it can be used like this edge.w.pos<-edges.append.pos(bubbles.join,mini.edges)
-edges.append.pos<-function(in.bubbles,in.edges,pos.cols=c("POS_X","POS_Y","POS_Z"),add.cols=c()) {
-  s.edges<-in.edges[,names(in.edges) %in% c("sample","MChain.1","MChain.2")]
-  keep.cols<-c(pos.cols,add.cols)
-  s.bubbles<-in.bubbles[,names(in.bubbles) %in% c("sample","MChain",keep.cols)]
-  out.table.1<-merge(s.edges,s.bubbles,
-                     by.x=c("sample","MChain.1"),by.y=c("sample","MChain"))
-  append.cols<-which(names(out.table.1) %in% keep.cols)
-  names(out.table.1)[append.cols]<-sapply(names(out.table.1)[append.cols],function(x) paste(x,"1",sep="_"))
-  out.table.2<- merge(s.edges,s.bubbles,
-                      by.x=c("sample","MChain.2"),by.y=c("sample","MChain"))
-  #out.table.2<-out.table.2[,!(names(out.table.2) %in% c("sample","MChain","MChain.2","MChain.1"))]
-  names(out.table.2)<- sapply(names(out.table.2),function(x) paste(x,"2",sep="_"))
-  #print(cbind(summary(out.table.1),summary(out.table.2)))
-  cbind(out.table.1,out.table.2)
+edges.append.pos<-function(in.bubbles,in.edges,time.col="sample",
+                           bubble.col="MChain",bubble.col1="MChain.1",bubble.col2="MChain.2") {
+  join.cols<-c(time.col,bubble.col)
+  link.left<-merge(in.edges,in.bubbles,all.x=T,all.y=F,by.x=c(time.col,bubble.col1),by.y=join.cols,sort=F,suffixes=c(".edge",""))
+  merge(link.left,in.bubbles,all.x=T,all.y=F,by.x=c(time.col,bubble.col2),by.y=join.cols,sort=F,suffixes=c(".start",".end"))
 }
 # add chain (time-independent bubble identifier)
 tracking.add.chains<-function(in.data,check.bij=F) {
