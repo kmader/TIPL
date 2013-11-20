@@ -5,46 +5,9 @@ compare.foam<-function(cDir,goldFile='glpor_1.csv',kevinFile='clpor_2.csv') {
   
   gbubs<-compare.foam.clean(gbubs)
   kbubs<-compare.foam.clean(kbubs)
-  compare.foam.frames(gbubs,kbubs)
+  compare.frames(gbubs,kbubs)
 }
-# Match the bubbles in image A to image B
-matchBubbles<-function (groundTruth,susData,maxVolDifference=0.5,maxVolPenalty=5000^2,in.offset=c(0,0,0),do.bij=T,x.weight=1,y.weight=1,z.weight=1) {
-  gmatch<-c()
-  gdist<-c()
-  gincl<-c()
-  distVec<-function (bubMat,cPos) { (maxVolPenalty*((abs(bubMat$VOLUME-cPos$VOLUME)/cPos$VOLUME)>maxVolDifference)+x.weight*(bubMat$POS_X-in.offset[1]-cPos$POS_X)**2+y.weight*(bubMat$POS_Y-in.offset[2]-cPos$POS_Y)**2+z.weight*(bubMat$POS_Z-in.offset[3]-cPos$POS_Z)**2) }
-  rdistVec<-function (bubMat,cPos) { (maxVolPenalty*((abs(bubMat$VOLUME-cPos$VOLUME)/cPos$VOLUME)>maxVolDifference)+x.weight*(bubMat$POS_X+in.offset[1]-cPos$POS_X)**2+y.weight*(bubMat$POS_Y+in.offset[2]-cPos$POS_Y)**2+z.weight*(bubMat$POS_Z+in.offset[3]-cPos$POS_Z)**2) }
-  
-  for (i in 1:dim(groundTruth)[1]) {
-    cVec<-distVec(susData,groundTruth[i,])
-    cDist<-min(cVec)
-    gdist[i]<-sqrt(cDist) # perform square root operation before saving and only on one value
-    gmatch[i]<-which(cVec==cDist)
-  }
-  mData<-susData[gmatch,]
-  mData$MATCH_DIST<-gdist
-  if (do.bij) {
-    # Check the reverse
-    for (i in 1:length(gmatch)) {
-      c.susbubble<-gmatch[i]
-      # distance from matched bubble to all bubbles in ground truth
-      cVec<-rdistVec(groundTruth,susData[c.susbubble,])
-      cDist<-min(cVec)
-      gincl[i]<-(i==which(cVec==cDist))
-    }
-    mData$BIJ_MATCHED<-gincl
-  }
-  
-  
-  mData
-}
-# sorted by samples
-sort.by.sample<-function(in.bubbles) {in.bubbles[with(in.bubbles, order(sample)), ]}
-# no additional first column in ldply
-ldply.delfirstcol<-function(...) {
-  o.data<-ldply(...)
-  o.data[,-1]
-}
+
 # fancy edge data reader
 read.edge<-function(x) {
   edge.data<-read.csv(x,skip=1)
@@ -60,7 +23,7 @@ edges.append.mchain<-function(in.edges,in.bubbles) {
   sub.bubbles<-in.bubbles[,names(in.bubbles) %in% c("sample","LACUNA_NUMBER","MChain")]
   colnames(sub.bubbles)[colnames(sub.bubbles)=="MChain"]<-"MChain.2"
   out.df<-merge(o.merge1,sub.bubbles,
-        by.x=c("sample","Component.2"),by.y=c("sample","LACUNA_NUMBER"))
+                by.x=c("sample","Component.2"),by.y=c("sample","LACUNA_NUMBER"))
   mc1a<-out.df$MChain.1
   mc2a<-out.df$MChain.2
   switch.els<-which(mc1a>mc2a)
@@ -113,6 +76,40 @@ bubble.samples.exists.fn<-function(edge.chains,chain.life.stats,sample.vec) {
   })
 }
 
+# merge two data files after tracking into the same file
+mergedata<-function(goldData,matchData,prefix="M_",as.diff=F) {
+  outData<-data.frame(goldData)
+  for (cCol in names(matchData)) {
+    outData[[paste(prefix,cCol,sep="")]]=matchData[[cCol]]
+  }
+  as.diff.data(outData,m.prefix=prefix)
+}
+as.diff.data<-function(mergedData,m.prefix="M_",d.prefix="D_",sample.col.name="sample") {
+  all.cols<-names(mergedData)
+  original.cols<-names(mergedData)[which(laply(all.cols,function(x) length(grep(m.prefix,x))<1))]
+  out.data<-mergedData[,(names(mergedData) %in% original.cols)]
+  # normalize the fields by their velocity (D_sample)
+  if (sample.col.name %in% original.cols) {
+    dsample.vec<-mergedData[[paste(m.prefix,sample.col.name,sep="")]]-mergedData[[sample.col.name]]
+  } else {
+    dsample.vec<-1
+  }
+  for(c.col in original.cols) {
+    # add differential column
+    new.name<-switch(c.col,
+                     POS_X={"DIR_X"},
+                     POS_Y={"DIR_Y"},
+                     POS_Z={"DIR_Z"},
+                     paste(d.prefix,c.col,sep="")
+    )
+    old.name<-paste(m.prefix,c.col,sep="")
+    cur.out.col<-mergedData[[old.name]]-mergedData[[c.col]]
+    if (c.col!=sample.col.name) cur.out.col=cur.out.col/dsample.vec
+    out.data[[new.name]]<-cur.out.col
+  }
+  cbind(out.data,M_MATCH_DIST=mergedData$M_MATCH_DIST,BIJ_MATCH=mergedData$M_BIJ_MATCHED)
+}
+
 
 edge.status.change<-function(ic.edge) {
   # sort the list appropriately
@@ -158,6 +155,7 @@ edges.append.pos<-function(in.bubbles,in.edges,time.col="sample",
 tracking.add.chains<-function(in.data,check.bij=F) {
   if (check.bij) sub.bubbles<-subset(in.data,BIJ_MATCH)
   else sub.bubbles<-in.data
+  if(nrow(sub.bubbles)>0) {
   sub.bubbles$Chain<-c(1:nrow(sub.bubbles)) # Unique Bubble ID
   bubbles.forward<-data.frame(sample=sub.bubbles$sample+sub.bubbles$D_sample,
                               LACUNA_NUMBER=sub.bubbles$LACUNA_NUMBER+sub.bubbles$D_LACUNA_NUMBER,
@@ -175,6 +173,9 @@ tracking.add.chains<-function(in.data,check.bij=F) {
     bubbles.mapping.full[cy]<-min.val
   }
   cbind(sub.bubbles,MChain=bubbles.mapping.full[sub.bubbles$Chain])
+  } else {
+    cbind(sub.bubbles,MChain=c(),Chain=c())
+  }
 }
 # combine the edges with the bubble file to have chains id's instead of components and unique names
 process.edges<-function(in.edges,in.bubbles) {
@@ -189,7 +190,7 @@ process.edges<-function(in.edges,in.bubbles) {
                                                                              Start.Frame=min(x$sample),
                                                                              Final.Frame=max(x$sample),
                                                                              Connections=nrow(x)
-                                                                             )})
+  )})
   edges.join.stats$name<-paste(edges.join.stats$MChain.1,edges.join.stats$MChain.2)
   edges.join.stats$id<-as.numeric(as.factor(edges.join.stats$name))
   edges.join.stats2<-ddply(edges.join.stats,.(MChain.1,MChain.2),function(x) {
@@ -213,10 +214,60 @@ edges.missing<-function(in.edges,in.bubbles) {
     cbind(c.row,sample=sample.vals,connected=(sample.vals %in% c.edge$sample))
   })
 }
-
-
-compare.foam.frames<-function(gbubs,kbubs,as.diff=F,...) {
-  kmatch<-matchBubbles(gbubs,kbubs,...)
+#' Match objects 
+#' @author Kevin Mader (kevin.mader@gmail.com)
+#' 
+#'
+#' @param groundTruth is the frame to compare to
+#' @param susData is the current frame
+#' @param maxVolDifference is the largest allowable difference in volume before maxVolPenalty is added
+#' @param in.offset the offset to apply to groundTruth before comparing to susData
+#' @param do.bij run the bijective comparison as well
+#' @param x.weight weight to scale the x distance with
+#' @param dist.fun a custom distance metric to use
+matchObjects<-function(groundTruth,susData,maxVolDifference=0.5,
+                        maxVolPenalty=5000^2,in.offset=c(0,0,0),
+                        do.bij=T,x.weight=1,y.weight=1,z.weight=1,
+                        dist.fun=NA) {
+  gmatch<-c()
+  gdist<-c()
+  gincl<-c()
+  if(is.na(dist.fun)) { # if it is not present
+    if (!is.na(maxVolPenalty)) { # use maxVolPenalty
+        dist.fun<-function(bubMat,cPos,offset) { (maxVolPenalty*((abs(bubMat$VOLUME-cPos$VOLUME)/cPos$VOLUME)>maxVolDifference)+x.weight*(bubMat$POS_X-offset[1]-cPos$POS_X)**2+y.weight*(bubMat$POS_Y-offset[2]-cPos$POS_Y)**2+z.weight*(bubMat$POS_Z-offset[3]-cPos$POS_Z)**2) }
+    } else { # skip it
+        # leave distance out
+        dist.fun<-function(bubMat,cPos,offset) { x.weight*(bubMat$POS_X-offset[1]-cPos$POS_X)**2+y.weight*(bubMat$POS_Y-offset[2]-cPos$POS_Y)**2+z.weight*(bubMat$POS_Z-offset[3]-cPos$POS_Z)**2 }
+    }
+  }
+  for (i in 1:dim(groundTruth)[1]) {
+    cVec<-dist.fun(susData,groundTruth[i,],in.offset)
+    cDist<-min(cVec)
+    gdist[i]<-sqrt(cDist) # perform square root operation before saving and only on one value
+    gmatch[i]<-which(cVec==cDist)
+  }
+  mData<-susData[gmatch,]
+  mData$MATCH_DIST<-gdist
+  if (do.bij) {
+    # Check the reverse
+    for (i in 1:length(gmatch)) {
+      c.susbubble<-gmatch[i]
+      # distance from matched bubble to all bubbles in ground truth
+      cVec<-dist.fun(groundTruth,susData[c.susbubble,],-1*in.offset)
+      cDist<-min(cVec)
+      gincl[i]<-(i==which(cVec==cDist))
+    }
+    mData$BIJ_MATCHED<-gincl
+  }
+  
+  
+  mData
+}
+# allow old function to continue working
+compare.foam.frames<-function(...) compare.frames(...)
+# compare two frames and forward parameters to the matchObjects function
+compare.frames<-function(gbubs,kbubs,as.diff=F,...) {
+  kmatch<-matchObjects(gbubs,kbubs,...)
   fData<-mergedata(gbubs,kmatch,as.diff=as.diff)
   fData
 }
@@ -233,3 +284,55 @@ bubble.life.check<-function(in.data) {
     cbind(x,dies=dies,born=born)
   })
 }
+
+#' Tracking Function
+#' @author Kevin Mader (kevin.mader@gmail.com)
+#' Tracks a list of data.frames using the compare.frames function
+#' and standard tracking, offset tracking, and adaptive offset tracking
+#' 
+#'
+#' @param inData the list of data.frames containing the samples
+#' @param offset is the offset to use for the offset run
+#' @param run.offset if the offset analysis should be run
+#' @param run.adaptive if the adaptive analysis should be run
+#' @param ... parameters to be passed onto the compare.frames function
+track.frames<-function(inData,offset,run.offset=T,run.adaptive=T,parallel=F,...) {
+  track.fcn<-function(x,in.offset=c(0,0,0)) {
+    cbind(compare.frames(x[[1]],x[[2]],as.diff=T,in.offset=in.offset,...),Frame=x[[3]])
+  }
+  # Track function adaptive
+  track.fcn.adp<-function(x,in.offset=c(0,0,0)) {
+    pre.match<-compare.frames(x[[1]],x[[2]],in.offset=in.offset,...)
+    pre.offset<-colMeans(pre.match)[c("DIR_X","DIR_Y","DIR_Z")]
+    cbind(compare.frames(x[[1]],x[[2]],as.diff=T,in.offset=pre.offset,...),Frame=x[[3]])
+  }
+  staggered.data<-mapply(list, inData[-length(inData)], inData[-1],1:(length(inData)-1), SIMPLIFY=F)
+  
+  track.data<-ldply(staggered.data,
+                    track.fcn,.parallel=parallel)
+  if(run.offset) {
+    track.data.fix<-ldply(staggered.data,
+                        function(x) track.fcn(x,offset),.parallel=parallel)
+    if(nrow(track.data.fix)<1) run.offset<-F
+  }
+  if(run.adaptive) {
+    track.data.adp<-ldply(staggered.data,
+                        function(x) track.fcn.adp(x,offset),.parallel=parallel)
+    if(nrow(track.data.adp)<1) run.adaptive<-F
+  }
+  # functions to apply before combinining
+  # 1) life check
+  # 2) under quantile for match distance
+  # 2) add chain numbers based on remaining bubbles
+  preproc.fcn<-function(...) {
+    alive.bubbles<-bubble.life.check(...)
+    tracking.add.chains(alive.bubbles)
+  }
+  
+  all.tracks<-cbind(preproc.fcn(track.data),Matching="No Offset")
+  if(run.offset) all.tracks<-rbind(all.tracks,cbind(preproc.fcn(track.data.fix),Matching="Fix Offset"))
+  if(run.adaptive) all.tracks<-rbind(all.tracks,cbind(preproc.fcn(track.data.adp),Matching="Adaptive Offset"))
+  all.tracks
+}
+
+

@@ -104,39 +104,7 @@ ggdata<-function(goldData,matchData,colNames) {
   }
   outData
 }
-# merge two data files after tracking into the same file
-mergedata<-function(goldData,matchData,prefix="M_",as.diff=F) {
-  outData<-data.frame(goldData)
-  for (cCol in names(matchData)) {
-    outData[[paste(prefix,cCol,sep="")]]=matchData[[cCol]]
-  }
-  as.diff.data(outData,m.prefix=prefix)
-}
-as.diff.data<-function(mergedData,m.prefix="M_",d.prefix="D_",sample.col.name="sample") {
-  all.cols<-names(mergedData)
-  original.cols<-names(mergedData)[which(laply(all.cols,function(x) length(grep(m.prefix,x))<1))]
-  out.data<-mergedData[,(names(mergedData) %in% original.cols)]
-  # normalize the fields by their velocity (D_sample)
-  if (sample.col.name %in% original.cols) {
-    dsample.vec<-mergedData[[paste(m.prefix,sample.col.name,sep="")]]-mergedData[[sample.col.name]]
-  } else {
-    dsample.vec<-1
-  }
-  for(c.col in original.cols) {
-    # add differential column
-    new.name<-switch(c.col,
-                     POS_X={"DIR_X"},
-                     POS_Y={"DIR_Y"},
-                     POS_Z={"DIR_Z"},
-                     paste(d.prefix,c.col,sep="")
-                     )
-    old.name<-paste(m.prefix,c.col,sep="")
-    cur.out.col<-mergedData[[old.name]]-mergedData[[c.col]]
-    if (c.col!=sample.col.name) cur.out.col=cur.out.col/dsample.vec
-    out.data[[new.name]]<-cur.out.col
-  }
-  cbind(out.data,M_MATCH_DIST=mergedData$M_MATCH_DIST,BIJ_MATCH=mergedData$M_BIJ_MATCHED)
-}
+
 
 foam.correct.rotation<-function(in.data,mt.data) {
   x.dist<-quantile(in.data$POS_X)

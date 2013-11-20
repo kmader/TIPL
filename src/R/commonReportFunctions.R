@@ -23,6 +23,13 @@ rbind.inter<-function(a,b,...) {
   rbind(a[,which(a.nm %in% keep.cols)],b[,which(b.nm %in% keep.cols)],...)
 }
 stdPrint<-function(dig) {function (x) {paste(round(mean(x),dig)," +- ",round(sd(x),dig))}}
+# sorted by samples
+sort.by.sample<-function(in.bubbles) {in.bubbles[with(in.bubbles, order(sample)), ]}
+# no additional first column in ldply
+ldply.delfirstcol<-function(...) {
+  o.data<-ldply(...)
+  o.data[,-1]
+}
 ddply.cutcols<-function(...,cols=1) {
   # run standard ddply command
   cur.table<-ddply(...)
