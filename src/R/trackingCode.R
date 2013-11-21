@@ -139,7 +139,7 @@ edge.status.change<-function(ic.edge) {
   cbind(c.edge,out.cols)
 }
 # Converts a topology into a list of status changes for each eedge
-topo2status.change<-function(in.topo) ddply(in.topo,.(id),edge.status.change,.parallel=T)
+topo2status.change<-function(in.topo,parallel=T) ddply(in.topo,.(id),edge.status.change,.parallel=parallel)
 
 
 
@@ -285,7 +285,94 @@ bubble.life.check<-function(in.data) {
   })
 }
 
+
+plot.t1.event<-function(edges.tracked,keep.event,with.frames=F,all.frames=F,
+                        x.name="POS_X",y.name="POS_Z",x.label=NA,y.label=NA) {
+  important.edges<-edges.tracked$important.edges
+  edge.info<-edges.tracked$edge.info
+  good.roi.data<-edges.tracked$obj.list
+  cur.event<-subset(important.edges,event.name==keep.event)
+  keep.chains<-unique(c(cur.event$MChain.1,cur.event$MChain.2))
+  keep.frames<-c((min(cur.event$sample)-1):(max(cur.event$sample)+1))
+  sub.edges<-subset(edge.info,(MChain.1 %in% keep.chains) | (MChain.2 %in% keep.chains))
+  sub.edges<-subset(sub.edges,((MChain.1 %in% keep.chains) & (MChain.2 %in% keep.chains)) | (was.created | was.destroyed))
+  
+  selected.links<-edges.append.pos(good.roi.data,sub.edges)
+  selected.chains<-subset(good.roi.data[with(good.roi.data, order(sample)), ],MChain %in% keep.chains)
+  if (!all.frames) {
+    print(keep.frames)
+    selected.links<-subset(selected.links,sample %in% keep.frames)
+    if (with.frames) selected.chains<-subset(selected.chains,sample %in% keep.frames)
+  }
+  selected.links$involved<-with(selected.links,(MChain.1 %in% keep.chains) & (MChain.2 %in% keep.chains))                                 
+  selected.links$edge.length<-with(selected.links,sqrt((POS_X.start-POS_X.end)^2+(POS_Y.start-POS_Y.end)^2+(POS_Z.start-POS_Z.end)^2))
+  selected.links$type="No Event"
+  selected.links[which(selected.links$was.created),]$type<-"Was Created"
+  selected.links[which(selected.links$will.created),]$type<-"Will Created"
+  selected.links[which(selected.links$was.destroyed),]$type<-"Was Destroyed"
+  selected.links[which(selected.links$will.destroyed),]$type<-"Will Destroyed"
+  ss<-function(var) paste(var,".start",sep="")
+  se<-function(var) paste(var,".end",sep="")
+  if (with.frames) {                            
+    o.plot<-ggplot(selected.links)+
+      geom_segment(aes_string(x=ss(x.name),y=ss(y.name),xend=se(x.name),yend=se(y.name),
+                       linetype="connection",alpha="involved",color="type"))+
+      geom_point(data=selected.chains,aes_string(x=x.name,y=y.name),alpha=1,color="red")+   
+      labs(color="Edge Event")+facet_wrap(~sample)
+  } else {
+    o.plot<-ggplot(selected.links)+
+      geom_segment(aes_string(x=ss(x.name),y=ss(y.name),xend=se(x.name),yend=se(y.name),
+                       linetype="connection",alpha="involved"))+
+      geom_point(data=selected.chains,aes_string(x=x.name,y=y.name),alpha=1,color="red")+
+      geom_path(data=selected.chains,aes_string(x=x.name,y=y.name,group="MChain",color="as.factor(MChain)"),alpha=1)+
+      labs(color="Chain")
+  }
+  if(is.na(x.label)) x.label<-x.name
+  if(is.na(y.label)) y.label<-y.name
+  o.plot+theme_bw(20)+labs(x=x.label,y=y.label,alpha="Involved",linetype="Connected")
+}
+
+
+#' Edge Tracking Function
+#' @author Kevin Mader (kevin.mader@gmail.com)
+#' Tracks a list of data.frames using the compare.frames function
+#' and standard tracking, offset tracking, and adaptive offset tracking
 #' Tracking Function
+track.edges<-function(in.objs,in.edges,parallel=F) {
+  edge.chain<-process.edges(in.edges,in.objs)
+  chain.life.stats<-chain.life.stats.fn(in.objs)
+  sample.vec<-unique(in.objs$sample)
+  # just get a summary (we can more carefully analyze later)
+  obj.life.stats<-bubble.life.stats.fn(edge.chain,chain.life.stats,sample.vec)
+  all.bubbles.topo<-bubble.samples.exists.fn(edge.chain,chain.life.stats,sample.vec) 
+  edge.info<-topo2status.change(all.bubbles.topo,parallel=parallel)
+  # keep only the interesting events
+  edge.info.interesting<-subset(edge.info,was.created | will.created | was.destroyed | will.destroyed)
+  # combine the list together as chain1 and chain2
+  singlechain.edge.info<-rbind(cbind(edge.info.interesting,MChain=edge.info.interesting$MChain.1),cbind(edge.info.interesting,MChain=edge.info.interesting$MChain.2))
+  important.edges<-ddply(singlechain.edge.info,.(sample,MChain),function(c.bubble.frame) {
+    sum.stats<-colSums(c.bubble.frame[,c("was.created","will.created","was.destroyed","will.destroyed")],na.rm=T)
+    event.count<-sum(sum.stats)
+    event.name<-paste("S",c.bubble.frame$sample[1],"_",paste(unique(c.bubble.frame$id),collapse=",",sep=""),sep="")
+    if ((sum.stats["was.created"]>0) & (sum.stats["was.destroyed"]>0)) {
+      was.events<-subset(c.bubble.frame,was.created | was.destroyed)
+    } else {
+      was.events<-c.bubble.frame[0,]
+    }
+    if ((sum.stats["will.created"]>0) & (sum.stats["will.destroyed"]>0)) {
+      will.events<-subset(c.bubble.frame,will.created | will.destroyed)
+    } else {
+      will.events<-c.bubble.frame[0,]
+    }
+    out.mat<-rbind(was.events,will.events)
+    if (nrow(out.mat)>0) out.mat<-cbind(out.mat,event.count=event.count,event.name=event.name)
+    out.mat
+  })
+  important.edges<-important.edges[order(-important.edges$event.count),]
+  
+  list(important.edges=important.edges,edge.info=edge.info,obj.list=in.objs,obj.life.stats=obj.life.stats)
+}
+
 #' @author Kevin Mader (kevin.mader@gmail.com)
 #' Tracks a list of data.frames using the compare.frames function
 #' and standard tracking, offset tracking, and adaptive offset tracking
