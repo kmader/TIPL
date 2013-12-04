@@ -9,7 +9,7 @@ import java.util.Hashtable;
 public class CSVFile {
 	private static String join(final CharSequence delimiter,
 			final String[] elements) {
-		final StringBuilder sb = new StringBuilder(4096); // 16 is most certanly
+		final StringBuilder sb = new StringBuilder(4096); // 16 is most certainly
 															// not enough
 		boolean first = true;
 		for (final String s : elements) {

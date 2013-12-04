@@ -295,12 +295,11 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 	}
 
 	public static void main(String args[]) {
-
-		Volume_Viewer vv = new Volume_Viewer();
 		ArgumentParser cArgs = TIPLGlobal.activeParser(args);
+		Volume_Viewer vv = new Volume_Viewer();
 		
 		String inpath = cArgs.getOptionPath("input", "", "Image to be opened");
-
+		
 		vv.setParameter(cArgs, "");
 		boolean runAsJob = cArgs.getOptionBoolean("sge:runasjob",
 						"Run this script as an SGE job (adds additional settings to this task");

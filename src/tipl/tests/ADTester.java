@@ -38,7 +38,7 @@ public class ADTester {
 	/**
 	 * Test method for {@link tipl.util.ArgumentDialog#GUIBlock()}.
 	 */
-	@Test
+	//@Test
 	public void testGUIBlock() {
 		// fail("Not yet implemented"); // TODO
 		ITIPLBlock cBlock = new FilterBlock();

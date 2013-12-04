@@ -161,9 +161,19 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 			try {
 				cBlock = (ITIPLBlock) Class.forName(blockname).newInstance();
 			} catch (final ClassNotFoundException e) {
-				e.printStackTrace();
-				throw new IllegalArgumentException("Block Class:" + blockname
-						+ " was not found, does it exist?");
+				// Try adding the tipl.blocks to the beginning
+				try {
+					cBlock = (ITIPLBlock) Class.forName("tipl.blocks."+blockname).newInstance();
+				} catch (final ClassNotFoundException e2) {
+					e.printStackTrace();
+					throw new IllegalArgumentException("Block Class:" + blockname
+							+ " was not found, does it exist?");
+				} catch (final Exception e2) {
+					e.printStackTrace();
+					throw new IllegalArgumentException("Block Class:" + blockname
+							+ " could not be created, sorry!");
+				}
+				
 			} catch (final Exception e) {
 				e.printStackTrace();
 				throw new IllegalArgumentException("Block Class:" + blockname

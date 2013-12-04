@@ -43,7 +43,7 @@ public class HazelcastTests {
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@Before
+	//@Before
 	public void setUp() throws Exception {
 		config = new ClientConfig();
 		//HZClient.addMerlin(config);
@@ -56,7 +56,7 @@ public class HazelcastTests {
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@After
+	//@After
 	public void tearDown() throws Exception {
 		Hazelcast.shutdownAll();
 	}
@@ -117,7 +117,7 @@ public class HazelcastTests {
 			assertEquals(sumMap(inMap),30); 
 		}
 	}
-	@Test
+	//@Test
 	public void simpleSliceSum() {
 		long totVal=0;
 		int[] curSlice=randomSlice(sliceSize);
@@ -138,15 +138,15 @@ public class HazelcastTests {
 	}
 	protected static final String imName="testSimpleImage";
 	
-	@Test
+	//@Test
 	public void testHazelMapOperationParallelDumb() {
 		hazelMapOperation(true,true);
 	}
-	@Test
+	//@Test
 	public void testHazelMapOperationParallel() {
 		hazelMapOperation(true,false);
 	}
-	@Test
+	//@Test
 	public void testHazelMapOperationSerial() {
 		hazelMapOperation(false,false);
 	}
@@ -163,7 +163,7 @@ public class HazelcastTests {
 			System.out.println("Parallel Execution was Interruped!!!!");
 		}
 	}
-	@Test
+	//@Test
 	public void testMakeImageSerial() {
 		final String testName="testImg";
 		long ExpectedSum=sliceCount;
@@ -188,7 +188,7 @@ public class HazelcastTests {
 	// parallel code
 	protected final static String execName="sliceprocessor";
 	
-	@Test
+	//@Test
 	public void testMakeImageParallel() {
 		final String testName="testImg";
 		long ExpectedSum=sliceCount;

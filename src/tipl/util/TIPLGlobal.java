@@ -76,6 +76,10 @@ public class TIPLGlobal {
 		TIPLGlobal.TIPLDebugLevel = sp.getOptionInt("@debug",
 				TIPLGlobal.TIPLDebugLevel,
 				"Debug level from "+DEBUG_OFF+" to "+DEBUG_ALL);
+		boolean curHeadlessValue=Boolean.parseBoolean(System.getProperty("java.awt.headless"));
+		
+		System.setProperty("java.awt.headless", ""+sp.getOptionBoolean("@headless",curHeadlessValue,"Run TIPL in headless mode"));
+		
 		//if (sp.hasOption("?")) System.out.println(sp.getHelp());		
 		return sp;//.subArguments("@");
 	}
