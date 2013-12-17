@@ -724,7 +724,7 @@ public class TImgTools {
 	 * @param filename
 	 *            path of the saved file
 	 */
-	public static void WriteBackground(final TImgRO.CanExport inImg,
+	public static void WriteBackground(final TImgRO inImg,
 			final String filename) {
 		new Thread(new Runnable() {
 			@Override

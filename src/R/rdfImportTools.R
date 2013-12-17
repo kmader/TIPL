@@ -1,3 +1,4 @@
+source('~/Dropbox/TIPL/src/R/commonReportFunctions.R')
 require(tiff)
 require(lattice)
 require(plyr)
@@ -8,6 +9,15 @@ slice.to.df<-function(cur.slice) {
   yy<-as.vector(t(yv%*%t(rep(1,length(xv)))))
   data.frame(x=yy,y=xx,val=as.vector(cur.slice)) # read in transposed
 }
+#' Read in a tif stack as a radial distribution function
+#'
+#' Imports the file as an rdf which means the values are associated with x,y,z positions from -dim to dim
+#' It also scales based on the voxel size if needed
+#' 
+#'
+#' @param filename name of the tif file to open
+#' @param cut.edges whether or not to remove the corners (default is true since they cause distortions when looking at single components)
+#' @param vox.size for the voxel size to a specific value
 read.rdf<-function (filename,cut.edges=T,vox.size=1) {
   cur.imglist<-readTIFF(as.character(filename),info=T,all=T)
   z.dim<-length(cur.imglist)
@@ -27,4 +37,27 @@ read.rdf<-function (filename,cut.edges=T,vox.size=1) {
 rdf.sub<-function(xd,n=2) {
   cvoxsize<-attr(xd,"vox.size")
   subset(xd,(round(x/cvoxsize)%%n==0) & (round(y/cvoxsize)%%n==0) & (round(z/cvoxsize)%%n==0))
+}
+
+
+#' Generate radial slices of an RDF function
+#'
+#' Takes the rdf (loaded as a data.frame) and splits it into radial slices with coordinates theta and phi
+#' The n
+#' 
+#'
+#' @param in.data the name of the input data
+#' @param r.step number of steps in the r direction (equally counts in each group)
+#' @param th.step number of steps in the theta direction (Z-xy plane)
+#' @param phi.step number of steps in the phi direction (XY angle)
+rdf.rad.slices<-function(in.data,r.step=5,th.step=18,phi.step=18) {
+  ddply.cutcols(cbind(in.data,
+                      r=with(in.data,sqrt(x^2+y^2+z^2)),
+                      th=with(in.data,180/pi*atan2(z,sqrt(x^2+y^2))),
+                      phi=with(in.data,180/pi*atan2(y,x))),
+                .(cut_number(r.step,5),cut_interval(th,th.step),cut_interval(phi,phi.step),oph,rotxy,rotxz),
+                cols=3, function(c.shell) {
+                  data.frame(val=mean(c.shell[,"val"]))
+                }
+  )
 }

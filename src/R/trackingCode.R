@@ -7,7 +7,13 @@ compare.foam<-function(cDir,goldFile='glpor_1.csv',kevinFile='clpor_2.csv') {
   kbubs<-compare.foam.clean(kbubs)
   compare.frames(gbubs,kbubs)
 }
-
+# calculate the bubble to bubble spacing
+calc.track.statistics<-function(in.roi) ddply(in.roi,.(sample),function(c.sample) data.frame(mean_velocity=mean(c.sample$DIR_Z),
+                                                                                        mean_obj_spacing=(with(c.sample,rng(POS_X)*rng(POS_Y)*rng(POS_Z))/nrow(c.sample))^(0.33),
+                                                                                        sd_vel_x=sd(c.sample$DIR_X),
+                                                                                        sd_vel_y=sd(c.sample$DIR_Y),
+                                                                                        sd_vel_z=sd(c.sample$DIR_Z)
+                                                                                        ))
 # fancy edge data reader
 read.edge<-function(x) {
   edge.data<-read.csv(x,skip=1)
@@ -236,7 +242,7 @@ matchObjects<-function(groundTruth,susData,maxVolDifference=0.5,
     if (!is.na(maxVolPenalty)) { # use maxVolPenalty
         dist.fun<-function(bubMat,cPos,offset) { (maxVolPenalty*((abs(bubMat$VOLUME-cPos$VOLUME)/cPos$VOLUME)>maxVolDifference)+x.weight*(bubMat$POS_X-offset[1]-cPos$POS_X)**2+y.weight*(bubMat$POS_Y-offset[2]-cPos$POS_Y)**2+z.weight*(bubMat$POS_Z-offset[3]-cPos$POS_Z)**2) }
     } else { # skip it
-        # leave distance out
+        # leave volume out
         dist.fun<-function(bubMat,cPos,offset) { x.weight*(bubMat$POS_X-offset[1]-cPos$POS_X)**2+y.weight*(bubMat$POS_Y-offset[2]-cPos$POS_Y)**2+z.weight*(bubMat$POS_Z-offset[3]-cPos$POS_Z)**2 }
     }
   }
@@ -338,7 +344,7 @@ plot.t1.event<-function(edges.tracked,keep.event,with.frames=F,all.frames=F,
 #' Tracks a list of data.frames using the compare.frames function
 #' and standard tracking, offset tracking, and adaptive offset tracking
 #' Tracking Function
-track.edges<-function(in.objs,in.edges,parallel=F) {
+track.edges<-function(in.objs,in.edges,keep.all.events=F,parallel=F) {
   edge.chain<-process.edges(in.edges,in.objs)
   chain.life.stats<-chain.life.stats.fn(in.objs)
   sample.vec<-unique(in.objs$sample)
@@ -349,7 +355,8 @@ track.edges<-function(in.objs,in.edges,parallel=F) {
   # keep only the interesting events
   edge.info.interesting<-subset(edge.info,was.created | will.created | was.destroyed | will.destroyed)
   # combine the list together as chain1 and chain2
-  singlechain.edge.info<-rbind(cbind(edge.info.interesting,MChain=edge.info.interesting$MChain.1),cbind(edge.info.interesting,MChain=edge.info.interesting$MChain.2))
+  singlechain.edge.info<-rbind(cbind(edge.info.interesting,MChain=edge.info.interesting$MChain.1),
+                               cbind(edge.info.interesting,MChain=edge.info.interesting$MChain.2))
   important.edges<-ddply(singlechain.edge.info,.(sample,MChain),function(c.bubble.frame) {
     sum.stats<-colSums(c.bubble.frame[,c("was.created","will.created","was.destroyed","will.destroyed")],na.rm=T)
     event.count<-sum(sum.stats)
