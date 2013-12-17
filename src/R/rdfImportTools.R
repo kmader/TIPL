@@ -50,14 +50,24 @@ rdf.sub<-function(xd,n=2) {
 #' @param r.step number of steps in the r direction (equally counts in each group)
 #' @param th.step number of steps in the theta direction (Z-xy plane)
 #' @param phi.step number of steps in the phi direction (XY angle)
-rdf.rad.slices<-function(in.data,r.step=5,th.step=18,phi.step=18) {
+#' @param r.even r has evenly distributed counts (cut_number)
+#' @param ang.even r has evenly distributed counts (cut_number)
+rdf.rad.slices<-function(in.data,r.step=5,th.step=18,phi.step=18,r.even=T,ang.even=F) {
+  good.cols<-names(in.data)
+  good.cols<-good.cols[!(good.cols %in% "val")]
+  if(r.even) rcut.fun<-cut_number
+  else rcut.fun<-cut_interval
+  if(ang.even) acut.fun<-cut_number
+  else acut.fun<-cut_interval
   ddply.cutcols(cbind(in.data,
                       r=with(in.data,sqrt(x^2+y^2+z^2)),
                       th=with(in.data,180/pi*atan2(z,sqrt(x^2+y^2))),
                       phi=with(in.data,180/pi*atan2(y,x))),
-                .(cut_number(r.step,5),cut_interval(th,th.step),cut_interval(phi,phi.step),oph,rotxy,rotxz),
+                .(rcut.fun(r,r.step),acut.fun(th,th.step),
+                  acut.fun(phi,phi.step),filename),
                 cols=3, function(c.shell) {
-                  data.frame(val=mean(c.shell[,"val"]))
+                  # include the first row without the value field, and the average for the value field
+                  data.frame(c.shell[1,good.cols],val=mean(c.shell[,"val"]))
                 }
   )
 }
