@@ -694,6 +694,7 @@ public class XDF extends BaseTIPLPluginMult {
 	protected int inputType=-1; 
 	/** size of the image to use **/
 	protected D3int rdfSize=new D3int(20,20,20);
+	public void setSize(D3int newSize) {rdfSize=newSize;}
 	radDistFun rdf;
 	/** should a mask be used in the image */
 	protected boolean hasMask;

@@ -92,6 +92,44 @@ public abstract class TestPosFunctions implements PureFImage.PositionFunction {
 			return phFun.nget(ix,iy,iz)>0 ? phase : (bgFun.nget(ix,iy,iz));
 		}
 	}
+	
+	/**
+	 * random flipping between phases
+	 * 
+	 * @author mader
+	 * 
+	 */
+	public static class PhaseNoise extends TestPosFunctions {
+		protected final TestPosFunctions phFun;
+		protected final int[] possiblephases;
+		protected final double noiselevel;
+		protected final double[] range;
+		protected Random rn = new Random();
+		/**
+		 * Creates a noisy version of an object
+		 * @param iphf starting phase function
+		 * @param possiblephases the list of possible phases
+		 * @param noiselevel the probability of a flip at a given point
+		 */
+		public PhaseNoise(final TestPosFunctions iphf, final int[] ipossiblephases,final double inoiselevel) {
+			phFun=iphf;
+			range=iphf.getRange();
+			possiblephases=ipossiblephases;
+			noiselevel=inoiselevel;	
+		}
+		@Override
+		public double[] getRange() {
+			return range;
+		}
+		@Override
+		public double rget(final long ix, final long iy, final long iz) {
+			if (rn.nextDouble()>noiselevel)
+				return possiblephases[rn.nextInt(possiblephases.length)];
+			else 
+				return phFun.nget(ix,iy,iz);
+		}
+	}
+	
 	/**
 	 * single ellipsoid at (5,5,5) with a radius 5 or whatever is given in the
 	 * constructor
@@ -217,7 +255,7 @@ public abstract class TestPosFunctions implements PureFImage.PositionFunction {
 
 	}
 	/**
-	 * Radially layers centered at a predetermined point
+	 * Radially (cylinrical) layers centered at a predetermined point
 	 * @author mader
 	 *
 	 */
@@ -246,7 +284,7 @@ public abstract class TestPosFunctions implements PureFImage.PositionFunction {
 		 * @param iphase1
 		 * @param iphase2
 		 * @param irwidth width of radial rings
-		 * @param ithwidth spead of sectors in theta
+		 * @param ithwidth spread of sectors in theta
 		 * @param izwidth height of rings in z
 		 */
 		public PolarLayeredImage( final int xcent, final int ycent, final int zcent, final int iphase1,final int iphase2, final float irwidth, final float ithwidth, final float izwidth) {
@@ -263,6 +301,58 @@ public abstract class TestPosFunctions implements PureFImage.PositionFunction {
 			if (xwidth>0) phase+=Math.round(r/xwidth)%2;
 			if (ywidth>0) phase+=Math.round(th/ywidth)%2;
 			if (zwidth>0) phase+=Math.round(z/zwidth)%2;
+			return ((phase%2)>0) ? phase1 : phase2;
+		}
+	}
+	/**
+	 * Spherical layers centered at a predetermined point
+	 * @author mader
+	 *
+	 */
+	public static class SphericalLayeredImage extends LayeredImage {
+		protected final float xc,yc,zc;
+		/**
+		 * Create a new function for a radially layered polar image (just in r)
+		 * @param xcent center position
+		 * @param ycent
+		 * @param zcent
+		 * @param iphase1
+		 * @param iphase2
+		 * @param irwidth width of radial shells
+		 */
+		public SphericalLayeredImage( final int xcent, final int ycent, final int zcent, final int iphase1,final int iphase2, final float irwidth) {
+			super(iphase1,iphase2,irwidth);
+			xc=xcent;
+			yc=ycent;
+			zc=zcent;
+		}
+		/**
+		 * 
+		 * @param xcent
+		 * @param ycent
+		 * @param zcent
+		 * @param iphase1
+		 * @param iphase2
+		 * @param irwidth width of radial shells
+		 * @param ithwidth spread of sectors in phi (XY)
+		 * @param izwidth spread of the sectors in theta (XZ)
+		 */
+		public SphericalLayeredImage( final int xcent, final int ycent, final int zcent, final int iphase1,final int iphase2, final float irwidth, final float ithwidth, final float izwidth) {
+			super(iphase1,iphase2,irwidth,ithwidth,izwidth);
+			xc=xcent;
+			yc=ycent;
+			zc=zcent;
+		}
+		@Override
+		public double rget(final long x, final long y, final long z) {
+			int phase=0;
+			double r=Math.sqrt(Math.pow(x-xc, 2)+Math.pow(y-yc, 2)+Math.pow(z-zc,2));
+			double phi=Math.atan2(y-yc, x-xc)*180/Math.PI;
+			
+			double theta=Math.atan2(z-yc, r)*180/Math.PI;
+			if (xwidth>0) phase+=Math.round(r/xwidth)%2;
+			if (ywidth>0) phase+=Math.round(phi/ywidth)%2;
+			if (zwidth>0) phase+=Math.round(theta/zwidth)%2;
 			return ((phase%2)>0) ? phase1 : phase2;
 		}
 	}

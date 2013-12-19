@@ -12,6 +12,8 @@ import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
 
 /**
+ * The standard implementation of the storage engine
+ * Provides basic mechanisms for caching images using a linkedhashmap
  * @author mader
  *
  */

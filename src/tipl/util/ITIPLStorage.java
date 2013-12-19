@@ -23,7 +23,13 @@ public interface ITIPLStorage {
 	 * by just their name
 	 */
 	public static class StampedObj<T> {
-		public Date createdTime;
+		/**
+		 * the time the object was created
+		 */
+		final public Date createdTime;
+		/**
+		 * the time the object was last accessed
+		 */
 		public Date lastAccessedTime;
 		final protected T curImg;
 		public StampedObj(T inImg) {

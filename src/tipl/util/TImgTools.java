@@ -39,8 +39,11 @@ public class TImgTools {
 	public static TImgRO CacheImage(final TImgRO inImage) {
 		return getStorage().CacheImage(inImage);
 	}
+	
 	/**
-	 * put just the relevant dimension reading code in a separate interface
+	 * put just the relevant dimension reading code in a separate interface 
+	 * since it is sometimes passed to objects to create create new images 
+	 * where the dimensions but not the content is important
 	 * 
 	 * @author mader
 	 * 
@@ -119,7 +122,8 @@ public class TImgTools {
 	}
 
 
-
+	/** the values define the types of various images and should be used instead of hardcoded values **/
+	
 	public static final int IMAGETYPE_BOOL = 10;
 	public static final int IMAGETYPE_CHAR = 0;
 	public static final int IMAGETYPE_SHORT = 1;
