@@ -111,64 +111,100 @@ rdf.rad.slices<-function(in.data,r.step=5,th.step=12,phi.step=18,r.even=T,ang.ev
 
 #' Calculates the angular deviation between the a list of points in x,y,z
 #' and a given unit vector direction given in theta and phi
-#'
+#' ang.dist is the distance away from the given vector the line is
+#' vec.dist is the distance along the line
 #' 
-#' @param th theta angle for unit vector (zr)
-#' @param phi phi angle for the vector (xy)
+#' @param th theta angle for unit vector (zr) in radians
+#' @param phi phi angle for the vector (xy) in radians
 #' @param in.df the data.frame containing x,y,z to be compared
 #' @param include.origin include the origin in the final results (replace na with 0)
 along.line<-function(th,phi,in.df,include.origin=T) {
   # unit vector (x,y,z) with r=1
-  c.pos<-c(sin(th*pi/180)*cos(phi*pi/180),
-           sin(th*pi/180)*sin(phi*pi/180),
-           cos(th*pi/180))
+  nacos<-function(...) suppressWarnings(acos(...)) # don't make a bunch of stupid warnings about nan
+  c.pos<-c(sin(th)*cos(phi),
+           sin(th)*sin(phi),
+           cos(th))
   r.val<-with(in.df,sqrt(x^2+y^2+z^2))
-  out.df<-cbind(in.df,ang.dist=180/pi*acos(with(in.df,1/r.val*abs(c.pos[1]*x+c.pos[2]*y+c.pos[3]*z))))
+  vec.dist<-with(in.df,c.pos[1]*x+c.pos[2]*y+c.pos[3]*z)
+  ang.dist<-nacos(abs(vec.dist/r.val))
+  out.df<-cbind(in.df,ang.dist=ang.dist,vec.dist=vec.dist,
+                uv.x=c.pos[1],uv.y=c.pos[2],uv.z=c.pos[3])
   if (include.origin) out.df[which(is.na(out.df$ang.dist)),"ang.dist"]<-0
   out.df
 }
 
-line.scan<-function(in.df,th.steps=5,phi.steps=NULL,ang.thresh=NULL) {
-  if(is.null(phi.steps)) phi.steps<-th.steps*2-1
+line.scan<-function(in.df,th.steps=5,phi.steps=NULL,ang.thresh=NULL,.parallel=T,fit.thick=F,flat.fact=2) {
+  if(is.null(phi.steps)) phi.steps<-th.steps*4
+  th.list<-seq(0,pi/2,length.out=th.steps)
   phi.list<-seq(-pi,pi,length.out=phi.steps)
-  th.list<-seq(0,pi,length.out=th.steps)
-  if(is.null(ang.thresh)) ang.thresh<-mean(c(diff(phi.list),diff(th.list)))
+  if(is.null(ang.thresh)) ang.thresh<-mean(c(diff(phi.list),diff(th.list)))/4
   good.cols<-names(in.df)
   good.cols<-good.cols[!(good.cols %in% "val")]
-  ddply(in.df,.(filename),function(c.file) {
-    o.linevals<-ddply(expand.grid(phi=-pi:pi,th=0:pi),.(phi,th),function(c.start) {
-      c.inline<-subset(along.line(c.start[1,"th"],c.start[1,"phi"],c.file),ang.dist>ang.thresh)
-      data.frame(c.inline[1,good.cols],
+  ddply(in.df,.(filename),.parallel=.parallel,function(c.file) {
+    o.linevals<-ddply(expand.grid(phi=phi.list,th=th.list),.(phi,th),function(c.start) {
+      c.inline<-subset(along.line(c.start[1,"th"],c.start[1,"phi"],c.file),ang.dist<ang.thresh)
+      if(fit.thick) fit.res<-estimate.period(function(...) flat.fit.fun(...,flat.fact=flat.fact),c.inline)
+      else fit.res<-list(w.fit=0,R2=0)
+      data.frame(uv.x=c.inline[1,"uv.x"],
+                 uv.y=c.inline[1,"uv.y"],
+                 uv.z=c.inline[1,"uv.z"],
                  val=mean(c.inline[,"val"]),
                  val.std=sd(c.inline[,"val"]),
                  val.min=min(c.inline[,"val"]),
                  val.max=max(c.inline[,"val"]),
-                 cnt=nrow(c.inline))
+                 cnt=nrow(c.inline),
+                 w.fit=fit.res$w.fit,
+                 R2=fit.res$R2
+                 )
     })
     cbind(c.file[1,],o.linevals)
   })
 }
 
+
+# a few simple tools for estimating thickness
+sin.fit.fun<-function(x,w,offset,min.val,max.val) {
+  (max.val-min.val)*(sin((x+offset)/w*pi)+1)/2+min.val
+}
+clip.v<-function(x,minv,maxv) {
+  x[x>maxv]<-maxv
+  x[x<minv]<-minv
+  x
+}
+flat.fit.fun<-function(x,w,offset,min.val,max.val,flat.fact=1) {
+  (max.val-min.val)*(clip.v(flat.fact*sin((x+offset)/w*pi),-1,1)/2+0.5)+min.val
+}
+estimate.period<-function(fun,in.line,max.val=1,min.val=0) {
+  fit.vals<-nls(
+    val~fun(vec.dist,w.fit,offset.fit,min.val,max.val),
+    data=in.line,
+    start=list(w.fit=diff(range(in.line$vec.dist))/2,offset.fit=0),
+    trace=F)
+  out.list<-as.list(fit.vals$m$getPars())
+  out.list$R2<-fit.vals$m$Rmat()[2,2]^2
+  out.list
+}
+
 library(testthat)
 # some simple tests to ensure the along line code works correctly
 expect_true( { # check that you get the correct number of points
-  c.test<-subset(along.line(0,0,expand.grid(x=-2:2,y=-2:2,z=-2:2)),ang.dist<15)
+  c.test<-subset(along.line(0,0,expand.grid(x=-2:2,y=-2:2,z=-2:2)),ang.dist<pi/8)
   nrow(c.test)==5 # vertical line
 })
 expect_true( { # check that the z axis is ok
-  c.test<-subset(along.line(0,0,expand.grid(x=-2:2,y=-2:2,z=-2:2)),ang.dist<15 )
+  c.test<-subset(along.line(0,0,expand.grid(x=-2:2,y=-2:2,z=-2:2)),ang.dist<pi/8 )
   ((max(c.test$z)-min(c.test$z))==4) & 
     ((max(c.test$x)-min(c.test$x))==0) &
     ((max(c.test$y)-min(c.test$y))==0) 
 })
 expect_true( { # check that the x axis is ok
-  c.test<-subset(along.line(90,0,expand.grid(x=-2:2,y=-2:2,z=-2:2)),ang.dist<15)
+  c.test<-subset(along.line(pi/2,0,expand.grid(x=-2:2,y=-2:2,z=-2:2)),ang.dist<pi/8)
   ((max(c.test$x)-min(c.test$x))==4) & 
     ((max(c.test$z)-min(c.test$z))==0) &
     ((max(c.test$y)-min(c.test$y))==0) 
 })
 expect_true( { # check that the y axis is ok
-  c.test<-subset(along.line(90,90,expand.grid(x=-2:2,y=-2:2,z=-2:2)),ang.dist<15)
+  c.test<-subset(along.line(pi/2,pi/2,expand.grid(x=-2:2,y=-2:2,z=-2:2)),ang.dist<pi/8)
   ((max(c.test$x)-min(c.test$x))==0) & 
     ((max(c.test$z)-min(c.test$z))==0) &
     ((max(c.test$y)-min(c.test$y))==4) 
