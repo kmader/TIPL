@@ -159,16 +159,16 @@ public class ClassifyComponents {
 
 		if (f.exists()) {
 			System.out.println(csvName + " is present, script will continue");
-			final CSVFile cData = new CSVFile(csvName, 2);
+			final CSVFile cData = CSVFile.FromPath(csvName, 2);
 			if (rules.size() < 1) {
 
 				System.out.println("No Rules Given, Printing Header Elements:"
-						+ cData.header.length);
-				for (final String s : cData.header) {
+						+ cData.getHeader().length);
+				for (final String s : cData.getHeader()) {
 					System.out.println(s);
 				}
 
-				System.out.println("First Line:" + cData.parseline());
+				System.out.println("First Line:" + cData.lineAsDictionary());
 			} else {
 				for (final CCRule cRule : rules) {
 					System.out.println("Rule : " + cRule);
@@ -178,7 +178,7 @@ public class ClassifyComponents {
 				int totalDex = 0;
 
 				while (!cData.fileDone) {
-					final Hashtable<String, String> cLine = cData.parseline();
+					final Hashtable<String, String> cLine = cData.lineAsDictionary();
 					boolean result = true;
 					if (useor)
 						result = false;

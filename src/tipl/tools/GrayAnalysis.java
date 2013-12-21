@@ -1152,9 +1152,9 @@ public class GrayAnalysis implements Runnable {
 		if ((mapA.isGood()) & (gfiltGood)) {
 			try {
 				if (useInsert) {
-					final CSVFile insFile = new CSVFile(insName, 2);
+					final CSVFile insFile = CSVFile.FromPath(insName, 2);
 					for (int i = 0; i < 2; i++) {
-						headerStr += insFile.rawHeader[i];
+						headerStr += insFile.getRawHeader(i);
 						if (i == 0) {
 							if (meancol)
 								headerStr += ", " + analysisName + ":(" + 1.0
@@ -1368,10 +1368,10 @@ public class GrayAnalysis implements Runnable {
 
 				final FileWriter out = new FileWriter(csvName, true);
 				if (useInsert) {
-					final CSVFile insFile = new CSVFile(insName, 2);
+					final CSVFile insFile = CSVFile.FromPath(insName, 2);
 					// Insert values as last two columns
 					while (!insFile.fileDone) {
-						final Hashtable cLine = insFile.parseline();
+						final Hashtable cLine = insFile.lineAsDictionary();
 						if (cLine.containsKey("lacuna_number")) {
 							final int curRow = (new Integer(
 									(String) cLine.get("lacuna_number")))
@@ -1401,7 +1401,7 @@ public class GrayAnalysis implements Runnable {
 							double angT = 0;
 							String gtStr = "";
 
-							String outString = insFile.rline;
+							String outString = insFile.readLine().getLine();
 							if ((curRow > 0) & (curRow <= maxGroup)) {
 								valMean = gvArray[curRow].mean();
 								valStd = gvArray[curRow].std();
