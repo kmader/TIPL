@@ -15,6 +15,11 @@ public class CSVFile {
 	public static class ColumnData {
 		LinkedList<String> colEntries=new LinkedList<String>();
 		public void add(String item) { colEntries.add(item);}
+		public int length() {return colEntries.size();}
+		@Override
+		public String toString() {
+			return join(",",colEntries.toArray(new String[length()]));
+			}
 	}
 	public Hashtable<String,ColumnData> ReadColumns(int numberOfLines) {
 		Hashtable<String,ColumnData> out=new Hashtable<String,ColumnData>();
@@ -59,11 +64,8 @@ public class CSVFile {
 	private int row;
 	private int headerlines = 1;
 	private final CanReadLines bufRdr;
-	/**
-	 * header is the formatted list of column names that is the last line of the rawHeader (headerlines)
-	 */
-	private String[] header;
-	public String[] getHeader() {return header;}
+
+	public String[] getHeader() {return rawHeader[rawHeader.length-1].getCleanedLine();}
 	/**
 	 * rawHeader are the lines leading up to the start of the data including the header
 	 * 
