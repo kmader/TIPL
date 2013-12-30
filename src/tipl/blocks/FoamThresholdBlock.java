@@ -3,6 +3,7 @@
  */
 package tipl.blocks;
 
+import tipl.blocks.BaseTIPLBlock.TIPLBlockFactory;
 import tipl.formats.TImg;
 import tipl.tools.ComponentLabel;
 import tipl.tools.Morpho;
@@ -15,6 +16,15 @@ import tipl.util.D3int;
  *
  */
 public class FoamThresholdBlock extends ThresholdBlock {
+	@BaseTIPLBlock.BlockIdentity(blockName = "Foam Threshold",
+			inputNames= {"gray valued image"}, 
+			outputNames= {"threshold image", "inverse threshold", "mask image"})
+	final public static TIPLBlockFactory myFactory = new BaseTIPLBlock.TIPLBlockFactory() {
+		@Override
+		public ITIPLBlock get() {
+			return new FoamThresholdBlock();
+		}
+	};
 
 	/**
 	 * 

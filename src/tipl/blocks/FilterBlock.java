@@ -1,7 +1,9 @@
 package tipl.blocks;
 
+import tipl.formats.DirectoryReader;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.formats.DirectoryReader.DRFactory;
 import tipl.tools.VFilterScale;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
@@ -15,6 +17,17 @@ import tipl.util.TImgTools;
  * 
  */
 public class FilterBlock extends BaseTIPLBlock {
+	
+	@BaseTIPLBlock.BlockIdentity(blockName = "FilterBlock",
+			inputNames= {"unfiltered image"}, 
+			outputNames= {"filtered image"})
+	final public static TIPLBlockFactory myFactory = new BaseTIPLBlock.TIPLBlockFactory() {
+		@Override
+		public ITIPLBlock get() {
+			return new FilterBlock();
+		}
+	};
+	
 	public String prefix;
 	protected final static String blockName = "Filter";
 	public final IBlockImage[] inImages = new IBlockImage[] { new BlockImage(

@@ -1,5 +1,6 @@
 package tipl.blocks;
 
+import tipl.blocks.BaseTIPLBlock.TIPLBlockFactory;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.tools.cVoronoi;
@@ -17,6 +18,17 @@ import tipl.util.TImgTools;
  * 
  */
 public class GrowRegions extends BaseTIPLBlock {
+	
+	@BaseTIPLBlock.BlockIdentity(blockName = "GrowRegionsBlock",
+			inputNames= {"labeled image", "mask image"}, 
+			outputNames= {"filled labels", "filled neighborhood"})
+	final public static TIPLBlockFactory myFactory = new BaseTIPLBlock.TIPLBlockFactory() {
+		@Override
+		public ITIPLBlock get() {
+			return new GrowRegions();
+		}
+	};
+	
 	protected static class GrownShapeNeighborAnalysis extends
 			AnalyzePhase.ShapeAndNeighborAnalysis {
 		public final boolean useGrownLabel = true;

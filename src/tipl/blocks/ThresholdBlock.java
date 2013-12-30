@@ -1,5 +1,6 @@
 package tipl.blocks;
 
+import tipl.blocks.BaseTIPLBlock.TIPLBlockFactory;
 import tipl.formats.MappedImage;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
@@ -11,6 +12,16 @@ import tipl.util.TImgTools;
 
 /** perform a threshold on an input image and remove edges if needed **/
 public class ThresholdBlock extends BaseTIPLBlock {
+	@BaseTIPLBlock.BlockIdentity(blockName = "ThresholdBlock",
+			inputNames= {"gray valued image"}, 
+			outputNames= {"threshold image", "inverse threshold", "mask image"})
+	final public static TIPLBlockFactory myFactory = new BaseTIPLBlock.TIPLBlockFactory() {
+		@Override
+		public ITIPLBlock get() {
+			return new ThresholdBlock();
+		}
+	};
+	
 	protected static TImg makeMask(final TImgRO cAim, final double remEdgesRadius) {
 		EasyContour myContour = new EasyContour(cAim);
 		myContour.useFixedCirc(remEdgesRadius);

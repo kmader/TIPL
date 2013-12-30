@@ -44,6 +44,20 @@ public abstract class DirectoryReader implements TReader {
 
 		public FileFilter getFilter();
 	}
+	
+	public static HashMap<FileFilter, DRFactory> getAllFactories()
+			throws InstantiationException {
+		final HashMap<FileFilter, DRFactory> current = new HashMap<FileFilter, DRFactory>();
+
+		for (final IndexItem<DReader, DRFactory> item : Index.load(
+				DReader.class, DRFactory.class)) {
+			final FileFilter f = item.instance().getFilter();
+			final DRFactory d = item.instance();
+			System.out.println(item.annotation().name() + " loaded as: " + d);
+			current.put(f, d);
+		}
+		return current;
+	}
 
 	final static String version = "21-10-2013";
 
@@ -119,19 +133,7 @@ public abstract class DirectoryReader implements TReader {
 		return zlen;
 	}
 
-	public static HashMap<FileFilter, DRFactory> getAllFactories()
-			throws InstantiationException {
-		final HashMap<FileFilter, DRFactory> current = new HashMap<FileFilter, DRFactory>();
 
-		for (final IndexItem<DReader, DRFactory> item : Index.load(
-				DReader.class, DRFactory.class)) {
-			final FileFilter f = item.instance().getFilter();
-			final DRFactory d = item.instance();
-			System.out.println(item.annotation().name() + " loaded as: " + d);
-			current.put(f, d);
-		}
-		return current;
-	}
 
 	public static void main(final ArgumentParser p) {
 		System.out.println("DirectoryReader Tool v" + version);

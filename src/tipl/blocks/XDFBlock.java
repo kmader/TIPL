@@ -1,5 +1,6 @@
 package tipl.blocks;
 
+import tipl.blocks.BaseTIPLBlock.TIPLBlockFactory;
 import tipl.formats.TImgRO;
 import tipl.tools.XDF;
 import tipl.util.ArgumentParser;
@@ -23,7 +24,15 @@ public class XDFBlock extends BaseTIPLBlock {
 	 * @author mader
 	 * 
 	 */
-
+	@BaseTIPLBlock.BlockIdentity(blockName = "XDFBlock",
+			inputNames= {"object(s) image", "mask image","gray value image"}, 
+			outputNames= {"correlation function"})
+	final public static TIPLBlockFactory myFactory = new BaseTIPLBlock.TIPLBlockFactory() {
+		@Override
+		public ITIPLBlock get() {
+			return new XDFBlock();
+		}
+	};
 	public String prefix;
 	public int minVoxCount;
 	public String phaseName;

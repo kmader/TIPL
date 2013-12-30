@@ -3,11 +3,22 @@
  */
 package tipl.blocks;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+import java.lang.annotation.Target;
+import net.java.sezpoz.Index;
+import net.java.sezpoz.IndexItem;
+import net.java.sezpoz.Indexable;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
+import tipl.formats.DirectoryReader.DRFactory;
 import tipl.tools.Resize;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
@@ -22,6 +33,43 @@ import tipl.util.TImgTools;
  * 
  */
 public abstract class BaseTIPLBlock implements ITIPLBlock {
+	
+	@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
+	@Retention(RetentionPolicy.SOURCE)
+	@Indexable(type = TIPLBlockFactory.class)
+	public static @interface BlockIdentity {
+		String blockName();
+		String[] inputNames();
+		String[] outputNames();
+	}
+	/**
+	 * The static method to create a new TIPLBlock 
+	 * @author mader
+	 *
+	 */
+	public static abstract interface TIPLBlockFactory {
+		public ITIPLBlock get();
+	}
+	/**
+	 * Get a list of all the block factories that exist
+	 * @return
+	 * @throws InstantiationException
+	 */
+	public static HashMap<BlockIdentity, TIPLBlockFactory> getAllBlockFactories()
+			throws InstantiationException {
+		
+		final HashMap<BlockIdentity, TIPLBlockFactory> current = new HashMap<BlockIdentity, TIPLBlockFactory>();
+
+		for (final IndexItem<BlockIdentity, TIPLBlockFactory> item : Index.load(
+				BlockIdentity.class, TIPLBlockFactory.class)) {
+			final BlockIdentity bName = item.annotation();
+			final TIPLBlockFactory dBlock = item.instance();
+			System.out.println(bName + " loaded as: " + dBlock);
+			current.put(bName, dBlock);
+		}
+		return current;
+	}
+	
 	protected ITIPLBlock[] prereqBlocks = new ITIPLBlock[] {};
 	protected ArgumentParser args = new ArgumentParser(new String[] {});
 	protected String blockName = "";

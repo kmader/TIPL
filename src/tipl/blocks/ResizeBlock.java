@@ -9,6 +9,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
+import tipl.blocks.BaseTIPLBlock.TIPLBlockFactory;
 import tipl.formats.TImg;
 import tipl.ij.TImgToImageStack;
 import tipl.tools.Resize;
@@ -25,6 +26,17 @@ import tipl.util.TImgTools;
  * 
  */
 public class ResizeBlock extends BaseTIPLBlock {
+	
+	@BaseTIPLBlock.BlockIdentity(blockName = "FilterBlock",
+			inputNames= {"entire image"}, 
+			outputNames= {"rescaled image"})
+	final public static TIPLBlockFactory myFactory = new BaseTIPLBlock.TIPLBlockFactory() {
+		@Override
+		public ITIPLBlock get() {
+			return new ResizeBlock();
+		}
+	};
+	
 	public String prefix;
 	protected final static String blockName = "Resize";
 	public final IBlockImage[] inImages = new IBlockImage[] { new BlockImage(
