@@ -26,8 +26,10 @@ import tipl.tools.VoronoiTransform;
 import tipl.tools.kVoronoiShrink;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.ITIPLPluginIO;
 import tipl.util.SGEJob;
 import tipl.util.TIPLGlobal;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -87,14 +89,14 @@ public class UFEM implements Runnable {
 	public static TImg boundbox(final TImg maskImage) {
 		final Resize myResizer = new Resize(maskImage);
 		myResizer.find_edges();
-		myResizer.run();
+		myResizer.execute();
 		return myResizer.ExportAim(maskImage);
 	}
 
 	public static TImg boundbox(final TImg cAim, final TImg maskAim) {
 		final Resize myResizer = new Resize(cAim);
 		myResizer.cutROI(maskAim);
-		myResizer.run();
+		myResizer.execute();
 		return myResizer.ExportAim(cAim);
 	}
 
@@ -134,7 +136,7 @@ public class UFEM implements Runnable {
 		if (justCircle) {
 			final EasyContour myContour = new EasyContour(maskAim);
 			myContour.useFixedCirc(remEdgesRadius);
-			myContour.run();
+			myContour.execute();
 			return myContour.ExportAim(maskAim);
 		} else {
 			TImg cleanedMaskAim;
@@ -243,7 +245,7 @@ public class UFEM implements Runnable {
 			final int iters, final boolean asBool) {
 		final Peel cPeel = new Peel(cAim, maskAim, new D3int(iters), asBool);
 		System.out.println("Calculating Peel " + cAim + " ...");
-		cPeel.run();
+		cPeel.execute();
 		return cPeel.ExportAim(cAim);
 	}
 
@@ -252,13 +254,13 @@ public class UFEM implements Runnable {
 			final double remEdgesRadius) {
 		EasyContour myContour = new EasyContour(cAim);
 		myContour.useFixedCirc(remEdgesRadius);
-		myContour.run();
+		myContour.execute();
 		cAim.appendProcLog(myContour.getProcLog());
 		final Peel cPeel = new Peel(cAim, myContour.ExportAim(cAim), new D3int(
 				1));
 		myContour = null;
 		System.out.println("Calculating Remove Edges Peel " + cAim + " ...");
-		cPeel.run();
+		cPeel.execute();
 		return cPeel.ExportAim(cAim);
 	}
 
@@ -674,10 +676,13 @@ public class UFEM implements Runnable {
 		if (maskAim == null)
 			maskAim = TImgTools.ReadTImg(maskAimFile);
 		canaldistAimReady = false;
-		VoronoiTransform vTransform = new kVoronoiShrink(canalAim, maskAim);
-		vTransform.run();
-		canalVolsAim = vTransform.ExportVolumesAim(canalAim);
-		canalDistAim = vTransform.ExportDistanceAim(canalAim);
+		
+		ITIPLPluginIO vTransform = TIPLPluginManager.getBestPluginIO("kVoronoi",new TImg[] {canalAim,maskAim});
+		vTransform.LoadImages(new TImg[] {canalAim,maskAim});
+		vTransform.execute();
+		TImg[] outImgs=vTransform.ExportImages(canalAim);
+		canalVolsAim = outImgs[0];
+		canalDistAim = outImgs[1];
 		vTransform = null;
 		TImgTools.WriteTImg(canalVolsAim,canalVolsAimFile);
 		TImgTools.WriteTImg(canalDistAim,canalDistAimFile);
@@ -698,10 +703,12 @@ public class UFEM implements Runnable {
 		if (boneAim == null)
 			boneAim = TImgTools.ReadTImg(boneAimFile);
 		lacundistAimReady = false;
-		VoronoiTransform vTransform = new kVoronoiShrink(lacunAim, boneAim);
-		vTransform.run();
-		lacunVolsAim = vTransform.ExportVolumesAim(lacunAim);
-		lacunDistAim = vTransform.ExportDistanceAim(lacunAim);
+		ITIPLPluginIO vTransform = TIPLPluginManager.getBestPluginIO("kVoronoi",new TImg[] {lacunAim,boneAim});	
+		vTransform.LoadImages(new TImg[] {lacunAim,boneAim});
+		vTransform.execute();
+		TImg[] outImgs=vTransform.ExportImages(lacunAim);
+		lacunVolsAim = outImgs[0];
+		lacunDistAim = outImgs[1];
 		vTransform = null;
 		TImgTools.WriteTImg(lacunVolsAim, lacunVolsAimFile);
 		TImgTools.WriteTImg(lacunDistAim, lacunDistAimFile);
@@ -715,27 +722,20 @@ public class UFEM implements Runnable {
 		TIPLGlobal.runGC();
 	}
 
-	/** create the voronoi volumes for the canals and canal distance */
+	/** create the Voronoi volumes for the canals and canal distance */
 	protected void makeMaskDist() {
 		if (maskAim == null)
 			maskAim = TImgTools.ReadTImg(maskAimFile);
-		VoronoiTransform vTransform = new kVoronoiShrink(maskAim, true); // This
-																			// one
-																			// must
-																			// be
-																			// kVoronoi
-																			// since
-																			// it
-																			// uses
-																			// the
-																			// edges
-																			// feature
+
+		ITIPLPluginIO KV = TIPLPluginManager.getBestPluginIO("kVoronoi",new TImg[] {null,maskAim});
+		KV.setParameter("-includeedges=true");
+		KV.LoadImages(new TImg[] {null,maskAim});
+		
 		maskdistAimReady = false;
-		vTransform.run();
-		maskdistAim = vTransform.ExportDistanceAim(maskAim);
+		KV.execute();
+		maskdistAim = KV.ExportImages(maskAim)[1];
 		if (maskdistAimFile.length() > 0)
 			TImgTools.WriteTImg(maskdistAim,maskdistAimFile);
-		vTransform = null;
 		maskdistAim = null;
 		maskdistAimReady = true;
 		TIPLGlobal.runGC();
@@ -902,7 +902,7 @@ public class UFEM implements Runnable {
 			final String edgeName) {
 		final Neighbors nbor = new Neighbors(inputAim);
 		System.out.println("Calculating neighbors " + inputAim + " ...");
-		nbor.run();
+		nbor.execute();
 		System.out.println("Writing csv neigbhor-list ...");
 		nbor.WriteNeighborList(edgeName + "_edge.csv");
 		return nbor.ExportCountImageAim(inputAim);
@@ -1300,7 +1300,7 @@ public class UFEM implements Runnable {
 				canalDistAim = TImgTools.ReadTImg(canalDistAimFile);
 
 			final Thickness KT = new HildThickness(canalDistAim);
-			KT.run();
+			KT.execute();
 			cdtbAim = KT.ExportAim(canalDistAim);
 			canalDistAim = null;
 			TImgTools.WriteTImg(cdtbAim,cdtbAimFile);
@@ -1312,7 +1312,7 @@ public class UFEM implements Runnable {
 			if (maskdistAim == null)
 				maskdistAim = TImgTools.ReadTImg(maskdistAimFile);
 			final Thickness MKT = new HildThickness(maskdistAim);
-			MKT.run();
+			MKT.execute();
 			mdtoAim = MKT.ExportAim(maskdistAim);
 			maskdistAim = null;
 			TImgTools.WriteTImg(mdtoAim,mdtoAimFile);

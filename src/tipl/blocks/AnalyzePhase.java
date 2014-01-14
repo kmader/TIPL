@@ -9,6 +9,7 @@ import tipl.tools.kVoronoiShrink;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.TIPLGlobal;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -60,7 +61,9 @@ public class AnalyzePhase extends BaseTIPLBlock {
 		 *         obj (voronoi transform or something like that)
 		 */
 		public ITIPLPluginIO getGrowingPlugin(final TImgRO obj, final TImgRO mask) {
-			return new kVoronoiShrink(obj, mask);
+			ITIPLPluginIO KV = TIPLPluginManager.getBestPluginIO("kVoronoi",new TImgRO[] {obj,mask});
+			KV.LoadImages(new TImgRO[] {obj,mask});
+			return KV;
 		}
 
 		/**

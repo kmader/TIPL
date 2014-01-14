@@ -12,6 +12,7 @@ import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.ITIPLPluginIn;
 import tipl.util.TIPLGlobal;
+import tipl.util.TIPLPluginManager;
 
 /**
  * Abstract Class for performing TIPLPlugin TIPLPlugin is the class for Plug-ins
@@ -500,11 +501,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 	protected int aimLength;
 
 	protected int lowx, lowy, lowz, uppx, uppy, uppz;
-	/**
-	 * Procedure Log for the function, should be added back to the aim-file
-	 * after function operation is complete
-	 */
-	protected String procLog = "";
+
 	// Actual kernel definitons at the end because they screw up the formatting
 	// in most text editors
 	public static morphKernel fullKernel = new morphKernel() {
@@ -626,50 +623,6 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 		return (new int[] { startSlice, endSlice });
 	}
 
-	/**
-	 * The default action is just to run execute, other features can be
-	 * implemented on a case by case basis
-	 */
-	@Override
-	public boolean execute(final String action) {
-		if (!action.equals(""))
-			throw new IllegalArgumentException(
-					"Execute Does not offer any control in this plugins"
-							+ getPluginName());
-		return execute();
-	}
-
-	/**
-	 * The default action is just to run execute, other features can be
-	 * implemented on a case by case basis
-	 */
-	@Override
-	public boolean execute(final String action, final Object objectToExecute) {
-		if (!action.equals(""))
-			throw new IllegalArgumentException(
-					"Execute Does not offer any control in this plugins"
-							+ getPluginName());
-		return execute();
-	}
-
-	/**
-	 * if this function has not been overridden, it will cause an error
-	 */
-	@Override
-	public Object getInfo(final String request) {
-		throw new IllegalArgumentException(
-				"getInfo does not offer any information in this plugin:"
-						+ getPluginName());
-	}
-
-	@Override
-	abstract public String getPluginName();
-
-	@Override
-	public String getProcLog() {
-		return procLog;
-	}
-
 	protected void InitDims(final D3int idim, final D3int ioffset) {
 		dim = new D3int(idim.x, idim.y, idim.z);
 		offset = new D3int(ioffset.x, ioffset.y, ioffset.z);
@@ -712,13 +665,6 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 		return; // nothing to do
 	}
 
-	/**
-	 * Run function to be executed by the plug-in. This does the majority of the
-	 * computational work and is thus setup so that it can be run in a seperate
-	 * thread from the main functions
-	 */
-	@Override
-	abstract public void run();
 
 	/**
 	 * Distribute (using divideThreadWork) and process (using processWork) the
@@ -738,7 +684,8 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 				if (myWork==null) { 
 					System.out.println(this+":Nothing for thread:"+i+" to do, it won't be used!");
 				} else {
-					final Thread bgThread = new Thread(this, "BG:"
+					
+					final Thread bgThread = new Thread(TIPLPluginManager.PluginAsRunnable(this), "BG:"
 							+ getPluginName() + " : " + myWork);
 					workForThread.put(bgThread, myWork);
 					bgThread.start();

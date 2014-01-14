@@ -174,7 +174,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 			if ((outCSV.length() > 0) | (countimageAim.length() > 0)) {
 				System.out.println("Calculating neighbors " + labelsAim
 						+ " ...");
-				nbor.run();
+				nbor.execute();
 			}
 
 			if (countimageAim.length() > 0) {
@@ -245,7 +245,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 		int off = 0;
 
 		if (!isRun)
-			run();
+			execute();
 
 		final int[] countImageVar = new int[aimLength];
 		for (int z = lowz; z < uppz; z++) {
@@ -436,11 +436,6 @@ public class Neighbors extends BaseTIPLPluginIO {
 		InitLabels(labelImg.getDim(), labelImg.getOffset());
 	}
 
-	@Override
-	@Deprecated
-	public void run() {
-		execute();
-	}
 
 	@Override
 	public ArgumentParser setParameter(final ArgumentParser p) {
@@ -528,7 +523,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 	 */
 	public boolean WriteNeighborList(final String outfileName) {
 		if (!isRun)
-			run();
+			execute();
 		System.out.println("Writing EdgeFile..." + outfileName);
 
 		try {

@@ -540,11 +540,6 @@ public class Morpho extends BaseTIPLPluginBW {
 		}
 	}
 
-	@Override
-	@Deprecated
-	public void run() {
-		execute();
-	}
 
 	public ArgumentParser setParameters(final ArgumentParser p) {
 		return super.setParameter(p, getPluginName() + ":");

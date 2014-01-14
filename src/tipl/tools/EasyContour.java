@@ -8,6 +8,8 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -15,6 +17,16 @@ import tipl.util.TImgTools;
  * on the Contour2D interface/classes
  */
 public class EasyContour extends BaseTIPLPluginBW {
+	@TIPLPluginManager.PluginInfo(pluginType = "EasyContour",
+			desc="Full memory easy contouring",
+			sliceBased=false,
+			maximumSize=1024*1024*1024)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new EasyContour();
+		}
+	};
 	/**
 	 * circContour is a class which uses a best-fit ellipsoid as the boundary
 	 * for an object.
@@ -592,7 +604,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 						peelS));
 
 				System.out.println("Calculating Peel " + inputFile + " ...");
-				cPeel.run();
+				cPeel.execute();
 				final TImg outputAim = cPeel.ExportAim(inputAim);
 				if (outputFile.length() > 0)
 					TImgTools.WriteTImg(outputAim,outputFile);
@@ -611,8 +623,11 @@ public class EasyContour extends BaseTIPLPluginBW {
 	public boolean supportsThreading = true;
 	/** number of slices to group together for contour calculations **/
 	public int zGroup = 0;
-
+	protected EasyContour() {
+		
+	}
 	/** constructor function using TIPLPluginBW standard classes */
+	@Deprecated
 	public EasyContour(final TImgRO inputAim) {
 		ImportAim(inputAim);
 	}
@@ -653,11 +668,6 @@ public class EasyContour extends BaseTIPLPluginBW {
 	 * the mask image (if present)
 	 */
 
-	@Override
-	@Deprecated
-	public void run() {
-		runMulticore();
-	}
 
 	public void runContouring(final int bSlice, final int tSlice) {
 		Contour2D cContour;

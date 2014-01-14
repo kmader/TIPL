@@ -7,7 +7,9 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.D3float;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
 import tipl.util.TIPLGlobal;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -15,13 +17,24 @@ import tipl.util.TImgTools;
  * values
  */
 public class ComponentLabel extends BaseTIPLPluginIO {
+	@TIPLPluginManager.PluginInfo(pluginType = "ComponentLabel",
+			desc="Full memory component labeling",
+			sliceBased=false,
+			maximumSize=1024*1024*1024,
+			bytesPerVoxel=3)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new ComponentLabel();
+		}
+	};
 	/**
 	 * A generic interface for thresholding operations, typically only one
 	 * function is needed but the interface provides all anyways
 	 */
 	public interface CLFilter {
 		/**
-		 * wheter or not a group should be accepted based on a label number (for
+		 * whether or not a group should be accepted based on a label number (for
 		 * sorted lists) or voxel count
 		 * 
 		 * @param labelNumber
@@ -823,12 +836,6 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 		labelremap = new ArrayList<Integer>(maxlabel);
 		for (int ir = 0; ir <= maxlabel; ir++)
 			labelremap.add(new Integer(ir));
-	}
-
-	@Override
-	@Deprecated
-	public void run() {
-		execute();
 	}
 
 	/** Maintains backwards compatibilitiy */

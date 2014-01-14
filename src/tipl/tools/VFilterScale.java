@@ -1,11 +1,17 @@
 package tipl.tools;
 
+import tipl.blocks.BaseTIPLBlock;
+import tipl.blocks.FilterBlock;
+import tipl.blocks.ITIPLBlock;
+import tipl.blocks.BaseTIPLBlock.TIPLBlockFactory;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
 import tipl.util.TIPLGlobal;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -16,7 +22,19 @@ import tipl.util.TImgTools;
  * 
  * @author Kevin Mader
  */
-public class VFilterScale extends FilterScale {
+public class VFilterScale extends FilterScale {	
+	@TIPLPluginManager.PluginInfo(pluginType = "Filter",
+			desc="Slice based filter tool",
+			sliceBased=true,
+			maximumSize=-1,
+			bytesPerVoxel=-1)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new VFilterScale();
+		}
+	};
+	
 	/**
 	 * The command line executable version of the code The code that is run
 	 * (without reading the arguments) is

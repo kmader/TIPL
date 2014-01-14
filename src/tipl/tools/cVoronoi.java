@@ -11,6 +11,9 @@ import java.util.Map;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
+import tipl.util.ITIPLPlugin;
+import tipl.util.ITIPLPluginIO;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -18,6 +21,16 @@ import tipl.util.TImgTools;
  * rather than current shape
  */
 public class cVoronoi extends VoronoiTransform {
+	@TIPLPluginManager.PluginInfo(pluginType = "cVoronoi",
+			desc="Full memory center voronoi",
+			sliceBased=false,
+			maximumSize=1024*1024*1024)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new cVoronoi();
+		}
+	};
 	static class cVorList {
 		public int label;
 		Map<Integer, cVorObj> mp;
@@ -222,23 +235,28 @@ public class cVoronoi extends VoronoiTransform {
 		TImg maskAim;
 
 		start = System.currentTimeMillis();
-		cVoronoi CV;
+		ITIPLPluginIO CV;
 
 		if (maskAimName.length() > 0) {
 			System.out.println("Loading " + maskAimName + " ...");
 			maskAim = TImgTools.ReadTImg(maskAimName);
 			start = System.currentTimeMillis();
-			CV = new cVoronoi(labelsAim, maskAim, leaveVox);
+			
+			CV = TIPLPluginManager.getBestPluginIO("cVoronoi",new TImg[] {labelsAim,maskAim});
+			CV.setParameter("-preservelabels="+leaveVox);
+			CV.LoadImages(new TImg[] {labelsAim,maskAim});
 		} else {
-			CV = new cVoronoi(labelsAim, leaveVox);
+			CV = TIPLPluginManager.getBestPluginIO("cVoronoi",new TImg[] {labelsAim});
+			CV.setParameter("-preservelabels="+leaveVox);
+			CV.LoadImages(new TImg[] {labelsAim});
 			maskAim = labelsAim;
 		}
-		CV.scaleddist = distscale;
-		CV.run();
-
-		CV.WriteVolumesAim(labelsAim, vorVolumesName);
-		CV.WriteDistanceAim(maskAim, vorDistancesName);
-
+		CV.setParameter("-scaleddist="+distscale);
+		CV.execute();
+		TImg[] outImgs=CV.ExportImages(labelsAim);
+		
+		TImgTools.WriteTImg(outImgs[0], vorVolumesName);
+		TImgTools.WriteTImg(outImgs[1], vorDistancesName);
 		try {
 			final float eTime = (System.currentTimeMillis() - start)
 					/ (60 * 1000F);
@@ -253,25 +271,26 @@ public class cVoronoi extends VoronoiTransform {
 
 	}
 
-	public boolean scaleddist = true;
-	public boolean leaveOriginalLabels = false;
-	public boolean updateCOV = false;
+	protected boolean scaleddist = true;
+	protected boolean updateCOV = false;
+	@Override
+	public ArgumentParser setParameter(final ArgumentParser p,
+			final String prefix) {
+		final ArgumentParser args = super.setParameter(p, prefix);
+		scaleddist = args.getOptionBoolean(prefix + "scaleddist", scaleddist,
+				"Scale the distance proportionally to the radius");
+		
+		updateCOV = args.getOptionBoolean(prefix + "updatecov", updateCOV,
+				"Update the COV position with iterations");
+		return args;
+	}
 	public boolean[] tmask;
 	int maxVal = -1;
 	protected volatile cVorList nvlist;
 	double emptyVoxels = 0;
 
-	public cVoronoi(final TImgRO labelAim, final boolean ileaveOriginalLabels) {
-		super(labelAim);
-		leaveOriginalLabels = ileaveOriginalLabels;
-		prerun();
-	}
-
-	public cVoronoi(final TImgRO bubblelabelsAim, final TImgRO bubblesAim,
-			final boolean ileaveOriginalLabels) {
-		super(bubblelabelsAim, bubblesAim);
-		leaveOriginalLabels = ileaveOriginalLabels;
-		prerun();
+	public cVoronoi() {
+		
 	}
 
 	@Override
@@ -279,7 +298,7 @@ public class cVoronoi extends VoronoiTransform {
 		if (runMulticore()) {
 			System.out.println("cVoronoi Finished");
 			procLog += "CMD:cVoronoi, DistScale:" + scaleddist
-					+ ", Replacement:" + leaveOriginalLabels + "\n";
+					+ ", Replacement:" + preserveLabels + "\n";
 			return true;
 		}
 		return false;
@@ -295,7 +314,7 @@ public class cVoronoi extends VoronoiTransform {
 		int off = 0;
 		double fullVoxels = 0;
 		// I don't want to screw the input mask up
-		if (leaveOriginalLabels) {
+		if (preserveLabels) {
 			tmask = new boolean[aimLength];
 			System.arraycopy(mask, 0, tmask, 0, mask.length);
 		} else
@@ -312,7 +331,7 @@ public class cVoronoi extends VoronoiTransform {
 							maxVal = labels[off];
 						nvlist.addvox(labels[off], x, y, z);
 						fullVoxels++;
-						if (leaveOriginalLabels)
+						if (preserveLabels)
 							tmask[off] = false;
 					}
 					if (tmask[off])
@@ -332,12 +351,6 @@ public class cVoronoi extends VoronoiTransform {
 		final int bSlice = range[0];
 		final int tSlice = range[1];
 		runSection(bSlice, tSlice);
-	}
-
-	@Override
-	@Deprecated
-	public void run() {
-		execute();
 	}
 
 	protected void runSection(final int startSlice, final int finalSlice) {

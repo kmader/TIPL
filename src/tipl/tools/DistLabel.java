@@ -7,6 +7,8 @@ import java.util.Iterator;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
@@ -16,6 +18,16 @@ import Jama.Matrix;
  * a mask
  */
 public class DistLabel extends BaseTIPLPluginIO {
+	@TIPLPluginManager.PluginInfo(pluginType = "DistLabel",
+			desc="Full memory dist labeling",
+			sliceBased=false,
+			maximumSize=1024*1024*1024)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new DistLabel();
+		}
+	};
 	private static class bubbleFiller extends Thread {
 		// int cLabel;
 		// private SeedLabel cBubble;
@@ -365,6 +377,9 @@ public class DistLabel extends BaseTIPLPluginIO {
 	int totalVoxels = aimLength;
 	protected double lcAvg = 0;
 
+	protected DistLabel() {
+		
+	}
 	/**
 	 * Constructor based on just the distance map, assume everything is
 	 * available mask
@@ -372,6 +387,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 	 * @param imap
 	 *            Distance map image
 	 */
+	@Deprecated
 	public DistLabel(final TImgRO imap) {
 		LoadAimData(imap);
 	}
@@ -384,6 +400,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 	 * @param imask
 	 *            Mask to be filld and identified
 	 */
+	@Deprecated
 	public DistLabel(final TImgRO imap, final TImgRO imask) {
 		LoadAimData(imap, imask);
 	}
@@ -1225,12 +1242,6 @@ public class DistLabel extends BaseTIPLPluginIO {
 					return i;
 		}
 		return -1;
-	}
-
-	@Override
-	@Deprecated
-	public void run() {
-		execute();
 	}
 
 	@Override

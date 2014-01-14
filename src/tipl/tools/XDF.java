@@ -333,7 +333,7 @@ public class XDF extends BaseTIPLPluginMult {
 			final ComponentLabel myCL = new ComponentLabel(nmask, rlen,
 					new D3int(0));
 			myCL.verboseMode = false;
-			myCL.run();
+			myCL.execute();
 			final int keepLabel = myCL.labels[index(0, 0, 0)];
 			for (int i = 0; i < n.length; i++) {
 				if (myCL.labels[i] != keepLabel) {
@@ -1397,13 +1397,6 @@ public class XDF extends BaseTIPLPluginMult {
 	public double probScalar() {
 		return (MAXPROB + 0.0) / (MAXDISTVAL + 0.0);
 	}
-
-	@Override
-	@Deprecated
-	public void run() {
-		execute();
-	}
-
 	/**
 	 * Run the XDF analysis for the given number of iterations
 	 * 
@@ -1413,7 +1406,7 @@ public class XDF extends BaseTIPLPluginMult {
 	@Deprecated
 	public void run(int iters) {
 		mcIter = iters;
-		run();
+		execute();
 	}
 
 	@Override

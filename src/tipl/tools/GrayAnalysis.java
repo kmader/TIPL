@@ -13,15 +13,32 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.CSVFile;
+import tipl.util.ITIPLPlugin;
 import tipl.util.TIPLGlobal;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
  * Performs shape analysis on a labeled aim image (map) and if given another
  * image
  */
-public class GrayAnalysis implements Runnable {
-	public static final String kVer = "03-26-13 v 102";
+public class GrayAnalysis extends BaseTIPLPluginIn {
+	@TIPLPluginManager.PluginInfo(pluginType = "GrayAnalysis",
+			desc="Full memory gray value analysis",
+			sliceBased=false,
+			maximumSize=1024*1024*1024)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new GrayAnalysis();
+		}
+	};
+	@Override
+	public String getPluginName() {
+		return "GrayAnalysis";
+	}
+	
+	public static final String kVer = "01-14-14 v 103";
 	// LinkedList<GrayVoxels> gvArray;
 	public static boolean doPreload = false;
 
@@ -41,7 +58,7 @@ public class GrayAnalysis implements Runnable {
 			final String outName, final String aName) {
 		final GrayAnalysis newGray = new GrayAnalysis(inDMap, inName, outName,
 				aName);
-		newGray.run();
+		newGray.execute();
 	}
 
 	/**
@@ -63,12 +80,10 @@ public class GrayAnalysis implements Runnable {
 			final String inName, final String outName, final String aName) {
 		final GrayAnalysis newGray = new GrayAnalysis(inMap, inGfilt, inName,
 				outName, aName);
-		newGray.useAname = true;
 		newGray.analysisName = aName + "_Distance";
 		newGray.mapA = inMap;
 		newGray.useGFILT = true;
 		newGray.gfiltA = inGfilt;
-		newGray.useInsert = true;
 
 		newGray.insName = inName;
 		newGray.csvName = outName;
@@ -84,7 +99,7 @@ public class GrayAnalysis implements Runnable {
 		newGray.angcol = true;
 
 		newGray.SetupGA();
-		newGray.run();
+		newGray.execute();
 	}
 
 	/**
@@ -106,7 +121,7 @@ public class GrayAnalysis implements Runnable {
 			final String inName, final String outName, final String aName) {
 		final GrayAnalysis newGray = new GrayAnalysis(inMap, inGfilt, inName,
 				outName, aName);
-		newGray.run();
+		newGray.execute();
 	}
 
 	/**
@@ -135,7 +150,7 @@ public class GrayAnalysis implements Runnable {
 		newGray.mincol = false;
 		newGray.maxcol = false;
 		newGray.useThresh = false;
-		newGray.run();
+		newGray.execute();
 
 	}
 
@@ -151,11 +166,12 @@ public class GrayAnalysis implements Runnable {
 		}
 
 		final GrayAnalysis myGrayAnalysis = new GrayAnalysis(p);
-		myGrayAnalysis.run();
+		myGrayAnalysis.execute();
 
 	}
 
 	/** Show's command line help when it is requested */
+	@Deprecated
 	public static void showHelp() {
 		System.out.println(" Gray Analysis Help");
 		System.out
@@ -261,7 +277,7 @@ public class GrayAnalysis implements Runnable {
 					+ newGray.fmax + " ) in " + newGray.fbins + " steps");
 			newGray.useFMap = true;
 		}
-		newGray.run();
+		newGray.execute();
 	}
 
 	/**
@@ -319,7 +335,7 @@ public class GrayAnalysis implements Runnable {
 					+ newGray.fmax + " ) in " + newGray.fbins + " steps");
 			newGray.useFMap = true;
 		}
-		newGray.run();
+		newGray.execute();
 	}
 
 	/**
@@ -353,7 +369,7 @@ public class GrayAnalysis implements Runnable {
 		newGray.maxcol = false;
 		newGray.noBlank = removeBlanks;
 		newGray.SetupGA();
-		newGray.run();
+		newGray.execute();
 		return newGray.gvArray;
 	}
 
@@ -406,7 +422,7 @@ public class GrayAnalysis implements Runnable {
 		newGray.fbins = steps;
 		newGray.useFMap = true;
 		newGray.SetupGA();
-		newGray.run();
+		newGray.execute();
 		return newGray.gvArray;
 	}
 
@@ -421,7 +437,7 @@ public class GrayAnalysis implements Runnable {
 		final GrayAnalysis newGray = new GrayAnalysis(inMap, (TImg) null,
 				outName, aName);
 		newGray.includeShapeTensor = includeShapeT;
-		newGray.run();
+		newGray.execute();
 	}
 
 	/**
@@ -464,7 +480,7 @@ public class GrayAnalysis implements Runnable {
 		final GrayAnalysis newGray = new GrayAnalysis(inMap, inGfilt, outName,
 				aName);
 		newGray.includeShapeTensor = includeShapeT;
-		newGray.run();
+		newGray.execute();
 	}
 
 	/**
@@ -611,16 +627,16 @@ public class GrayAnalysis implements Runnable {
 		StartFProfile(inGfilt, maskedF, outFile, threshVal);
 	}
 
-	GrayVoxels[] gvArray;
-	TImgRO mapA;
-	double mapScaleFactor = 1.0;
-	TImgRO gfiltA;
-	int maxGroup = 0;
-	double totVox = 0;
-	double totSum = 0;
-	double totSqSum = 0;
-	double fmin = 0;
-	double fmax = 32765;
+	protected GrayVoxels[] gvArray;
+	protected TImgRO mapA;
+	protected double mapScaleFactor = 1.0;
+	protected TImgRO gfiltA;
+	protected int maxGroup = 0;
+	protected double totVox = 0;
+	protected double totSum = 0;
+	protected double totSqSum = 0;
+	protected double fmin = 0;
+	protected double fmax = 32765;
 	static final int MAXARRVAL = 500000; // Integer.MAX_VALUE;
 	/** the number of points to use in a standard float profile plot */
 	public static int PROFILEPOINTS = 1000;
@@ -630,144 +646,146 @@ public class GrayAnalysis implements Runnable {
 	private boolean useFMap;
 	public boolean invertGFILT;
 	boolean useCount;
-	boolean useAname = false;
 	// Parameters
 	/** Use commas in output instead of tabs */
-	public boolean useComma = false;
+	protected boolean useComma = false;
 	/** Use a threshold on the gfilt data */
-	public boolean useThresh = false;
+	protected boolean useThresh = false;
 	/** Add column with mean of gfilt data inside each object (true) */
-	public boolean meancol = true;
+	protected boolean meancol = true;
 
 	/** Add column with std of gfilt data inside each object (true) */
-	public boolean stdcol = true;
+	protected boolean stdcol = true;
 
 	/** Add column with max of gfilt data inside each object (true) */
-	public boolean maxcol = false;
+	protected boolean maxcol = false;
 
 	/** Add column with min of gfilt data inside each object (true) */
-	public boolean mincol = false;
+	protected boolean mincol = false;
 
 	/** Add column with the voxel count inside each object (false) */
-	public boolean cntcol = false;
+	protected boolean cntcol = false;
 
 	/** Add columns with the center of volumes for each object (false) */
-	public boolean covcol = false;
+	protected boolean covcol = false;
 
 	/**
 	 * Add columns with the center of mass (gfilt weighted) for each object
 	 * (false)
 	 */
-	public boolean comcol = false;
+	protected boolean comcol = false;
 
 	/**
 	 * Add columns with the std of the center of volumes for each object (false)
 	 */
-	public boolean sovcol = false;
+	protected boolean sovcol = false;
 
 	/** Add columns with the gfilt-calculated gradient for each object (false) */
-	public boolean gradcol = false;
+	protected boolean gradcol = false;
 
 	/**
 	 * Add columns with the angle between the objects main direction and the
 	 * direction of the gradient (false)
 	 */
-	public boolean angcol = false;
+	protected boolean angcol = false;
 
 	/** Add columns with the PCA components and scores for each object (false) */
-	public boolean pcacols = false;
+	protected boolean pcacols = false;
 
-	private boolean noThresh = false;
+	protected boolean noThresh = false;
 
 	/** write out the entire shape tensor **/
-	private boolean includeShapeTensor = false;
+	protected boolean includeShapeTensor = false;
 
-	boolean useShort = false;
+	protected boolean useShort = false;
 
-	boolean useFloat = false;
+	protected boolean useFloat = false;
 
 	/**
 	 * Perform the standard shape analysis and save as a list of objects inside
 	 * a csv file. If false result is formatted more as a histogram or 2D
 	 * histogram
 	 */
-	public boolean lacunaMode = false;
+	protected boolean lacunaMode = false;
 
-	boolean noBlank = false;
+	protected boolean noBlank = false;
 
-	boolean useInsert = false;
 
 	/** Calculate distance from wall as distance from edge of ROI volume */
-	public boolean boxDist = false;
+	protected boolean boxDist = false;
 
 	/** Value to use for the threshold (0) */
-	public float threshVal = 0;
+	protected float threshVal = 0;
 
-	String analysisName = "GrayAnalysis";
+	protected String analysisName = "GrayAnalysis";
 
-	String dlmChar = "\t";
+	protected String dlmChar = "\t";
 
-	String headerString = "";
+	protected String headerString = "";
 
-	String headerStr = "";
+	protected String headerStr = "";
 
-	String csvName = "";
+	protected String csvName = "";
 
-	String insName = "N/A";
+	protected String insName = "";
 
 	protected String gfiltName = "";
 
 	/** Plain old initializer */
-	public GrayAnalysis() {
+	protected GrayAnalysis() {
 	}
-
-	public GrayAnalysis(final ArgumentParser p) {
-		debugMode = p.hasOption("debug");
-		useComma = p.hasOption("usecsv");
-		useThresh = p.hasOption("thresh");
+	
+	@Override
+	public ArgumentParser setParameter(ArgumentParser inArgs,final String prefix) {
+		debugMode = inArgs.getOptionBoolean(prefix+"debug",debugMode,"Print out debugging information");
+		useComma = inArgs.getOptionBoolean(prefix+"usecsv",useComma,"Use commas in output");
+		useThresh = inArgs.getOptionBoolean(prefix+"usethresh",useThresh,"use threshold value");
 
 		// Columns to be written in output file
-		meancol = !p.hasOption("meancol"); // Default Column
-		stdcol = !p.hasOption("stdcol"); // Default Column
-		maxcol = p.hasOption("maxcol"); // Special Column
-		mincol = p.hasOption("mincol"); // Special Column
-		cntcol = p.hasOption("cntcol"); // Special Column
-		covcol = p.hasOption("covcol"); // Special Column
-		comcol = p.hasOption("comcol"); // Special Column
-		sovcol = p.hasOption("sovcol"); // Special Column
-		gradcol = p.hasOption("gradcol"); // Special Column
-		angcol = p.hasOption("angcol"); // Special Column
-		pcacols = p.hasOption("pcacols"); // Special Column
-		noThresh = p.hasOption("nothresh");
-		useShort = p.hasOption("useshort"); // use short for GFILT
-		useFloat = p.hasOption("usefloat"); // use float for MAP (just labels in
+		meancol = !inArgs.getOptionBoolean(prefix+"meancol",meancol,"Add mean value column"); // Default Column
+		stdcol = !inArgs.getOptionBoolean(prefix+"stdcol",stdcol,"Add standard deviation column"); // Default Column
+		maxcol = inArgs.getOptionBoolean(prefix+"maxcol",maxcol,"Add max column"); // Special Column
+		mincol = inArgs.getOptionBoolean(prefix+"mincol",mincol,"Add min column"); // Special Column
+		cntcol = inArgs.getOptionBoolean(prefix+"cntcol",cntcol,"Add count column"); // Special Column
+		covcol = inArgs.getOptionBoolean(prefix+"covcol",covcol,"Add covariance columns"); // Special Column
+		comcol = inArgs.getOptionBoolean(prefix+"comcol",comcol,"Add center of mass columns"); // Special Column
+		sovcol = inArgs.getOptionBoolean(prefix+"sovcol",sovcol,"Add std center of mass colums"); // Special Column
+		gradcol = inArgs.getOptionBoolean(prefix+"gradcol",gradcol,"Add gradient columns"); // Special Column
+		angcol = inArgs.getOptionBoolean(prefix+"angcol",angcol,"Add angular column (calculated from gradient"); // Special Column
+		pcacols = inArgs.getOptionBoolean(prefix+"pcacols",pcacols,"Add principal component columns"); // Special Column
+		noThresh = inArgs.getOptionBoolean(prefix+"nothresh",noThresh,"don use threshold");
+		useShort = inArgs.getOptionBoolean(prefix+"useshort",useShort,"use short values for value image"); // use short for GFILT
+		useFloat = inArgs.getOptionBoolean(prefix+"usefloat",useFloat,"use float values for value image"); // use float for MAP (just labels in
 		// CSV file)
-		lacunaMode = p.hasOption("lacuna");
-		noBlank = p.hasOption("noblank");
-		useInsert = p.hasOption("insert");
-		boxDist = p.hasOption("boxroidist");
-		includeShapeTensor = p.hasOption("shapetensor");
-		invertGFILT = p.hasOption("invert");
-		useGFILT = p.hasOption("gfilt");
+		lacunaMode = inArgs.getOptionBoolean(prefix+"lacuna",lacunaMode,"use lacuna mode");
+		noBlank = inArgs.getOptionBoolean(prefix+"noblank",noBlank,"remove blank lines where count is zero");
+		
+		boxDist = inArgs.getOptionBoolean(prefix+"boxroidist",boxDist,"calculated distance based on a box of the region of interest (box edge distance)");
+		includeShapeTensor = inArgs.getOptionBoolean(prefix+"shapetensor",includeShapeTensor,"add columns for shape tensor");
+		invertGFILT = inArgs.getOptionBoolean(prefix+"invert",invertGFILT,"invert the values in the value image (gfilt)");
+		useGFILT = inArgs.getOptionBoolean(prefix+"gfilt",useGFILT,"use a gfilt image");
+		threshVal=inArgs.getOptionFloat(prefix+"thresh", threshVal, "Threshold value to use");
+		fmin=inArgs.getOptionDouble(prefix+"fmin",fmin,"Min value for float binning of value image");
+		fmax=inArgs.getOptionDouble(prefix+"fmax",fmax,"Max value for float binning of value image");
+		fbins=inArgs.getOptionInt(prefix+"fmin",fbins,"Number of bines for float binning of value image");
+		
+		analysisName = inArgs.getOptionString(prefix+"analysis",analysisName,"Name of analysis");
+		insName = inArgs.getOptionString(prefix+"insert",insName,"insert results into an existing csv");
 
-		// Float Binning Settings
-		if (p.hasOption("fmin"))
-			fmin = Double.valueOf(p.getOptionAsString("fmin").trim())
-					.doubleValue();
-		if (p.hasOption("fmax"))
-			fmax = Double.valueOf(p.getOptionAsString("fmax").trim())
-					.doubleValue();
-		if (p.hasOption("fbins"))
-			fbins = Integer.valueOf(p.getOptionAsString("fbins").trim())
-					.intValue();
+		
+		if (useComma)
+			dlmChar = ", ";
+		else
+			dlmChar="\t";
+		
+		
+		return inArgs;
+	}
+	@Deprecated
+	public GrayAnalysis(final ArgumentParser p) {
 
-		useAname = p.hasOption("analysis");
 
-		if (useThresh) {
-			threshVal = Float.parseFloat(p.getOptionAsString("thresh"));
-		} else {
-			threshVal = 0;
-		}
+		
 
 		final String mapName = p.getOptionAsString("map"); // Map is a needed
 															// parameter
@@ -776,15 +794,9 @@ public class GrayAnalysis implements Runnable {
 			gfiltName = p.getOptionAsString("gfilt"); // gfilt is a given
 														// parameter
 		csvName = p.getOptionAsString("csv"); // CSV file is a needed parameter
-		insName = "N/A";
-		if (useInsert) {
-			insName = p.getOptionAsString("insert");
-		}
 
-		if (useAname)
-			analysisName = p.getOptionAsString("analysis");
-		if (useComma)
-			dlmChar = ", ";
+			
+		
 
 		System.out.println("Map Aim: " + mapName);
 		if (useGFILT)
@@ -831,11 +843,10 @@ public class GrayAnalysis implements Runnable {
 	 * @param aName
 	 *            name of the analysis in the output file (header column prefix)
 	 */
+	@Deprecated
 	public GrayAnalysis(final TImgRO inMap, final String outName,
 			final String aName) {
-		mapA = inMap;
-		useGFILT = false;
-		gfiltA = null;
+		LoadImages(new TImgRO[] {inMap});
 		csvName = outName;
 		lacunaMode = true;
 		analysisName = aName;
@@ -854,14 +865,12 @@ public class GrayAnalysis implements Runnable {
 	 * @param aName
 	 *            name of analysis in the output file (header column prefix)
 	 */
+	@Deprecated
 	public GrayAnalysis(final TImgRO inDMap, final String inName,
 			final String outName, final String aName) {
-		useAname = true;
+		LoadImages(new TImgRO[] {inDMap});
 		analysisName = aName;
-		mapA = inDMap;
-		useGFILT = false;
-		gfiltA = null;
-		useInsert = true;
+
 
 		meancol = false;
 		stdcol = false;
@@ -890,11 +899,10 @@ public class GrayAnalysis implements Runnable {
 	 * @param aName
 	 *            name of the analysis in the output file (header column prefix)
 	 */
+	@Deprecated
 	public GrayAnalysis(final TImgRO inMap, final TImgRO inGfilt,
 			final String outName, final String aName) {
-		mapA = inMap;
-		useGFILT = true;
-		gfiltA = inGfilt;
+		LoadImages(new TImgRO[] {inMap,inGfilt});
 		if (gfiltA == null)
 			boxDist = true;
 
@@ -921,12 +929,8 @@ public class GrayAnalysis implements Runnable {
 	 */
 	public GrayAnalysis(final TImgRO inMap, final TImgRO inGfilt,
 			final String inName, final String outName, final String aName) {
-		useAname = true;
 		analysisName = aName;
-		mapA = inMap;
-		useGFILT = true;
-		gfiltA = inGfilt;
-		useInsert = true;
+		LoadImages(new TImgRO[] {inMap,inGfilt});
 
 		insName = inName;
 		csvName = outName;
@@ -953,15 +957,12 @@ public class GrayAnalysis implements Runnable {
 	 *            Force distance map (can be empty just ensures that the
 	 *            constructor uses the right property
 	 */
+	@Deprecated
 	public GrayAnalysis(final TImgRO inMap, final TImgRO inGfilt,
 			final String inName, final String outName, final String aName,
 			final boolean makemedist) {
-		useAname = true;
 		analysisName = aName + "_Distance";
-		mapA = inMap;
-		useGFILT = true;
-		gfiltA = inGfilt;
-		useInsert = true;
+		LoadImages(new TImgRO[] {inMap,inGfilt});
 
 		insName = inName;
 		csvName = outName;
@@ -979,8 +980,13 @@ public class GrayAnalysis implements Runnable {
 		SetupGA();
 
 	}
-
-	private void AnalyzeSlice(final int sliceNumber, final boolean noThresh,
+	/**
+	 * The core of the grayanalysis tool which analyzes each slice that it is given
+	 * @param sliceNumber
+	 * @param noThresh
+	 * @param operationMode
+	 */
+	protected void AnalyzeSlice(final int sliceNumber, final boolean noThresh,
 			final int operationMode) {
 		// Operation Mode -> 0- find COM/COV, 1- find covariance matrix, 2- find
 		// extents
@@ -1138,7 +1144,7 @@ public class GrayAnalysis implements Runnable {
 	 * a thread
 	 */
 	@Override
-	public void run() {
+	public boolean execute() {
 		if (doPreload) {
 			System.out.println("Preloading Datasets..." + mapA);
 			mapA = TImgTools.WrapTImgRO(TImgTools.CacheImage(mapA));
@@ -1147,6 +1153,7 @@ public class GrayAnalysis implements Runnable {
 		}
 		long start = System.currentTimeMillis();
 		boolean gfiltGood = true;
+		final boolean useInsert=!insName.equals(""); // if it is not empty
 		if (useGFILT)
 			gfiltGood = gfiltA.isGood();
 		if ((mapA.isGood()) & (gfiltGood)) {
@@ -1705,7 +1712,7 @@ public class GrayAnalysis implements Runnable {
 		outString += "Run Finished in " + eTime + " mins @ " + new Date()
 				+ "\n";
 		System.out.println(outString);
-
+		return true;
 	}
 
 	private void SetupGA() {
@@ -1725,6 +1732,20 @@ public class GrayAnalysis implements Runnable {
 			cntcol = true;
 		}
 
+	}
+
+	@Override
+	public void LoadImages(TImgRO[] inImages) {
+		if(inImages.length<2) {
+			mapA=inImages[0];
+			gfiltA=null;
+			useGFILT=false;
+		} else {
+			mapA=inImages[0];
+			gfiltA=inImages[1];
+			useGFILT=true;
+		}
+		
 	}
 
 }

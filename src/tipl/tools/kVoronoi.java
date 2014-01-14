@@ -55,13 +55,15 @@ public class kVoronoi extends VoronoiTransform {
 			System.out.println("Loading the mask " + maskAimName + " ...");
 			maskAim = TImgTools.ReadTImg(maskAimName);
 			start = System.currentTimeMillis();
-			KV = new kVoronoi(labelsAim, maskAim);
+			KV = new kVoronoi();
+			KV.LoadImages(new TImg[] {labelsAim,maskAim});
 		} else {
-			KV = new kVoronoi(labelsAim);
+			KV = new kVoronoi();
+			KV.LoadImages(new TImg[] {labelsAim});
 			maskAim = labelsAim;
 		}
 
-		KV.run();
+		KV.execute();
 
 		KV.WriteVolumesAim(labelsAim, vorVolumesName);
 		KV.WriteDistanceAim(maskAim, vorDistancesName);
@@ -98,30 +100,27 @@ public class kVoronoi extends VoronoiTransform {
 
 	protected volatile int changescnt, gtBlocks = 0, validVoxels = 0;
 
-	public kVoronoi(final TImgRO labelAim) {
-		super(labelAim);
-	}
 
+
+	protected kVoronoi() {
+	}
+	
 	/**
-	 * Make a distance map of the distance away from the edge of a given object,
-	 * useful for mask distance or bone surface distance
-	 * 
-	 * @param maskAim
-	 *            The mask aim file to use for the edge
-	 * @param includeEdges
-	 *            Whether or not regions where the image touches the boundary
-	 *            should be included as edges
-	 **/
-	public kVoronoi(final TImgRO maskAim, final boolean includeEdges) {
-		super(1);
-		EdgeMask(maskAim, includeEdges);
+	 * The function is overridden for the case when the first image is null since this uses the edge mask function
+	 */
+	@Override
+	public void LoadImages(final TImgRO[] inImages) {
+		if (inImages.length>1) {
+			if (inImages[0]==null) {
+				EdgeMask(inImages[1]);
+				return;
+			}
+		}
+		super.LoadImages(inImages);
+			
 	}
-
-	public kVoronoi(final TImgRO labelAim, final TImgRO maskAim) {
-		super(labelAim, maskAim);
-	}
-
-	protected void EdgeMask(final TImgRO maskAim, final boolean includeEdges) {
+	protected void EdgeMask(final TImgRO maskAim) {
+		final boolean cIE=includeEdges;
 		mask = TImgTools.makeTImgFullReadable(maskAim).getBoolAim();
 		aimLength = mask.length;
 		labels = new int[aimLength];
@@ -143,7 +142,7 @@ public class kVoronoi extends VoronoiTransform {
 						distmap[off] = 0;
 						fullVoxels++;
 					} else if (mask[off]) {
-						if (includeEdges) {
+						if (cIE) {
 							// If we are on an image boundary, then set the
 							// distance to 1 and turn the voxel on
 							if ((x == lowx) | (x == uppx) | (y == lowy)
@@ -238,11 +237,6 @@ public class kVoronoi extends VoronoiTransform {
 		}
 	}
 
-	@Override
-	@Deprecated
-	public void run() {
-		execute();
-	}
 
 	protected void runPreScan() {
 		int maxVal = -1;

@@ -766,12 +766,6 @@ public class Resize extends BaseTIPLPluginMult {
 	}
 
 	@Override
-	@Deprecated
-	public void run() {
-		execute();
-	}
-
-	@Override
 	protected void runByte() {
 		CalcOutDim();
 		outAimByte = new char[itAimLength];

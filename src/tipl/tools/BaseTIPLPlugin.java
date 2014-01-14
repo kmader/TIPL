@@ -53,5 +53,55 @@ abstract public class BaseTIPLPlugin implements ITIPLPlugin {
 	public ArgumentParser setParameter(final String p, final String prefix) {
 		return setParameter(new ArgumentParser(p.split("\\s+")), prefix);
 	}
+	
+	/**
+	 * The default action is just to run execute, other features can be
+	 * implemented on a case by case basis
+	 */
+	@Override
+	public boolean execute(final String action) {
+		if (!action.equals(""))
+			throw new IllegalArgumentException(
+					"Execute Does not offer any control in this plugins"
+							+ getPluginName());
+		return execute();
+	}
+
+	/**
+	 * The default action is just to run execute, other features can be
+	 * implemented on a case by case basis
+	 */
+	@Override
+	public boolean execute(final String action, final Object objectToExecute) {
+		if (!action.equals(""))
+			throw new IllegalArgumentException(
+					"Execute Does not offer any control in this plugins"
+							+ getPluginName());
+		return execute();
+	}
+
+	/**
+	 * if this function has not been overridden, it will cause an error
+	 */
+	@Override
+	public Object getInfo(final String request) {
+		throw new IllegalArgumentException(
+				"getInfo does not offer any information in this plugin:"
+						+ getPluginName());
+	}
+
+	@Override
+	abstract public String getPluginName();
+
+	/**
+	 * Procedure Log for the function, should be added back to the aim-file
+	 * after function operation is complete
+	 */
+	protected String procLog = "";
+	
+	@Override
+	public String getProcLog() {
+		return procLog;
+	}
 
 }

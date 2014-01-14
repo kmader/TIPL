@@ -8,6 +8,7 @@ import tipl.tools.kVoronoiShrink;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.TIPLGlobal;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -38,9 +39,14 @@ public class GrowRegions extends BaseTIPLBlock {
 		public ITIPLPluginIO getGrowingPlugin(final TImgRO obj, final TImgRO mask) {
 			switch (fillType) {
 			case 0:
-				return new kVoronoiShrink(obj, mask);
+				ITIPLPluginIO KV = TIPLPluginManager.getBestPluginIO("kVoronoi",new TImgRO[] {obj,mask});
+				KV.LoadImages(new TImgRO[] {obj,mask});
+				return KV;
 			case 1:
-				return new cVoronoi(obj, mask, false);
+				ITIPLPluginIO CV = TIPLPluginManager.getBestPluginIO("cVoronoi",new TImgRO[] {obj,mask});
+				CV.setParameter("-includeedges=false");
+				CV.LoadImages(new TImgRO[] {obj,mask});
+				return CV;
 			default:
 				throw new IllegalArgumentException("Cannot use fillType:"
 						+ fillType + " in GrowRegions");

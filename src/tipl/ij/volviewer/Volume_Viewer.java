@@ -279,11 +279,6 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 				+ " " + setParameter(TIPLGlobal.activeParser(new String[]{}),"").toString();
 	}
 
-	@Override
-	public void run() {
-		run("");
-	}
-
 	protected TImgRO internalImage = null;
 
 	@Override

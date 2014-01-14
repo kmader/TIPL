@@ -6,6 +6,7 @@ import tipl.formats.TImg;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.ITIPLPluginIO;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -45,12 +46,15 @@ public class MCThickness extends Thickness {
 	 *            The binary input image
 	 */
 	public static TImg DTO(final TImg bwObject) {
-		VoronoiTransform KV = new kVoronoiShrink(bwObject, false);
-		KV.run();
-		final TImg distmapAim = KV.ExportDistanceAim(bwObject);
+		ITIPLPluginIO KV = TIPLPluginManager.getBestPluginIO("kVoronoi",new TImg[] {null,bwObject});
+		KV.setParameter("-includeEdges=false");
+		KV.LoadImages(new TImg[] {null,bwObject});
+		KV.execute();
+		final TImg distmapAim = KV.ExportImages(bwObject)[1];
 		KV = null;
-		final Thickness KT = new MCThickness(distmapAim);
-		KT.run();
+		final Thickness KT = new MCThickness();
+		KT.LoadImages(new TImg[] {distmapAim});
+		KT.execute();
 		return KT.ExportAim(distmapAim);
 	}
 
@@ -227,11 +231,6 @@ public class MCThickness extends Thickness {
 		runSection(bSlice, tSlice);
 	}
 
-	@Override
-	@Deprecated
-	public void run() {
-		execute();
-	}
 
 	public void runSection(final int startSlice, final int endSlice) {
 		int changedPos = 0;

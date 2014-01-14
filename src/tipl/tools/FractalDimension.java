@@ -17,6 +17,8 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -28,6 +30,16 @@ import tipl.util.TImgTools;
  *         The input image is a thresheld image of a structure
  */
 public class FractalDimension extends BaseTIPLPluginInExecutor {
+	@TIPLPluginManager.PluginInfo(pluginType = "FractalDimension",
+			desc="Full memory fractal dimesnion analysis",
+			sliceBased=false,
+			maximumSize=1024*1024*1024)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new FractalDimension();
+		}
+	};
 	/**
 	 * boxScanner scans the number of filled boxes using a given box size in the
 	 * image
@@ -153,21 +165,24 @@ public class FractalDimension extends BaseTIPLPluginInExecutor {
 
 			final FractalDimension myFD = new FractalDimension(inputAim,
 					outputFile);
-			myFD.run();
+			myFD.execute();
 		}
 	}
 
 	private ConcurrentReader inImage;
 	private D3int inDim;
 	private int largestBoxEdge;
-	private final String outFileName;
+	private String outFileName="out.csv";
 	public static double boxSizeCutoff = 0.5; // unless it is at least half of
 												// the normal volume, throw it
 												// out
 
 	final String dlm = ", ";
-
-	public FractalDimension(final TImgRO inputImage, final String inOutFileName) {
+	protected FractalDimension() {
+		
+	}
+	@Deprecated
+	protected FractalDimension(final TImgRO inputImage, final String inOutFileName) {
 		LoadImages(new TImgRO[] { inputImage });
 		outFileName = inOutFileName;
 	}
@@ -196,12 +211,6 @@ public class FractalDimension extends BaseTIPLPluginInExecutor {
 		inImage = new ConcurrentReader(inImg);
 		inDim = inImg.getDim();
 		largestBoxEdge = min(min(inDim.x, inDim.y), inDim.z);
-	}
-
-	@Override
-	@Deprecated
-	public void run() {
-		execute();
 	}
 
 	/**

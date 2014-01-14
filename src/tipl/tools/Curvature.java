@@ -32,6 +32,8 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
@@ -41,6 +43,17 @@ import Jama.Matrix;
  * gaussian filter
  */
 public class Curvature extends BaseTIPLPluginIO {
+	@TIPLPluginManager.PluginInfo(pluginType = "Curvature",
+			desc="Full memory curvature (using VFIlterScale)",
+			sliceBased=false,
+			maximumSize=1024*1024*1024,
+			bytesPerVoxel=-1)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new Curvature();
+		}
+	};
 	/**
 	 * This class is the abstract class for my FloatArrayXDs, which are a one
 	 * dimensional structures with methods for access in n dimensions
@@ -482,7 +495,7 @@ public class Curvature extends BaseTIPLPluginIO {
 		// floatAim.WriteAim("temp-curve-test.tif");
 		final Curvature ccPlug = new Curvature(floatImg, processThresh);
 		ccPlug.sigma = isig * upV / dnV;
-		ccPlug.run();
+		ccPlug.execute();
 		final TImg outAim = ccPlug.ExportAim(floatImg, 0);
 		// if (peelImage) outAim=(new Peel(outAim,inMask,0)).ExportAim(outAim);
 		return outAim;
@@ -496,9 +509,12 @@ public class Curvature extends BaseTIPLPluginIO {
 	private double minV = Double.MAX_VALUE, maxV = Double.MIN_VALUE;
 
 	double sigma = 0.5;
-	float processThresh;
+	float processThresh=0.5f;
 	boolean internalGaussian = false;
-
+	/** internal initializer only for the the plugin generating code **/
+	protected Curvature() {
+		
+	}
 	/** This function only works with aim data */
 	public Curvature(final TImgRO inImg, final float iprocessThresh) {
 		ImportData(inImg);
@@ -1104,10 +1120,5 @@ public class Curvature extends BaseTIPLPluginIO {
 		curvature(bSlice, tSlice);
 	}
 
-	@Override
-	@Deprecated
-	public void run() {
-		execute();
-	}
 
 }

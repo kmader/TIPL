@@ -127,7 +127,5 @@ abstract public class BaseTIPLPluginBW extends BaseTIPLPluginIO {
 		ImportAim(inImg);
 	}
 
-	@Override
-	abstract public void run();
 
 }

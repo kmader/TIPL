@@ -16,7 +16,10 @@ import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
+import tipl.util.ITIPLPluginIn;
 import tipl.util.TIPLGlobal;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 // Used as a replacement for the moment function as it allows much more control over data
@@ -27,6 +30,7 @@ import tipl.util.TImgTools;
  * image
  */
 public class GrayAnalysis2D extends Hist2D {
+
 	public class DiscreteReader {
 		/** Run the distance label initialization routines in parallel */
 		private class prescanRunner implements Callable<double[]> {

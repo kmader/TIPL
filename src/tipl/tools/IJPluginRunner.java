@@ -242,11 +242,6 @@ public class IJPluginRunner extends BaseTIPLPluginMult {
 		return;
 	}
 
-	@Override
-	@Deprecated
-	public void run() {
-		execute();
-	}
 
 	@Override
 	public void runByte() {

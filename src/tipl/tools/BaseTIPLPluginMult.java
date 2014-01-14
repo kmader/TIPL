@@ -170,15 +170,6 @@ abstract public class BaseTIPLPluginMult extends BaseTIPLPluginIO {
 		ImportAim(inImg);
 	}
 
-	/**
-	 * Run function to be executed by the plug-in. This does the majority of the
-	 * computational work and is thus setup so that it can be run in a seperate
-	 * thread from the main functions. For TIPLPluginMult this function calls
-	 * the appropriate abstract sub-function dealing with the given datatype. It
-	 * is however transparent to the user
-	 */
-	@Override
-	abstract public void run();
 
 	protected void runAll() {
 		if (isInitialized) {

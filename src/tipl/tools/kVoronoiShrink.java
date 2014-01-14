@@ -53,9 +53,11 @@ public class kVoronoiShrink extends kVoronoi {
 				System.out.println("Loading the mask " + maskAimName + " ...");
 				maskAim = TImgTools.ReadTImg(maskAimName);
 				start = System.currentTimeMillis();
-				KV = new kVoronoiShrink(labelsAim, maskAim);
+				KV = new kVoronoiShrink();
+				KV.LoadImages(new TImg[] {labelsAim,maskAim});
 			} else {
-				KV = new kVoronoiShrink(labelsAim);
+				KV = new kVoronoiShrink();
+				KV.LoadImages(new TImg[] {labelsAim});
 				maskAim = labelsAim;
 			}
 		} else {
@@ -63,10 +65,12 @@ public class kVoronoiShrink extends kVoronoi {
 					+ " ... and making distance map");
 			maskAim = TImgTools.ReadTImg(maskAimName);
 			labelsAim = maskAim;
-			KV = new kVoronoiShrink(maskAim, true);
+			KV = new kVoronoiShrink();
+			KV.includeEdges=true;
+			KV.LoadImages(new TImg[] {null,maskAim});
 		}
 		start = System.currentTimeMillis();
-		KV.run();
+		KV.execute();
 
 		KV.WriteVolumesAim(labelsAim, vorVolumesName);
 		KV.WriteDistanceAim(maskAim, vorDistancesName);
@@ -96,26 +100,8 @@ public class kVoronoiShrink extends kVoronoi {
 			maxActz;
 	protected volatile int tlowx, tuppx, tlowy, tuppy, tlowz, tuppz;
 
-	public kVoronoiShrink(final TImgRO labelAim) {
-		super(labelAim);
-	}
-
-	/**
-	 * Make a distance map of the distance away from the edge of a given object,
-	 * useful for mask distance or bone surface distance
-	 * 
-	 * @param maskAim
-	 *            The mask aim file to use for the edge
-	 * @param includeEdges
-	 *            Whether or not regions where the image touches the boundary
-	 *            should be included as edges
-	 **/
-	public kVoronoiShrink(final TImgRO maskAim, final boolean includeEdges) {
-		super(maskAim, includeEdges);
-	}
-
-	public kVoronoiShrink(final TImgRO labelAim, final TImgRO maskAim) {
-		super(labelAim, maskAim);
+	public kVoronoiShrink() {
+		
 	}
 
 	/**

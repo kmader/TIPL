@@ -2,6 +2,7 @@ package tipl.tools;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
 
@@ -11,15 +12,15 @@ import tipl.util.TImgTools;
  */
 public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 	/** The labeled input objects */
-	public int[] labels;
+	protected int[] labels;
 	/** The labeled volumes (output) */
-	public int[] outlabels;
+	protected int[] outlabels;
 	/** The mask to be filled (if given) */
-	public boolean[] mask;
+	protected boolean[] mask;
 	/** The output distancemap */
-	public int[] distmap;
+	protected int[] distmap;
 
-	public int maxlabel;
+	protected int maxlabel;
 	/** Maximum distance (as float) which can be output */
 	public int MAXDIST = 4000;
 	/** Maximum distance (as int) which can be output */
@@ -28,35 +29,40 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 	double distScalar = (MAXDIST + 0.0) / (MAXDISTVAL + 0.0);
 	int gtmode = -1;
 	/** limit maximum distance for distance map **/
-	public double maxUsuableDistance = -1;
+	protected double maxUsuableDistance = -1;
 
 	/**
 	 * preserveLabels copies the input to a new variable and thus leaves the
 	 * input intact, this is safer but requires twice as much memory
 	 */
-	public static boolean preserveLabels = false;
+	protected boolean preserveLabels = false;
 
 	protected boolean alreadyCopied = false;
-
+	
+	protected boolean includeEdges=false;
+	
+	@Override
+	public ArgumentParser setParameter(final ArgumentParser p,
+			final String prefix) {
+		final ArgumentParser args = super.setParameter(p, prefix);
+		preserveLabels = args.getOptionBoolean(prefix + "preservelabels", preserveLabels,
+				"Preserve the labels in old image");
+		alreadyCopied = args.getOptionBoolean(prefix + "alreadycopied", alreadyCopied,
+				"Has the image already been copied");
+		includeEdges = args.getOptionBoolean(prefix + "includeedges", includeEdges,
+				"Include the edges");
+		maxUsuableDistance = args.getOptionDouble(prefix + "maxdistance", maxUsuableDistance,
+				"The maximum distance to run the voronoi tesselation until");
+		return args;
+	}
 	/**
 	 * Constructor used for custom initialization routines, please only experts
 	 * meddle here
 	 */
-	protected VoronoiTransform(final int iPromiseIknowWhatIamDoing) {
+	protected VoronoiTransform() {
 	}
-
-	/**
-	 * Create a voronoitransform using labeled regions and a solid filled
-	 * background
-	 */
-	public VoronoiTransform(final TImgRO labelAim) {
-		ImportAim(labelAim);
-	}
-
-	/** Create a voronoitransform using labeled regions and a given mask */
-	public VoronoiTransform(final TImgRO labelAim, final TImgRO maskAim) {
-		ImportAim(labelAim, maskAim);
-	}
+	
+	
 
 	/** This function is not finished yet... */
 	protected boolean checkGrowthTemplate(final int idx1, final int idx2,

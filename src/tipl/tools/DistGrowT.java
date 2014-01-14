@@ -4,6 +4,8 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
+import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -11,6 +13,17 @@ import tipl.util.TImgTools;
  * based filling with rings
  */
 public class DistGrowT extends DistGrow {
+	@TIPLPluginManager.PluginInfo(pluginType = "DistGrow",
+			desc="Full memory distgrowing with ring based distance filling",
+			sliceBased=false,
+			maximumSize=1024*1024*1024,
+			speedRank=1)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new DistGrow();
+		}
+	};
 	/** Command line accessible program interface */
 	public static void main(final String[] args) {
 		final String kVer = "120215_001";
@@ -157,7 +170,7 @@ public class DistGrowT extends DistGrow {
 			iterations = (int) (cDist / distScalar);
 			chkNbrCalls = 0;
 			runMode = 1;
-			run();
+			execute();
 			runMode = 0;
 		}
 	}

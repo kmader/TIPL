@@ -39,8 +39,10 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	@Indexable(type = TIPLBlockFactory.class)
 	public static @interface BlockIdentity {
 		String blockName();
+		String desc() default "";
 		String[] inputNames();
 		String[] outputNames();
+		
 	}
 	/**
 	 * The static method to create a new TIPLBlock 

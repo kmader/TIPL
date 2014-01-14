@@ -5,6 +5,8 @@ import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -12,6 +14,16 @@ import tipl.util.TImgTools;
  * mask
  */
 public class DistGrow extends BaseTIPLPluginIO {
+	@TIPLPluginManager.PluginInfo(pluginType = "DistGrow",
+			desc="Full memory distance growing",
+			sliceBased=false,
+			maximumSize=1024*1024*1024)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new DistGrow();
+		}
+	};
 	/** Command line accessible program interface */
 	public static void main(final String[] args) {
 		final String kVer = "130913_002";
@@ -103,7 +115,9 @@ public class DistGrow extends BaseTIPLPluginIO {
 	volatile double unfilledVoxels = 0;
 
 	volatile double filledVoxels = 0;
-
+	protected DistGrow() {
+		
+	}
 	@Deprecated
 	public DistGrow(final short[] inputmap, final D3int idim,
 			final D3int ioffset) {
@@ -125,6 +139,7 @@ public class DistGrow extends BaseTIPLPluginIO {
 	 * @param ilabels
 	 *            Starting labels
 	 */
+	@Deprecated
 	public DistGrow(final TImgRO imap, final TImgRO ilabels) {
 		LoadAimData(imap, ilabels);
 	}
@@ -139,6 +154,7 @@ public class DistGrow extends BaseTIPLPluginIO {
 	 * @param imask
 	 *            Mask to be filld and identified
 	 */
+	@Deprecated
 	public DistGrow(final TImgRO imap, final TImgRO ilabels, final TImgRO imask) {
 		LoadAimData(imap, ilabels, imask);
 	}
@@ -352,11 +368,6 @@ public class DistGrow extends BaseTIPLPluginIO {
 		}
 	}
 
-	@Override
-	@Deprecated
-	public void run() {
-		execute();
-	}
 
 	public void runDG() {
 
@@ -373,7 +384,7 @@ public class DistGrow extends BaseTIPLPluginIO {
 				curMaxDepth = max(max(neighborSize.x, neighborSize.y),
 						neighborSize.z);
 			runMode = 1;
-			run();
+			execute();
 			runMode = 0;
 			if ((filledVoxels < 1)) {
 				if (!lastIter) {

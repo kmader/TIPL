@@ -5,6 +5,8 @@ import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -13,6 +15,19 @@ import tipl.util.TImgTools;
  * @author Kevin Mader
  */
 public class FilterScale extends BaseTIPLPluginMult {
+	@TIPLPluginManager.PluginInfo(pluginType = "Filter",
+			desc="Full memory filter",
+			sliceBased=false,
+			maximumSize=1024*1024*1024,
+			bytesPerVoxel=-1,
+			speedRank=11)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new FilterScale();
+		}
+	};
+	
 	/** How a filter generating function looks */
 	public interface filterGenerator {
 		public BaseTIPLPluginIn.filterKernel make();
@@ -295,7 +310,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 
 	@Override
 	public boolean execute() {
-		return runFilter();
+		return runMulticore();
 	}
 
 	/**
@@ -411,13 +426,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 		final int tSlice = range[1];
 		runFilter(bSlice, tSlice);
 	}
-
-	@Override
-	@Deprecated
-	public void run() {
-		runMulticore();
-	}
-
+	
 	@Override
 	protected void runByte() {
 	}

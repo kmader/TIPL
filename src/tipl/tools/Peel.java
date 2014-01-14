@@ -65,7 +65,7 @@ public class Peel extends BaseTIPLPluginMult {
 			else
 				cPeel = new Peel(inputAim, new D3int(peelS));
 			System.out.println("Calculating Peel " + inputFile + " ...");
-			cPeel.run();
+			cPeel.execute();
 			final TImg outputAim = cPeel.ExportAim(inputAim);
 			if (outputFile.length() > 0)
 				TImgTools.WriteTImg(outputAim,outputFile);
@@ -388,12 +388,6 @@ public class Peel extends BaseTIPLPluginMult {
 		final int bSlice = range[0];
 		final int tSlice = range[1];
 		runSection(bSlice, tSlice);
-	}
-
-	@Override
-	@Deprecated
-	public void run() {
-		execute();
 	}
 
 	@Override

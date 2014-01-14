@@ -25,8 +25,10 @@ import tipl.tools.cVoronoi;
 import tipl.tools.kVoronoiShrink;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.ITIPLPluginIO;
 import tipl.util.SGEJob;
 import tipl.util.TIPLGlobal;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -367,14 +369,14 @@ public class UFOAM {
 	public void boundbox() {
 		final Resize myResizer = new Resize(maskAim);
 		myResizer.find_edges();
-		myResizer.run();
+		myResizer.execute();
 		maskAim = myResizer.ExportAim(maskAim);
 	}
 
 	public TImg boundbox(final TImg cAim) {
 		final Resize myResizer = new Resize(cAim);
 		myResizer.cutROI(maskAim);
-		myResizer.run();
+		myResizer.execute();
 		return myResizer.ExportAim(cAim);
 	}
 
@@ -455,7 +457,7 @@ public class UFOAM {
 				myContour.usePoly(maskContourSteps, maskContourBW);
 			}
 
-			myContour.run();
+			myContour.execute();
 			maskAim = myContour.ExportAim(platAim);
 		} else {
 			final boolean[] blankMask = new boolean[(int) platAim.getDim()
@@ -478,7 +480,7 @@ public class UFOAM {
 	public TImg peelAim(final TImg cAim, final TImg pAim, final int iters) {
 		final Peel cPeel = new Peel(cAim, pAim, new D3int(iters));
 		System.out.println("Calculating Peel " + cAim + " ...");
-		cPeel.run();
+		cPeel.execute();
 		return cPeel.ExportAim(cAim);
 	}
 
@@ -563,12 +565,12 @@ public class UFOAM {
 		labelsAim = null;
 		DG = null;
 		if (fullGrow) {
-			VoronoiTransform KV2 = new cVoronoi(bubblelabelsAim, bubblesAim,
-					true); // kVoronoiShrink(bubblelabelsAim,bubblesAim)
-			KV2.maxUsuableDistance = 1;
-			KV2.run();
-			bubblelabelsAim = KV2.ExportVolumesAim(bubblelabelsAim);
-			KV2 = null;
+			ITIPLPluginIO CV2 = TIPLPluginManager.getBestPluginIO("cVoronoi",new TImg[] {labelsAim,maskAim});
+			CV2.setParameter("-preservelabels -maxdistance=1");
+			CV2.LoadImages(new TImg[] {labelsAim,maskAim});
+			CV2.execute();
+			bubblelabelsAim = CV2.ExportImages(bubblelabelsAim)[0];
+			CV2 = null;
 		}
 	}
 
@@ -579,7 +581,7 @@ public class UFOAM {
 			bubbleseedsAim = DL.ExportBubbleseedsAim(distmapAim);
 			TImgTools.WriteTImg(bubbleseedsAim,bubbleseedsAimFile,0,1.0f,false,false);
 		}
-		DL.run();
+		DL.execute();
 		labelsAim = DL.ExportAim(distmapAim);
 		DL = null;
 
@@ -722,10 +724,11 @@ public class UFOAM {
 				platAim = TImgTools.ReadTImg(platAimFile);
 			if (maskAim == null)
 				maskAim = TImgTools.ReadTImg(maskAimFile);
-			VoronoiTransform KV = new kVoronoiShrink(platAim, maskAim);
-			KV.run();
+			ITIPLPluginIO KV = TIPLPluginManager.getBestPluginIO("kVoronoi",new TImg[] {platAim,maskAim});
+			KV.LoadImages(new TImg[] {platAim,maskAim});
+			KV.execute();
 			maskAim = null;
-			distmapAim = KV.ExportDistanceAim(platAim);
+			distmapAim = KV.ExportImages(platAim)[1];
 			platAim = null; // Won't be needing these for the next step
 			KV = null;
 			TIPLGlobal.runGC();
@@ -779,10 +782,10 @@ public class UFOAM {
 				} else {
 					if (maskAim == null)
 						maskAim = TImgTools.ReadTImg(maskAimFile);
-					VoronoiTransform KV2 = new kVoronoiShrink(labelsAim,
-							maskAim);
-					KV2.run();
-					bubblelabelsAim = KV2.ExportVolumesAim(labelsAim);
+					ITIPLPluginIO KV2 =  TIPLPluginManager.getBestPluginIO("kVoronoi",new TImg[] {labelsAim,maskAim});
+					KV2.LoadImages(new TImg[] {labelsAim,maskAim});
+					KV2.execute();
+					bubblelabelsAim = KV2.ExportImages(labelsAim)[0];
 					TImgTools.WriteTImg(bubblelabelsAim,bubblelabelsAimFile);
 					KV2 = null;
 				}
@@ -857,7 +860,7 @@ public class UFOAM {
 			nbor.neighborSize = new D3int(neighborDist);
 			System.out.println("Calculating neighbors " + bubblelabelsAim
 					+ " ...");
-			nbor.run();
+			nbor.execute();
 			System.out.println("Writing csv neigbhor-list ...");
 			nbor.WriteNeighborList(clporCsv + "_edge.csv");
 			labelnhAim = nbor.ExportCountImageAim(bubblelabelsAim);
@@ -955,7 +958,7 @@ public class UFOAM {
 		HildThickness KT = new HildThickness(distmapAim);
 		if (ridgeAimFile.length() > 0)
 			TImgTools.WriteTImg(KT.ExportRidgeAim(distmapAim),ridgeAimFile);
-		KT.run();
+		KT.execute();
 		thickmapAim = KT.ExportAim(distmapAim);
 		KT = null;
 	}

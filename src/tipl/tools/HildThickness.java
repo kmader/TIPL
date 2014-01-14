@@ -6,7 +6,10 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
+import tipl.util.ITIPLPluginIO;
 import tipl.util.SGEJob;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /** Thickness map based on the Hildebrand Method */
@@ -122,12 +125,15 @@ public class HildThickness extends Thickness {
 	 *            The binary input image
 	 */
 	public static TImg[] DTOD(final TImg bwObject) {
-		VoronoiTransform KV = new kVoronoiShrink(bwObject, false);
-		KV.run();
-		final TImg distAim = KV.ExportDistanceAim(bwObject);
+
+		ITIPLPluginIO KV = TIPLPluginManager.getBestPluginIO("kVoronoi", new TImg[] {bwObject});
+		KV.setParameter("-includeEdges=false");
+		KV.LoadImages(new TImg[] {bwObject});
+		KV.execute();
+		final TImg distAim = KV.ExportImages(bwObject)[1];
 		KV = null;
 		final Thickness KT = new HildThickness(distAim);
-		KT.run();
+		KT.execute();
 		return new TImg[] { distAim, KT.ExportAim(distAim) };
 	}
 
@@ -423,11 +429,6 @@ public class HildThickness extends Thickness {
 		runSection(bSlice, tSlice);
 	}
 
-	@Override
-	@Deprecated
-	public void run() {
-		execute();
-	}
 
 	protected void runSection(final int startSlice, final int endSlice) {
 		System.out.println("RidgeGrow Started:, <" + startSlice + ", "
