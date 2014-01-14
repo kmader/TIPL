@@ -1,7 +1,5 @@
 package tipl.formats;
 
-import ij.ImageStack;
-
 import java.util.ArrayList;
 
 import tipl.util.D3int;

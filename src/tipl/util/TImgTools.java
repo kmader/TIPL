@@ -5,9 +5,7 @@ package tipl.util;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.LinkedHashMap;
 
-import tipl.formats.ConcurrentReader;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.TImgRO.FullReadable;

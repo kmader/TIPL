@@ -3,7 +3,6 @@ package tipl.tools;
 import java.util.Date;
 
 import tipl.formats.TImg;
-import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPlugin;
 import tipl.util.TIPLPluginManager;

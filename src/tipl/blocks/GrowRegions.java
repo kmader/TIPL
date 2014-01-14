@@ -1,10 +1,7 @@
 package tipl.blocks;
 
-import tipl.blocks.BaseTIPLBlock.TIPLBlockFactory;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.tools.cVoronoi;
-import tipl.tools.kVoronoiShrink;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.TIPLGlobal;

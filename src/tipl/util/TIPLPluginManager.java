@@ -12,9 +12,6 @@ import java.util.HashMap;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 import net.java.sezpoz.Indexable;
-import tipl.blocks.ITIPLBlock;
-import tipl.blocks.BaseTIPLBlock.BlockIdentity;
-import tipl.blocks.BaseTIPLBlock.TIPLBlockFactory;
 import tipl.formats.TImgRO;
 
 /**

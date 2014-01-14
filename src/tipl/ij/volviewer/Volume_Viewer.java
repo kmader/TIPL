@@ -12,9 +12,7 @@ import ij.IJ;
 import ij.ImageJ;
 //import ij.ImageJ;
 import ij.ImagePlus;
-import ij.Macro;
 import ij.Prefs;
-import ij.WindowManager;
 import ij.macro.Interpreter;
 import ij.plugin.PlugIn;
 
@@ -30,16 +28,12 @@ import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import javax.swing.JFrame;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.formats.VirtualAim;
-import tipl.ij.ImageStackToTImg;
 import tipl.ij.TImgToImagePlus;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPluginIn;

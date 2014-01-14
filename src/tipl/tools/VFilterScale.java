@@ -1,9 +1,5 @@
 package tipl.tools;
 
-import tipl.blocks.BaseTIPLBlock;
-import tipl.blocks.FilterBlock;
-import tipl.blocks.ITIPLBlock;
-import tipl.blocks.BaseTIPLBlock.TIPLBlockFactory;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;

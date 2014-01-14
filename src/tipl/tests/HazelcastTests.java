@@ -17,10 +17,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import tipl.util.HZClient;
 
 import com.hazelcast.client.config.ClientConfig;

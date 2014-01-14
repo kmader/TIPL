@@ -1,9 +1,7 @@
 package tipl.blocks;
 
-import tipl.formats.DirectoryReader;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.formats.DirectoryReader.DRFactory;
 import tipl.tools.VFilterScale;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;

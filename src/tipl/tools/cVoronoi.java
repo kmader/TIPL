@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import tipl.formats.TImg;
-import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPlugin;
 import tipl.util.ITIPLPluginIO;

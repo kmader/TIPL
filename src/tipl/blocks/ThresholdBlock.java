@@ -1,6 +1,5 @@
 package tipl.blocks;
 
-import tipl.blocks.BaseTIPLBlock.TIPLBlockFactory;
 import tipl.formats.MappedImage;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;

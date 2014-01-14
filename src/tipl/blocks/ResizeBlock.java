@@ -9,7 +9,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
-import tipl.blocks.BaseTIPLBlock.TIPLBlockFactory;
 import tipl.formats.TImg;
 import tipl.ij.TImgToImageStack;
 import tipl.tools.Resize;

@@ -7,14 +7,11 @@ package tipl.ij.volviewer;
  * (C) Kai Uwe Barthel
  */
 
-import tipl.formats.TImg;
-import tipl.formats.TImgRO;
-import tipl.util.D3int;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.ImageStack;
-import ij.measure.Calibration;
 import ij.process.ImageProcessor;
+import tipl.formats.TImgRO;
+import tipl.util.D3int;
 
 
 public abstract class Volume {

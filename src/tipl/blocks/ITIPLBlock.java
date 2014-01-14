@@ -3,21 +3,7 @@
  */
 package tipl.blocks;
 
-import java.io.FileFilter;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.util.HashMap;
-import java.util.concurrent.Callable;
-
-import net.java.sezpoz.Index;
-import net.java.sezpoz.IndexItem;
-import net.java.sezpoz.Indexable;
-import tipl.formats.DirectoryReader;
 import tipl.formats.TImgRO;
-import tipl.formats.DirectoryReader.DRFactory;
-import tipl.formats.DirectoryReader.DReader;
 import tipl.util.ArgumentParser;
 
 /**

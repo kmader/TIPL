@@ -3,7 +3,6 @@
  */
 package tipl.blocks;
 
-import tipl.blocks.BaseTIPLBlock.TIPLBlockFactory;
 import tipl.formats.TImg;
 import tipl.tools.ComponentLabel;
 import tipl.tools.Morpho;

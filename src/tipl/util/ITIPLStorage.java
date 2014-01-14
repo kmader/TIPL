@@ -7,7 +7,6 @@ import java.util.Date;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.formats.VirtualAim;
 
 /**
  * ITIPLStorage describes the commands a storage class needs to fulfill in order to be usable. 

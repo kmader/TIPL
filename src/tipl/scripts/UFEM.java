@@ -22,8 +22,6 @@ import tipl.tools.Peel;
 import tipl.tools.Resize;
 import tipl.tools.Thickness;
 import tipl.tools.VFilterScale;
-import tipl.tools.VoronoiTransform;
-import tipl.tools.kVoronoiShrink;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.ITIPLPluginIO;

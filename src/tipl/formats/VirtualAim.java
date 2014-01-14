@@ -2,9 +2,7 @@ package tipl.formats;
 
 import ij.ImageJ;
 import ij.ImagePlus;
-import ij.ImageStack;
 import ij.gui.HistogramWindow;
-import ij.measure.Calibration;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;

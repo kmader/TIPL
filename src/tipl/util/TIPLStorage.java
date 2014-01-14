@@ -3,7 +3,6 @@
  */
 package tipl.util;
 
-import java.util.Date;
 import java.util.LinkedHashMap;
 
 import tipl.formats.ConcurrentReader;

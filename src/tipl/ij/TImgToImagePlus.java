@@ -12,11 +12,8 @@ import ij.process.ImageProcessor;
 import java.awt.Frame;
 import java.awt.Image;
 
-import javax.swing.JFrame;
-
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
-import tipl.ij.volviewer.Volume_Viewer;
 
 /**
  * @author mader

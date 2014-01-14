@@ -3,8 +3,6 @@
  */
 package tipl.blocks;
 
-import tipl.formats.TImgRO;
-import tipl.util.ArgumentParser;
 
 /**
  * TIPLBlock allows for processing segments to be enclosed into blocks which can

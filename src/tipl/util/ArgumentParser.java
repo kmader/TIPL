@@ -1,6 +1,5 @@
 package tipl.util;
 
-import tipl.formats.VirtualAim;
 
 
 // to make a dialog from the arguments

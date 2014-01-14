@@ -5,7 +5,6 @@ import tipl.formats.TImgRO;
 import tipl.tools.ComponentLabel;
 import tipl.tools.GrayAnalysis;
 import tipl.tools.Neighbors;
-import tipl.tools.kVoronoiShrink;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.TIPLGlobal;

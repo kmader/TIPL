@@ -6,19 +6,15 @@ package tipl.blocks;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-
 import java.lang.annotation.Target;
-import net.java.sezpoz.Index;
-import net.java.sezpoz.IndexItem;
-import net.java.sezpoz.Indexable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-
+import net.java.sezpoz.Index;
+import net.java.sezpoz.IndexItem;
+import net.java.sezpoz.Indexable;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.formats.VirtualAim;
-import tipl.formats.DirectoryReader.DRFactory;
 import tipl.tools.Resize;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;

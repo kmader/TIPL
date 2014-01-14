@@ -5,7 +5,6 @@ package tipl.ij.volviewer;
 
 import ij.IJ;
 import tipl.formats.TImgRO;
-import tipl.util.D3int;
 import tipl.util.TImgTools;
 
 /**

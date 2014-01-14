@@ -1,6 +1,5 @@
 package tipl.blocks;
 
-import tipl.blocks.BaseTIPLBlock.TIPLBlockFactory;
 import tipl.formats.TImgRO;
 import tipl.tools.XDF;
 import tipl.util.ArgumentParser;
