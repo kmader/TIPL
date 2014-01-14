@@ -241,11 +241,11 @@ public class cVoronoi extends VoronoiTransform {
 			maskAim = TImgTools.ReadTImg(maskAimName);
 			start = System.currentTimeMillis();
 			
-			CV = TIPLPluginManager.getBestPluginIO("cVoronoi",new TImg[] {labelsAim,maskAim});
+			CV = TIPLPluginManager.createBestPluginIO("cVoronoi",new TImg[] {labelsAim,maskAim});
 			CV.setParameter("-preservelabels="+leaveVox);
 			CV.LoadImages(new TImg[] {labelsAim,maskAim});
 		} else {
-			CV = TIPLPluginManager.getBestPluginIO("cVoronoi",new TImg[] {labelsAim});
+			CV = TIPLPluginManager.createBestPluginIO("cVoronoi",new TImg[] {labelsAim});
 			CV.setParameter("-preservelabels="+leaveVox);
 			CV.LoadImages(new TImg[] {labelsAim});
 			maskAim = labelsAim;

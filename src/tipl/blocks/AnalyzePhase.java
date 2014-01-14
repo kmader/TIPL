@@ -60,7 +60,7 @@ public class AnalyzePhase extends BaseTIPLBlock {
 		 *         obj (voronoi transform or something like that)
 		 */
 		public ITIPLPluginIO getGrowingPlugin(final TImgRO obj, final TImgRO mask) {
-			ITIPLPluginIO KV = TIPLPluginManager.getBestPluginIO("kVoronoi",new TImgRO[] {obj,mask});
+			ITIPLPluginIO KV = TIPLPluginManager.createBestPluginIO("kVoronoi",new TImgRO[] {obj,mask});
 			KV.LoadImages(new TImgRO[] {obj,mask});
 			return KV;
 		}

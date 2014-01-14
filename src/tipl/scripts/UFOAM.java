@@ -562,7 +562,7 @@ public class UFOAM {
 		labelsAim = null;
 		DG = null;
 		if (fullGrow) {
-			ITIPLPluginIO CV2 = TIPLPluginManager.getBestPluginIO("cVoronoi",new TImg[] {labelsAim,maskAim});
+			ITIPLPluginIO CV2 = TIPLPluginManager.createBestPluginIO("cVoronoi",new TImg[] {labelsAim,maskAim});
 			CV2.setParameter("-preservelabels -maxdistance=1");
 			CV2.LoadImages(new TImg[] {labelsAim,maskAim});
 			CV2.execute();
@@ -721,7 +721,7 @@ public class UFOAM {
 				platAim = TImgTools.ReadTImg(platAimFile);
 			if (maskAim == null)
 				maskAim = TImgTools.ReadTImg(maskAimFile);
-			ITIPLPluginIO KV = TIPLPluginManager.getBestPluginIO("kVoronoi",new TImg[] {platAim,maskAim});
+			ITIPLPluginIO KV = TIPLPluginManager.createBestPluginIO("kVoronoi",new TImg[] {platAim,maskAim});
 			KV.LoadImages(new TImg[] {platAim,maskAim});
 			KV.execute();
 			maskAim = null;
@@ -779,7 +779,7 @@ public class UFOAM {
 				} else {
 					if (maskAim == null)
 						maskAim = TImgTools.ReadTImg(maskAimFile);
-					ITIPLPluginIO KV2 =  TIPLPluginManager.getBestPluginIO("kVoronoi",new TImg[] {labelsAim,maskAim});
+					ITIPLPluginIO KV2 =  TIPLPluginManager.createBestPluginIO("kVoronoi",new TImg[] {labelsAim,maskAim});
 					KV2.LoadImages(new TImg[] {labelsAim,maskAim});
 					KV2.execute();
 					bubblelabelsAim = KV2.ExportImages(labelsAim)[0];

@@ -675,7 +675,7 @@ public class UFEM implements Runnable {
 			maskAim = TImgTools.ReadTImg(maskAimFile);
 		canaldistAimReady = false;
 		
-		ITIPLPluginIO vTransform = TIPLPluginManager.getBestPluginIO("kVoronoi",new TImg[] {canalAim,maskAim});
+		ITIPLPluginIO vTransform = TIPLPluginManager.createBestPluginIO("kVoronoi",new TImg[] {canalAim,maskAim});
 		vTransform.LoadImages(new TImg[] {canalAim,maskAim});
 		vTransform.execute();
 		TImg[] outImgs=vTransform.ExportImages(canalAim);
@@ -701,7 +701,7 @@ public class UFEM implements Runnable {
 		if (boneAim == null)
 			boneAim = TImgTools.ReadTImg(boneAimFile);
 		lacundistAimReady = false;
-		ITIPLPluginIO vTransform = TIPLPluginManager.getBestPluginIO("kVoronoi",new TImg[] {lacunAim,boneAim});	
+		ITIPLPluginIO vTransform = TIPLPluginManager.createBestPluginIO("kVoronoi",new TImg[] {lacunAim,boneAim});	
 		vTransform.LoadImages(new TImg[] {lacunAim,boneAim});
 		vTransform.execute();
 		TImg[] outImgs=vTransform.ExportImages(lacunAim);
@@ -725,7 +725,7 @@ public class UFEM implements Runnable {
 		if (maskAim == null)
 			maskAim = TImgTools.ReadTImg(maskAimFile);
 
-		ITIPLPluginIO KV = TIPLPluginManager.getBestPluginIO("kVoronoi",new TImg[] {null,maskAim});
+		ITIPLPluginIO KV = TIPLPluginManager.createBestPluginIO("kVoronoi",new TImg[] {null,maskAim});
 		KV.setParameter("-includeedges=true");
 		KV.LoadImages(new TImg[] {null,maskAim});
 		

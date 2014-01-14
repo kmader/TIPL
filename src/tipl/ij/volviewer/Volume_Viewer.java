@@ -35,17 +35,30 @@ import javax.swing.JFrame;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.ij.TImgToImagePlus;
+import tipl.tools.XDF;
 import tipl.util.ArgumentParser;
+import tipl.util.ITIPLPlugin;
 import tipl.util.ITIPLPluginIn;
 import tipl.util.SGEJob;
 import tipl.util.TIPLGlobal;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
+	@TIPLPluginManager.PluginInfo(pluginType = "VolumeViewer",
+			desc="Full memory volume viewer",
+			sliceBased=false,
+			maximumSize=1024*1024*1024)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new Volume_Viewer();
+		}
+	};
 	/**
 	 * my version of the code which is originally forked from 2.01
 	 */
-	private final static String version = "0.2"; 
+	private final static String version = "0.25"; 
 	private Control control;
 	private JFrame frame;
 

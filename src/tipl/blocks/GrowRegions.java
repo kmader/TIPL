@@ -36,11 +36,11 @@ public class GrowRegions extends BaseTIPLBlock {
 		public ITIPLPluginIO getGrowingPlugin(final TImgRO obj, final TImgRO mask) {
 			switch (fillType) {
 			case 0:
-				ITIPLPluginIO KV = TIPLPluginManager.getBestPluginIO("kVoronoi",new TImgRO[] {obj,mask});
+				ITIPLPluginIO KV = TIPLPluginManager.createBestPluginIO("kVoronoi",new TImgRO[] {obj,mask});
 				KV.LoadImages(new TImgRO[] {obj,mask});
 				return KV;
 			case 1:
-				ITIPLPluginIO CV = TIPLPluginManager.getBestPluginIO("cVoronoi",new TImgRO[] {obj,mask});
+				ITIPLPluginIO CV = TIPLPluginManager.createBestPluginIO("cVoronoi",new TImgRO[] {obj,mask});
 				CV.setParameter("-includeedges=false");
 				CV.LoadImages(new TImgRO[] {obj,mask});
 				return CV;

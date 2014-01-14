@@ -57,7 +57,7 @@ public class MCThickness extends Thickness {
 	 *            The binary input image
 	 */
 	public static TImg DTO(final TImg bwObject) {
-		ITIPLPluginIO KV = TIPLPluginManager.getBestPluginIO("kVoronoi",new TImg[] {null,bwObject});
+		ITIPLPluginIO KV = TIPLPluginManager.createBestPluginIO("kVoronoi",new TImg[] {null,bwObject});
 		KV.setParameter("-includeEdges=false");
 		KV.LoadImages(new TImg[] {null,bwObject});
 		KV.execute();
