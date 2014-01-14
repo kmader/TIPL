@@ -5,10 +5,23 @@ import java.util.Date;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
+import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /** Performs voronoi dilation on objects into a mask and shrinks based on usage */
 public class kVoronoiShrink extends kVoronoi {
+	@TIPLPluginManager.PluginInfo(pluginType = "kVoronoi",
+			desc="Full memory kvoronoi tesselation, optimized with shrinking bounds",
+			sliceBased=false,
+			maximumSize=1024*1024*1024,
+			speedRank=11)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new kVoronoi();
+		}
+	};
 	public static void main(final String[] args) {
 		final String kVer = "120105_002";
 		System.out.println(" kVoronoi-Shrink Script v" + kVer);

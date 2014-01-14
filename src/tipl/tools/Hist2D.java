@@ -5,6 +5,7 @@ package tipl.tools;
 //import java.awt.image.ColorModel.*;
 import java.io.FileWriter;
 
+import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
 
@@ -15,7 +16,7 @@ import tipl.util.D3int;
  * Performs shape analysis on a labeled aim image (map) and if given another
  * image
  */
-public class Hist2D {
+public class Hist2D extends BaseTIPLPlugin {
 	/** An inteface for writing bin names from the bin count value **/
 	public interface BinExtract {
 		/** The actual bin name code, returns a string **/
@@ -147,7 +148,7 @@ public class Hist2D {
 	String headerString = "";
 
 	String headerStr = "";
-	String csvName = "";
+	protected String outCsvName = "2dhistout.csv";
 
 	String insName = "N/A";
 	boolean asList = false;
@@ -245,7 +246,7 @@ public class Hist2D {
 		}
 	}
 
-	public String PluginName() {
+	public String getPluginName() {
 		return "Hist2D";
 	}
 
@@ -300,7 +301,7 @@ public class Hist2D {
 					+ " 	    " + imPos.z + "\n";
 			headerStr += "El_size_mm: 		" + imElSize.x + "	" + imElSize.y + "	"
 					+ imElSize.z + "\n";
-			final FileWriter out = new FileWriter(csvName, false);
+			final FileWriter out = new FileWriter(outCsvName, false);
 			out.write(headerStr);
 			out.flush();
 			out.close();
@@ -315,7 +316,7 @@ public class Hist2D {
 	protected boolean writeHistogram(final String extraInfo) {
 		try {
 
-			final FileWriter out = new FileWriter(csvName, true);
+			final FileWriter out = new FileWriter(outCsvName, true);
 			headerStr = "";
 			headerStr += "Total Number of voxels 	:" + totVox;
 			headerStr += extraInfo + "\n";
@@ -377,6 +378,18 @@ public class Hist2D {
 			e.printStackTrace();
 			return false;
 		}
+	}
+
+	@Override
+	public boolean execute() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
+		// There are no parameters so just let them pass through 
+		return p;
 	}
 
 }

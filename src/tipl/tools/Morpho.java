@@ -3,12 +3,24 @@ package tipl.tools;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
 import tipl.util.TIPLGlobal;
+import tipl.util.TIPLPluginManager;
 
 // Used as a replacement for the moment function as it allows much more control over data
 // and communication with webservices (potentially?)
 /** Class for performing morphological operations on Aim (linear array) files */
 public class Morpho extends BaseTIPLPluginBW {
+	@TIPLPluginManager.PluginInfo(pluginType = "Morpho",
+			desc="Full memory morphological operations",
+			sliceBased=false,
+			maximumSize=1024*1024*1024)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new Morpho();
+		}
+	};
 	/**
 	 * Not yet implemented but will be a mask indicating protected voxels which
 	 * cannot be changed during operations

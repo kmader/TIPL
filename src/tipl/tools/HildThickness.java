@@ -14,6 +14,16 @@ import tipl.util.TImgTools;
 
 /** Thickness map based on the Hildebrand Method */
 public class HildThickness extends Thickness {
+	@TIPLPluginManager.PluginInfo(pluginType = "HildThickness",
+			desc="Full memory hildebrand thickness",
+			sliceBased=false,
+			maximumSize=1024*1024*1024)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new HildThickness();
+		}
+	};
 	/** Run the distance label initialization routines in parallel */
 	private static class dlRunner extends Thread {
 		int sslice, fslice;

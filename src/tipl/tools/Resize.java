@@ -4,7 +4,9 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
 import tipl.util.ITIPLPluginIO;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -13,6 +15,15 @@ import tipl.util.TImgTools;
  * @author Kevin Mader
  */
 public class Resize extends BaseTIPLPluginMult {
+	@TIPLPluginManager.PluginInfo(pluginType = "Resize",
+			desc="Slice-based and full memory resize command",
+			sliceBased=true)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new Resize();
+		}
+	};
 	/** Output aim length */
 	int itAimLength;
 

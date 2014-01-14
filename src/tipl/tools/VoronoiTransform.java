@@ -22,12 +22,12 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 
 	protected int maxlabel;
 	/** Maximum distance (as float) which can be output */
-	public int MAXDIST = 4000;
+	protected int MAXDIST = 4000;
 	/** Maximum distance (as int) which can be output */
-	public int MAXDISTVAL = 32765;
+	protected int MAXDISTVAL = 32765;
 	/** scaling factor between ints and floats */
-	double distScalar = (MAXDIST + 0.0) / (MAXDISTVAL + 0.0);
-	int gtmode = -1;
+	protected double distScalar = (MAXDIST + 0.0) / (MAXDISTVAL + 0.0);
+	protected int gtmode = -1;
 	/** limit maximum distance for distance map **/
 	protected double maxUsuableDistance = -1;
 

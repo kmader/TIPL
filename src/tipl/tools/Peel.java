@@ -4,6 +4,8 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -11,6 +13,16 @@ import tipl.util.TImgTools;
  * (defined in 3D by D3int peelS and proximity to null/false values)
  */
 public class Peel extends BaseTIPLPluginMult {
+	@TIPLPluginManager.PluginInfo(pluginType = "Peel",
+			desc="Full memory peel command",
+			sliceBased=false,
+			maximumSize=1024*1024*1024)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new Peel();
+		}
+	};
 	/**
 	 * The command line executable version of the code The code run in the main
 	 * function looks like this
@@ -75,118 +87,39 @@ public class Peel extends BaseTIPLPluginMult {
 	}
 
 	/** First input aim */
-	public boolean[] outAimMask;
+	protected boolean[] outAimMask;
 	/** First input aim */
-	public char[] outAimByte;
+	protected char[] outAimByte;
 	/** First input aim */
-	public short[] outAimShort;
+	protected short[] outAimShort;
 	/** First input aim */
-	public int[] outAimInt;
+	protected int[] outAimInt;
 	/** First input aim */
-	public float[] outAimFloat;
+	protected float[] outAimFloat;
 
 	boolean selfMask = false;
 	/** The mask to be peeled */
 	boolean[] peelMask = null;
 	boolean isMask = false;
 
-	public long gKeptVoxels = 0;
-	public long gBorderVoxels = 0;
+	protected long gKeptVoxels = 0;
+	protected long gBorderVoxels = 0;
 
-	@Deprecated
-	public Peel(final boolean[] inputmap, final boolean[] inMask,
-			final D3int idim, final D3int ioffset, final D3int peelS) {
-		ImportAim(inputmap, idim, ioffset);
-		peelMask = inMask;
-		InitPeel(peelS);
+	protected Peel() {
+		// Constructor for the plugin manager
 	}
-
 	@Deprecated
-	public Peel(final boolean[] inputmap, final D3int idim,
-			final D3int ioffset, final D3int peelS) {
-		ImportAim(inputmap, idim, ioffset);
-		selfMask = true;
-		InitPeel(peelS);
-
-	}
-
-	@Deprecated
-	public Peel(final float[] inputmap, final boolean[] inMask,
-			final D3int idim, final D3int ioffset, final D3int peelS) {
-		ImportAim(inputmap, idim, ioffset);
-		peelMask = inMask;
-		InitPeel(peelS);
-	}
-
-	@Deprecated
-	public Peel(final float[] inputmap, final D3int idim, final D3int ioffset,
-			final D3int peelS) {
-		ImportAim(inputmap, idim, ioffset);
-		selfMask = true;
-		InitPeel(peelS);
-	}
-
-	@Deprecated
-	public Peel(final int[] inputmap, final boolean[] inMask, final D3int idim,
-			final D3int ioffset, final D3int peelS) {
-
-		ImportAim(inputmap, idim, ioffset);
-		peelMask = inMask;
-		InitPeel(peelS);
-
-	}
-
-	@Deprecated
-	public Peel(final int[] inputmap, final D3int idim, final D3int ioffset,
-			final D3int peelS) {
-		ImportAim(inputmap, idim, ioffset);
-		selfMask = true;
-		InitPeel(peelS);
-
-	}
-
-	@Deprecated
-	public Peel(final short[] inputmap, final boolean[] inMask,
-			final D3int idim, final D3int ioffset, final D3int peelS) {
-		ImportAim(inputmap, idim, ioffset);
-		peelMask = inMask;
-		InitPeel(peelS);
-
-	}
-
-	@Deprecated
-	public Peel(final short[] inputmap, final D3int idim, final D3int ioffset,
-			final D3int peelS) {
-		ImportAim(inputmap, idim, ioffset);
-		selfMask = true;
-		InitPeel(peelS);
-
-	}
-
-	/*
-	 * public Peel(VirtualAim inAim,VirtualAim maskAim,int peelS) {
-	 * 
-	 * if (!TImgTools.CheckSizes2(inAim, maskAim)) {
-	 * System.out.println(" ==== Aim Sizes Do Not Match, Recutting...");
-	 * //maskAim.getBoolAim(); Resize rsAim=new Resize(maskAim);
-	 * rsAim.cutROI(inAim); rsAim.run(); VirtualAim
-	 * tempAim=rsAim.ExportAim(maskAim); //tempAim.WriteAim("temp-peel.tif");
-	 * peelMask=tempAim.getBoolAim();
-	 * procLog+=" ==== Aim Sizes Do Not Match, Recutting...\n";
-	 * procLog+=rsAim.procLog+"\n"; } else { peelMask=maskAim.getBoolAim(); }
-	 * ImportAim(inAim,-1); InitPeel(new D3int(peelS)); }
-	 */
 	public Peel(final TImgRO inAim, final D3int peelS) {
 		ImportAim(inAim, -1);
 		selfMask = true;
 		InitPeel(peelS);
 	}
-
+	@Deprecated
 	public Peel(final TImgRO inAim, final TImgRO maskAim, final D3int peelS) {
 		LoadImages(new TImgRO[] { inAim, maskAim });
 		InitPeel(peelS);
 	}
-
+	@Deprecated
 	public Peel(final TImgRO inAim, final TImgRO maskAim, final D3int peelS,
 			final boolean IisMask) {
 		isMask = IisMask;

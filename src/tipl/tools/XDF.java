@@ -8,6 +8,8 @@ import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -15,6 +17,16 @@ import tipl.util.TImgTools;
  * cross-correlation function
  */
 public class XDF extends BaseTIPLPluginMult {
+	@TIPLPluginManager.PluginInfo(pluginType = "XDF",
+			desc="Full memory xdf command",
+			sliceBased=false,
+			maximumSize=1024*1024*1024)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new XDF();
+		}
+	};
 	public static class radDistFun {
 		public D3int len;
 		public D3int rlen;
@@ -1404,7 +1416,7 @@ public class XDF extends BaseTIPLPluginMult {
 	 *            The number of iterations to run the simulation for
 	 */
 	@Deprecated
-	public void run(int iters) {
+	public void execute(int iters) {
 		mcIter = iters;
 		execute();
 	}

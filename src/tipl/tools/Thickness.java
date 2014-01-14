@@ -15,26 +15,26 @@ import tipl.util.TImgTools;
  * 
  */
 public abstract class Thickness extends BaseTIPLPluginIO {
-	public int[] inAim;
-	public int[] outAim;
+	protected int[] inAim;
+	protected int[] outAim;
 	// double neighborOccupancy=1.0; // delete if less than 100% of neighbors
 	// are occupied
 	static final int MAXDIST = 4000;
 
 	static final int MAXDISTVAL = 32765;
 	final int OUTERSHELL = 0;
-	public float MINTHICKNESS = 1;
-	public static final double distScalar = (MAXDIST + 0.0)
+	protected float MINTHICKNESS = 1;
+	protected static final double distScalar = (MAXDIST + 0.0)
 			/ (MAXDISTVAL + 0.0);
 	/**
 	 * Should the input files be left intact. Since this function is used quite
 	 * often we shall keep the default value at true
 	 **/
-	public static boolean doPreserveInput = true;
-	public int killVox = 0;
-	public int curSphere = 0;
+	protected static boolean doPreserveInput = true;
+	protected int killVox = 0;
+	protected int curSphere = 0;
 
-	public Thickness() {
+	protected Thickness() {
 		// Just Sit and wait
 	}
 

@@ -5,14 +5,26 @@ import java.util.Date;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
+import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 // Used as a replacement for the moment function as it allows much more control over data
 // and communication with webservices (potentially?)
 /** Performs voronoi dilation on objects into a mask */
 public class kVoronoi extends VoronoiTransform {
+	@TIPLPluginManager.PluginInfo(pluginType = "kVoronoi",
+			desc="Full memory kvoronoi tesselation",
+			sliceBased=false,
+			maximumSize=1024*1024*1024)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new kVoronoi();
+		}
+	};
 	public static void main(final String[] args) {
-		final String kVer = "120105_002";
+		final String kVer = "130113_003";
 		System.out.println(" kVoronoi Script v" + kVer);
 		System.out.println(" Dilates and  v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");

@@ -5,6 +5,7 @@ import java.util.Random;
 import tipl.formats.TImg;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
@@ -17,6 +18,16 @@ import tipl.util.TImgTools;
  * 
  */
 public class MCThickness extends Thickness {
+	@TIPLPluginManager.PluginInfo(pluginType = "MCThickness",
+			desc="Full memory monte carlo thickness calculation tool",
+			sliceBased=false,
+			maximumSize=1024*1024*1024)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new MCThickness();
+		}
+	};
 	/**
 	 * Similar to DTObjection function in XIPL, takes a black and white input
 	 * image and calculates the thickness map of the object (white) of this

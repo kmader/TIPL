@@ -9,6 +9,8 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -17,7 +19,17 @@ import tipl.util.TImgTools;
  * count of the neighbors at each voxel
  */
 public class Neighbors extends BaseTIPLPluginIO {
-	private class NeighborList {
+	@TIPLPluginManager.PluginInfo(pluginType = "Neighbors",
+			desc="Full memory neighborhood analysis",
+			sliceBased=false,
+			maximumSize=1024*1024*1024)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new Neighbors();
+		}
+	};
+	protected class NeighborList {
 		// label of neighbor, voxel count
 		private final HashMap<Integer, Integer> nvox;
 		private final Integer one = new Integer(1);

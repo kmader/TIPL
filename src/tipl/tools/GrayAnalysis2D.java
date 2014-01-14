@@ -29,8 +29,17 @@ import tipl.util.TImgTools;
  * Performs shape analysis on a labeled aim image (map) and if given another
  * image
  */
-public class GrayAnalysis2D extends Hist2D {
-
+public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
+	@TIPLPluginManager.PluginInfo(pluginType = "GrayAnalysis2D",
+			desc="Full memory 2D grayscale analysis",
+			sliceBased=false,
+			maximumSize=1024*1024*1024)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new GrayAnalysis2D();
+		}
+	};
 	public class DiscreteReader {
 		/** Run the distance label initialization routines in parallel */
 		private class prescanRunner implements Callable<double[]> {
@@ -273,8 +282,8 @@ public class GrayAnalysis2D extends Hist2D {
 	}
 
 	public static boolean doPreload = false;
-	DiscreteReader dmapA;
-	DiscreteReader dmapB;
+	protected DiscreteReader dmapA;
+	protected DiscreteReader dmapB;
 
 	TImg gfiltAim;
 
@@ -282,18 +291,17 @@ public class GrayAnalysis2D extends Hist2D {
 	double totSum = 0;
 	double totSqSum = 0;
 
-	boolean debugMode;
+	boolean debugMode=false;
 	final int DEFAULTBINS = 1000;
-	public boolean invertGFILT;
+	public boolean invertGFILT=false;
 	boolean useCount;
-	boolean useAname = false;
 
 	/** Value to use for the threshold (0) */
-	public float threshVal = 0;
-	String analysisName = "GrayAnalysis2D";
+	protected float threshVal = 0;
+	protected String analysisName = "GrayAnalysis2D";
 	ExecutorService executor;
 
-	public static boolean profileAsList = false;
+	protected static boolean profileAsList = false;
 
 	protected String gfiltName = "";
 
@@ -312,25 +320,42 @@ public class GrayAnalysis2D extends Hist2D {
 			System.exit(0);
 		}
 	}
-
+	
+	@Override
+	public ArgumentParser setParameter(final ArgumentParser p,
+			final String prefix) {
+		final ArgumentParser args = super.setParameter(p, prefix);
+		doPreload = p
+				.getOptionBoolean(prefix+"preload", "preload data");
+		// Float Binning Settings
+		dmapA.getArguments(p, prefix+"a", " of MapA (rows) ");
+		dmapB.getArguments(p, prefix+"b", " of MapB (columns)");
+		outCsvName = p.getOptionString(prefix+"csv", outCsvName,
+				"Output csv filename"); // CSV file is a needed parameter
+		
+		profileAsList = p.getOptionBoolean(prefix+"aslist",profileAsList,
+				"Out Profile Command as a list");
+		invertGFILT = p.getOptionBoolean("invert", "Invert float data");
+		SetupGA();
+		
+		return args;
+	}
 	/**
 	 * The standard version of GrayAnalysis2D which is run from the command line
 	 */
 	public static void main(final String[] args) {
-		final String kVer = "120607_005";
+		final String kVer = "140113_006";
 		System.out.println(" Gray Value and Lacuna Analysis v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-
+		final GrayAnalysis2D ga2 = new GrayAnalysis2D(); 
 		final ArgumentParser p = new ArgumentParser(args);
 		final boolean doProfile = p.getOptionBoolean("profile",
 				"Run Profile Command");
-		GrayAnalysis2D.profileAsList = p.getOptionBoolean("aslist",
-				"Out Profile Command as a list");
+		ga2.setParameter(p,"");
 		if (doProfile) {
 			final String aimName = p.getOptionString("input", "",
 					"Input Aim-File"); // CSV file is a needed parameter
-			final String csvName = p.getOptionString("csv", "out.csv",
-					"Output csv filename"); // CSV file is a needed parameter
+			
 			final int profileMode = p.getOptionInt("profilemode", 0,
 					"0 - Cyl: RZ, 1 - Cyl: RTheta, 2 - Sph: PhiTheta"); // CSV
 																		// file
@@ -342,13 +367,13 @@ public class GrayAnalysis2D extends Hist2D {
 				final TImg myAim = TImgTools.ReadTImg(aimName);
 				switch (profileMode) {
 				case 0:
-					GrayAnalysis2D.StartRZProfile(myAim, csvName, 0.0f, 1000);
+					GrayAnalysis2D.StartRZProfile(myAim, ga2.outCsvName, 0.0f, 1000);
 					break;
 				case 1:
-					GrayAnalysis2D.StartRThProfile(myAim, csvName, 0.0f, 1000);
+					GrayAnalysis2D.StartRThProfile(myAim, ga2.outCsvName, 0.0f, 1000);
 					break;
 				case 2:
-					GrayAnalysis2D.StartPolePlot(myAim, csvName, 0.0f, 1000);
+					GrayAnalysis2D.StartPolePlot(myAim, ga2.outCsvName, 0.0f, 1000);
 					break;
 				default:
 					System.out.println("Profile Mode : " + profileMode
@@ -358,44 +383,14 @@ public class GrayAnalysis2D extends Hist2D {
 
 			}
 		} else {
-			main_stdhist(p);
+			final String gfiltName = p.getOptionString("float", "",
+					"The value channel"); // gfilt is a given parameter
+
+			if (gfiltName.length() > 0) ga2.gfiltAim = TImgTools.ReadTImg(gfiltName);
+			p.checkForInvalid();
+			checkHelp(p);
+			ga2.execute();
 		}
-
-	}
-
-	private static void main_stdhist(final ArgumentParser p) {
-		final GrayAnalysis2D myga = new GrayAnalysis2D();
-		GrayAnalysis2D.doPreload = p
-				.getOptionBoolean("preload", "preload data");
-		// Float Binning Settings
-		myga.dmapA.getArguments(p, "a", " of MapA (rows) ");
-		myga.dmapB.getArguments(p, "b", " of MapB (columns)");
-
-		/**
-		 * String mapNameA =
-		 * p.getOptionString("mapa","","The first map channel (rows)"); // Map
-		 * is a needed parameter String mapNameB =
-		 * p.getOptionString("mapb","","The second map channel (columns)");
-		 **/
-
-		final String gfiltName = p.getOptionString("float", "",
-				"The value channel"); // gfilt is a given parameter
-		myga.invertGFILT = p.getOptionBoolean("invert", "Invert float data");
-
-		myga.csvName = p.getOptionString("csv", "", "Output csv filename"); // CSV
-																			// file
-																			// is
-																			// a
-																			// needed
-																			// parameter
-
-		if (gfiltName.length() > 0)
-			myga.gfiltAim = TImgTools.ReadTImg(gfiltName);
-
-		checkHelp(p);
-		myga.SetupGA();
-
-		myga.run();
 
 	}
 
@@ -436,12 +431,12 @@ public class GrayAnalysis2D extends Hist2D {
 		newGray.dmapB.fmax = rng[1];
 		newGray.dmapB.fbins = fbinsB;
 
-		newGray.csvName = outFile;
+		newGray.outCsvName = outFile;
 		newGray.gfiltAim = inGfilt;
 		newGray.threshVal = threshVal;
 		newGray.SetupGA();
 		newGray.asList = profileAsList;
-		newGray.run(gvMean());
+		newGray.executeUsing(gvMean());
 	}
 
 	/**
@@ -481,12 +476,12 @@ public class GrayAnalysis2D extends Hist2D {
 		newGray.dmapB.fmax = rng[1];
 		newGray.dmapB.fbins = fbinsB;
 
-		newGray.csvName = outFile;
+		newGray.outCsvName = outFile;
 		newGray.gfiltAim = inGfilt;
 		newGray.threshVal = threshVal;
 		newGray.SetupGA();
 		newGray.asList = profileAsList;
-		newGray.run(gvMean());
+		newGray.executeUsing(gvMean());
 	}
 
 	/**
@@ -507,11 +502,11 @@ public class GrayAnalysis2D extends Hist2D {
 
 		newGray.dmapA.LoadData(mapA);
 		newGray.dmapB.LoadData(mapB);
-		newGray.csvName = outFile;
+		newGray.outCsvName = outFile;
 		newGray.gfiltAim = gfiltAim;
 
 		newGray.SetupGA();
-		newGray.run();
+		newGray.execute();
 	}
 
 	/**
@@ -594,9 +589,9 @@ public class GrayAnalysis2D extends Hist2D {
 	}
 
 	/** Simple initializer */
-	public GrayAnalysis2D() {
+	protected GrayAnalysis2D() {
 		if (neededCores < 1) {
-			System.out.println(PluginName() + " has " + neededCores
+			System.out.println(getPluginName() + " has " + neededCores
 					+ " number of cores, defaulting to :" + supportedCores);
 			neededCores = supportedCores;
 
@@ -690,7 +685,7 @@ public class GrayAnalysis2D extends Hist2D {
 	}
 
 	@Override
-	public String PluginName() {
+	public String getPluginName() {
 		return "GrayAnalysis2D";
 	}
 
@@ -709,15 +704,15 @@ public class GrayAnalysis2D extends Hist2D {
 				+ "mins; Voxels:" + totVox);
 	}
 
-	public void run() {
+	public boolean execute() {
 
 		if (gfiltAim != null)
-			run(gvMean());
+			return executeUsing(gvMean());
 		else
-			run(gvCount());
+			return executeUsing(gvCount());
 	}
 
-	public void run(final GrayVoxExtract gve) {
+	public boolean executeUsing(final GrayVoxExtract gve) {
 		curGVE = gve;
 		long start = System.currentTimeMillis();
 		boolean gfiltGood = true;
@@ -800,6 +795,7 @@ public class GrayAnalysis2D extends Hist2D {
 		outString += "Run Finished in " + eTime + " mins @ " + new Date()
 				+ "\n";
 		System.out.println(outString);
+		return true;
 
 	}
 
@@ -823,6 +819,12 @@ public class GrayAnalysis2D extends Hist2D {
 	public void SetupGA(final TImg mapA, final TImg mapB) {
 		dmapA.LoadData(mapA);
 		dmapB.LoadData(mapB);
+	}
+
+	@Override
+	public void LoadImages(TImgRO[] inImages) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
