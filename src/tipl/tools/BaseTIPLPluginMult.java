@@ -117,7 +117,7 @@ abstract public class BaseTIPLPluginMult extends BaseTIPLPluginIO {
 			aimLength = inAimFloat.length;
 			break;
 		default:
-			System.err.println("Input type not supported");
+			System.err.println("Input type not supported: "+cType);
 			return;
 		}
 		InitLabels(inAim.getDim(), inAim.getOffset());

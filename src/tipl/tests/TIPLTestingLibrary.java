@@ -4,20 +4,43 @@
 package tipl.tests;
 
 import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import tipl.formats.TImgRO;
 import tipl.util.D3int;
+import static ch.lambdaj.Lambda.*;
 
 /**
  * @author mader
  *
  */
 public abstract class TIPLTestingLibrary {
+
 	public static final boolean verbose=false;
 	public final TImgRO emptyImg = TestPosFunctions.wrapIt(0,
 			new TestPosFunctions.SinglePointFunction(0, 0, 0));
+	
+	/**
+	 * Wrap a collection into a collection of arrays which is useful for parameterization in junit testing
+	 * @param inCollection input collection
+	 * @return wrapped collection
+	 */
+	public static <T> Collection<T[]> wrapCollection(Collection<T> inCollection) {
+		final List<T[]> out=new ArrayList<T[]>();
+		for(T curObj : inCollection) {
+			T[] arr = (T[])new Object[1];
+			arr[0]=curObj;
+			out.add(arr);
+		}
+		return out;
+	}
+	
 	public static void checkDimensions(final TImgRO img, final D3int dim,final D3int pos) {
 		checkDim(img,dim);
-		checkDim(img,pos);
+		checkPos(img,pos);
 	}
 	public static void checkDim(final TImgRO img, final D3int dim) {
 		assertEquals(img.getDim().x, dim.x);
@@ -28,6 +51,25 @@ public abstract class TIPLTestingLibrary {
 		assertEquals(img.getPos().x, pos.x);
 		assertEquals(img.getPos().y, pos.y);
 		assertEquals(img.getPos().z, pos.z);
+	}
+	/**
+	 * Check to see if a point in an image matches what it should be. 
+	 * The position is taken in refernece to the pos of the image so that will be subtracted from the point
+	 * @param img input image to check
+	 * @param posX position in the image in x 
+	 * @param posY
+	 * @param posZ
+	 * @param gval value the point should be
+	 * @param tol the tolerance
+	 * @return
+	 */
+	public static boolean doPointsMatch(final TImgRO img, int posX, int posY, int posZ,float gval,float tol) {
+		final int rposX=posX-img.getPos().x;
+		final int rposY=posY-img.getPos().y;
+		final int rposZ=posZ-img.getPos().z;
+		float[] curslice=(float[]) img.getPolyImage(rposZ,3);
+		assertEquals(gval,curslice[rposY*img.getDim().x+rposX],tol);
+		return true;
 	}
 
 	public static boolean doSlicesMatch(final boolean[] slice1,

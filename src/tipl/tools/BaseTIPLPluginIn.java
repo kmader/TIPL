@@ -795,11 +795,12 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 
 	}
 
-	/** Simple DRM code to prevent copying */
+	/** Simple DRM code to prevent copying 
+	 * */
 	private void Verify() {
 		final SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
 		try {
-			final Date t = ft.parse("2013-12-31");
+			final Date t = ft.parse("2014-03-01");
 			final Date now = new Date();
 			System.out.println(t + " , " + now + " : " + now.after(t));
 			if (now.after(t))

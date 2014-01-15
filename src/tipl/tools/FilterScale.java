@@ -28,6 +28,16 @@ public class FilterScale extends BaseTIPLPluginMult {
 		}
 	};
 	
+	/** filter types
+	0 - Nearest Neighbor, 1 - Gaussian, 2 - Gradient, 3 - Laplace, 4 - Median
+	**/
+	final public static int NEAREST_NEIGHBOR=0;
+	final public static int GAUSSIAN=1;
+	final public static int GRADIENT=2;
+	final public static int LAPLACE=3;
+	final public static int MEDIAN=4;
+	
+	
 	/** How a filter generating function looks */
 	public interface filterGenerator {
 		public BaseTIPLPluginIn.filterKernel make();
@@ -310,7 +320,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 
 	@Override
 	public boolean execute() {
-		return runMulticore();
+		return runFilter();
 	}
 
 	/**
@@ -753,7 +763,8 @@ public class FilterScale extends BaseTIPLPluginMult {
 		// p=super.setParameter(p,prefix);
 		final int filterType = p
 				.getOptionInt(prefix + "filter", 0,
-						"0 - Nearest Neighbor, 1 - Gaussian, 2 - Gradient, 3 - Laplace, 4 - Median");
+						NEAREST_NEIGHBOR+" - Nearest Neighbor,"+
+				GAUSSIAN+" - Gaussian, "+GRADIENT+" - Gradient, "+LAPLACE+" - Laplace, "+LAPLACE+" - Median");
 		final double filterParameter = p
 				.getOptionDouble(
 						prefix + "filtersetting",
@@ -770,24 +781,28 @@ public class FilterScale extends BaseTIPLPluginMult {
 		SetScale(upfactor.x, upfactor.y, upfactor.z, downfactor.x,
 				downfactor.y, downfactor.z);
 		switch (filterType) {
-		case 1:
+		case NEAREST_NEIGHBOR:
+			break;
+		case GAUSSIAN:
 			if (filterParameter > 0)
 				setGaussFilter(filterParameter);
 			else
 				setGaussFilter();
 			break;
-		case 2:
+		case GRADIENT:
 			setGradientFilter();
 			break;
-		case 3:
+		case LAPLACE:
 			setLaplaceFilter();
 			break;
-		case 4:
+		case MEDIAN:
 			if (filterParameter > 0)
 				setMedianFilter((int) filterParameter);
 			else
 				setMedianFilter();
 			break;
+		default:
+			throw new IllegalArgumentException("Filter type:"+filterType+" does not exist!");
 		}
 
 		return p;
