@@ -430,7 +430,28 @@ public class TImgTools {
 
 		}
 	}
-
+	/**
+	 * Used for dividing stacks of images into a smaller range
+	 * @param startValue first slice
+	 * @param endValue last slice
+	 * @param blockCount number of blocks to subdivide into
+	 * @param curBlock the current block (between 0 and blockCount)
+	 * @return an integer array with the starting and ending slice numbers
+	 */
+	public static int[] getRange(int startValue, int endValue, int blockCount, int curBlock) {
+		assert(curBlock<blockCount);
+		assert(curBlock>=0);
+		assert(blockCount>=0);
+		assert(endValue>startValue);
+		final int blockSize=(int) ((endValue-startValue)/(1.0f*blockCount));
+		final int blockStart=blockSize*curBlock+1;
+		int blockEnd=blockSize*(curBlock+1);
+		if(curBlock==(blockCount-1)) blockEnd=endValue;
+		return new int[] {blockStart,blockEnd};
+	}
+	public static int[] getRange(int endValue,int blockCount,int curBlock) {
+		return getRange(0,endValue,blockCount,curBlock);
+	}
 	public static D3int getDXYZFromVec(final D3int vecDim, final int pixVal,
 			final int slicen) {
 		// int x,y,z;

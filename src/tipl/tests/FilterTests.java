@@ -45,33 +45,6 @@ public class FilterTests {
 		pluginId=pluginToUse;
 	}
 	
-	
-	
-
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@Before
-	public void setUp() throws Exception {
-	}
-	
-	/**
-	 * Test the values in the slices actually match using integers
-	 */
-	public static void testSlicesMatchInt(final PluginInfo idPlugin,final TImgRO testImg) {
-		// offset lines
-		System.out.println("Testing Slices Match");
-		ITIPLPluginIO RS = makeFilter(idPlugin,testImg);
-
-		RS.setParameter("-pos=0,0,5 -dim=10,10,2");
-		RS.execute();
-
-		final TImgRO outImg = RS.ExportImages(testImg)[0];
-		System.out.println(outImg.getPos() + ", " + testImg.getPos());
-		TIPLTestingLibrary.doSlicesMatchI(outImg, 0, testImg, 5);
-		TIPLTestingLibrary.doSlicesMatchI(outImg, 1, testImg, 6);
-	}
-	
 	/**
 	 * Test dimensions of output image
 	 */

@@ -31,7 +31,7 @@ public abstract class TIPLTestingLibrary {
 	public static <T> Collection<T[]> wrapCollection(Collection<T> inCollection) {
 		final List<T[]> out=new ArrayList<T[]>();
 		for(T curObj : inCollection) {
-			T[] arr = (T[])new Object[1];
+			T[] arr = (T[])new Object[1]; // this is just weird but new T[] {curObj} doesnt work
 			arr[0]=curObj;
 			out.add(arr);
 		}

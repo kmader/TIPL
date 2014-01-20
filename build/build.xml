@@ -7,7 +7,9 @@
             <manifest>
                 <attribute name="Main-Class" value="org.python.util.jython"/>
             </manifest>
-            <fileset dir="../bin"/>
+            <fileset dir="../bin">
+            	<include name="tipl/**/*.class"/>
+            </fileset>
             <zipfileset excludes="META-INF/*.SF" src="../libraries/ij.jar"/>
             <!-- <zipfileset excludes="META-INF/*.SF" src="../libraries/ij2/ij-data-2.0.0-beta-7.jar"/> -->
             
@@ -24,6 +26,11 @@
             <zipfileset excludes="META-INF/*.SF" src="../libraries/VIB-lib.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../libraries/sezpoz-1.9.jar"/>
 	    <zipfileset excludes="META-INF/*.SF" src="../libraries/lambdaj-2.4-with-dependencies.jar"/>
+        </jar>
+    </target>
+        <target name="hadoop" depends="create_run_jar">
+        <jar destfile="../build/TIPL_hadoop.jar" filesetmanifest="mergewithoutmain">
+	    <zipfileset excludes="META-INF/MANIFEST.MF" src="TIPL.jar"/>
         </jar>
     </target>
 </project>
