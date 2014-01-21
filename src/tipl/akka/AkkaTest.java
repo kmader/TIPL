@@ -1,19 +1,23 @@
 /**
  * 
  */
-package tipl.tests;
+package tipl.akka;
 
 import static org.junit.Assert.*;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
-import akka.actor.UntypedActorFactory;
+import akka.japi.Creator;
 import akka.routing.RoundRobinRouter;
 import scala.concurrent.duration.Duration;
+import akka.testkit.JavaTestKit;
+
 import java.util.concurrent.TimeUnit;
 /**
  * Tests the akka framework for actors and some minor communication steps between them
@@ -23,39 +27,46 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class AkkaTest {
-
+	public static final boolean debugMode=true;
+	 static ActorSystem system;
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
+		system = ActorSystem.create();
 
 	}
-
-	@Test
-	public void test() {
-		fail("Not yet implemented"); // TODO
+	@After
+	public void teardown() {
+		    JavaTestKit.shutdownActorSystem(system);
+		    system = null;
 	}
+	public static void main(String[] args) {
+		(new AkkaTest()).testPi();
+	}
+	
 	@Test
 	public void testPi() {
+		 new JavaTestKit(system) {{
+			 calculate(5, 100, 100);
+		 }};
 		
-		calculate(1, 1000000000, 1000000);
+		
 	}
 	public static void calculate(final int nrOfWorkers, final int nrOfElements, final int nrOfMessages) {
 	    // Create an Akka system
 	    ActorSystem system = ActorSystem.create("PiSystem");
 	 
 	    // create the result listener, which will print the result and shutdown the system
-	    final ActorRef listener = system.actorOf(new Props(Listener.class), "listener");
+	    final ActorRef listener = system.actorOf(Props.create(Listener.class), "listener");
 	 
 	    // create the master
-	    ActorRef master = system.actorOf(new Props(new UntypedActorFactory() {
-	      public UntypedActor create() {
-	        return new Master(nrOfWorkers, nrOfMessages, nrOfElements, listener);
-	      }
-	    }), "master");
+	    ActorRef master = system.actorOf(Props.create(Master.class, nrOfWorkers, nrOfMessages, nrOfElements, listener,system), "master");
+	    
+	    
 	    // start the calculation
-	    master.tell(new Calculate(),master);
+	    master.tell(new Calculate(),ActorRef.noSender());
 	 
 	  }
 
@@ -82,20 +93,27 @@ public class AkkaTest {
 		 
 		  private final ActorRef listener;
 		  private final ActorRef workerRouter;
+		  private final ActorSystem asystem;
 		 
-		  public Master(final int nrOfWorkers, int nrOfMessages, int nrOfElements, ActorRef listener) {
+		  public Master(final int nrOfWorkers, int nrOfMessages, int nrOfElements, ActorRef listener, ActorSystem system) {
 		    this.nrOfMessages = nrOfMessages;
 		    this.nrOfElements = nrOfElements;
 		    this.listener = listener;
-		 
-		    workerRouter = this.getContext().actorOf(new Props(Worker.class).withRouter(new RoundRobinRouter(nrOfWorkers)),
+		    this.asystem=system;
+		    if (debugMode) System.out.println("Created MasterA:"+this);
+		    workerRouter = asystem.actorOf(Props.create(Worker.class).withRouter(new RoundRobinRouter(nrOfWorkers)),
 		        "workerRouter");
+		    
+		    if (debugMode) System.out.println("Created Router:"+workerRouter);
 		  }
-		 
+		  
+		  @Override
 		  public void onReceive(Object message) {
+			  if (debugMode) System.out.println("Master's listenin:"+message);
+			  
 			  if (message instanceof Calculate) {
 			    for (int start = 0; start < nrOfMessages; start++) {
-			      workerRouter.tell(new Work(start, nrOfElements), getSelf());
+			     workerRouter.tell(new Work(start, nrOfElements), getSelf());
 			    }
 			  } else if (message instanceof Result) {
 			    Result result = (Result) message;
@@ -106,7 +124,7 @@ public class AkkaTest {
 			      Duration duration = Duration.create(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
 			      listener.tell(new PiApproximation(pi, duration), getSelf());
 			      // Stops this actor and all its supervised children
-			      getContext().stop(getSelf());
+			      asystem.stop(getSelf());
 			    }
 			  } else {
 			    unhandled(message);
@@ -115,7 +133,12 @@ public class AkkaTest {
 		}
 	
 	public static class Worker extends UntypedActor {
-		 
+		public Worker() {
+			if (debugMode) System.out.println("Created worker:"+this);
+			//super();
+			
+		}
+		
 		private double calculatePiFor(int start, int nrOfElements) {
 			  double acc = 0.0;
 			  for (int i = start * nrOfElements; i <= ((start + 1) * nrOfElements - 1); i++) {
@@ -125,6 +148,7 @@ public class AkkaTest {
 			}
 		 
 		  public void onReceive(Object message) {
+			  if (debugMode) System.out.println("Worker's listenin:"+message);
 		    if (message instanceof Work) {
 		      Work work = (Work) message;
 		      double result = calculatePiFor(work.getStart(), work.getNrOfElements());

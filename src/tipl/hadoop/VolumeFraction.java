@@ -240,12 +240,9 @@ public class VolumeFraction extends Configured implements Tool {
       } finally {
         reader.close();
       }
-
+      
       //compute estimated value
-      return BigDecimal.valueOf(4).setScale(20)
-          .multiply(BigDecimal.valueOf(numInside.get()))
-          .divide(BigDecimal.valueOf(numMaps))
-          .divide(BigDecimal.valueOf(numPoints));
+      return new BigDecimal(numInside.get()).divide(new BigDecimal(numOutside.get()+numInside.get())).multiply(new BigDecimal(100));
     } finally {
       fs.delete(TMP_DIR, true);
     }
