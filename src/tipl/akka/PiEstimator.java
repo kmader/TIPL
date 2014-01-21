@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-public class AkkaTest {
+public class PiEstimator {
 	public static final boolean debugMode=true;
 	 static ActorSystem system;
 	/**
@@ -43,7 +43,7 @@ public class AkkaTest {
 		    system = null;
 	}
 	public static void main(String[] args) {
-		(new AkkaTest()).testPi();
+		calculate(5,100,100);
 	}
 	
 	@Test
