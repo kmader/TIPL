@@ -3,7 +3,9 @@
  **/
 package tipl.util;
 
-public class D3float {
+import java.io.Serializable;
+
+public class D3float implements Serializable {
 	// called a float on VMS but for other systems double is probably more
 	// reliable
 	public double x = 0.0;

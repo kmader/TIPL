@@ -94,6 +94,36 @@ public class VolumeFraction {
 		Duration duration = Duration.create(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
 		listener.tell(new VFResult(intVal,outVal, duration), ActorRef.noSender());
 	}
+	static class Result {
+		private final long intPixels;
+		private final long outPixels;
+		public Result(long sintPixels,long soutPixels) {
+			intPixels=sintPixels;
+			outPixels=soutPixels;
+		}
+		public long getInt() {
+			return intPixels;
+		}
+		public long getOut() {
+			return outPixels;
+		}
+		public double getVF() {
+			return (100.*intPixels)/(intPixels+outPixels);
+		}
+	}
+
+	static class VFResult extends Result {
+		private final Duration duration;
+
+		public VFResult(long sintPixels,long soutPixels, Duration duration) {
+			super(sintPixels,soutPixels);
+			this.duration = duration;
+		}
+
+		public Duration getDuration() {
+			return duration;
+		}
+	}
 
 
 	public static class Listener extends UntypedActor {
@@ -167,22 +197,7 @@ public class VolumeFraction {
 			}
 		}
 	}
-	public static class TMaster extends Master {
-		public TMaster(final ActorRef inputRouter, ActorRef listener, ActorSystem system) {
-			super(inputRouter,listener,system);
-		}
-		@Override
-		public void onReceive(Object message) {
-			if (debugMode) System.out.println("TMaster's listenin:"+message);
-			if (message instanceof TImgRO) {
-				TImgRO msgImg=(TImgRO) message;
-				totalSlices=msgImg.getDim().z;
-				for (int slice = 0; slice < msgImg.getDim().z; slice++) {
-					workerRouter.tell(new Integer(slice), getSelf());
-				}
-			} else super.onReceive(message);
-		}
-	}
+
 		
 	public static class Worker extends UntypedActor {
 
@@ -210,6 +225,22 @@ public class VolumeFraction {
 		}
 	}
 
+	public static class TMaster extends Master {
+		public TMaster(final ActorRef inputRouter, ActorRef listener, ActorSystem system) {
+			super(inputRouter,listener,system);
+		}
+		@Override
+		public void onReceive(Object message) {
+			if (debugMode) System.out.println("TMaster's listenin:"+message);
+			if (message instanceof TImgRO) {
+				TImgRO msgImg=(TImgRO) message;
+				totalSlices=msgImg.getDim().z;
+				for (int slice = 0; slice < msgImg.getDim().z; slice++) {
+					workerRouter.tell(new Integer(slice), getSelf());
+				}
+			} else super.onReceive(message);
+		}
+	}
 	public static class TImgWorker extends Worker {
 		private final TImgRO basisImg;
 		public TImgWorker(final TImgRO inImg) {
@@ -226,37 +257,6 @@ public class VolumeFraction {
 		}
 
 
-	}
-
-	static class Result {
-		private final long intPixels;
-		private final long outPixels;
-		public Result(long sintPixels,long soutPixels) {
-			intPixels=sintPixels;
-			outPixels=soutPixels;
-		}
-		public long getInt() {
-			return intPixels;
-		}
-		public long getOut() {
-			return outPixels;
-		}
-		public double getVF() {
-			return (100.*intPixels)/(intPixels+outPixels);
-		}
-	}
-
-	static class VFResult extends Result {
-		private final Duration duration;
-
-		public VFResult(long sintPixels,long soutPixels, Duration duration) {
-			super(sintPixels,soutPixels);
-			this.duration = duration;
-		}
-
-		public Duration getDuration() {
-			return duration;
-		}
 	}
 
 }

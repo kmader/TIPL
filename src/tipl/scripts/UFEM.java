@@ -320,7 +320,7 @@ public class UFEM implements Runnable {
 			final boolean rmEdges, final double remEdgesRadius) {
 		final TImgRO.FullReadable inAimPlus = TImgTools
 				.makeTImgFullReadable(inAim);
-		short[] inImg = inAimPlus.getShortAim();
+		int[] inImg = inAimPlus.getIntAim();
 
 		// Threshold the data
 		boolean[] scdat = new boolean[inImg.length];

@@ -23,6 +23,8 @@ import tipl.util.TImgTools;
 public class DirectoryIOTest {
 	public static final String dmpPath="/Users/mader/Dropbox/TIPL/test/io_tests/rec_DMP";
 	public static final String tifPath="/Users/mader/Dropbox/TIPL/test/io_tests/rec8bit";
+	/** to test if folders with extensions *.tiff can be read as well **/
+	public static final String tiffPath="/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff";
 	public static final String tif16Path="/Users/mader/Dropbox/TIPL/test/io_tests/rec16bit";
 	public static final String isqPath="/Users/mader/Dropbox/TIPL/test/io_tests/test.isq;2";
 	/**
@@ -83,7 +85,13 @@ public class DirectoryIOTest {
 		char[] alles=TImgTools.makeTImgFullReadable(curImg).getByteAim();
 		System.out.println(alles+" is loaded");
 	}
-	
+	@Test
+	public void testReadTiffFolder() {
+		System.out.println("Testing ReadFolder : tif="+tiffPath);
+		TImg curImg=TImgTools.ReadTImg(tiffPath);
+		char[] alles=TImgTools.makeTImgFullReadable(curImg).getByteAim();
+		System.out.println(alles+" is loaded");
+	}
 	
 	/**
 	 * Test method for {@link tipl.formats.DirectoryReader#getDim()}.

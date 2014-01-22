@@ -1,5 +1,6 @@
 package tipl.formats;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import tipl.util.D3int;
@@ -9,7 +10,7 @@ import tipl.util.TImgTools;
  * A Read-only TImg (the full TImg is a subinterface of this) useful for
  * concurrent tasks where writing should be impossible
  */
-public interface TImgRO extends TImgTools.HasDimensions {
+public interface TImgRO extends TImgTools.HasDimensions,Serializable {
 	/**
 	 * CanExport means the TImg is capable of imparting itself on other images.
 	 * 

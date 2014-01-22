@@ -3,7 +3,9 @@
  **/
 package tipl.util;
 
-public class D3int {
+import java.io.Serializable;
+
+public class D3int implements Serializable {
 	public int x;
 	public int y;
 	public int z;

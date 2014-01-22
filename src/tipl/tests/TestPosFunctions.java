@@ -1,5 +1,6 @@
 package tipl.tests;
 
+import java.io.Serializable;
 import java.util.Random;
 
 import tipl.formats.PureFImage;
@@ -14,7 +15,7 @@ import tipl.util.TImgTools;
  * @author mader
  * 
  */
-public abstract class TestPosFunctions implements PureFImage.PositionFunction {
+public abstract class TestPosFunctions implements PureFImage.PositionFunction,Serializable {
 	/**
 	 * diagonal line
 	 * 

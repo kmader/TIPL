@@ -9,6 +9,7 @@
             </manifest>
             <fileset dir="../bin">
             	<include name="tipl/**/*.class"/>
+            	<include name="META-INF/**/*.*"/>
             </fileset>
             <zipfileset excludes="META-INF/*.SF" src="../libraries/ij.jar"/>
             <!-- <zipfileset excludes="META-INF/*.SF" src="../libraries/ij2/ij-data-2.0.0-beta-7.jar"/> -->
