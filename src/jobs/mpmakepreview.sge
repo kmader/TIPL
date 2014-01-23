@@ -1,5 +1,5 @@
 # Make Previews using Paraview of all the files in a directory 
-# This is designed for all types of experiments with *_bw, *_dto, *_nh endings
+# This is designed for bone or bone like experiments but can be modified by changing (bone,mask,lmask,cmask) to other values 
 #
 # This script uses the tight integration of openmpi-1.4.3-intel-12.1 in SGE
 # using the parallel environment (PE) "orte".  
@@ -9,25 +9,26 @@
 #  -o /gpfs/home/mader/MakePreview2.log
 #$ -cwd
 #$ -j y
-#$ -pe smp 1
+#$ -pe smp 8
 #$ -M kevinmader+merlinsge@gmail.com
 #$ -m ae
-#$ -o MakePreviewA.log
-#$ -N MakePreviewsA
+#$ -o MakePreviewU.log
+#$ -N MakePreviews
 #$ -l mem_free=22G,ram=22G,s_rt=23:59:00,h_rt=24:00:00
 ###################################################
 # Fix the SGE environment-handling bug (bash):
 source /usr/share/Modules/init/sh
 export -n -f module
-scratchDir="/home/scratch/$(whoami)/"
-mkdir $scratchDir
+mkdir /home/scratch/mader/
 module add paraview
+mpirun -np 8 pvserver --use-offscreen-rendering &
 export CLASSPATH=/afs/psi.ch/project/tipl/jar/TIPL.jar
 JCMD="/afs/psi.ch/project/tipl/jvm/bin/java"
 JARGS="-d64 -Xmx12G -Xms10G" 
 pvpython='/opt/paraview/paraview-3.14.0/bin/pvpython'
-vaim="$JCMD $JARGS tipl.formats.VirtualAim"
-fscale="$JCMD tipl.tools.VFilterScale"
+vaim="java $JARGS tipl.formats.VirtualAim"
+fscale="java tipl.tools.VFilterScale"
+renderpy="/afs/psi.ch/project/tipl/Python/mppvrawrender.py"
 
 startDir=$(pwd)
 #startDir="/gpfs/home/mader/new/"
@@ -44,11 +45,7 @@ do
                 cd "$file";
 		pwd
 		# poros
-		filelist="poros plat bubbles thickmap"
-		for cfile in *_bw.tif; do filelist="$filelist ${cfile%.*}"; done # Masks
-		for cfile in *_dto.tif; do filelist="$filelist ${cfile%.*}"; done # Thickness maps
-		for cfile in *_nh.tif; do filelist="$filelist ${cfile%.*}"; done # Neighbor images
-		for obj in $filelist
+		for obj in bone mask lmask cmask poros bubbles plat thickmap pore solid #canaldtb maskdto canaldto  
 		do
                 	outPngFile="$startDir/previews/$obj-$file.png"
 			
@@ -57,27 +54,34 @@ do
 				echo "Image - $outPngFile: Exists Already or Missing Tif"
 			else
 				echo "Starting, Converting to Raw $outPngFile"
-				RAWFILE="$scratchDir/$obj-$file.raw"
-				IMGFILE="$scratchDir/$obj-$file.tif"
+				RAWFILE="/home/scratch/mader/$obj-$file.raw"
+				IMGFILE="/home/scratch/mader/$obj-$file.tif"
 				LOCALCMD="cp $obj.tif $IMGFILE"
 				echo "$LOCALCMD"
 				$LOCALCMD
-				CONVCMD="$vaim -convert=$IMGFILE -localdir=$scratchDir -output=$RAWFILE"
+				CONVCMD="$vaim -convert=$IMGFILE -output=$RAWFILE"
 				# This allows the data to be rescaled (for very large datasets paraview gets crashy)
 				#CONVCMD="$fscale -input=$IMGFILE -output=$RAWFILE"
 				echo "$CONVCMD"
 				$CONVCMD
 				# Rendering using Paraview
-				PVCMD="$pvpython /afs/psi.ch/project/tipl/Python/pvrawrender.py $RAWFILE"
-				if [[ $obj == *dto* ]]
+				PVCMD="$pvpython $renderpy $RAWFILE"
+				if [ "$obj" == "canaldtb" ]
+				then
+					PVCMD="$PVCMD 0 640"
+				fi
+				if [ "$obj" == "maskdto" ]
+				then
+					PVCMD="$PVCMD 0 320"
+				fi
+				if [ "$obj" == "thickmap" ]
+				then
+					PVCMD="$PVCMD 0 320"
+				fi
+				if [ "$obj" == "canaldto" ]
 				then
 					PVCMD="$PVCMD 0 160"
 				fi
-				if [[ $obj == *nh* ]]
-				then
-					PVCMD="$PVCMD 0 20"
-				fi
-				
 				
 				echo "$PVCMD"
 				$PVCMD
@@ -94,7 +98,7 @@ do
 			fi
 		done
 		
-		RMCMD="rm $scratchDir/*$file*.*"
+		RMCMD="rm /home/scratch/mader/*$file*.*"
 		echo "$RMCMD"
 		$RMCMD
 		
@@ -102,7 +106,7 @@ do
                 continue
         fi
 done
-RMCMD="rm -Rf $scratchDir"
+RMCMD="rm -R /home/scratch/mader"
 $RMCMD
 
 ###################################################

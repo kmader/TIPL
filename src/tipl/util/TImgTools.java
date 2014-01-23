@@ -690,6 +690,18 @@ public class TImgTools {
 	public static TImg ReadTImg(final String path) {
 		return getStorage().readTImg(path);
 	}
+	
+	/**
+	 * Read a single slice from the image and make sure the image is retained in the cache
+	 * @param path the path to the image
+	 * @param sliceNumber the number of the slice
+	 * @param imgType the type of the image
+	 * @return the object containing the slice as whatever it should be
+	 */
+	public static Object ReadTImgSlice(final String path, final int sliceNumber,final int imgType) {
+		assert(isValidType(imgType));
+		return ReadTImg(path,true,true).getPolyImage(sliceNumber, imgType);
+	}
 
 	/**
 	 * Read an image and save it to the global cache for later retrival (must

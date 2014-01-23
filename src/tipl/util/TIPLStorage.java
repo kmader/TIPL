@@ -3,7 +3,9 @@
  */
 package tipl.util;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import tipl.formats.ConcurrentReader;
 import tipl.formats.TImg;
@@ -35,7 +37,7 @@ public class TIPLStorage implements ITIPLStorage {
 	}
 
 	protected LinkedHashMap<String, StampedObj<TImg>> cachedImages = new LinkedHashMap<String,  StampedObj<TImg>>();
-
+	
 	/**
 	 * Nothing really to be constructed yet
 	 */
@@ -54,7 +56,9 @@ public class TIPLStorage implements ITIPLStorage {
 		else
 			return ConcurrentReader.CacheImage(inImage, inImage.getImageType());
 	}
-
+	
+	
+	
 	@Override
 	public int getCacheLevel() {
 		// TODO Auto-generated method stub
@@ -82,7 +86,23 @@ public class TIPLStorage implements ITIPLStorage {
 			cachedImages.put(path, new ITIPLStorage.StampedObj<TImg>(curImg));
 		return curImg;
 	}
-
+	/** 
+	 * delete all of the images in the cache that haven't been accessed for certain number of seconds
+	 * @param deadTime
+	 * @return
+	 */
+	public boolean autopurge(int deadTime) {
+		List<String> toDelete=new ArrayList<String>(cachedImages.size());
+		
+		for(String cPath: cachedImages.keySet()) {
+			if (cachedImages.get(cPath).getAge()>deadTime) toDelete.add(cPath);
+		}
+		for(String cPath: toDelete) cachedImages.remove(cPath);
+		return (toDelete.size()>0);
+		
+	}
+	public boolean autopurge() {return autopurge(500);}
+	
 	public boolean RemoveTImgFromCache(final String path) {
 		try {
 			cachedImages.remove(path);
@@ -108,6 +128,9 @@ public class TIPLStorage implements ITIPLStorage {
 			final boolean saveToCache) {
 
 		try {
+			/**
+			 * Otherwise it gets in an infinite loop wrapping virtualaims in virtualaims
+			 */
 			if (curImg instanceof VirtualAim)
 				((VirtualAim) curImg).WriteAim(path);
 			else

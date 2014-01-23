@@ -40,6 +40,13 @@ public interface ITIPLStorage {
 			lastAccessedTime=new Date();
 			return curImg;
 		}
+		/**
+		 * get the age of the stamped objects in seconds
+		 * @return
+		 */
+		public double getAge() {
+			 return  ( (new Date()).getTime() - lastAccessedTime.getTime()) / 1000. ;
+		}
 		
 	}
 	// enumerated memory states

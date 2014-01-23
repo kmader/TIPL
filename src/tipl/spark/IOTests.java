@@ -18,10 +18,12 @@ package tipl.spark;
  * limitations under the License.
  */
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.spark.api.java.JavaPairRDD;
@@ -32,13 +34,16 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
+import org.apache.spark.api.java.function.VoidFunction;
 
 import scala.Tuple1;
 import scala.Tuple2;
+import scala.Tuple3;
 import scala.concurrent.duration.Duration;
 import tipl.formats.TImgRO;
-import tipl.spark.VolumeFraction.Result;
 import tipl.tests.TestPosFunctions;
+import tipl.util.ArgumentParser;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 /** Computes an approximation to pi */
@@ -67,19 +72,6 @@ public class IOTests {
 	}
 	
 	static protected final int loopMax=200;
-	protected static Result processSlice(int[] workData) {
-		long inV=0,outV=0;
-		/** Do something silly like count each slice 100 times and count the in phase only on the even slices
-		 * and the out of phase only on the odd slices
-		 */
-		for(int i=0;i<loopMax;i++) {
-			for(int cVal: workData) {
-				if(cVal>0 && (i%2==0)) inV++;
-				else if (cVal<0 && i%2==1) outV++;
-			}
-		}
-		return new Result(inV,outV);
-	}
 	public static class DImg implements Serializable {
 		final int sliceNum;
 		final int[] sliceData;
@@ -89,23 +81,26 @@ public class IOTests {
 		}
 		
 	}
-	public static JavaPairRDD<Integer,int[]> ReadIntImg(final JavaSparkContext jsc, final String imgName) {
-		final TImgRO cImg=TImgTools.ReadTImg(imgName);
+	public static JavaPairRDD<Integer,int[]> ReadIntImg(final JavaSparkContext jsc, final String localImgName) {
+		final String imgName = (new File(localImgName)).getAbsolutePath();
+		TImgRO cImg=TImgTools.ReadTImg(imgName);
 		final int sliceCount=cImg.getDim().z;
 		
 		List<Integer> l = new ArrayList<Integer>(sliceCount);
 		for (int i = 0; i < sliceCount; i++) {
 			l.add(i);
 		}
-		return jsc.parallelize(l).map(new PairFunction<Integer,Integer,int[]>() {
+		int blocks=sliceCount/10;
+		if (blocks<1) blocks=1;
+		return jsc.parallelize(l,blocks).map(new PairFunction<Integer,Integer,int[]>() {
 			@Override
 			public Tuple2<Integer,int[]> call(Integer sliceNum) {
-				final int[] cSlice=(int[]) cImg.getPolyImage(sliceNum.intValue(),2);
+				final int[] cSlice=(int[]) TImgTools.ReadTImgSlice(imgName,sliceNum.intValue(),2);
 				return new Tuple2<Integer,int[]>(sliceNum,cSlice);
 			}
 		});
 	}
-	public static JavaPairRDD<Integer,int[]> SpreadImage(final JavaSparkContext jsc, final JavaPairRDD<Integer,int[]> inImg,final int windowSize) {
+	public static JavaPairRDD<Integer,List<int[]>> SpreadImage(final JavaSparkContext jsc, final JavaPairRDD<Integer,int[]> inImg,final int windowSize) {
 		return inImg.flatMap(
 				  new PairFlatMapFunction<Tuple2<Integer,int[]>, Integer,int[]>() {
 				    public Iterable<Tuple2<Integer,int[]>> call(Tuple2<Integer,int[]> inD) {
@@ -117,53 +112,107 @@ public class IOTests {
 						}
 						return outList;
 				    }
-				  });
+				  }).groupByKey();
 	}
-	public static JavaPairRDD<Integer,int[]> FilterImage(final JavaPairRDD<Integer,int[]> inImg) {
-		return inImg.reduceByKey(new Function2<int[],int[],int[]>() {
+	@SuppressWarnings("serial")
+	public static JavaPairRDD<Integer,int[]> FilterImage(final JavaPairRDD<Integer,List<int[]>> inImg) {
+		return inImg.map(
+				new PairFunction<Tuple2<Integer,List<int[]>>,Integer,int[]>() {
 			@Override
-			public int[] call(int[] arg0, int[] arg1)
+			public Tuple2<Integer, int[]> call(Tuple2<Integer, List<int[]>> groupImg)
 					throws Exception {
-				int[] out=new int[arg0.length];
-				System.arraycopy(arg0, 0, out, 0, arg0.length);
-				for(int i=0;i<arg1.length;i++) out[i]+=arg1[i];
-				System.out.println("Reduce filt:"+out[100]+" from "+arg0[100]+", "+arg1[100]);
-				return out;
+				int[] out=new int[groupImg._2.get(0).length];
+				for(int[] cImg : groupImg._2) for(int i=0;i<out.length;i++) out[i]+=cImg[i];
+				return new Tuple2<Integer,int[]>(groupImg._1,out);
 			}
 		});
 	}
+	protected static Tuple3<Double,Double,Double> countSlice(int[] workData) {
+		double sumV=0;
+		double sumV2=0;
+		long cntV=0;
+		for(int cVal: workData) {
+				sumV+=cVal;
+				sumV2+=Math.pow(cVal,2);
+				cntV++;
+		}
+		return new Tuple3<Double,Double,Double>(new Double(sumV),new Double(sumV2),new Double(cntV));
+		
+	}
+	public static String printImSummary(final Tuple3<Double,Double,Double> inData) {
+		final double sumV=inData._1().doubleValue();
+		final double sumV2=inData._2().doubleValue();
+		final double cntV=inData._3().doubleValue();
+		double meanV=(sumV/(1.0*cntV));
+		return String.format("Mean:%3.2f\tSd:%3.2f\tSum:%3.0f",meanV,Math.sqrt((sumV2-Math.pow(sumV,2))/(1.0*cntV)),cntV);
+	}
+	public static String ImageSummary(final JavaPairRDD<Integer,int[]> inImg) {
+		Tuple3<Double,Double,Double> zeroPt=new Tuple3<Double,Double,Double>(new Double(0),new Double(0),new Double(0));
+
+		Tuple3<Double,Double,Double> imSum=inImg.map(new Function<Tuple2<Integer,int[]>,Tuple3<Double,Double,Double>>() {
+			@Override
+			public Tuple3<Double, Double,Double> call(Tuple2<Integer, int[]> arg0)
+					throws Exception {
+				return countSlice(arg0._2());
+			}
+		}).reduce(new Function2<Tuple3<Double,Double,Double>,Tuple3<Double,Double,Double>,Tuple3<Double,Double,Double>>() {
+			@Override
+			public Tuple3<Double, Double, Double> call(Tuple3<Double, Double, Double> arg0,
+					Tuple3<Double, Double, Double> arg1) throws Exception {
+				// TODO Auto-generated method stub
+				return new Tuple3<Double,Double,Double>(arg0._1()+arg1._1(),arg0._2()+arg1._2(),arg0._3()+arg0._3());
+			}
+			
+		});
+		
+		String outString=printImSummary(imSum)+"\n";
+		
+		final List<Integer> keyList=inImg.map(new Function<Tuple2<Integer,int[]>,Integer>() {
+			@Override
+			public Integer call(Tuple2<Integer, int[]> arg0) throws Exception {
+				return arg0._1;
+			}
+		}).collect();
+		for(Integer cVal: keyList) outString+=cVal+",";
+		return outString;
+	}
+	protected static int range=3;
 	public static Result sendTImgTest(final JavaSparkContext jsc,final String imgName) {
-		JavaPairRDD<Integer,int[]> dataSet = ReadIntImg(jsc,imgName);
-		JavaPairRDD<Integer,int[]> dataSet2 = SpreadImage(jsc,dataSet,100);
+		JavaPairRDD<Integer,int[]> dataSet = ReadIntImg(jsc,imgName).filter(new Function<Tuple2<Integer,int[]>,Boolean>() {
+
+			@Override
+			public Boolean call(Tuple2<Integer, int[]> arg0) throws Exception {
+				return new Boolean(arg0._1<100);
+			}
+			
+		}).cache();
+
+		JavaPairRDD<Integer,List<int[]>> dataSet2 = SpreadImage(jsc,dataSet,range);
 		JavaPairRDD<Integer,int[]> dataSet3 = FilterImage(dataSet2);
-		System.out.println("Number of Slices "+dataSet.count());
-		System.out.println("Number of Slices after spread "+dataSet2.count());
-		System.out.println("Number of Slices after filter "+dataSet.count());
-		System.out.println("Number of Slices after spread (distinct)"+dataSet2.distinct().count());
+		System.out.println("Number of Slices "+dataSet.count()+", "+ImageSummary(dataSet));
+		System.out.println("Number of Slices after filter "+dataSet3.count()+", "+ImageSummary(dataSet3));
 		return new Result(0,0);
 	}
 
 
 	public static void main(String[] args) throws Exception {
-		String masterName;
-		if (args.length == 0) {
-			System.err.println("Usage: IOTests <master> [slices], assuming local[4]");
-			masterName="local[4]";
-		} else {
-			masterName=args[0];
-		}
-		String fileName="/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff";
+		ArgumentParser p=TIPLGlobal.activeParser(args);
+		
+		final String masterName=p.getOptionString("master", "local[4]", "Name of the master node for Spark");
+		final String imagePath=p.getOptionPath("path", "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory) to read in");
+		range=p.getOptionInt("range", range, "The range to use for the filter");
+		p.checkForInvalid();
 		JavaSparkContext jsc = getContext(masterName,"IOTest");
 		long start1=System.currentTimeMillis();
-		Result outCount1=sendTImgTest(jsc,fileName);
+		Result outCount1=sendTImgTest(jsc,imagePath);
 		long startLocal=System.currentTimeMillis();
 		// run test locally for comparison
-		Result outCountLocal=sendTImgTest(getContext("local","LocalIO"),fileName);
+		//Result outCountLocal=sendTImgTest(getContext("local","LocalIO"),imagePath);
 		
 		System.out.println(String.format("Distributed Image\n\tVolume Fraction: \t\t%s\n\tCalculation time: \t%s",
 				outCount1.getVF(), Duration.create(startLocal - start1, TimeUnit.MILLISECONDS) ));
-		System.out.println(String.format("Local Calculation\n\tVolume Fraction: \t\t%s\n\tCalculation time: \t%s",
-				outCountLocal.getVF(), Duration.create(System.currentTimeMillis() - startLocal, TimeUnit.MILLISECONDS) ));
+		//System.out.println(String.format("Local Calculation\n\tVolume Fraction: \t\t%s\n\tCalculation time: \t%s",
+		//		outCountLocal.getVF(), Duration.create(System.currentTimeMillis() - startLocal, TimeUnit.MILLISECONDS) ));
 
 	}
 }

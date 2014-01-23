@@ -142,7 +142,7 @@ public class VolumeFraction {
 	public static void main(String[] args) throws Exception {
 		String masterName;
 		if (args.length == 0) {
-			System.err.println("Usage: JavaLogQuery <master> [slices], assuming local[4]");
+			System.err.println("Usage: VolumeFraction <master> [slices], assuming local[4]");
 			masterName="local[4]";
 		} else {
 			masterName=args[0];
