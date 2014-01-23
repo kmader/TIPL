@@ -18,52 +18,51 @@ package tipl.spark;
  * limitations under the License.
  */
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /** Computes an approximation to pi */
 public class PiEstimator {
 
-  public static void main(String[] args) throws Exception {
-    String masterName;
-	  if (args.length == 0) {
-      System.err.println("Usage: JavaLogQuery <master> [slices], assuming local[4]");
-      masterName="local[4]";
-    } else {
-    	masterName=args[0];
-    }
-    JavaSparkContext jsc = new JavaSparkContext(masterName, "JavaLogQuery",
-      System.getenv("SPARK_HOME"), JavaSparkContext.jarOfClass(PiEstimator.class));
+	public static void main(String[] args) throws Exception {
+		String masterName;
+		if (args.length == 0) {
+			System.err.println("Usage: JavaLogQuery <master> [slices], assuming local[4]");
+			masterName="local[4]";
+		} else {
+			masterName=args[0];
+		}
+		JavaSparkContext jsc = new JavaSparkContext(masterName, "JavaLogQuery",
+				System.getenv("SPARK_HOME"), JavaSparkContext.jarOfClass(PiEstimator.class));
 
-    int slices = (args.length == 2) ? Integer.parseInt(args[1]) : 2;
-    int n = 100000 * slices;
-    List<Integer> l = new ArrayList<Integer>(n);
-    for (int i = 0; i < n; i++) {
-      l.add(i);
-    }
+		int slices = (args.length == 2) ? Integer.parseInt(args[1]) : 2;
+		int n = 100000 * slices;
+		List<Integer> l = new ArrayList<Integer>(n);
+		for (int i = 0; i < n; i++) {
+			l.add(i);
+		}
 
-    JavaRDD<Integer> dataSet = jsc.parallelize(l, slices);
+		JavaRDD<Integer> dataSet = jsc.parallelize(l, slices);
 
-    int count = dataSet.map(new Function<Integer, Integer>() {
-      @Override
-      public Integer call(Integer integer) {
-        double x = Math.random() * 2 - 1;
-        double y = Math.random() * 2 - 1;
-        return (x * x + y * y < 1) ? 1 : 0;
-      }
-    }).reduce(new Function2<Integer, Integer, Integer>() {
-      @Override
-      public Integer call(Integer integer, Integer integer2) {
-        return integer + integer2;
-      }
-    });
+		int count = dataSet.map(new Function<Integer, Integer>() {
+			@Override
+			public Integer call(Integer integer) {
+				double x = Math.random() * 2 - 1;
+				double y = Math.random() * 2 - 1;
+				return (x * x + y * y < 1) ? 1 : 0;
+			}
+		}).reduce(new Function2<Integer, Integer, Integer>() {
+			@Override
+			public Integer call(Integer integer, Integer integer2) {
+				return integer + integer2;
+			}
+		});
 
-    System.out.println("Pi is roughly " + 4.0 * count / n);
-  }
+		System.out.println("Pi is roughly " + 4.0 * count / n);
+	}
 }

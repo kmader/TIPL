@@ -2,14 +2,16 @@ package tipl.formats;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.ITIPLStorage;
 import tipl.util.TImgTools;
 
-/** Interface for reading TImg files from a data source */
-public interface TReader {
+/** Interface for reading TImg files from a data source 
+ * this is now serializable but obviously this only makes sense if they are on the path */
+public interface TReader extends Serializable {
 	public static abstract class SliceReader implements TSliceReader {
 		protected D3int offset = new D3int(0, 0, 0);
 		protected D3int pos = new D3int(0, 0, 0);
@@ -323,11 +325,11 @@ public interface TReader {
 
 	}
 
-	public interface TSliceFactory {
+	public interface TSliceFactory extends Serializable {
 		public TSliceReader ReadFile(File curfile) throws IOException;
 	}
 
-	public static interface TSliceReader {
+	public static interface TSliceReader extends Serializable {
 		public boolean CheckSizes(String otherPath);
 
 		public void checkSliceDim(D3int globalDim) throws IOException;
