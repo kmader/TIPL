@@ -34,10 +34,8 @@ import tipl.util.TImgTools;
 public class DTImg<T extends Cloneable> implements TImg {
 	final protected JavaSparkContext cJsc;
 	final int imageType;
-	final JavaRDD<TImgBlock<T>> baseImg;
+	final JavaPairRDD<D3int,TImgBlock<T>> baseImg;
 	final String path;
-	
-	
 	
 	/**
 	 * create a new image from a javasparkcontext and a path and type
@@ -52,7 +50,7 @@ public class DTImg<T extends Cloneable> implements TImg {
 		path=imgName;
 		cJsc=jsc;
 	}
-	public DTImg(JavaSparkContext jsc,TImgRO parent,JavaRDD<TImgBlock<T>> newImage,int imgType) {
+	public DTImg(JavaSparkContext jsc,TImgRO parent,JavaPairRDD<D3int,TImgBlock<T>> newImage,int imgType) {
 		baseImg=newImage;
 		imageType=imgType;
 		TImgTools.mirrorImage(parent, this);
@@ -67,21 +65,25 @@ public class DTImg<T extends Cloneable> implements TImg {
 	 * @param windowSize range above and below to spread
 	 * @return
 	 */
-	public JavaRDD<TImgBlock<T>> SpreadSlices(final int windowSize) {
+	public JavaPairRDD<D3int,TImgBlock<T>> SpreadSlices(final int windowSize) {
 		final D3int sliceDim=new D3int(getDim().x,getDim().y,1);
 		return baseImg.flatMap(
-				  new FlatMapFunction<TImgBlock<T>,TImgBlock<T>>() {
-				    public Iterable<TImgBlock<T>> call(TImgBlock<T> inSlice) {
-				    	List<TImgBlock<T>> outList = new ArrayList<TImgBlock<T>>(2*windowSize+1);
+				  new PairFlatMapFunction<Tuple2<D3int,TImgBlock<T>>,D3int,TImgBlock<T>>() {
+				    public Iterable<Tuple2<D3int,TImgBlock<T>>> call(Tuple2<D3int,TImgBlock<T>> inData) {
+				    	final TImgBlock<T> inSlice=inData._2();
+				    	List<Tuple2<D3int,TImgBlock<T>>> outList = new ArrayList<Tuple2<D3int,TImgBlock<T>>>(2*windowSize+1);
 						for (int i = -windowSize; i <= windowSize; i++) {
-							D3int oPos=inSlice.getPos();
+							D3int oPos=inData._1();
 							D3int nPos=new D3int(oPos.x,oPos.y,oPos.z+i);
 							D3int nOffset=new D3int(0,0,i);
 							/** the clone is used otherwise it loses slices when they drift between 
 							 * machines (I think)
 							 */
 							if (nPos.z>0 & nPos.z<getDim().z) 
-								outList.add(new TImgBlock<T>(inSlice.getClone(),nPos,sliceDim,nOffset));
+								outList.add(new Tuple2<D3int,TImgBlock<T>>(
+										nPos,
+										new TImgBlock<T>(inSlice.getClone(),nPos,sliceDim,nOffset)
+										));
 						}
 						return outList;
 				    }
@@ -93,7 +95,7 @@ public class DTImg<T extends Cloneable> implements TImg {
 	 *
 	 * @param <W> the type of the image as an array
 	 */
-	protected static class ReadSlice<W extends Cloneable> extends Function<Integer,TImgBlock<W>> {
+	protected static class ReadSlice<W extends Cloneable> extends PairFunction<Integer,D3int,TImgBlock<W>> {
 		protected final String imgPath;
 		protected final int imgType;
 		protected final D3int imgPos;
@@ -112,9 +114,10 @@ public class DTImg<T extends Cloneable> implements TImg {
 			this.imgType=inType;
 		}
 		@Override
-		public TImgBlock<W> call(Integer sliceNum) {
+		public Tuple2<D3int,TImgBlock<W>> call(Integer sliceNum) {
 			final W cSlice = (W) TImgTools.ReadTImgSlice(imgPath,sliceNum.intValue(),imgType);
-			return new TImgBlock<W>(cSlice,new D3int(imgPos.x,imgPos.y,imgPos.z+sliceNum),sliceDim);
+			final D3int cPos=new D3int(imgPos.x,imgPos.y,imgPos.z+sliceNum);
+			return new Tuple2<D3int,TImgBlock<W>>(cPos,new TImgBlock<W>(cSlice,cPos,sliceDim));
 		}
 	}
 	/**
@@ -124,7 +127,7 @@ public class DTImg<T extends Cloneable> implements TImg {
 	 * @param imgType
 	 * @return
 	 */
-	protected static <U extends Cloneable> JavaRDD<TImgBlock<U>> ImportImage(final JavaSparkContext jsc, final String imgName,final int imgType) {
+	protected static <U extends Cloneable> JavaPairRDD<D3int,TImgBlock<U>> ImportImage(final JavaSparkContext jsc, final String imgName,final int imgType) {
 		assert(TImgTools.isValidType(imgType));
 		final TImgRO cImg=TImgTools.ReadTImg(imgName,false,true);
 		final D3int imgDim=cImg.getDim();
@@ -143,17 +146,20 @@ public class DTImg<T extends Cloneable> implements TImg {
 	 * @param imgType
 	 * @return
 	 */
-	protected static <U extends Cloneable> JavaRDD<TImgBlock<U>> MigrateImage(final JavaSparkContext jsc, TImgRO cImg,final int imgType) {
+	protected static <U extends Cloneable> JavaPairRDD<D3int,TImgBlock<U>> MigrateImage(final JavaSparkContext jsc, TImgRO cImg,final int imgType) {
 		assert(TImgTools.isValidType(imgType));
 		final D3int imgDim=cImg.getDim();
 		final D3int imgPos=cImg.getPos();
 		final D3int sliceDim=new D3int(imgDim.x,imgDim.y,1);
-		List<TImgBlock<U>> inSlices = new ArrayList<TImgBlock<U>>(imgDim.z);
+		List<Tuple2<D3int,TImgBlock<U>>> inSlices = new ArrayList<Tuple2<D3int,TImgBlock<U>>>(imgDim.z);
 		for (int i = 0; i < imgDim.z; i++) {
 			D3int nPos=new D3int(imgPos.x,imgPos.y,imgPos.z+i);
-			inSlices.add(new TImgBlock<U>((U) cImg.getPolyImage(i,imgType),nPos,sliceDim));
+			inSlices.add(new Tuple2<D3int,TImgBlock<U>>(
+					nPos,
+					new TImgBlock<U>((U) cImg.getPolyImage(i,imgType),nPos,sliceDim)
+					));
 		}
-		return jsc.parallelize(inSlices);
+		return jsc.parallelizePairs(inSlices);
 	}
 	
 	protected String procLog="";
@@ -263,7 +269,7 @@ public class DTImg<T extends Cloneable> implements TImg {
 
 	@Override
 	public TImg inheritedAim(TImgRO inAim) {
-		JavaRDD<TImgBlock<T>> oldImage=MigrateImage(cJsc,inAim,getImageType());
+		JavaPairRDD<D3int,TImgBlock<T>> oldImage=MigrateImage(cJsc,inAim,getImageType());
 		return new DTImg<T>(cJsc,this,oldImage,getImageType());
 	}
 
