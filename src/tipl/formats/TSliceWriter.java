@@ -1,6 +1,7 @@
 package tipl.formats;
 
 import java.io.FileFilter;
+import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -10,8 +11,10 @@ import java.util.HashMap;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 import net.java.sezpoz.Indexable;
+import scala.tools.nsc.settings.Final;
 import tipl.formats.DirectoryReader.DRFactory;
 import tipl.formats.DirectoryReader.DReader;
+import tipl.util.ArgumentList.TypedPath;
 import tipl.util.TImgBlock;
 
 /**
@@ -22,7 +25,7 @@ import tipl.util.TImgBlock;
  * @author mader
  *
  */
-public interface TSliceWriter {
+public interface TSliceWriter extends Serializable {
 	@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
 	@Retention(RetentionPolicy.SOURCE)
 	@Indexable(type = DWFactory.class)
@@ -32,7 +35,14 @@ public interface TSliceWriter {
 	}
 
 	public static abstract interface DWFactory {
-		public TSliceWriter get(String path);
+		/**
+		 * Get the slicewriter
+		 * @param imageData the image data (just need the header information)
+		 * @param path the output folder to write to 
+		 * @param imgType the type of image to write (default -1)
+		 * @return the instance of the writer, after setup has been run and header written
+		 */
+		public TSliceWriter get(TImgRO imageData,String path,int imgType);
 	}
 	/**
 	 * Since TSliceWriter is an interface and since this isnt java8 I need a subclass to have static functions
@@ -59,7 +69,7 @@ public interface TSliceWriter {
 		 *            folder path name
 		 * @return best suited directory reader
 		 */
-		public static TSliceWriter ChooseBest(final String path) {
+		public static TSliceWriter ChooseBest(final TImgRO outImage,final TypedPath path,int imgType) {
 			HashMap<String, DWFactory> allFacts;
 			try {
 				allFacts = getAllFactories();
@@ -70,14 +80,13 @@ public interface TSliceWriter {
 
 			}
 			System.out.println("Loaded "+TSliceWriter.class.getName()+" Plugins:");
-			for(String cFilter: allFacts.keySet()) return allFacts.get(cFilter).get(path);
+			for(String cFilter: allFacts.keySet()) return allFacts.get(cFilter).get(outImage,path.getPath(),imgType);
 			throw new IllegalArgumentException("No matching filters found:"+path);
 		}
 	}
 
-
 	/** The command to initialize the writer */
-	public void SetupWriter(TImg inputImage, String outputPath, int outType);
+	public void SetupWriter(TImgRO imgToSave, String outputPath, int outType);
 
 	/** write just the header */
 	public void WriteHeader();

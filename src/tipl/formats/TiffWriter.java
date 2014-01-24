@@ -20,6 +20,7 @@ import com.sun.media.jai.codec.TIFFField;
 import com.sun.media.jai.codecimpl.util.DataBufferFloat;
 import com.sun.media.jai.codecimpl.util.RasterFactory;
 
+import tipl.formats.DirectoryReader.DRFactory;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
@@ -29,9 +30,17 @@ import tipl.util.TImgTools;
  * A function for writing images based on the slices inside. 
  * @author mader
  *
- * @param <T>
  */
 public class TiffWriter implements TSliceWriter {
+	@TSliceWriter.DWriter(name = "Tiff Folder",type="tif")
+	final public static DWFactory myFactory = new DWFactory() {
+		@Override
+		public TSliceWriter get(final TImgRO outFile,final String path,int outType) {
+			TSliceWriter outWriter=new TiffWriter();
+			outWriter.SetupWriter(outFile, path, outType);
+			return outWriter;
+		}
+	};
 	protected String plPath="";
 
 	protected String outpath="";
@@ -42,20 +51,19 @@ public class TiffWriter implements TSliceWriter {
 	 * output file format
 	 */
 	protected int biType=2;
-	protected boolean isSigned=false;
+	protected boolean isSigned=true;
 	
 	@Override
-	public void SetupWriter(TImg inputImage, String outputPath, int outType) {
+	public void SetupWriter(TImgRO imageToSave, String outputPath, int outType) {
 		final boolean makeFolder = (new File(outputPath)).mkdir();
 		if (makeFolder) {
 			System.out.println("Directory: " + outputPath + " created");
 		}
 		outpath=outputPath;
 		plPath = outputPath + "/procLog.txt";
-		dim=inputImage.getDim();
+		dim=imageToSave.getDim();
 		
-		
-		if (outType==-1) biType=inputImage.getImageType();
+		if (outType==-1) biType=imageToSave.getImageType();
 		else biType=outType;
 		
 		if (biType == 0)
@@ -66,11 +74,11 @@ public class TiffWriter implements TSliceWriter {
 			cType = BufferedImage.TYPE_USHORT_GRAY;
 		if (biType == 3)
 			cType = BufferedImage.TYPE_CUSTOM; // Since we cant write 32bit
-												// floats, lets fake it
+			  							// floats, lets fake it
 		if (biType == 10)
 			cType = BufferedImage.TYPE_BYTE_GRAY;
 
-		theader=TImgHeader.ReadHeadersFromTImg(inputImage);
+		theader=TImgHeader.ReadHeadersFromTImg(imageToSave);
 	}
 
 	@Override

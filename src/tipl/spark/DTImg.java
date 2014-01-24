@@ -15,10 +15,13 @@ import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.VoidFunction;
 
 import scala.Tuple2;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.formats.TSliceWriter;
+import tipl.util.ArgumentList.TypedPath;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TImgBlock;
@@ -324,7 +327,21 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 
 	@Override
 	public void setSigned(boolean inData) {throw new IllegalArgumentException("Not Implemented");}
-	
-	
+	/**
+	 * Save the image in parallel using a TSliceWriter
+	 * @param path
+	 */
+	public void DSave(TypedPath path) {
+		final TSliceWriter cWriter = TSliceWriter.Writers.ChooseBest(this, path, imageType);
+		baseImg.foreach(new VoidFunction<Tuple2<D3int,TImgBlock<T>>>() {
+
+			@Override
+			public void call(Tuple2<D3int, TImgBlock<T>> arg0) throws Exception {
+				cWriter.WriteSlice(arg0._2(), arg0._1().z);
+				
+			}
+			
+		});
+	}
 	
 }

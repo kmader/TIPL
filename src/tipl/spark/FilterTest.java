@@ -16,6 +16,7 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.TImgRO.CanExport;
 import tipl.tools.BaseTIPLPluginIn;
+import tipl.util.ArgumentList.TypedPath;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
@@ -68,14 +69,13 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 		return new Tuple3<Double,Double,Double>(new Double(sumV),new Double(sumV2),new Double(cntV));	
 	}
 	public static void main(String[] args) {
-		ArgumentParser p=TIPLGlobal.activeParser(args);
-		final String masterName=p.getOptionString("master", "local[4]", "Name of the master node for Spark");
+		ArgumentParser p=SparkGlobal.activeParser(args);
 		final String imagePath=p.getOptionPath("path", "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory) to read in");
 		int range=p.getOptionInt("range", 1, "The range to use for the filter");
 		//int maximumSlice=p.getOptionInt("maxs", maximumSlice, "The maximum slice to keep");
-		p.checkForInvalid();
-		JavaSparkContext jsc = SparkGlobal.getContext(masterName,"IOTest");
 		
+		p.checkForInvalid();
+		JavaSparkContext jsc = SparkGlobal.getContext(SparkGlobal.getMasterName(),"IOTest");
 		long start1=System.currentTimeMillis();
 		DTImg<float[]> cImg=new DTImg<float[]>(jsc,imagePath,3);
 		final FilterTest f=new FilterTest();
@@ -88,11 +88,14 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 			}
 			
 		});
+		
 		System.out.println("Input Image\t# of Slices "+cImg.baseImg.count()+", "+ImageSummary(cImg.baseImg));
 		System.out.println("After Filter\t# of Slices "+oImg.count()+", "+ImageSummary(oImg));
 		
 		DTImg<float[]> nImg=new DTImg<float[]>(cImg,oImg,3);
-
+		
+		nImg.DSave(new TypedPath(imagePath+"/badass"));
+		
 		System.out.println(String.format("Distributed Image\n\tVolume Fraction: \t\t%s\n\tCalculation time: \t%s","HAI",
 				Duration.create(System.currentTimeMillis() - start1, TimeUnit.MILLISECONDS) ));
 	}
@@ -108,10 +111,10 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 		// TODO Auto-generated method stub
 		return BaseTIPLPluginIn.fullKernel;
 	}
-
+	
 	@Override
 	public D3int getNeighborSize() {
-		return new D3int(1,1,1);
+		return new D3int(10,10,1);
 	}
 
 
