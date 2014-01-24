@@ -4,6 +4,7 @@
 package tipl.spark;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,8 +32,8 @@ import tipl.util.TImgTools;
  * @author mader
  *
  */
-public class DTImg<T extends Cloneable> implements TImg {
-	final protected JavaSparkContext cJsc;
+public class DTImg<T extends Cloneable> implements TImg, Serializable {
+	//final protected JavaSparkContext cJsc;
 	final int imageType;
 	final JavaPairRDD<D3int,TImgBlock<T>> baseImg;
 	final String path;
@@ -48,14 +49,12 @@ public class DTImg<T extends Cloneable> implements TImg {
 		imageType=imgType;
 		TImgTools.mirrorImage(TImgTools.ReadTImg(imgName), this);
 		path=imgName;
-		cJsc=jsc;
 	}
-	public DTImg(JavaSparkContext jsc,TImgRO parent,JavaPairRDD<D3int,TImgBlock<T>> newImage,int imgType) {
+	public DTImg(TImgRO parent,JavaPairRDD<D3int,TImgBlock<T>> newImage,int imgType) {
 		baseImg=newImage;
 		imageType=imgType;
 		TImgTools.mirrorImage(parent, this);
 		path="[virtual]";
-		cJsc=jsc;
 	}
 	
 	// Here are the specialty functions for DTImages
@@ -79,7 +78,7 @@ public class DTImg<T extends Cloneable> implements TImg {
 							/** the clone is used otherwise it loses slices when they drift between 
 							 * machines (I think)
 							 */
-							if (nPos.z>0 & nPos.z<getDim().z) 
+							if (nPos.z>=0 & nPos.z<getDim().z) 
 								outList.add(new Tuple2<D3int,TImgBlock<T>>(
 										nPos,
 										new TImgBlock<T>(inSlice.getClone(),nPos,sliceDim,nOffset)
@@ -269,8 +268,9 @@ public class DTImg<T extends Cloneable> implements TImg {
 
 	@Override
 	public TImg inheritedAim(TImgRO inAim) {
+		JavaSparkContext cJsc=SparkGlobal.getContext();
 		JavaPairRDD<D3int,TImgBlock<T>> oldImage=MigrateImage(cJsc,inAim,getImageType());
-		return new DTImg<T>(cJsc,this,oldImage,getImageType());
+		return new DTImg<T>(this,oldImage,getImageType());
 	}
 
 
@@ -324,5 +324,7 @@ public class DTImg<T extends Cloneable> implements TImg {
 
 	@Override
 	public void setSigned(boolean inData) {throw new IllegalArgumentException("Not Implemented");}
+	
+	
 	
 }

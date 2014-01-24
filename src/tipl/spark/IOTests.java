@@ -48,10 +48,7 @@ import tipl.util.TImgTools;
 
 /** Computes an approximation to pi */
 public class IOTests {
-	public static JavaSparkContext getContext(String masterName,String jobName) {
-		return new JavaSparkContext(masterName, jobName,
-				System.getenv("SPARK_HOME"), JavaSparkContext.jarOfClass(IOTests.class));
-	}
+
 	
 	protected static class Result implements Serializable {
 		private final long intPixels;
@@ -198,14 +195,13 @@ public class IOTests {
 
 	public static void main(String[] args) throws Exception {
 		ArgumentParser p=TIPLGlobal.activeParser(args);
-		
 		final String masterName=p.getOptionString("master", "local[4]", "Name of the master node for Spark");
 		final String imagePath=p.getOptionPath("path", "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory) to read in");
 		range=p.getOptionInt("range", range, "The range to use for the filter");
 		maximumSlice=p.getOptionInt("maxs", maximumSlice, "The maximum slice to keep");
 		p.checkForInvalid();
 		
-		JavaSparkContext jsc = getContext(masterName,"IOTest");
+		JavaSparkContext jsc = SparkGlobal.getContext(masterName,"IOTest");
 		long start1=System.currentTimeMillis();
 		Result outCount1=sendTImgTest(jsc,imagePath);
 		long startLocal=System.currentTimeMillis();

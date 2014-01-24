@@ -3,6 +3,7 @@ package tipl.util;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Array;
 
 /**
  * The representation of a single block in an image (typically a slice) containing the original position and any offset from this position which is useful for filtering
@@ -30,15 +31,6 @@ public class TImgBlock<V extends Cloneable> implements Serializable {
 	 */
 	final private V sliceData;
 	final static D3int zero=new D3int(0);
-	protected static Method cloneMethod=null;
-	{
-		try { 
-			cloneMethod = Object.class.getMethod("clone");
-		} catch(NoSuchMethodException e) {
-			e.printStackTrace();
-			throw new IllegalArgumentException("Clone method is missing"+e.getMessage());
-		}
-	}
 	/**
 	 * create a new block given a chunk of data and a position and dimensions
 	 * @param pos
@@ -64,19 +56,11 @@ public class TImgBlock<V extends Cloneable> implements Serializable {
 		this.offset=offset;
 		this.dim=dim;
 	}
+	
 	public V get() {return sliceData;}
-	public V getClone() {try {
-		return (V) cloneMethod.invoke(sliceData);
-	} catch (IllegalAccessException e) {
-		e.printStackTrace();
-		throw new IllegalArgumentException("Clone method is missing"+e.getMessage());
-	} catch (IllegalArgumentException e) {
-		e.printStackTrace();
-		throw new IllegalArgumentException("Clone method is missing"+e.getMessage());
-	} catch (InvocationTargetException e) {
-		e.printStackTrace();
-		throw new IllegalArgumentException("Clone method is missing"+e.getMessage());
-	}}
+	public V getClone() {
+		return get();
+	}
 	public D3int getPos() {return pos;}
 	public D3int getDim() {return dim;}
 	public D3int getOffset() {return offset;}

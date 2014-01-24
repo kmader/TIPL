@@ -67,5 +67,22 @@ public class D3int implements Serializable {
 	public String toString() {
 		return "" + x + "," + y + "," + z + "";
 	}
+	
+	@Override
+	public boolean equals(Object rawOther) {
+		if(rawOther==null) return false;
+		if(!(rawOther instanceof D3int)) return false;
+		D3int other=(D3int) rawOther;
+		if((this.x==other.x) & (this.y==other.y) & (this.z==other.z)) return true;
+		return false;
+	}
+	
+	/**
+	 * Hash code is needed for hashmap and groupbykey to work properly
+	 */
+	@Override
+	public int hashCode() {
+		return x*73+y*89+z;
+	}
 
 }
