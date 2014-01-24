@@ -137,7 +137,7 @@ public class TiffFolder extends DirectoryReader {
 	};
 
 	@DirectoryReader.DReader(name = "tiff")
-	final public static DRFactory myFactory = new DRFactory() {
+	final public static DRFactory readerFactory = new DRFactory() {
 		@Override
 		public DirectoryReader get(final String path) {
 			try {
@@ -154,11 +154,7 @@ public class TiffFolder extends DirectoryReader {
 			return TiffFolder.tifFilter;
 		}
 	};
-	static {
-		DirectoryReader.Register(tifFilter, myFactory);
-
-	}
-
+	
 	public static void main(final ArgumentParser p) {
 		System.out.println("TiffFolder Tool v" + VirtualAim.kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");

@@ -96,26 +96,6 @@ public abstract class DirectoryReader implements TReader {
 		return allFacts.get(bestFilter).get(path);
 	}
 
-
-
-	public static FileFilter EvaluateDirectory(final String path) {
-
-		System.out.println("Loaded DirectoryReader Plugins:");
-		FileFilter bestFilter = null;
-		int bestLen = 0;
-		for (final FileFilter cFilter : RegisteredReaders.keySet()) {
-			final int zlen = FilterCount(path, cFilter);
-			if (zlen > bestLen) {
-				bestFilter = cFilter;
-				bestLen = zlen;
-			}
-		}
-		if (bestLen < 1)
-			throw new IllegalStateException(
-					"No Appropriate Plugins Have Been Loaded for DirectoryReader");
-		return bestFilter;
-	}
-
 	/**
 	 * Evaluates each directory reader plugin on a given directory and reports
 	 * the number of matches for each filter. The filter with the most matches
@@ -170,14 +150,7 @@ public abstract class DirectoryReader implements TReader {
 	private final boolean signedValue = true;
 
 	private int imageType=-1;
-	@Deprecated
-	private static HashMap<FileFilter, DRFactory> RegisteredReaders = new HashMap<FileFilter, DRFactory>();
 
-	@Deprecated
-	public static void Register(final FileFilter cFilter,
-			final DRFactory dFactory) {
-		RegisteredReaders.put(cFilter, dFactory);
-	}
 
 	public DirectoryReader(final String path, final FileFilter filter,
 			final TSliceFactory itsf) throws IOException {

@@ -1,5 +1,7 @@
 package tipl.formats;
 
+import tipl.util.TImgBlock;
+
 /** Interface for writing TImg files to a data source */
 public interface TWriter {
 	/**
@@ -20,6 +22,9 @@ public interface TWriter {
 	/** The name of the writer, used for menus and logging */
 	public String writerName();
 
-	/** write just a given slice */
-	public void WriteSlice(int n);
+	/**
+	 * write the given slice
+	 * @param outSlicePosition the position to write it too
+	 */
+	public void WriteSlice(int outSlicePosition);
 }

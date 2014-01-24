@@ -185,7 +185,12 @@ public class ArgumentList {
 
 		public boolean isValid(T inValue);
 	}
-
+	/**
+	 * To ensure that an argument matches the type it should
+	 * @author mader
+	 *
+	 * @param <T> the type the argument should be
+	 */
 	public static class TypedArgument<T> implements Argument {
 		protected final T value;
 		// private Class<T> type;
@@ -272,6 +277,46 @@ public class ArgumentList {
 			return !usedDefault;
 		}
 	}
+	/**
+	 * A class that allows paths to be specified in the format
+	 * path::extension and be parsed properly / handled correctly by 
+	 * IO plugins which need to save stacks in folders in the proper format
+	 * the default extension is "" which maps to the first writing tool.
+	 * @author mader
+	 *
+	 */
+	public static class TypedPath {
+		final protected String inStr;
+		final protected String inType;
+		public TypedPath(final TypedPath inTp) {
+			this.inStr=inTp.getPath();
+			this.inType=inTp.getType();
+		}
+		public TypedPath(final String inStr) {
+			String[] spStr=inStr.split("::");
+			if(spStr.length>1) {
+				this.inStr=spStr[0];
+				this.inType=spStr[1];
+			} else {
+				this.inStr=inStr;
+				this.inType="";
+			}
+		}
+		public TypedPath(final String aStr,final String aType) {
+			this.inStr=aStr;
+			this.inType=aType;
+		}
+		public String getType() {
+			return this.inType;
+		}
+		public String getPath() {
+			return this.inStr;
+		}
+		public String toString() {
+			return inStr;
+		}
+	}
+	
 
 	/**
 	 * validated argument is a typed argument that also has validation criteria,
@@ -405,6 +450,12 @@ public class ArgumentList {
 		@Override
 		public String valueOf(final String inStr) {
 			return inStr;
+		}
+	};
+	protected strParse<TypedPath> typePathParse = new strParse<TypedPath>() {
+		@Override
+		public TypedPath valueOf(final String inStr) {
+			return new TypedPath(inStr);
 		}
 	};
 

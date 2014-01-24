@@ -131,12 +131,6 @@ public class DMPFolder extends DirectoryReader {
 			return dmpFilter;
 		}
 	};
-	/**
-	 * Ugly code please remove soon
-	 */
-	static {
-		DirectoryReader.Register(dmpFilter, myFactory);
-	}
 
 	public static void main(final ArgumentParser p) {
 		System.out.println("DMPFolder Tool v" + VirtualAim.kVer);
@@ -146,7 +140,6 @@ public class DMPFolder extends DirectoryReader {
 				"Aim File to Convert");
 		final String outputFile = p.getOptionString("output", "test.tif",
 				"Aim File to Convert");
-		DirectoryReader.EvaluateDirectory(inputFile);
 		try {
 			final DirectoryReader inputAim = new DMPFolder(inputFile);
 			final VirtualAim bob = new VirtualAim(inputAim.getImage());

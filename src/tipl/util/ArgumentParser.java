@@ -342,7 +342,7 @@ public class ArgumentParser extends ArgumentList {
 					defaultPath = defFilename.substring(0,
 							defFilename.lastIndexOf("//") + 1);
 			cArg = new ArgumentList.TypedArgument<String>(getOption(opt),
-					helpString, defaultPath + defFilename, stringParse);
+					helpString,defaultPath + defFilename, stringParse);
 			// helptext.put(opt,helpString+((defFilename.length()>0) ?
 			// ", Default Location (Path:"+defFilename+")" : "(string)"));
 		} else {
