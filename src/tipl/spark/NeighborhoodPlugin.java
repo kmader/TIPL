@@ -34,7 +34,6 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable,V extends Clone
 		abstract public D3int getNeighborSize();
 	}
 	abstract public class FloatFilter extends GatherBasedFilter<float[],float[]> {
-
 		@Override
 		public Tuple2<D3int,TImgBlock<float[]>> GatherBlocks(Tuple2<D3int,List<TImgBlock<float[]>>> inTuple) {
 			final D3int ns=getNeighborSize();
@@ -50,7 +49,7 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable,V extends Clone
 			for(int zp=0;zp<templateBlock.getDim().z;zp++) {
 				for(int yp=0;yp<templateBlock.getDim().y;yp++) {
 					for(int xp=0;xp<templateBlock.getDim().x;xp++) {
-						int off = ((zp) * blockSize.y + (yp)) * blockSize.x+(xp);
+						final int off = ((zp) * blockSize.y + (yp)) * blockSize.x+(xp);
 						BaseTIPLPluginIn.filterKernel curKernel=getKernel(); //curKernels[off];
 						int vcnt=0;
 						int scnt=0;
@@ -58,27 +57,33 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable,V extends Clone
 							scnt=0;
 							final float[] curBlock=cBlock.get();
 							// the offset of the current block
-							final int ix=cBlock.getOffset().x;
-							final int iy=cBlock.getOffset().y;
-							final int iz=cBlock.getOffset().z;
+							final int offx=cBlock.getOffset().x;
+							final int offy=cBlock.getOffset().y;
+							final int offz=cBlock.getOffset().z;
+							// the offset position
+							final int ix=xp+offx;
+							final int iy=yp+offy;
+							final int iz=zp+offz;
 							// need to recalculate the bounds
 							
-							final int start_x=Math.max(-ns.x+ix,0);
-							final int end_x=Math.min(ns.x+ix,blockSize.x);
+							final int start_x=Math.max(ix-ns.x,0);
+							final int end_x=Math.min(ix+ns.x,blockSize.x);
 
-							final int start_y=Math.max(-ns.y+iy,0);
-							final int end_y=Math.min(ns.y+iy,blockSize.y);
+							final int start_y=Math.max(iy-ns.y,0);
+							final int end_y=Math.min(iy+ns.y,blockSize.y);
 
-							final int start_z=Math.max(-ns.z+iz,0);
-							final int end_z=Math.min(ns.z+iz,blockSize.z);
-							// ox,oy,oz are the coordinates inside the second block
+							final int start_z=Math.max(iz-ns.z,0);
+							final int end_z=Math.min(iz+ns.z,blockSize.z);
 							
+							// ox,oy,oz are the coordinates inside the second block
+							System.out.println(String.format("%d: Off%d,%d,%d",off,ix,iy,iz));
+							System.out.println(String.format("X: %d %d-%d,Y: %d %d-%d,Z: %d %d-%d",xp, start_x,end_x,yp, start_y,end_y, zp, start_z,end_z));
 							for(int oz=start_z;oz<end_z;oz++) {
 								for(int oy=start_y;oy<end_y;oy++) {
 									for(int ox=start_x;ox<end_x;ox++) {
 										int off2 = ((oz) * blockSize.y + (oy)) * blockSize.x+(ox);
 										if (mKernel.inside(off, off2, xp, xp+ox, yp, yp+oy, zp, zp+oz)) {
-											curKernel.addpt(xp, xp+ox, yp, yp+oy, zp, zp+oz, curBlock[off2]);
+											curKernel.addpt(xp, ox-offx, yp, oy-offy, zp, oz-offz, curBlock[off2]);
 											vcnt++;
 											scnt++;
 										}
@@ -87,7 +92,7 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable,V extends Clone
 							}
 						}
 						outData[off]=(float) curKernel.value();
-						System.out.println(String.format("Vox : %d %d %d = %d, sc = %d",xp, yp, zp,vcnt,scnt));
+						//System.out.println(String.format("Vox : %d %d %d = %d, sc = %d",xp, yp, zp,vcnt,scnt));
 					}
 				}
 			}

@@ -45,16 +45,16 @@ public class TImgBlock<V extends Cloneable> implements Serializable {
 	}
 	/**
 	 * Create a new block with an offset given a chunk of data and position, dimensions
-	 * @param pos
-	 * @param cSlice
-	 * @param dim
-	 * @param offset
+	 * @param cSlice the block data itself
+	 * @param pos position of the upper left corner of the block
+	 * @param dim the dimension of the block 
+	 * @param offset the offset of the block 
 	 */
 	public TImgBlock(V cSlice,D3int pos,D3int dim,D3int offset) {
 		this.sliceData=cSlice;
 		this.pos=pos;
-		this.offset=offset;
 		this.dim=dim;
+    this.offset=offset;
 	}
 	
 	public V get() {return sliceData;}

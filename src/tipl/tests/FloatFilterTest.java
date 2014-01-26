@@ -18,7 +18,7 @@ public class FloatFilterTest {
 	static public class FloatFilterTestImpl extends FloatFilter {
 		@Override
 		public BaseTIPLPluginIn.filterKernel getKernel() {
-			return BaseTIPLPluginIn.gaussFilter(1);
+			return BaseTIPLPluginIn.gaussFilter(0.5);
 		}
 
 		@Override

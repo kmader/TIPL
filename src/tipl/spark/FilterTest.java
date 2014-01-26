@@ -103,7 +103,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 	@Override
 	public BaseTIPLPluginIn.filterKernel getKernel() {
 		// TODO Auto-generated method stub
-		return BaseTIPLPluginIn.gaussFilter(1.0);
+		return BaseTIPLPluginIn.gaussFilter(2.0);
 	}
 
 	@Override

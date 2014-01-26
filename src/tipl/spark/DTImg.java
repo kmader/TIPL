@@ -36,7 +36,6 @@ import tipl.util.TImgTools;
  *
  */
 public class DTImg<T extends Cloneable> implements TImg, Serializable {
-	//final protected JavaSparkContext cJsc;
 	final int imageType;
 	final JavaPairRDD<D3int,TImgBlock<T>> baseImg;
 	final String path;
