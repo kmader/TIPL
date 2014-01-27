@@ -9,6 +9,11 @@ import tipl.util.TIPLGlobal;
 abstract public class SparkGlobal {
 	static protected JavaSparkContext currentContext=null;
 	static protected String masterName="";
+	/**
+	 * The maximum number of cores which can be used per job
+	 */
+	static public int maxCores=-1;
+	static public String memorySettings="";
 	static protected String getMasterName() {
 		if(masterName.length()<1) masterName="local["+TIPLGlobal.availableCores+"]";
 		return masterName;
@@ -26,6 +31,8 @@ abstract public class SparkGlobal {
 	public static JavaSparkContext getContext(final String inMasterName,final String jobName) {
 		if(currentContext==null) {
 			masterName=inMasterName;
+			if(maxCores>0) System.setProperty("spark.cores.max", ""+maxCores);
+			if(memorySettings.length()>0) System.setProperty("spark.executor.memory", ""+memorySettings);
 			currentContext=new JavaSparkContext(getMasterName(), jobName,System.getenv("SPARK_HOME"), JavaSparkContext.jarOfClass(SparkGlobal.class));
 		}
 		return currentContext;
@@ -39,6 +46,9 @@ abstract public class SparkGlobal {
 	 */
 	public static ArgumentParser activeParser(ArgumentParser sp) {
 		masterName=sp.getOptionString("@masternode",getMasterName(),"The name of the master node to connect to");
+		memorySettings=sp.getOptionString("@sparkmemory",memorySettings,"The memory per job");
+		
+		maxCores=sp.getOptionInt("@sparkcores",maxCores,"The maximum number of cores each job can use (-1 is no maximum)");
 		return sp;//.subArguments("@");
 	}
 }

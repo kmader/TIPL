@@ -29,12 +29,12 @@ import tipl.util.TIPLPluginManager.PluginInfo;
 public class FilterTests {
 	@Parameters
 	public static Collection<PluginInfo[]> getPlugins() {
-		List<PluginInfo> possibleClasses=TIPLPluginManager.getPluginsNamed("Filter");
+		List<PluginInfo> possibleClasses = TIPLPluginManager.getPluginsNamed("Filter");
 		return TIPLTestingLibrary.wrapCollection(possibleClasses);
 	}
 	
 	protected static ITIPLPluginIO makeFilter(final PluginInfo idPlugin,final TImgRO inImage) {
-		final ITIPLPluginIO FL =TIPLPluginManager.getPluginIO(idPlugin);
+		final ITIPLPluginIO FL = TIPLPluginManager.getPluginIO(idPlugin);
 		FL.LoadImages(new TImgRO[] { inImage });
 		return FL;
 	}

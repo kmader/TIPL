@@ -13,26 +13,45 @@ import tipl.util.D3int;
 import tipl.util.TImgBlock;
 import tipl.formats.TImgRO;
 import tipl.spark.NeighborhoodPlugin.FloatFilter;
+import tipl.spark.NeighborhoodPlugin.FloatFilterSlice;
 
 public class FloatFilterTest {
+	
 	static public class FloatFilterTestImpl extends FloatFilter {
 		@Override
 		public BaseTIPLPluginIn.filterKernel getKernel() {
-			return BaseTIPLPluginIn.gaussFilter(0.5);
+			return BaseTIPLPluginIn.gaussFilter(0.6);
 		}
 
 		@Override
 		public BaseTIPLPluginIn.morphKernel getMKernel() {
-			return BaseTIPLPluginIn.fullKernel;
+			return new BaseTIPLPluginIn.stationaryKernel(BaseTIPLPluginIn.fullKernel);	
 		}
 		
 		@Override
 		public D3int getNeighborSize() {
-			return new D3int(1,1,1);
+			return new D3int(2,2,1);
 		}
 	}
-	private FloatFilter ff = new FloatFilterTestImpl();;
-	static final TImgRO lineImg = TestPosFunctions.wrapItAs(4,
+	static public class FloatFilterTestImpl2 extends FloatFilterSlice {
+		@Override
+		public BaseTIPLPluginIn.filterKernel getKernel() {
+			return BaseTIPLPluginIn.gaussFilter(0.6);
+		}
+
+		@Override
+		public BaseTIPLPluginIn.morphKernel getMKernel() {
+			return new BaseTIPLPluginIn.stationaryKernel(BaseTIPLPluginIn.fullKernel);
+		}
+		
+		@Override
+		public D3int getNeighborSize() {
+			return new D3int(2,2,1);
+		}
+	}
+	private FloatFilter ff = new FloatFilterTestImpl();
+	private FloatFilter ffSlice = new FloatFilterTestImpl2();
+	static final TImgRO lineImg = TestPosFunctions.wrapItAs(400,
 			new TestPosFunctions.LinesFunction(),3);
 	protected static List<TImgBlock<float[]>> makeSomeSlices(TImgRO testImg,int startZ) {
 		List<TImgBlock<float[]>> imList=new ArrayList<TImgBlock<float[]>>();
@@ -49,18 +68,30 @@ public class FloatFilterTest {
 		// everything should be inside this kernel
 		assert(ff.getMKernel().inside(-1, -1, 0, 50, 0, -30, 0, 10));
 	}
-	
+	protected static float[] inSlice=(float[]) lineImg.getPolyImage(5, 3);
+	protected static List<TImgBlock<float[]>> someSlices=makeSomeSlices(lineImg,2);
 	@Test
 	public void testGatherBlocks() {
 		int startSlice=2;
-		float[] inSlice=(float[]) lineImg.getPolyImage(5, 3);
 		TImgBlock<float[]> outSlice=ff.GatherBlocks(new Tuple2<D3int,List<TImgBlock<float[]>>>(new D3int(0,0,startSlice),
-				makeSomeSlices(lineImg,startSlice)))._2();
+				someSlices))._2();
 		System.out.println(String.format("i\tIn\tOut"));
 		for(int i=0;i<inSlice.length;i++) {
-			System.out.println(String.format("%d\t%3.2f\t%3.2f",i,inSlice[i],outSlice.get()[i]));
+			if(i%1000==0) System.out.println(String.format("%d\t%3.2f\t%3.2f",i,inSlice[i],outSlice.get()[i]));
+			assertEquals(inSlice[i],outSlice.get()[i],0.1f);
 		}
-		fail("Not yet implemented"); // TODO
+	}
+	
+	@Test
+	public void testGatherBlockSlice() {
+		int startSlice=2;
+		TImgBlock<float[]> outSlice=ffSlice.GatherBlocks(new Tuple2<D3int,List<TImgBlock<float[]>>>(new D3int(0,0,startSlice),
+				someSlices))._2();
+		System.out.println(String.format("i\tIn\tOut"));
+		for(int i=0;i<inSlice.length;i++) {
+			if(i%1000==0) System.out.println(String.format("%d\t%3.2f\t%3.2f",i,inSlice[i],outSlice.get()[i]));
+			assertEquals(inSlice[i],outSlice.get()[i],0.2f);
+		}
 	}
 
 }

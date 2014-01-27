@@ -79,7 +79,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 		long start1=System.currentTimeMillis();
 		DTImg<float[]> cImg=new DTImg<float[]>(jsc,imagePath,3);
 		final FilterTest f=new FilterTest();
-		JavaPairRDD<D3int,TImgBlock<float[]>> oImg=cImg.SpreadSlices(range).groupByKey().map(new PairFunction<Tuple2<D3int,List<TImgBlock<float[]>>>,D3int,TImgBlock<float[]>>() {
+		JavaPairRDD<D3int,TImgBlock<float[]>> oImg=cImg.SpreadSlices(range).groupByKey(cImg.getDim().z).map(new PairFunction<Tuple2<D3int,List<TImgBlock<float[]>>>,D3int,TImgBlock<float[]>>() {
 			@Override
 			public Tuple2<D3int, TImgBlock<float[]>> call(
 					Tuple2<D3int, List<TImgBlock<float[]>>> arg0)

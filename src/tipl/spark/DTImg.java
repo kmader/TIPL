@@ -16,6 +16,7 @@ import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.VoidFunction;
+import org.apache.spark.storage.StorageLevel;
 
 import scala.Tuple2;
 import tipl.formats.TImg;
@@ -111,6 +112,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		public ReadSlice(String imgName,int inType,final D3int imPos,final D3int imgDim) {
 			this.imgPos=imPos;
 			this.sliceDim=new D3int(imgDim.x,imgDim.y,1);
+			// this is important since spark instances do not know the current working directory
 			this.imgPath=(new File(imgName)).getAbsolutePath();
 			this.imgType=inType;
 		}
@@ -161,6 +163,18 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 					));
 		}
 		return jsc.parallelizePairs(inSlices);
+	}
+	/**
+	 * Switches the JavaRDD to memory on the disk
+	 */
+	public void persistToDisk() {
+		this.baseImg.persist(StorageLevel.MEMORY_AND_DISK());
+	}
+	/**
+	 * Switches the JavaRDD to only the disk
+	 */
+	public void persistToDiskOnly() {
+		this.baseImg.persist(StorageLevel.DISK_ONLY());
 	}
 	
 	protected String procLog="";
@@ -298,7 +312,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 
 
 	@Override
-	public boolean getSigned() {return false;}
+	public boolean getSigned() {return true;}
 
 
 
@@ -331,11 +345,13 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 * @param path
 	 */
 	public void DSave(TypedPath path) {
-		final TSliceWriter cWriter = TSliceWriter.Writers.ChooseBest(this, path, imageType);
+		TypedPath absTP = new TypedPath((new File(path.getPath())).getAbsolutePath(),path.getType());
+		final TSliceWriter cWriter = TSliceWriter.Writers.ChooseBest(this, absTP, imageType);
 		baseImg.foreach(new VoidFunction<Tuple2<D3int,TImgBlock<T>>>() {
 
 			@Override
 			public void call(Tuple2<D3int, TImgBlock<T>> arg0) throws Exception {
+				
 				cWriter.WriteSlice(arg0._2(), arg0._1().z);
 				
 			}
