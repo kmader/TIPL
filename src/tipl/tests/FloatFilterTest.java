@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import scala.Tuple2;
 import tipl.tools.BaseTIPLPluginIn;
+import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.TImgBlock;
 import tipl.formats.TImgRO;
@@ -32,6 +33,24 @@ public class FloatFilterTest {
 		public D3int getNeighborSize() {
 			return new D3int(2,2,1);
 		}
+
+		@Override
+		public boolean execute() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public ArgumentParser setParameter(ArgumentParser p, String prefix) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String getPluginName() {
+			// TODO Auto-generated method stub
+			return null;
+		}
 	}
 	static public class FloatFilterTestImpl2 extends FloatFilterSlice {
 		@Override
@@ -47,6 +66,24 @@ public class FloatFilterTest {
 		@Override
 		public D3int getNeighborSize() {
 			return new D3int(2,2,1);
+		}
+
+		@Override
+		public boolean execute() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public ArgumentParser setParameter(ArgumentParser p, String prefix) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String getPluginName() {
+			// TODO Auto-generated method stub
+			return null;
 		}
 	}
 	private FloatFilter ff = new FloatFilterTestImpl();

@@ -139,7 +139,9 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		for (int i = 0; i < imgDim.z; i++) {
 			l.add(i);
 		}
-		return jsc.parallelize(l).map(new ReadSlice<U>(imgName,imgType,cImg.getPos(),cImg.getDim()));
+		/** performance is much better when partition count matches slice count (or is at least larger than 2) **/
+		final int partitionCount=cImg.getDim().z;
+		return jsc.parallelize(l,partitionCount).map(new ReadSlice<U>(imgName,imgType,cImg.getPos(),cImg.getDim()));
 	}
 	/**
 	 * import an image from an existing TImgRO by reading in every slice (this is no manually done and singe core..)

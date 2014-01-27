@@ -53,11 +53,11 @@ public class VFilterScale extends FilterScale {
 	 * </pre>
 	 */
 	public static void main(final String[] args) {
-		final String kVer = "120514_002";
+		final String kVer = "130514_003";
 		System.out.println("V_FilterScale v" + kVer);
 		System.out.println(" FilterScales Aim files based on given criteria");
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p = TIPLGlobal.activeParser(args);
 		final String inputFile = p.getOptionString("input", "",
 				"Input masked image");
 		final String outputFile = p.getOptionString("output",

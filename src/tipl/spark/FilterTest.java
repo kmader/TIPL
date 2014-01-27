@@ -21,6 +21,7 @@ import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgBlock;
+import tipl.util.TImgTools;
 
 @SuppressWarnings("serial")
 public class FilterTest extends NeighborhoodPlugin.FloatFilter {
@@ -70,16 +71,24 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 	}
 	public static void main(String[] args) {
 		ArgumentParser p=SparkGlobal.activeParser(args);
+		
 		final String imagePath=p.getOptionPath("path", "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory) to read in");
-		int range=p.getOptionInt("range", 1, "The range to use for the filter");
+		//int range=p.getOptionInt("range", 1, "The range to use for the filter");
+		final float threshold=p.getOptionFloat("threshold", -1, "Threshold Value");
+		final FilterTest f=new FilterTest();
+		p=f.setParameter(p);
+		
 		//int maximumSlice=p.getOptionInt("maxs", maximumSlice, "The maximum slice to keep");
 		
 		p.checkForInvalid();
-		JavaSparkContext jsc = SparkGlobal.getContext(SparkGlobal.getMasterName(),"IOTest");
+		
+		JavaSparkContext jsc = SparkGlobal.getContext(SparkGlobal.getMasterName(),"FilterTest");
 		long start1=System.currentTimeMillis();
-		DTImg<float[]> cImg=new DTImg<float[]>(jsc,imagePath,3);
-		final FilterTest f=new FilterTest();
-		JavaPairRDD<D3int,TImgBlock<float[]>> oImg=cImg.SpreadSlices(range).groupByKey(cImg.getDim().z).map(new PairFunction<Tuple2<D3int,List<TImgBlock<float[]>>>,D3int,TImgBlock<float[]>>() {
+		DTImg<float[]> cImg=new DTImg<float[]>(jsc,imagePath,TImgTools.IMAGETYPE_FLOAT);
+		
+		final int keyCount=cImg.getDim().z;
+		
+		JavaPairRDD<D3int,TImgBlock<float[]>> oImg=cImg.SpreadSlices(f.getNeighborSize().z).groupByKey(/**keyCount**/).map(new PairFunction<Tuple2<D3int,List<TImgBlock<float[]>>>,D3int,TImgBlock<float[]>>() {
 			@Override
 			public Tuple2<D3int, TImgBlock<float[]>> call(
 					Tuple2<D3int, List<TImgBlock<float[]>>> arg0)
@@ -89,12 +98,30 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 			
 		});
 		
-		System.out.println("Input Image\t# of Slices "+cImg.baseImg.count()+", "+ImageSummary(cImg.baseImg));
-		System.out.println("After Filter\t# of Slices "+oImg.count()+", "+ImageSummary(oImg));
+		//System.out.println("Input Image\t# of Slices "+cImg.baseImg.count()+", "+ImageSummary(cImg.baseImg));
+		//System.out.println("After Filter\t# of Slices "+oImg.count()+", "+ImageSummary(oImg));
 		
-		DTImg<float[]> nImg=new DTImg<float[]>(cImg,oImg,3);
+		DTImg<float[]> nImg=new DTImg<float[]>(cImg,oImg,TImgTools.IMAGETYPE_FLOAT);
 		
 		nImg.DSave(new TypedPath(imagePath+"/badass"));
+		
+		JavaPairRDD<D3int,TImgBlock<boolean[]>> thImg=nImg.baseImg.map(new PairFunction<Tuple2<D3int, TImgBlock<float[]>>,D3int,TImgBlock<boolean[]>>() {
+
+			@Override
+			public Tuple2<D3int, TImgBlock<boolean[]>> call(
+					Tuple2<D3int, TImgBlock<float[]>> arg0) throws Exception {
+				final TImgBlock<float[]> inBlock=arg0._2;
+				final float[] cSlice=inBlock.get();
+				final boolean[] oSlice=new boolean[cSlice.length];
+				for(int i=0;i<oSlice.length;i++) oSlice[i]=cSlice[i]>threshold;
+				return  new Tuple2<D3int, TImgBlock<boolean[]>>(arg0._1,
+						new TImgBlock<boolean[]>(oSlice,inBlock.getPos(),inBlock.getDim()));
+			}
+			
+		});
+		DTImg<boolean[]> thOutImg=new DTImg<boolean[]>(cImg,thImg,TImgTools.IMAGETYPE_BOOL);
+		
+		thOutImg.DSave(new TypedPath(imagePath+"/threshold"));
 		
 		System.out.println(String.format("Distributed Image\n\tVolume Fraction: \t\t%s\n\tCalculation time: \t%s","HAI",
 				Duration.create(System.currentTimeMillis() - start1, TimeUnit.MILLISECONDS) ));
@@ -102,20 +129,38 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 
 	@Override
 	public BaseTIPLPluginIn.filterKernel getKernel() {
-		// TODO Auto-generated method stub
-		return BaseTIPLPluginIn.gaussFilter(2.0);
+		return BaseTIPLPluginIn.gaussFilter(5.0);
 	}
 
 	@Override
 	public BaseTIPLPluginIn.morphKernel getMKernel() {
-		// TODO Auto-generated method stub
 		return BaseTIPLPluginIn.fullKernel;
+	}
+	@Override
+	public String getPluginName() {
+		// TODO Auto-generated method stub
+		return FilterTest.class.getCanonicalName();
+	}
+
+
+	protected D3int nsize=new D3int(1,1,1);
+	@Override
+	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
+		// TODO Auto-generated method stub
+		nsize=p.getOptionD3int(prefix+"filtersize", nsize, "The size of the neighborhood for the filter");
+		return p;
 	}
 	
 	@Override
 	public D3int getNeighborSize() {
-		return new D3int(10,10,1);
+		return nsize;
 	}
+	@Override
+	public boolean execute() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
 
 
 }

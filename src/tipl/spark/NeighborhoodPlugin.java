@@ -4,13 +4,16 @@ import java.io.Serializable;
 import java.util.List;
 
 import scala.Tuple2;
+import tipl.tools.BaseTIPLPlugin;
 import tipl.tools.BaseTIPLPluginIO;
 import tipl.tools.BaseTIPLPluginIn;
 import tipl.util.D3int;
+import tipl.util.ITIPLPlugin;
 import tipl.util.TImgBlock;
 
 /**
  * 
+ * A generic interface for neighborhood operations and filters
  * @author mader
  * 
  * @param <U>
@@ -19,7 +22,7 @@ import tipl.util.TImgBlock;
  *            output image format
  */
 abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Cloneable>
-		extends Serializable {
+		extends Serializable,ITIPLPlugin {
 	/**
 	 * A function which combines blocks containing the same position (and
 	 * different offsets) A good example is to get surrounding values for
@@ -33,7 +36,7 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
 
 	@SuppressWarnings("serial")
 	public abstract class GatherBasedFilter<U extends Cloneable, V extends Cloneable>
-			implements NeighborhoodPlugin<U, V> {
+	   extends BaseTIPLPlugin implements NeighborhoodPlugin<U, V>  {
 		public GatherBasedFilter() {
 		}
 
@@ -42,16 +45,18 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
 		abstract public BaseTIPLPluginIn.morphKernel getMKernel();
 
 		abstract public D3int getNeighborSize();
+		
 	}
 
 	abstract public class FloatFilter extends
 			GatherBasedFilter<float[], float[]> {
 		final public static boolean show_debug = false;
-
+		
 		@Override
 		public Tuple2<D3int, TImgBlock<float[]>> GatherBlocks(
 				Tuple2<D3int, List<TImgBlock<float[]>>> inTuple) {
 			final D3int ns = getNeighborSize();
+			
 			final List<TImgBlock<float[]>> inBlocks = inTuple._2();
 			final TImgBlock<float[]> templateBlock = inBlocks.get(0);
 			final D3int blockSize = templateBlock.getDim();
@@ -65,6 +70,8 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
 			// BaseTIPLPluginIn.filterKernel[(int) blockSize.prod()];
 			// for(int ci=0;ci<curKernels.length;ci++)
 			// curKernels[ci]=getKernel();
+			
+			if (show_debug) System.out.println("Runing Analysis on "+blockSize+" flt:"+ns+" with:"+inBlocks.size());
 			for (int zp = 0; zp < templateBlock.getDim().z; zp++) {
 				for (int yp = 0; yp < templateBlock.getDim().y; yp++) {
 					for (int xp = 0; xp < templateBlock.getDim().x; xp++) {
@@ -123,7 +130,7 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
 								}
 							}
 						}
-						outData[off] = (float) curKernel.value();
+						outData[off] = (int) curKernel.value();
 						if (show_debug)
 							System.out.println(String.format(
 									"Vox : %d %d %d = %d, sc = %d", xp, yp, zp,
@@ -204,7 +211,7 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
 				}
 			}
 			for (int i = 0; i < outData.length; i++)
-				outData[i] = (float) curKernels[i].value();
+				outData[i] = (int) curKernels[i].value();
 			return new Tuple2<D3int, TImgBlock<float[]>>(inTuple._1(),
 					new TImgBlock<float[]>(outData, templateBlock.getPos(),
 							templateBlock.getDim()));
