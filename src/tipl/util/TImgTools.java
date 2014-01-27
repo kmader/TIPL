@@ -131,6 +131,7 @@ public class TImgTools {
 	public static final int IMAGETYPE_COMPLEX = 5;
 	public static final int IMAGETYPE_SPECTRAL = 6;
 	public static final int IMAGETYPE_GLOB = 7;
+	public static final int IMAGETYPE_LONG = 7;
 	
 	public static final String IMAGETYPE_HELP = "(boolean image/1bit="+IMAGETYPE_BOOL+", character image/8bit="+IMAGETYPE_CHAR+", short image/16bit="+IMAGETYPE_SHORT+", integer image/32bit="+IMAGETYPE_INT+", float image/32bit="+IMAGETYPE_FLOAT+")";
 
@@ -549,6 +550,8 @@ public class TImgTools {
 			return TImgTools.IMAGETYPE_FLOAT;
 		if (iData instanceof double[])
 			return TImgTools.IMAGETYPE_DOUBLE;
+		if (iData instanceof long[])
+			return TImgTools.IMAGETYPE_LONG;
 		throw new IllegalArgumentException("Type of object:" + iData
 				+ " cannot be determined!! Proceed with extreme caution");
 	}

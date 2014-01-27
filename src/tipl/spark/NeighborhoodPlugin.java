@@ -35,9 +35,10 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
 			Tuple2<D3int, List<TImgBlock<U>>> inBlocks);
 
 	@SuppressWarnings("serial")
-	public abstract class GatherBasedFilter<U extends Cloneable, V extends Cloneable>
+	public abstract class GatherBasedPlugin<U extends Cloneable, V extends Cloneable>
 	   extends BaseTIPLPlugin implements NeighborhoodPlugin<U, V>  {
-		public GatherBasedFilter() {
+		
+		public GatherBasedPlugin() {
 		}
 
 		abstract public BaseTIPLPluginIn.filterKernel getKernel();
@@ -47,9 +48,94 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
 		abstract public D3int getNeighborSize();
 		
 	}
+	/**
+	 * A very generic class for filtering with abstract methods for getting and setting elements inside the generic
+	 * types since that is not by default support since they aren't arrays (boo java)
+	 * @author mader
+	 *
+	 * @param <U>
+	 * @param <V>
+	 */
+	abstract public class GenericFilter<U extends Cloneable,V extends Cloneable> extends GatherBasedPlugin<U,V> {
+		abstract protected double getEle(U obj,int index);
+		abstract protected void setEle(V obj,int index, double val);
+		abstract protected V createObj(int size);
+		@Override
+		public Tuple2<D3int, TImgBlock<V>> GatherBlocks(
+				Tuple2<D3int, List<TImgBlock<U>>> inTuple) {
+			final D3int ns = getNeighborSize();
+			
+			final List<TImgBlock<U>> inBlocks = inTuple._2();
+			final TImgBlock<U> templateBlock = inBlocks.get(0);
+			final D3int blockSize = templateBlock.getDim();
+			final BaseTIPLPluginIn.morphKernel mKernel = getMKernel();
+			final int eleCount=(int) templateBlock.getDim().prod();
+			// the output image
+			final V outData = createObj(eleCount);
+			
+			for (int zp = 0; zp < templateBlock.getDim().z; zp++) {
+				for (int yp = 0; yp < templateBlock.getDim().y; yp++) {
+					for (int xp = 0; xp < templateBlock.getDim().x; xp++) {
+						final int off = ((zp) * blockSize.y + (yp))
+								* blockSize.x + (xp);
+						BaseTIPLPluginIn.filterKernel curKernel = getKernel(); // curKernels[off];
+	
+						for (TImgBlock<U> cBlock : inBlocks) {
+							final U curBlock = cBlock.get();
+							// the offset of the current block
+							final int offx = cBlock.getOffset().x;
+							final int offy = cBlock.getOffset().y;
+							final int offz = cBlock.getOffset().z;
+							// the offset position
+							final int ix = xp + offx;
+							final int iy = yp + offy;
+							final int iz = zp + offz;
+							// need to recalculate the bounds
 
+							final int start_x = Math.max(ix - ns.x, 0);
+							final int end_x = Math.min(ix + ns.x, blockSize.x);
+
+							final int start_y = Math.max(iy - ns.y, 0);
+							final int end_y = Math.min(iy + ns.y, blockSize.y);
+
+							final int start_z = Math.max(iz - ns.z, 0);
+							final int end_z = Math.min(iz + ns.z, blockSize.z);
+
+							// ox,oy,oz are the coordinates inside the second
+							// block
+							for (int oz = start_z; oz < end_z; oz++) {
+								for (int oy = start_y; oy < end_y; oy++) {
+									for (int ox = start_x; ox < end_x; ox++) {
+										int off2 = ((oz) * blockSize.y + (oy))
+												* blockSize.x + (ox);
+										if (mKernel.inside(off, off2, xp, ox
+												- offx, yp, oy - offy, zp, oz
+												- offz)) {
+											curKernel.addpt(xp, ox - offx, yp,
+													oy - offy, zp, oz - offz,
+													getEle(curBlock,off2));
+										}
+									}
+								}
+							}
+						}
+						setEle(outData,off,curKernel.value());
+					}
+				}
+			}
+
+			return new Tuple2<D3int, TImgBlock<V>>(inTuple._1(),
+					new TImgBlock<V>(outData, templateBlock.getPos(),
+							templateBlock.getDim()));
+		}
+	}
+	/**
+	 * THe simplist implementation of the float filter
+	 * @author mader
+	 *
+	 */
 	abstract public class FloatFilter extends
-			GatherBasedFilter<float[], float[]> {
+			GatherBasedPlugin<float[], float[]> {
 		final public static boolean show_debug = false;
 		
 		@Override

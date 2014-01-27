@@ -98,14 +98,11 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 			
 		});
 		
-		//System.out.println("Input Image\t# of Slices "+cImg.baseImg.count()+", "+ImageSummary(cImg.baseImg));
-		//System.out.println("After Filter\t# of Slices "+oImg.count()+", "+ImageSummary(oImg));
-		
 		DTImg<float[]> nImg=new DTImg<float[]>(cImg,oImg,TImgTools.IMAGETYPE_FLOAT);
 		
 		nImg.DSave(new TypedPath(imagePath+"/badass"));
 		
-		JavaPairRDD<D3int,TImgBlock<boolean[]>> thImg=nImg.baseImg.map(new PairFunction<Tuple2<D3int, TImgBlock<float[]>>,D3int,TImgBlock<boolean[]>>() {
+		DTImg<boolean[]> thOutImg=nImg.map(new PairFunction<Tuple2<D3int, TImgBlock<float[]>>,D3int,TImgBlock<boolean[]>>() {
 
 			@Override
 			public Tuple2<D3int, TImgBlock<boolean[]>> call(
@@ -118,8 +115,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 						new TImgBlock<boolean[]>(oSlice,inBlock.getPos(),inBlock.getDim()));
 			}
 			
-		});
-		DTImg<boolean[]> thOutImg=new DTImg<boolean[]>(cImg,thImg,TImgTools.IMAGETYPE_BOOL);
+		},TImgTools.IMAGETYPE_BOOL);
 		
 		thOutImg.DSave(new TypedPath(imagePath+"/threshold"));
 		

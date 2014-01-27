@@ -92,6 +92,15 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 				  });
 	}
 	/**
+	 * passes basically directly through to the JavaPair rdd but it wraps everything in a DTImg class
+	 * @param mapFunc
+	 * @return
+	 */
+	public <U extends Cloneable> DTImg<U> map(final PairFunction<Tuple2<D3int, TImgBlock<T>>,D3int,TImgBlock<U>> mapFunc,final int outType) {
+		return new DTImg<U>(this,this.baseImg.map(mapFunc),outType);
+	}
+	
+	/**
 	 * An overloaded function for reading slices from images
 	 * @author mader
 	 *
