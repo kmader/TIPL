@@ -87,22 +87,18 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 		DTImg<float[]> cImg=new DTImg<float[]>(jsc,imagePath,TImgTools.IMAGETYPE_FLOAT);
 		
 		final int keyCount=cImg.getDim().z;
-		
-		JavaPairRDD<D3int,TImgBlock<float[]>> oImg=cImg.SpreadSlices(f.getNeighborSize().z).groupByKey(/**keyCount**/).map(new PairFunction<Tuple2<D3int,List<TImgBlock<float[]>>>,D3int,TImgBlock<float[]>>() {
+		DTImg<float[]> filtImg=cImg.spreadMap(f.getNeighborSize().z, new PairFunction<Tuple2<D3int,List<TImgBlock<float[]>>>,D3int,TImgBlock<float[]>>() {
 			@Override
 			public Tuple2<D3int, TImgBlock<float[]>> call(
 					Tuple2<D3int, List<TImgBlock<float[]>>> arg0)
 					throws Exception {
 				return f.GatherBlocks(arg0);
 			}
-			
-		});
+		}, TImgTools.IMAGETYPE_FLOAT);
 		
-		DTImg<float[]> nImg=new DTImg<float[]>(cImg,oImg,TImgTools.IMAGETYPE_FLOAT);
+		filtImg.DSave(new TypedPath(imagePath+"/badass"));
 		
-		nImg.DSave(new TypedPath(imagePath+"/badass"));
-		
-		DTImg<boolean[]> thOutImg=nImg.map(new PairFunction<Tuple2<D3int, TImgBlock<float[]>>,D3int,TImgBlock<boolean[]>>() {
+		DTImg<boolean[]> thOutImg=filtImg.map(new PairFunction<Tuple2<D3int, TImgBlock<float[]>>,D3int,TImgBlock<boolean[]>>() {
 
 			@Override
 			public Tuple2<D3int, TImgBlock<boolean[]>> call(
