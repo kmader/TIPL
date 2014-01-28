@@ -1,10 +1,12 @@
-/**
- * An implementation of a integer vector (x,y,z) used for storing positions, dimensions, and offsets
- **/
+
 package tipl.util;
 
 import java.io.Serializable;
-
+/**
+ * An implementation of a integer vector (x,y,z) used for storing positions, dimensions, and offsets
+ * @author mader
+ *
+ */
 public class D3int implements Serializable {
 	public int x;
 	public int y;

@@ -1,10 +1,12 @@
-/**
- * An implementation of a float vector (x,y,z) used for storing positions and voxel sizes
- **/
+
 package tipl.util;
 
 import java.io.Serializable;
-
+/**
+ * An implementation of a float vector (x,y,z) used for storing positions and voxel sizes
+ * @author mader
+ *
+ */
 public class D3float implements Serializable {
 	// called a float on VMS but for other systems double is probably more
 	// reliable
