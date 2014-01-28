@@ -85,7 +85,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 		JavaSparkContext jsc = SparkGlobal.getContext(SparkGlobal.getMasterName(),"FilterTest");
 		long start1=System.currentTimeMillis();
 		DTImg<float[]> cImg=new DTImg<float[]>(jsc,imagePath,TImgTools.IMAGETYPE_FLOAT);
-		
+		cImg.cache();
 		final int keyCount=cImg.getDim().z;
 		DTImg<float[]> filtImg=cImg.spreadMap(f.getNeighborSize().z, new PairFunction<Tuple2<D3int,List<TImgBlock<float[]>>>,D3int,TImgBlock<float[]>>() {
 			@Override
@@ -95,7 +95,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 				return f.GatherBlocks(arg0);
 			}
 		}, TImgTools.IMAGETYPE_FLOAT);
-		
+		filtImg.persistToDisk();
 		filtImg.DSave(new TypedPath(imagePath+"/badass"));
 		
 		DTImg<boolean[]> thOutImg=filtImg.map(new PairFunction<Tuple2<D3int, TImgBlock<float[]>>,D3int,TImgBlock<boolean[]>>() {
@@ -112,6 +112,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 			}
 			
 		},TImgTools.IMAGETYPE_BOOL);
+		thOutImg.persistToDisk();
 		
 		thOutImg.DSave(new TypedPath(imagePath+"/threshold"));
 		
@@ -121,7 +122,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 
 	@Override
 	public BaseTIPLPluginIn.filterKernel getKernel() {
-		return BaseTIPLPluginIn.gaussFilter(5.0);
+		return BaseTIPLPluginIn.gaussFilter(1.0);
 	}
 
 	@Override

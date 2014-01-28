@@ -52,6 +52,7 @@ public class TiffWriter implements TSliceWriter {
 	 */
 	protected int biType=2;
 	protected boolean isSigned=true;
+	public static boolean writeFailureThrowsError=true;
 	
 	@Override
 	public void SetupWriter(TImgRO imageToSave, String outputPath, int outType) {
@@ -125,8 +126,10 @@ public class TiffWriter implements TSliceWriter {
 			encoder.encode(sliceAsImage(outSlice));
 			os.close();
 		} catch (final Exception e) {
-			System.out.println("Cannot write slice " + outSlicePosition);
+			System.err.println("Cannot write slice " + outSlicePosition);
 			e.printStackTrace();
+			if (writeFailureThrowsError) throw new IllegalArgumentException(e+"Cant write file at "+coutName+":"+outSlicePosition);
+			
 		}
 
 	}

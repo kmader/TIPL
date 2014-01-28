@@ -84,7 +84,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 					cSlice, cPos, sliceDim));
 		}
 	}
-
+	
 	/**
 	 * import an image from a path by reading line by line
 	 * 
@@ -140,7 +140,8 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	}
 
 	final int imageType;
-	final JavaPairRDD<D3int, TImgBlock<T>> baseImg;
+	/** should be final but sometimes it changes **/
+	JavaPairRDD<D3int, TImgBlock<T>> baseImg;
 
 	final String path;
 	protected String procLog = "";
@@ -337,7 +338,17 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 			final int spreadWidth,
 			final PairFunction<Tuple2<D3int, List<TImgBlock<T>>>, D3int, TImgBlock<U>> mapFunc,
 			final int outType) {
-		return new DTImg<U>(this, this.spreadSlices(spreadWidth).groupByKey().map(mapFunc), outType);
+		return new DTImg<U>(this, this.spreadSlices(spreadWidth).groupByKey(getPartitions()).map(mapFunc), outType);
+	}
+	/**
+	 * the number of partitions to use when breaking up data
+	 * @return partition count
+	 */
+	public int getPartitions() {
+		return getDim().z;
+	}
+	public void cache() {
+		this.baseImg=this.baseImg.cache();
 	}
 
 	/**
@@ -372,7 +383,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	@Override
 	public void setImageType(int inData) {
 		// TODO Auto-generated method stub
-
+		throw new IllegalArgumentException("Cannot set Imagetype");
 	}
 
 	@Override
@@ -397,7 +408,58 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 
 	// Here are the specialty functions for DTImages
 	/**
-	 * Spread out an image over a range (useful for neigbhorhood operations)
+	 * Spread blocks out over a given range
+	 * @param blockDimension the size of the blocks to distribute
+	 * @param offsetList the offsets of the starting position of the blocks
+	 * @return
+	 */
+	public JavaPairRDD<D3int, TImgBlock<T>> spreadBlocks(final D3int blockDimension,final D3int[] offsetList) {
+		return baseImg.flatMap(new BlockSpreader(offsetList,blockDimension,getDim()));
+	}
+	/** 
+	 * A class for spreading out blocks
+	 * @author mader
+	 *
+	 * @param <T>
+	 */
+	protected static class BlockSpreader<T extends Cloneable> extends PairFlatMapFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<T>> {
+		
+		protected final D3int[] inOffsetList;
+		protected final D3int blockDimension;
+		protected final D3int imgDim;
+		// Since we can't have constructors here (probably should make it into a subclass)
+		public BlockSpreader(D3int[] inOffsetList,D3int blockDimension,D3int imgDim){
+			this.inOffsetList=inOffsetList;
+			//this.inOffsetList=new D3int[inOffsetList.length];
+			//for(int i=0;i<inOffsetList.length;i++) this.inOffsetList[i]=new D3int(inOffsetList[i]);
+			//System.arraycopy(inOffsetList, 0, this.inOffsetList, 0, inOffsetList.length);
+			this.blockDimension=blockDimension;
+			this.imgDim=imgDim;
+			
+		}
+		@Override
+		public Iterable<Tuple2<D3int, TImgBlock<T>>> call(
+				Tuple2<D3int, TImgBlock<T>> inData) {
+			final TImgBlock<T> inSlice = inData._2();
+			final List<Tuple2<D3int, TImgBlock<T>>> outList = new ArrayList<Tuple2<D3int, TImgBlock<T>>>(inOffsetList.length);
+			for (final D3int nOffset : this.inOffsetList) {
+				final D3int oPos = inData._1();
+				final D3int nPos = new D3int(oPos.x+nOffset.x, oPos.y+nOffset.y, oPos.z+nOffset.z);
+				/**
+				 * the clone is used otherwise it loses slices when
+				 * they drift between machines (I think)
+				 */
+				if (nPos.z >= 0 & nPos.z < imgDim.z)
+					outList.add(new Tuple2<D3int, TImgBlock<T>>(
+							nPos, new TImgBlock<T>(inSlice
+									.getClone(), nPos, blockDimension,
+									nOffset)));
+			}
+			return outList;
+		}
+	}
+	/**
+	 * Spread out image over slices
 	 * 
 	 * @param windowSize
 	 *            range above and below to spread
@@ -405,32 +467,12 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 */
 	public JavaPairRDD<D3int, TImgBlock<T>> spreadSlices(final int windowSize) {
 		final D3int sliceDim = new D3int(getDim().x, getDim().y, 1);
-		return baseImg
-				.flatMap(new PairFlatMapFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<T>>() {
-					@Override
-					public Iterable<Tuple2<D3int, TImgBlock<T>>> call(
-							Tuple2<D3int, TImgBlock<T>> inData) {
-						final TImgBlock<T> inSlice = inData._2();
-						final List<Tuple2<D3int, TImgBlock<T>>> outList = new ArrayList<Tuple2<D3int, TImgBlock<T>>>(
-								2 * windowSize + 1);
-						for (int i = -windowSize; i <= windowSize; i++) {
-							final D3int oPos = inData._1();
-							final D3int nPos = new D3int(oPos.x, oPos.y, oPos.z
-									+ i);
-							final D3int nOffset = new D3int(0, 0, i);
-							/**
-							 * the clone is used otherwise it loses slices when
-							 * they drift between machines (I think)
-							 */
-							if (nPos.z >= 0 & nPos.z < getDim().z)
-								outList.add(new Tuple2<D3int, TImgBlock<T>>(
-										nPos, new TImgBlock<T>(inSlice
-												.getClone(), nPos, sliceDim,
-												nOffset)));
-						}
-						return outList;
-					}
-				});
+		
+		final D3int[] offsetList=new D3int[2*windowSize+1];
+		for(int i=-windowSize;i<=windowSize;i++) offsetList[i+windowSize]=new D3int(0,0,i);
+		
+		return spreadBlocks(sliceDim,offsetList);
+		
 	}
 
 }

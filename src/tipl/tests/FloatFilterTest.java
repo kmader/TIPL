@@ -23,7 +23,7 @@ public class FloatFilterTest {
 	static public class FloatFilterTestImpl extends FloatFilter {
 		@Override
 		public BaseTIPLPluginIn.filterKernel getKernel() {
-			return BaseTIPLPluginIn.gaussFilter(0.6);
+			return BaseTIPLPluginIn.gaussFilter(0.4);
 		}
 
 		@Override
@@ -57,7 +57,7 @@ public class FloatFilterTest {
 	static public class FloatFilterTestImpl2 extends FloatFilterSlice {
 		@Override
 		public BaseTIPLPluginIn.filterKernel getKernel() {
-			return BaseTIPLPluginIn.gaussFilter(0.6);
+			return BaseTIPLPluginIn.gaussFilter(0.4);
 		}
 
 		@Override
@@ -67,7 +67,7 @@ public class FloatFilterTest {
 		
 		@Override
 		public D3int getNeighborSize() {
-			return new D3int(2,2,1);
+			return new D3int(1,1,1);
 		}
 
 		@Override
@@ -154,7 +154,7 @@ public class FloatFilterTest {
 	}
 	protected static float[] inSlice=(float[]) lineImg.getPolyImage(5, 3);
 	protected static List<TImgBlock<float[]>> someSlices=makeSomeSlices(lineImg,2);
-	//@Test
+	@Test
 	public void testGatherBlocks() {
 		int startSlice=2;
 		TImgBlock<float[]> outSlice=ff.GatherBlocks(new Tuple2<D3int,List<TImgBlock<float[]>>>(new D3int(0,0,startSlice),
@@ -163,18 +163,6 @@ public class FloatFilterTest {
 		for(int i=0;i<inSlice.length;i++) {
 			if(i%1000==0) System.out.println(String.format("%d\t%3.2f\t%3.2f",i,inSlice[i],outSlice.get()[i]));
 			assertEquals(inSlice[i],outSlice.get()[i],0.1f);
-		}
-	}
-	
-	//@Test
-	public void testGatherBlockSlice() {
-		int startSlice=2;
-		TImgBlock<float[]> outSlice=ffSlice.GatherBlocks(new Tuple2<D3int,List<TImgBlock<float[]>>>(new D3int(0,0,startSlice),
-				someSlices))._2();
-		System.out.println(String.format("i\tIn\tOut"));
-		for(int i=0;i<inSlice.length;i++) {
-			if(i%1000==0) System.out.println(String.format("%d\t%3.2f\t%3.2f",i,inSlice[i],outSlice.get()[i]));
-			assertEquals(inSlice[i],outSlice.get()[i],0.2f);
 		}
 	}
 
