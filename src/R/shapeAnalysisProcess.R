@@ -1,6 +1,30 @@
 library("ggplot2")
 library("plyr")
-
+#' Write the matching table from the tracking function as a file that looks like a standard output
+#' @author Kevin Mader (kevin.mader@gmail.com)
+#' 
+#' @param raw.data is the input table
+#' @param file.name is the name of the output file
+#' @param add.extra.header adds an extra line of header
+#' @param rem.char.cols removes character columns
+#' @param max.na.col the maximum number of NAs in a column and still keep it
+write.tiplcsv<-function(raw.data,file.name,add.extra.header=F,rem.char.cols=T,max.na.col=5,...) {
+  f<-file(file.name,"w")
+  if (add.extra.header) {  
+    writeLines("// Sample: /home/scratch//virtAIM-3534171117255118373, Map: /home/scratch//virtAIM-3534171117255118373, Thickness:(8.191250068658265):/home/scratch//virtAIM-419118365814064047, Neighbors:(1.0):",f)
+  }
+  num.cols<-which(sapply(raw.data[1,],is.numeric))
+  if (rem.char.cols) {
+    out.data<-raw.data[,num.cols]
+  } else {
+    out.data<-raw.data
+  }
+  
+  valid.cols<-which(colSums(is.na(out.data))<max.na.col)
+  out.data<-na.omit(out.data[,valid.cols])
+  write.csv(out.data,f,row.names=F,quote=F,...)
+  close(f)
+}
 # write to match or at least be clsoe to the old output files
 write.csv.chris<-function(raw.in.data,file.name,skip.cols=c("TRIANGLES","D_TRIANGLES","Chain","MChain","Count","Frame"),...) {
   in.data<-ddply(raw.in.data,.(MChain), # calculate the statistics for each chain
@@ -26,6 +50,7 @@ write.csv.chris<-function(raw.in.data,file.name,skip.cols=c("TRIANGLES","D_TRIAN
   })(write.data)
   write.csv(write.data,file.name,row.names=F,na="",qmethod="double")
 }
+
 # Simply define coordinates such that Z is always positive
 fix.pca.direction<-function(poros.table,with.density=T,with.volume=T) {
   poros.table$PCA1_X<-poros.table$PCA1_X*sign(poros.table$PCA1_Z)
@@ -153,16 +178,16 @@ compare.foam.corrected<-function(lacFile,tf.data=NULL,tf.file=NULL,...) {
   raw.data<-read.csv(lacFile,skip=1) # use the original coordinate system
   if (is.null(tf.data)) { # this can all be skipped if a matrix is supplied for tf.data
     if (is.null(tf.file)) tf.file<-paste(lacFile,"_tf.dat",sep="")
-    #print(tf.file)
     tf.file<-Sys.glob(tf.file) # is the file really there
-    #print(tf.file)
     if (length(tf.file)>0) tf.data<-read.csv(tf.file,header=F)
     
   }
   
   if (!is.null(tf.data)) {
     # Store the standard coordinates
-    prep.data<-compare.foam.clean(raw.data,...)
+    # make sure it has the same size as the simple read file (don't pass other arguments)
+    prep.data<-compare.foam.clean(raw.data) 
+    
     raw.data$ORIG_POS_X<-prep.data$POS_X
     raw.data$ORIG_POS_Y<-prep.data$POS_Y
     raw.data$ORIG_POS_Z<-prep.data$POS_Z

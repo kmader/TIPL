@@ -137,14 +137,19 @@ line.scan<-function(in.df,th.steps=5,phi.steps=NULL,ang.thresh=NULL,.parallel=T,
   if(is.null(phi.steps)) phi.steps<-th.steps*4
   th.list<-seq(0,pi/2,length.out=th.steps)
   phi.list<-seq(-pi,pi,length.out=phi.steps)
-  if(is.null(ang.thresh)) ang.thresh<-mean(c(diff(phi.list),diff(th.list)))/4
+  if(is.null(ang.thresh)) ang.thresh<-mean(c(diff(phi.list),diff(th.list)))/5
   good.cols<-names(in.df)
   good.cols<-good.cols[!(good.cols %in% "val")]
   ddply(in.df,.(filename),.parallel=.parallel,function(c.file) {
     o.linevals<-ddply(expand.grid(phi=phi.list,th=th.list),.(phi,th),function(c.start) {
       c.inline<-subset(along.line(c.start[1,"th"],c.start[1,"phi"],c.file),ang.dist<ang.thresh)
-      if(fit.thick) fit.res<-estimate.period(function(...) flat.fit.fun(...,flat.fact=flat.fact),c.inline)
-      else fit.res<-list(w.fit=0,R2=0)
+      fit.res<-list(w.fit=0,R2=0)
+      if(fit.thick) {
+        tryCatch({
+          fit.res<-estimate.period(function(...) flat.fit.fun(...,flat.fact=flat.fact),c.inline)
+        },
+                 error=function(e) print(paste("Can't fit well",e)))
+      } 
       data.frame(uv.x=c.inline[1,"uv.x"],
                  uv.y=c.inline[1,"uv.y"],
                  uv.z=c.inline[1,"uv.z"],

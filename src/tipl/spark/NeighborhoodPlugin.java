@@ -104,6 +104,46 @@ extends Serializable, ITIPLPlugin {
 			}
 			return out;
 		}
+		/**
+		 * Generates all of the scan positions within the neighborhood given the current conditions
+		 * @param start the position of the voxel being investigated
+		 * @param offset position offset of the image
+		 * @param off integer offset in the image of the starting point
+		 * @param blockSize image size
+		 * @param ns neighborhood
+		 * @return
+		 */
+		public static List<D4int> getScanPositions(final BaseTIPLPluginIn.morphKernel mKernel,final D3int start,final D3int offset,final int off, final D3int blockSize, final D3int ns) {
+			final int neighborCount=(2*ns.x+1)*(2*ns.y+1)*(2*ns.z+1);
+			List<D4int> out=new ArrayList<D4int>(neighborCount);
+			// correct for the offset
+			final int ix = start.x + offset.x;
+			final int iy = start.y + offset.y;
+			final int iz = start.z + offset.z;
+			
+			// calculate the range using the neighborhood and the bounds
+			final int start_x = Math.max(ix - ns.x, 0);
+			final int end_x = Math.min(ix + ns.x, blockSize.x-1);
+
+			final int start_y = Math.max(iy - ns.y, 0);
+			final int end_y = Math.min(iy + ns.y, blockSize.y-1);
+
+			final int start_z = Math.max(iz - ns.z, 0);
+			final int end_z = Math.min(iz + ns.z, blockSize.z-1);
+			// ox,oy,oz are the coordinates inside the second
+			// block
+			for (int oz = start_z; oz <= end_z; oz++) {
+				for (int oy = start_y; oy <= end_y; oy++) {
+					for (int ox = start_x; ox <= end_x; ox++) {
+						final int off2 = ((oz) * blockSize.y + (oy))
+								* blockSize.x + (ox);
+						if (mKernel.inside(off, off2, start.x, ox-offset.x, start.y, oy-offset.y, start.z, oz-offset.z))
+							out.add(new D4int(ox-offset.x,oy-offset.y,oz-offset.z,off2));
+					}
+				}
+			}
+			return out;
+		}
 
 	}
 
@@ -144,11 +184,11 @@ extends Serializable, ITIPLPlugin {
 							final int off = ((zp) * blockSize.y + (yp))
 									* blockSize.x + (xp);
 							final BaseTIPLPluginIn.filterKernel curKernel=kernelList[off];	
-							for(D4int cPos : getScanPositions(new D3int(xp,yp,zp),cBlock.getOffset(),off, blockSize,ns)) {
-								if (mKernel.inside(off, cPos.offset, xp, cPos.x, yp, cPos.y, zp, cPos.z)) {
+							for(D4int cPos : getScanPositions(mKernel,new D3int(xp,yp,zp),cBlock.getOffset(),off, blockSize,ns)) {
+								//if (mKernel.inside(off, cPos.offset, xp, cPos.x, yp, cPos.y, zp, cPos.z)) {
 									curKernel.addpt(xp, cPos.x, yp, cPos.y, zp, cPos.z,
 											getEle(curBlock, cPos.offset));
-								}
+								//}
 							}
 						}
 					}

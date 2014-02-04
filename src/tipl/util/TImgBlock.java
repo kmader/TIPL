@@ -54,7 +54,18 @@ public class TImgBlock<V extends Cloneable> implements Serializable {
 		this.sliceData=cSlice;
 		this.pos=pos;
 		this.dim=dim;
-    this.offset=offset;
+		this.offset=offset;
+	}
+	/**
+	 * Build a new block using information from an old block
+	 * @param cSlice
+	 * @param oldBlock
+	 */
+	public TImgBlock(V cSlice,TImgBlock oldBlock) {
+		this.sliceData=cSlice;
+		this.pos=oldBlock.getPos();
+		this.dim=oldBlock.getDim();
+		this.offset=oldBlock.getOffset();
 	}
 	
 	public V get() {return sliceData;}

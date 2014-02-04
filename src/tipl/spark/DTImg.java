@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
@@ -85,6 +86,11 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		}
 	}
 	
+	
+	protected static <U extends Cloneable> JavaPairRDD<D3int, TImgBlock<U>> ImportObject(final JavaSparkContext jsc,final String objFileName) {
+		JavaRDD outImage=jsc.objectFile(objFileName);
+		throw new IllegalArgumentException("NOt ready yet");
+	}
 	/**
 	 * import an image from a path by reading line by line
 	 * 
@@ -141,8 +147,10 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 
 	final int imageType;
 	/** should be final but sometimes it changes **/
-	JavaPairRDD<D3int, TImgBlock<T>> baseImg;
-
+	protected JavaPairRDD<D3int, TImgBlock<T>> baseImg;
+	public JavaPairRDD<D3int, TImgBlock<T>> getBaseImg() {
+		return baseImg;
+	}
 	final String path;
 	protected String procLog = "";
 
@@ -198,6 +206,14 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 			}
 
 		});
+	}
+	/**
+	 * Save the image in parallel using the built in serializer
+	 * @param path
+	 */
+	public void HSave(String path) {
+		final String outpath=(new File(path)).getAbsolutePath();
+		this.baseImg.setName(path).saveAsObjectFile(outpath);
 	}
 
 	@Override

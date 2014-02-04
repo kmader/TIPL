@@ -1,5 +1,7 @@
 package tipl.spark;
 
+import java.io.File;
+
 import org.apache.spark.api.java.JavaSparkContext;
 
 import tipl.formats.VirtualAim;
@@ -8,6 +10,13 @@ import tipl.util.TIPLGlobal;
 
 abstract public class SparkGlobal {
 	static protected JavaSparkContext currentContext=null;
+	static public boolean inheritContext(final JavaSparkContext activeContext) {
+		if(activeContext!=null) currentContext=activeContext;
+		else {
+			throw new IllegalArgumentException("The context cannot be inherited because it is null");
+		}
+		return true;
+	}
 	static protected String masterName="";
 	/**
 	 * The maximum number of cores which can be used per job
@@ -36,8 +45,24 @@ abstract public class SparkGlobal {
 			if(memorySettings.length()>0) System.setProperty("spark.executor.memory", ""+memorySettings);
 			if(sparkLocal.length()>0) System.setProperty("spark.local.dir", ""+sparkLocal);
 			currentContext=new JavaSparkContext(getMasterName(), jobName,System.getenv("SPARK_HOME"), JavaSparkContext.jarOfClass(SparkGlobal.class));
+			StopSparkeAtFinish(currentContext);
 		}
 		return currentContext;
+	}
+	
+	/** Utility Function Section */
+	/**
+	 * A function to register the runtime to be stopped so it needn't be done manually
+	 **/
+	public static void StopSparkeAtFinish(final JavaSparkContext jsc) {
+		TIPLGlobal.curRuntime.addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				System.out
+				.println("SHUTHOOK\tStopping SparkContext");
+				jsc.stop();
+			}
+		});
 	}
 	
 	public static ArgumentParser activeParser(String[] args) {return activeParser(TIPLGlobal.activeParser(args));}

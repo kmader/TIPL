@@ -97,7 +97,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 		}, TImgTools.IMAGETYPE_FLOAT);
 		filtImg.persistToDisk();
 		//filtImg.cache();
-		//filtImg.DSave(new TypedPath(imagePath+"/badass"));
+		filtImg.HSave(imagePath+"/badass");
 		
 		DTImg<boolean[]> thOutImg=filtImg.map(new PairFunction<Tuple2<D3int, TImgBlock<float[]>>,D3int,TImgBlock<boolean[]>>() {
 
@@ -119,6 +119,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 		
 		System.out.println(String.format("Distributed Image\n\tVolume Fraction: \t\t%s\n\tCalculation time: \t%s","HAI",
 				Duration.create(System.currentTimeMillis() - start1, TimeUnit.MILLISECONDS) ));
+		jsc.stop();
 	}
 
 	@Override
