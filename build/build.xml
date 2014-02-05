@@ -2,11 +2,8 @@
 <project default="create_run_jar" name="Create Runnable Jar for Project TIPL">
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
-    <target name="create_run_jar">
-        <jar destfile="../build/TIPL.jar" filesetmanifest="mergewithoutmain">
-            <manifest>
-                <attribute name="Main-Class" value="org.python.util.jython"/>
-            </manifest>
+    <target name="core">
+    	<jar destfile="../build/TIPL_core.jar" filesetmanifest="mergewithoutmain">
             <fileset dir="../bin">
             	<include name="tipl/**/*.class"/>
             	<include name="META-INF/**/*.*"/>
@@ -19,9 +16,6 @@
             <zipfileset excludes="META-INF/*.SF" src="../libraries/jai_imageio.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../libraries/jmatharray.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../libraries/jmathplot.jar"/>
-            <!--<zipfileset excludes="META-INF/*.SF" src="../libraries/jython-2.7-b1.jar"/>-->
-            <!--<zipfileset excludes="META-INF/*.SF" src="../libraries/jython.jar"/>-->
-            <zipfileset excludes="META-INF/*.SF" src="../libraries/jython-standalone-2.5.3.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../libraries/commons-io-2.4.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../libraries/VIB_.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../libraries/VIB-lib.jar"/>
@@ -29,9 +23,30 @@
 	    <zipfileset excludes="META-INF/*.SF" src="../libraries/lambdaj-2.4-with-dependencies.jar"/>
         </jar>
     </target>
-        <target name="hadoop" depends="create_run_jar">
-        <jar destfile="../build/TIPL_hadoop.jar" filesetmanifest="mergewithoutmain">
-	    <zipfileset excludes="META-INF/MANIFEST.MF" src="TIPL.jar"/>
+    <target name="jython" depends="core">
+        <jar destfile="../build/TIPL.jar" filesetmanifest="mergewithoutmain">
+        	<manifest>
+                <attribute name="Main-Class" value="org.python.util.jython"/>
+            </manifest>
+	    	<zipfileset excludes="META-INF/MANIFEST.MF" src="TIPL_core.jar"/>
+	    	<!--<zipfileset excludes="META-INF/*.SF" src="../libraries/jython-2.7-b1.jar"/>-->
+        	<!--<zipfileset excludes="META-INF/*.SF" src="../libraries/jython.jar"/>-->
+        	<zipfileset excludes="META-INF/*.SF" src="../libraries/jython-standalone-2.5.3.jar"/>
+        </jar>
+    </target>
+    <target name="scala" depends="core">
+       <jar destfile="../build/TIPL_scala.jar" filesetmanifest="mergewithoutmain">
+        	<manifest>
+                <attribute name="Main-Class" value="scala.tools.nsc.MainGenericRunner"/>
+            </manifest>
+	    	<zipfileset excludes="META-INF/MANIFEST.MF" src="TIPL_core.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scala-library.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scala-swing.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scala-compiler.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/jline.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scalap.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scalacheck.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scala-dbc.jar"/>
         </jar>
     </target>
 </project>
