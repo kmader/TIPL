@@ -1,16 +1,21 @@
 package tipl.spark;
 
+import org.apache.spark.Partitioner;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.storage.StorageLevel;
 
+import scala.Tuple2;
 import tipl.util.ArgumentParser;
+import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
+import tipl.util.TImgBlock;
 /**
  * This has all the static functions and settings for dealing with spark, particularly allowing for a custom configuration from the command line and singleton access to the JavaSparkContext. It also calculates partitions and a few other commonly used operations.
  * @author mader
  *
  */
+@SuppressWarnings("serial")
 abstract public class SparkGlobal {
 	static protected JavaSparkContext currentContext=null;
 	static public boolean inheritContext(final JavaSparkContext activeContext) {
@@ -46,7 +51,7 @@ abstract public class SparkGlobal {
 	 * @param jobName
 	 * @return
 	 */
-	public static JavaSparkContext getContext(final String inMasterName,final String jobName) {
+	static public JavaSparkContext getContext(final String inMasterName,final String jobName) {
 		if(currentContext==null) {
 			masterName=inMasterName;
 			if(maxCores>0) System.setProperty("spark.cores.max", ""+maxCores);
@@ -62,7 +67,7 @@ abstract public class SparkGlobal {
 	/**
 	 * A function to register the runtime to be stopped so it needn't be done manually
 	 **/
-	public static void StopSparkeAtFinish(final JavaSparkContext jsc) {
+	static public void StopSparkeAtFinish(final JavaSparkContext jsc) {
 		TIPLGlobal.curRuntime.addShutdownHook(new Thread() {
 			@Override
 			public void run() {
@@ -87,7 +92,7 @@ abstract public class SparkGlobal {
 	 * Basic text describing how the persistence is mapped to integer values for input
 	 * @return
 	 */
-	public static String getPersistenceText() {
+	static public String getPersistenceText() {
 		return "Memory only ("+MEMORY_ONLY+"), "+
 				"Serialized Memory only ("+MEMORY_ONLY_SER+"), "+
 				"Memory and disk ("+MEMORY_AND_DISK+"), "+
@@ -96,10 +101,10 @@ abstract public class SparkGlobal {
 				
 	}
 	protected static int sparkPersistence=-1;
-	public static int getSparkPersistenceValue() {
+	static public int getSparkPersistenceValue() {
 		return sparkPersistence;
 	}
-	public static StorageLevel getSparkPersistence() {
+	static public StorageLevel getSparkPersistence() {
 		int inSparkLevel=sparkPersistence;
 		if (inSparkLevel<0) inSparkLevel=DEFAULT_LEVEL;
 		assert(inSparkLevel>=0);
@@ -118,23 +123,23 @@ abstract public class SparkGlobal {
 	 * @param inImage
 	 */
 	@SuppressWarnings("rawtypes")
-	public static void assertPersistance(DTImg inImage) {
+	static public void assertPersistance(DTImg inImage) {
 		if (sparkPersistence>=0) inImage.persist(getSparkPersistence());
 	}
 	@SuppressWarnings("rawtypes")
-	public static void assertPerstance(JavaRDD inRdd) {
+	static public void assertPerstance(JavaRDD inRdd) {
 		if (sparkPersistence>=0) inRdd.persist(getSparkPersistence());
 	}
-	public static void setSparkPersistance(int inPersist) {
+	static public void setSparkPersistance(int inPersist) {
 		assert(inPersist<4);
 		assert(inPersist==-1 || inPersist>=0);
 		sparkPersistence=inPersist;
 	}
 	protected static int intSlicesPerCore=1;
-	public static int getSlicesPerCore() {
+	static public int getSlicesPerCore() {
 		return intSlicesPerCore;
 	}
-	public static void setSlicesPerCore(int slicesPerCore) {
+	static public void setSlicesPerCore(int slicesPerCore) {
 		assert(slicesPerCore>0);
 		intSlicesPerCore=slicesPerCore;
 	}
@@ -144,7 +149,7 @@ abstract public class SparkGlobal {
 	 * @param slicesPerCore
 	 * @return
 	 */
-	public static int calculatePartitions(int slices, int slicesPerCore) {
+	static public int calculatePartitions(int slices, int slicesPerCore) {
 		assert(slices>0);
 		assert(slicesPerCore>0);
 		int partCount=1;
@@ -152,16 +157,46 @@ abstract public class SparkGlobal {
 		assert(partCount>0 & partCount<slices);
 		return partCount;
 	}
-	public static int calculatePartitions(int slices) { 
+	static public int calculatePartitions(int slices) { 
 		return calculatePartitions(slices,getSlicesPerCore());
 	}
-	public static ArgumentParser activeParser(String[] args) {return activeParser(TIPLGlobal.activeParser(args));}
+
+	static public Partitioner getPartitioner(final D3int dim) {
+		
+		return new Partitioner() {
+			final int slCnt=dim.z;
+			final int ptCnt=SparkGlobal.calculatePartitions(dim.z);
+			final int slPpt=SparkGlobal.getSlicesPerCore();
+			@Override
+			public int getPartition(Object arg0) {
+				D3int curPos;
+				if (arg0 instanceof Tuple2) {
+					curPos=((Tuple2<D3int,?>) arg0)._1;
+				} else if (arg0 instanceof D3int) {
+					curPos=(D3int) arg0;
+					
+				} else {
+					throw new IllegalArgumentException("Object Cannot Be partitioned!!!!!"+arg0);
+				}
+				return (int) Math.floor(curPos.z*1.0/slPpt);
+					
+					
+			}
+
+			@Override
+			public int numPartitions() {
+				return ptCnt;
+			}
+			
+		};
+	}
+	static public ArgumentParser activeParser(String[] args) {return activeParser(TIPLGlobal.activeParser(args));}
 	/**
 	 * parser which actively changes spark relevant parameters
 	 * @param sp input argumentparser
 	 * @return
 	 */
-	public static ArgumentParser activeParser(ArgumentParser sp) {
+	static public ArgumentParser activeParser(ArgumentParser sp) {
 		masterName=sp.getOptionString("@masternode",getMasterName(),"The name of the master node to connect to");
 		memorySettings=sp.getOptionString("@sparkmemory",memorySettings,"The memory per job");
 		sparkLocal=sp.getOptionString("@sparklocal",sparkLocal,"The local drive to cache onto");

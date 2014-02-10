@@ -22,6 +22,7 @@ import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.storage.StorageLevel;
 
 import scala.Tuple2;
+import scala.Tuple3;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.TSliceWriter;
@@ -42,6 +43,10 @@ import tipl.util.TImgTools;
  * 
  */
 public class DTImg<T extends Cloneable> implements TImg, Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1824695496632428954L;
 	/**
 	 * An overloaded function for reading slices from images
 	 * 
@@ -503,8 +508,15 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 			final int spreadWidth,
 			final PairFunction<Tuple2<D3int, List<TImgBlock<T>>>, D3int, TImgBlock<U>> mapFunc,
 			final int outType) {
-		return DTImg.<U>WrapRDD(this, this.spreadSlices(spreadWidth).groupByKey(getPartitions()).map(mapFunc), outType);
+		
+		/** return DTImg.<U>WrapRDD(this, this.spreadSlices(spreadWidth).
+				groupByKey(getPartitions()).
+				partitionBy(SparkGlobal.getPartitioner(getDim())).
+				map(mapFunc), outType); **/
+		return DTImg.<U>WrapRDD(this, this.spreadSlices3(spreadWidth).
+				map(mapFunc), outType);
 	}
+	
 	
 	public void showPartitions() {
 		//this.baseImg.mapPartition()
@@ -529,24 +541,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	public void setRDDName(String cName) {
 		this.baseImg.setName(cName);
 	}
-	public Partitioner getPartitioner() {
-		return new Partitioner() {
-			final int slCnt=getDim().z;
-			final int ptCnt=SparkGlobal.calculatePartitions(getDim().z);
-			final int slPpt=SparkGlobal.getSlicesPerCore();
-			@Override
-			public int getPartition(Object arg0) {
-				D3int curPos=((Tuple2<D3int,TImgBlock<T>>) arg0)._1;
-				return (int) Math.floor(curPos.z*1.0/slPpt);
-			}
 
-			@Override
-			public int numPartitions() {
-				return ptCnt;
-			}
-			
-		};
-	}
 	/**
 	 * the number of partitions to use when breaking up data
 	 * @return partition count
@@ -621,6 +616,57 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	}
 
 	// Here are the specialty functions for DTImages
+	public JavaPairRDD<D3int,List<TImgBlock<T>>>  spreadSlices3(int windSize) {
+		JavaPairRDD<D3int, TImgBlock<T>> down1=baseImg.map(new BlockShifter(new D3int(0,0,-1)));
+		JavaPairRDD<D3int, TImgBlock<T>> up1=baseImg.map(new BlockShifter(new D3int(0,0,1)));
+		JavaPairRDD<D3int,Tuple3<List<TImgBlock<T>>,List<TImgBlock<T>>,List<TImgBlock<T>>>> joinImg=baseImg.cogroup(down1, up1, SparkGlobal.getPartitioner(getDim()));
+		return joinImg.mapValues(new Function<Tuple3<List<TImgBlock<T>>,List<TImgBlock<T>>,List<TImgBlock<T>>>,List<TImgBlock<T>>>() {
+
+			@Override
+			public List<TImgBlock<T>> call(
+					Tuple3<List<TImgBlock<T>>, List<TImgBlock<T>>, List<TImgBlock<T>>> arg0)
+					throws Exception {
+				// TODO Auto-generated method stub
+				List<TImgBlock<T>> alist=arg0._1();
+				List<TImgBlock<T>> blist=arg0._2();
+				List<TImgBlock<T>> clist=arg0._3();
+				List<TImgBlock<T>> outList=new ArrayList(alist.size()+blist.size()+clist.size());
+				outList.addAll(alist);
+				outList.addAll(blist);
+				outList.addAll(clist);
+				return outList;
+			}
+			
+		});
+		
+	}
+	/**
+	 * A simple block shifting class for testing out the join operations
+	 * @author mader
+	 *
+	 * @param <T>
+	 */
+	protected static class BlockShifter<T extends Cloneable> extends PairFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<T>> {
+		protected final D3int inOffset;
+		// Since we can't have constructors here (probably should make it into a subclass)
+		public BlockShifter(D3int inOffset){
+			this.inOffset=inOffset;
+		}
+		@Override
+		public Tuple2<D3int, TImgBlock<T>> call(
+				Tuple2<D3int, TImgBlock<T>> inData) {
+			final TImgBlock<T> inSlice = inData._2();
+			final D3int nOffset=this.inOffset;
+
+				final D3int oPos = inData._1();
+				final D3int nPos = new D3int(oPos.x+nOffset.x, oPos.y+nOffset.y, oPos.z+nOffset.z);
+				return new Tuple2<D3int, TImgBlock<T>>(
+							nPos, new TImgBlock<T>(inSlice
+									.getClone(), nPos, inSlice.getDim(),
+									nOffset));
+
+		}
+	}
 	/**
 	 * Spread blocks out over a given range
 	 * @param blockDimension the size of the blocks to distribute
@@ -679,7 +725,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 *            range above and below to spread
 	 * @return
 	 */
-	public JavaPairRDD<D3int, TImgBlock<T>> spreadSlices(final int windowSize) {
+	protected JavaPairRDD<D3int, TImgBlock<T>> spreadSlices(final int windowSize) {
 		final D3int sliceDim = new D3int(getDim().x, getDim().y, 1);
 		
 		final D3int[] offsetList=new D3int[2*windowSize+1];
@@ -688,5 +734,6 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		return spreadBlocks(sliceDim,offsetList);
 		
 	}
+	
 
 }
