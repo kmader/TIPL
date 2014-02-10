@@ -627,23 +627,28 @@ public class TImgTools {
 	 */
 	protected static Object bigAlloc(int inType,int arrSize) {
 		assert(isValidType(inType));
-		switch(inType) {
-		case IMAGETYPE_BOOL:
-			return new boolean[arrSize];
-		case IMAGETYPE_CHAR:
-			return new char[arrSize];
-		case IMAGETYPE_SHORT:
-			return new short[arrSize];
-		case IMAGETYPE_INT:
-			return new int[arrSize];
-		case IMAGETYPE_FLOAT:
-			return new float[arrSize];
-		default:
-			throw new IllegalArgumentException("Type of object:" + inType
-					+ " cannot be determined!! Proceed with extreme caution");
+		try {
+			switch(inType) {
+			case IMAGETYPE_BOOL:
+				return new boolean[arrSize];
+			case IMAGETYPE_CHAR:
+				return new char[arrSize];
+			case IMAGETYPE_SHORT:
+				return new short[arrSize];
+			case IMAGETYPE_INT:
+				return new int[arrSize];
+			case IMAGETYPE_FLOAT:
+				return new float[arrSize];
+			default:
+				throw new IllegalArgumentException("Type of object:" + inType
+						+ " cannot be determined!! Proceed with extreme caution");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new IllegalArgumentException("Allocation Failed:Type:"+inType+" ["+arrSize+"]"+"\n"+e.getMessage());
 		}
-		
 	}
+		
 
 	/**
 	 * Check to see if the type chosen is valid

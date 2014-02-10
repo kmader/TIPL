@@ -110,13 +110,13 @@ scaleData<-function(inData,skip.cols=c(),force.scale=NULL) {
   outData
 }
 # Add radius columns to the data using the given center
-addRadiusCols<-function(tracked.data,xcent,ycent,zcent=0) {
+addRadiusCols<-function(tracked.data,xcent,ycent,zcent=0,inc.tracking=T) {
   tracked.data$r<-sqrt((tracked.data$POS_X-xcent)^2+(tracked.data$POS_Y-ycent)^2)
   tracked.data$theta<-atan2(tracked.data$POS_Y-ycent,tracked.data$POS_X-xcent)
-  tracked.data$dr<-sqrt((tracked.data$POS_X+tracked.data$DIR_X-xcent)^2+(tracked.data$POS_Y+tracked.data$DIR_Y-ycent)^2)-tracked.data$r
+  if (inc.tracking) tracked.data$dr<-sqrt((tracked.data$POS_X+tracked.data$DIR_X-xcent)^2+(tracked.data$POS_Y+tracked.data$DIR_Y-ycent)^2)-tracked.data$r
   # spherical coordinates
   tracked.data$sr<-sqrt((tracked.data$POS_X-xcent)^2+(tracked.data$POS_Y-ycent)^2+(tracked.data$POS_Z-zcent)^2)
-  tracked.data$dsr<-sqrt(tracked.data$DIR_X^2+tracked.data$DIR_Y^2+tracked.data$DIR_Z^2)
+  if (inc.tracking) tracked.data$dsr<-sqrt(tracked.data$DIR_X^2+tracked.data$DIR_Y^2+tracked.data$DIR_Z^2)
   tracked.data
 }
 

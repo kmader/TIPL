@@ -113,7 +113,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		 * performance is much better when partition count matches slice count
 		 * (or is at least larger than 2)
 		 **/
-		final int partitionCount = cImg.getDim().z;
+		final int partitionCount = SparkGlobal.calculatePartitions(cImg.getDim().z);
 		return jsc.parallelize(l, partitionCount)
 				.map(new ReadSlice<U>(imgName, imgType, cImg.getPos(), cImg
 						.getDim()));
@@ -361,7 +361,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 * @return partition count
 	 */
 	public int getPartitions() {
-		return getDim().z;
+		return  SparkGlobal.calculatePartitions(getDim().z);
 	}
 	public void cache() {
 		this.baseImg=this.baseImg.cache();

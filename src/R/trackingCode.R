@@ -38,8 +38,24 @@ edges.append.mchain<-function(in.edges,in.bubbles) {
   out.df
 }
 # calculate statistics
-chain.life.stats.fn<-function(in.data) ddply(in.data,.(MChain),function(c.chain) {
-  data.frame(MChain=c.chain$MChain[1],min.sample=min(c.chain$sample),max.sample=max(c.chain$sample),cnt.sample=length(unique(c.chain$sample)),sample=c.chain$sample)
+chain.life.stats.fn<-function(in.data,include.orig=F) ddply(in.data,.(MChain),function(c.chain) {
+  disp.val<-sqrt(with(c.chain,sum(DIR_X)^2+sum(DIR_Y)^2+sum(DIR_Z)^2))
+  leng.val<-with(c.chain,sum(sqrt(DIR_X^2+DIR_Y^2+DIR_Z^2)))
+  new.cols<-data.frame(sample=c.chain$sample,
+                       min.sample=min(c.chain$sample),
+                       max.sample=max(c.chain$sample),
+                       cnt.sample=length(unique(c.chain$sample)),
+                       cnt.chain=nrow(c.chain),
+                       mean.dist=mean(c.chain$M_MATCH_DIST),
+                       max.dist=max(c.chain$M_MATCH_DIST),
+                       dir.disp=disp.val,
+                       dir.length=leng.val, 
+                       disp.to.leng=disp.val/leng.val)
+  if(include.orig) {
+    cbind(c.chain,new.cols)
+  } else {
+    new.cols
+  }
 }) 
 # calculate the bubble life stats from the chains
 bubble.life.stats.fn<-function(in.chains,chain.life.stats,sample.vec) { 
@@ -420,7 +436,8 @@ track.frames<-function(inData,offset,run.offset=T,run.adaptive=T,parallel=F,...)
   # 2) add chain numbers based on remaining bubbles
   preproc.fcn<-function(...) {
     alive.bubbles<-bubble.life.check(...)
-    tracking.add.chains(alive.bubbles)
+    track.one<-tracking.add.chains(alive.bubbles)
+    chain.life.stats.fn(track.one,include.orig=T)
   }
   
   all.tracks<-cbind(preproc.fcn(track.data),Matching="No Offset")

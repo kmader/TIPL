@@ -64,7 +64,30 @@ abstract public class SparkGlobal {
 			}
 		});
 	}
-	
+	protected static int intSlicesPerCore=1;
+	public static int getSlicesPerCore() {
+		return intSlicesPerCore;
+	}
+	public static void setSlicesPerCore(int slicesPerCore) {
+		intSlicesPerCore=slicesPerCore;
+	}
+	/**
+	 * Calculates the number of partitions based on a given dataset and slices per core distribution
+	 * @param slices
+	 * @param slicesPerCore
+	 * @return
+	 */
+	public static int calculatePartitions(int slices, int slicesPerCore) {
+		assert(slices>0);
+		assert(slicesPerCore>0);
+		int partCount=1;
+		if (slicesPerCore<slices) partCount=(int) Math.ceil(slices*1.0/slicesPerCore);
+		assert(partCount>0 & partCount<slices);
+		return partCount;
+	}
+	public static int calculatePartitions(int slices) { 
+		return calculatePartitions(slices,getSlicesPerCore());
+	}
 	public static ArgumentParser activeParser(String[] args) {return activeParser(TIPLGlobal.activeParser(args));}
 	/**
 	 * parser which actively changes spark relevant parameters
@@ -75,8 +98,12 @@ abstract public class SparkGlobal {
 		masterName=sp.getOptionString("@masternode",getMasterName(),"The name of the master node to connect to");
 		memorySettings=sp.getOptionString("@sparkmemory",memorySettings,"The memory per job");
 		sparkLocal=sp.getOptionString("@sparklocal",sparkLocal,"The local drive to cache onto");
+		intSlicesPerCore=sp.getOptionInt("@sparkpartitions", intSlicesPerCore, "The number of slices to load onto a single operating core", 1, 100000);
+		
 		
 		maxCores=sp.getOptionInt("@sparkcores",maxCores,"The maximum number of cores each job can use (-1 is no maximum)");
 		return sp;//.subArguments("@");
 	}
+	
+	
 }
