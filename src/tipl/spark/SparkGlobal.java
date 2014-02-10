@@ -2,7 +2,9 @@ package tipl.spark;
 
 import java.io.File;
 
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.storage.StorageLevel;
 
 import tipl.formats.VirtualAim;
 import tipl.util.ArgumentParser;
@@ -21,7 +23,12 @@ abstract public class SparkGlobal {
 	/**
 	 * The maximum number of cores which can be used per job
 	 */
-	static public int maxCores=-1;
+	static protected int maxCores=-1;
+	static public int getMaxCores() { return maxCores;}
+	static public void setMaxCores(int imaxCores) {
+		assert(imaxCores>0);
+		maxCores=imaxCores;
+	}
 	static public String memorySettings="";
 	static public String sparkLocal="/scratch"; // much better than tmp
 	static protected String getMasterName() {
@@ -64,11 +71,68 @@ abstract public class SparkGlobal {
 			}
 		});
 	}
+	
+	
+	/**
+	 * The default persistance settings basically copied from spark
+	 */
+	public final static int MEMORY_ONLY=0;
+	public final static int MEMORY_ONLY_SER=1;
+	public final static int MEMORY_AND_DISK=2;
+	public final static int MEMORY_AND_DISK_SER=3;
+	public final static int DISK_ONLY=4;
+	public final static int DEFAULT_LEVEL=MEMORY_ONLY;
+	/** 
+	 * Basic text describing how the persistence is mapped to integer values for input
+	 * @return
+	 */
+	public static String getPersistanceText() {
+		return "Memory only ("+MEMORY_ONLY+"), "+
+				"Serialized Memory only ("+MEMORY_ONLY_SER+"), "+
+				"Memory and disk ("+MEMORY_AND_DISK+"), "+
+				"Serialized Memory and disk ("+MEMORY_AND_DISK_SER+"), "+
+				"Disk only ("+DISK_ONLY+")";
+				
+	}
+	protected static int sparkPersistence=-1;
+	public static int getSparkPersistenceValue() {
+		return sparkPersistence;
+	}
+	public static StorageLevel getSparkPersistence() {
+		int inSparkLevel=sparkPersistence;
+		if (inSparkLevel<0) inSparkLevel=DEFAULT_LEVEL;
+		assert(inSparkLevel>=0);
+		assert(inSparkLevel<=4);
+		switch(inSparkLevel) {
+			case MEMORY_ONLY:  return StorageLevel.MEMORY_ONLY();
+			case MEMORY_ONLY_SER: return StorageLevel.MEMORY_ONLY_SER();
+			case MEMORY_AND_DISK: return StorageLevel.MEMORY_AND_DISK();
+			case MEMORY_AND_DISK_SER: return StorageLevel.MEMORY_AND_DISK_SER();
+			case DISK_ONLY: return StorageLevel.DISK_ONLY();
+			default: throw new IllegalArgumentException("Spark Persistance Storage Setting is not known:"+inSparkLevel);
+		}
+	}
+	/** 
+	 * asserts the persistence on a DTImg or JavaRDD if the sparkpersistence value is above 0 otherwise it does nothing
+	 * @param inImage
+	 */
+	public static void assertPersistance(DTImg inImage) {
+		if (sparkPersistence>=0) inImage.persist(getSparkPersistence());
+	}
+	public static void assertPerstance(JavaRDD inRdd) {
+		if (sparkPersistence>=0) inRdd.persist(getSparkPersistence());
+	}
+	public static void setSparkPersistance(int inPersist) {
+		assert(inPersist<4);
+		assert(inPersist==-1 || inPersist>=0);
+		sparkPersistence=inPersist;
+	}
 	protected static int intSlicesPerCore=1;
 	public static int getSlicesPerCore() {
 		return intSlicesPerCore;
 	}
 	public static void setSlicesPerCore(int slicesPerCore) {
+		assert(slicesPerCore>0);
 		intSlicesPerCore=slicesPerCore;
 	}
 	/**
@@ -98,10 +162,14 @@ abstract public class SparkGlobal {
 		masterName=sp.getOptionString("@masternode",getMasterName(),"The name of the master node to connect to");
 		memorySettings=sp.getOptionString("@sparkmemory",memorySettings,"The memory per job");
 		sparkLocal=sp.getOptionString("@sparklocal",sparkLocal,"The local drive to cache onto");
-		intSlicesPerCore=sp.getOptionInt("@sparkpartitions", intSlicesPerCore, "The number of slices to load onto a single operating core", 1, 100000);
+		setSlicesPerCore(sp.getOptionInt("@sparkpartitions", getSlicesPerCore(), "The number of slices to load onto a single operating core", 
+				1, Integer.MAX_VALUE));
+		setSparkPersistance(sp.getOptionInt("@sparkpersist", getSparkPersistenceValue(), "Image default persistance options",
+				-1,4));
+
 		
-		
-		maxCores=sp.getOptionInt("@sparkcores",maxCores,"The maximum number of cores each job can use (-1 is no maximum)");
+		setMaxCores(sp.getOptionInt("@sparkcores",maxCores,"The maximum number of cores each job can use (-1 is no maximum)",
+				-1,Integer.MAX_VALUE));
 		return sp;//.subArguments("@");
 	}
 	

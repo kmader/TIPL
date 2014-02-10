@@ -157,27 +157,48 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	protected float ssf = 1;
 	protected D3int dim, pos, offset;
 	protected D3float elsize;
-
+	
+	
 	/**
-	 * create a new image from a javasparkcontext and a path and type
+	 * Everything is much easier with one unified constructor and then several factories which call it
+	 * @param parent
+	 * @param newImage
+	 * @param imgType
+	 * @param path
+	 */
+	protected DTImg(TImgRO parent, JavaPairRDD<D3int, TImgBlock<T>> newImage,
+			int imgType,String path) {
+		this.baseImg = newImage;
+		this.imageType = imgType;
+		TImgTools.mirrorImage(parent, this);
+		this.path = path;
+		SparkGlobal.assertPersistance(this);
+	}
+	
+	/** factory for wrapping RDDs into DTImg classes
+	 * 
+	 * @param parent
+	 * @param newImage
+	 * @param imgType
+	 * @return
+	 */
+	static public <Fc extends Cloneable> DTImg<Fc> WrapRDD(TImgRO parent, JavaPairRDD<D3int, TImgBlock<Fc>> newImage,
+			int imgType) {
+		DTImg<Fc> outImage=new DTImg<Fc>(parent,newImage,imgType,"[virtual]");
+		return outImage;
+	}
+	/**
+	 * factory create a new image from a javasparkcontext and a path and type
 	 * 
 	 * @param jsc
 	 * @param imgName
 	 * @param imgType
 	 */
-	public DTImg(JavaSparkContext jsc, final String imgName, int imgType) {
-		baseImg = ImportImage(jsc, imgName, imgType);
-		imageType = imgType;
-		TImgTools.mirrorImage(TImgTools.ReadTImg(imgName), this);
-		path = imgName;
-	}
-
-	public DTImg(TImgRO parent, JavaPairRDD<D3int, TImgBlock<T>> newImage,
-			int imgType) {
-		baseImg = newImage;
-		imageType = imgType;
-		TImgTools.mirrorImage(parent, this);
-		path = "[virtual]";
+	static public <Fc extends Cloneable> DTImg<Fc> ReadImage(JavaSparkContext jsc, final String imgName, int imgType) {
+		JavaPairRDD<D3int, TImgBlock<Fc>> newImage = ImportImage(jsc, imgName, imgType);
+		TImgRO parent = TImgTools.ReadTImg(imgName);
+		DTImg<Fc> outImage=new DTImg<Fc>(parent,newImage,imgType,imgName);
+		return outImage;
 	}
 
 	@Override
@@ -312,7 +333,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		final JavaSparkContext cJsc = SparkGlobal.getContext();
 		final JavaPairRDD<D3int, TImgBlock<T>> oldImage = MigrateImage(cJsc,
 				inAim, getImageType());
-		return new DTImg<T>(this, oldImage, getImageType());
+		return DTImg.<T>WrapRDD(this, oldImage, getImageType());
 	}
 
 	@Override
@@ -341,7 +362,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	public <U extends Cloneable> DTImg<U> map(
 			final PairFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<U>> mapFunc,
 			final int outType) {
-		return new DTImg<U>(this, this.baseImg.map(mapFunc), outType);
+		return DTImg.<U>WrapRDD(this, this.baseImg.map(mapFunc), outType);
 	}
 	
 	/**
@@ -354,7 +375,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 			final int spreadWidth,
 			final PairFunction<Tuple2<D3int, List<TImgBlock<T>>>, D3int, TImgBlock<U>> mapFunc,
 			final int outType) {
-		return new DTImg<U>(this, this.spreadSlices(spreadWidth).groupByKey(getPartitions()).map(mapFunc), outType);
+		return DTImg.<U>WrapRDD(this, this.spreadSlices(spreadWidth).groupByKey(getPartitions()).map(mapFunc), outType);
 	}
 	/**
 	 * the number of partitions to use when breaking up data
@@ -371,14 +392,21 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 * Switches the JavaRDD to memory on the disk
 	 */
 	public void persistToDisk() {
-		this.baseImg.persist(StorageLevel.MEMORY_AND_DISK());
+		persist(StorageLevel.MEMORY_AND_DISK());
+	}
+	/**
+	 * Set the persistence level of the image
+	 * @param setLevel the level from the storagelevel class
+	 */
+	public void persist(StorageLevel setLevel) {
+		this.baseImg.persist(setLevel);
 	}
 
 	/**
 	 * Switches the JavaRDD to only the disk
 	 */
 	public void persistToDiskOnly() {
-		this.baseImg.persist(StorageLevel.DISK_ONLY());
+		persist(StorageLevel.DISK_ONLY());
 	}
 
 	@Override

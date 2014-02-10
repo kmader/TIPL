@@ -84,7 +84,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 		
 		JavaSparkContext jsc = SparkGlobal.getContext(SparkGlobal.getMasterName(),"FilterTest");
 		long start1=System.currentTimeMillis();
-		DTImg<float[]> cImg=new DTImg<float[]>(jsc,imagePath,TImgTools.IMAGETYPE_FLOAT);
+		DTImg<float[]> cImg = DTImg.<float[]>ReadImage(jsc,imagePath,TImgTools.IMAGETYPE_FLOAT);
 		//cImg.cache();
 		final int keyCount=cImg.getDim().z;
 		DTImg<float[]> filtImg=cImg.spreadMap(f.getNeighborSize().z, new PairFunction<Tuple2<D3int,List<TImgBlock<float[]>>>,D3int,TImgBlock<float[]>>() {
