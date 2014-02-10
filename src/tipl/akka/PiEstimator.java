@@ -3,22 +3,19 @@
  */
 package tipl.akka;
 
-import static org.junit.Assert.*;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import scala.concurrent.duration.Duration;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
-import akka.japi.Creator;
 import akka.routing.RoundRobinRouter;
-import scala.concurrent.duration.Duration;
 import akka.testkit.JavaTestKit;
-
-import java.util.concurrent.TimeUnit;
 /**
  * Tests the akka framework for actors and some minor communication steps between them
  * particularly image data

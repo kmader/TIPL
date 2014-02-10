@@ -5,7 +5,6 @@ package tipl.tests;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -17,7 +16,6 @@ import org.junit.runners.Parameterized.Parameters;
 import tipl.formats.PureFImage;
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
-import tipl.tools.Resize;
 import tipl.util.D3int;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.TIPLPluginManager;

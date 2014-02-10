@@ -239,7 +239,7 @@ public class HazelcastTests {
 		return allResults;
 	}
 	public static abstract class MakeSlices
-	implements Callable, Serializable, HazelcastInstanceAware {
+	implements Callable<Long>, Serializable, HazelcastInstanceAware {
 		private final String objName;
 		private final Long sliceId;
 		private transient HazelcastInstance hz;

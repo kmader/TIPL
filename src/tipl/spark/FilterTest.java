@@ -3,6 +3,7 @@ package tipl.spark;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.spark.Partition;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
@@ -12,9 +13,6 @@ import org.apache.spark.api.java.function.PairFunction;
 import scala.Tuple2;
 import scala.Tuple3;
 import scala.concurrent.duration.Duration;
-import tipl.formats.TImg;
-import tipl.formats.TImgRO;
-import tipl.formats.TImgRO.CanExport;
 import tipl.tools.BaseTIPLPluginIn;
 import tipl.util.ArgumentList.TypedPath;
 import tipl.util.ArgumentParser;
@@ -22,7 +20,11 @@ import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgBlock;
 import tipl.util.TImgTools;
-
+/**
+ * FilterTest performs a gaussian filtering operation on whatever image is given as input, will not resize.
+ * @author mader
+ *
+ */
 @SuppressWarnings("serial")
 public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 	public static String ImageSummary(final JavaPairRDD<D3int,TImgBlock<float[]>> inImg) {
@@ -38,10 +40,10 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 					Tuple3<Double, Double, Double> arg1) throws Exception {
 				return new Tuple3<Double,Double,Double>(arg0._1()+arg1._1(),arg0._2()+arg1._2(),arg0._3()+arg1._3());
 			}
-			
+
 		});
 		String outString=printImSummary(imSum)+"\n";
-		
+
 		final List<Integer> keyList=inImg.map(new Function<Tuple2<D3int,TImgBlock<float[]>>,Integer>() {
 			@Override
 			public Integer call(Tuple2<D3int,TImgBlock<float[]>> arg0) throws Exception {
@@ -63,42 +65,58 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 		double sumV2=0;
 		long cntV=0;
 		for(float cVal: workData) {
-				sumV+=cVal;
-				sumV2+=Math.pow(cVal,2);
-				cntV++;
+			sumV+=cVal;
+			sumV2+=Math.pow(cVal,2);
+			cntV++;
 		}
 		return new Tuple3<Double,Double,Double>(new Double(sumV),new Double(sumV2),new Double(cntV));	
 	}
 	public static void main(String[] args) {
 		ArgumentParser p=SparkGlobal.activeParser(args);
-		
+
 		final String imagePath=p.getOptionPath("path", "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory) to read in");
-		//int range=p.getOptionInt("range", 1, "The range to use for the filter");
+		int iters=p.getOptionInt("iters", 1, "The number of iterations to use for the filter");
 		final float threshold=p.getOptionFloat("threshold", -1, "Threshold Value");
+
 		final FilterTest f=new FilterTest();
 		p=f.setParameter(p);
-		
-		//int maximumSlice=p.getOptionInt("maxs", maximumSlice, "The maximum slice to keep");
-		
+
+		int maximumSlice=p.getOptionInt("maxs", -1, "The maximum slice to keep");
+
 		p.checkForInvalid();
-		
+
 		JavaSparkContext jsc = SparkGlobal.getContext(SparkGlobal.getMasterName(),"FilterTest");
 		long start1=System.currentTimeMillis();
 		DTImg<float[]> cImg = DTImg.<float[]>ReadImage(jsc,imagePath,TImgTools.IMAGETYPE_FLOAT);
-		//cImg.cache();
-		final int keyCount=cImg.getDim().z;
-		DTImg<float[]> filtImg=cImg.spreadMap(f.getNeighborSize().z, new PairFunction<Tuple2<D3int,List<TImgBlock<float[]>>>,D3int,TImgBlock<float[]>>() {
-			@Override
-			public Tuple2<D3int, TImgBlock<float[]>> call(
-					Tuple2<D3int, List<TImgBlock<float[]>>> arg0)
-					throws Exception {
-				return f.GatherBlocks(arg0);
-			}
-		}, TImgTools.IMAGETYPE_FLOAT);
-		filtImg.persistToDisk();
-		//filtImg.cache();
+		cImg.setRDDName("Loading Data");
+
+		DTImg<float[]> filtImg;
+		if (maximumSlice>0) {
+			final int lastSlice=cImg.getPos().z+maximumSlice;
+			filtImg=cImg.subselectPos(new Function<D3int,Boolean>() {
+				@Override
+				public Boolean call(D3int arg0) throws Exception {
+					return arg0.z<lastSlice;
+				}
+
+			});
+		} else filtImg=cImg;
+		cImg.showPartitions();
+		filtImg.setRDDName("Running Filter");
+		for(int ic=0;ic<iters;ic++) {
+			filtImg=filtImg.spreadMap(f.getNeighborSize().z, new PairFunction<Tuple2<D3int,List<TImgBlock<float[]>>>,D3int,TImgBlock<float[]>>() {
+				@Override
+				public Tuple2<D3int, TImgBlock<float[]>> call(
+						Tuple2<D3int, List<TImgBlock<float[]>>> arg0)
+								throws Exception {
+					return f.GatherBlocks(arg0);
+				}
+			}, TImgTools.IMAGETYPE_FLOAT);
+			filtImg.setRDDName("Filter:Iter"+ic);
+			filtImg.showPartitions();
+		}
 		filtImg.HSave(imagePath+"/badass");
-		
+
 		DTImg<boolean[]> thOutImg=filtImg.map(new PairFunction<Tuple2<D3int, TImgBlock<float[]>>,D3int,TImgBlock<boolean[]>>() {
 
 			@Override
@@ -111,12 +129,11 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 				return  new Tuple2<D3int, TImgBlock<boolean[]>>(arg0._1,
 						new TImgBlock<boolean[]>(oSlice,inBlock.getPos(),inBlock.getDim()));
 			}
-			
+
 		},TImgTools.IMAGETYPE_BOOL);
-		//thOutImg.persistToDisk();
-		
+
 		thOutImg.DSave(new TypedPath(imagePath+"/threshold"));
-		
+
 		System.out.println(String.format("Distributed Image\n\tVolume Fraction: \t\t%s\n\tCalculation time: \t%s","HAI",
 				Duration.create(System.currentTimeMillis() - start1, TimeUnit.MILLISECONDS) ));
 		jsc.stop();
@@ -145,7 +162,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 		nsize=p.getOptionD3int(prefix+"filtersize", nsize, "The size of the neighborhood for the filter");
 		return p;
 	}
-	
+
 	@Override
 	public D3int getNeighborSize() {
 		return nsize;
@@ -155,7 +172,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 		// TODO Auto-generated method stub
 		return false;
 	}
-	
+
 
 
 }

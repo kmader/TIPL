@@ -18,10 +18,26 @@ import tipl.tools.BaseTIPLPluginIn;
 public class TIPLGlobal {
 	public static final int DEBUG_ALL=5;
 	public static final int DEBUG_GC=4;
+	public static final int DEBUG_MSGS=3;
+	public static final int DEBUG_STATUS=2;
 	public static final int DEBUG_BASIC=1;
 	public static final int DEBUG_OFF=0;
-	protected static int TIPLDebugLevel=DEBUG_BASIC;
-	
+	private static int TIPLDebugLevel=DEBUG_BASIC;
+	/**
+	 * returns the level (see enumeration above for more on the levels
+	 * @return
+	 */
+	public static int getDebugLevel() { return TIPLDebugLevel;}
+	/**
+	 * returns of the debug level is above DEBUG_OFF
+	 * @return
+	 */
+	public static boolean getDebug() {return TIPLDebugLevel>DEBUG_MSGS;}
+	public static void setDebug(int debugVal) {
+		assert(debugVal>=0);
+		assert(debugVal<=5);
+		TIPLDebugLevel=debugVal;
+	}
 	/**
 	 * Run (encourage to run) the garbage collector and provide more feedback on the current memory status (makes debugging easier)
 	 */
@@ -73,9 +89,9 @@ public class TIPLGlobal {
 		TIPLGlobal.supportedIOThreads = sp.getOptionInt("@maxiothread",
 				TIPLGlobal.supportedIOThreads,
 				"Number of cores/threads to use for read/write operations");
-		TIPLGlobal.TIPLDebugLevel = sp.getOptionInt("@debug",
-				TIPLGlobal.TIPLDebugLevel,
-				"Debug level from "+DEBUG_OFF+" to "+DEBUG_ALL);
+		TIPLGlobal.setDebug( sp.getOptionInt("@debug",
+				TIPLGlobal.getDebugLevel(),
+				"Debug level from "+DEBUG_OFF+" to "+DEBUG_ALL));
 		boolean curHeadlessValue=Boolean.parseBoolean(System.getProperty("java.awt.headless"));
 		
 		System.setProperty("java.awt.headless", ""+sp.getOptionBoolean("@headless",curHeadlessValue,"Run TIPL in headless mode"));

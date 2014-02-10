@@ -67,7 +67,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 		}
 	}
 
-	private class NeighborVoxel implements Iterator {
+	private class NeighborVoxel implements Iterator<Integer[]> {
 		Map<Integer, NeighborList> mp;
 
 		// Iterator Implementation, provides an iterator for all edges in the

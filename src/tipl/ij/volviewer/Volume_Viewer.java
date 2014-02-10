@@ -35,7 +35,6 @@ import javax.swing.JFrame;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.ij.TImgToImagePlus;
-import tipl.tools.XDF;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPlugin;
 import tipl.util.ITIPLPluginIn;

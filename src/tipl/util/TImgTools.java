@@ -615,7 +615,7 @@ public class TImgTools {
 		Object out=bigAlloc(inType, arrSize);
 		long usedAfter=TIPLGlobal.getUsedMB();
 		long expectedSize=(long) (arrSize/(1024.0*1024.0)*typeSize(inType));
-		if (TIPLGlobal.TIPLDebugLevel>=TIPLGlobal.DEBUG_GC) System.out.println("Alloc: "+getImageTypeName(inType)+":["+(arrSize/1e6)+"M], used "+(usedAfter-usedBefore)+" (E:"+expectedSize+"), free:"+TIPLGlobal.getFreeMB());
+		if (TIPLGlobal.getDebugLevel()>=TIPLGlobal.DEBUG_GC) System.out.println("Alloc: "+getImageTypeName(inType)+":["+(arrSize/1e6)+"M], used "+(usedAfter-usedBefore)+" (E:"+expectedSize+"), free:"+TIPLGlobal.getFreeMB());
 		
 		return out;
 	}

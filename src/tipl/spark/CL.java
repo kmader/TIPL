@@ -5,19 +5,14 @@ package tipl.spark;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.HashSet;
 
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
@@ -30,11 +25,11 @@ import tipl.tools.BaseTIPLPluginIn.morphKernel;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.D4int;
-import tipl.util.ITIPLPlugin;
 import tipl.util.TImgBlock;
 import tipl.util.TImgTools;
 
 /**
+ * CL performs iterative component labeling using a very simple label and merge algorithm
  * @author mader
  *
  */

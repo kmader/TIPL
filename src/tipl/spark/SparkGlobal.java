@@ -1,15 +1,16 @@
 package tipl.spark;
 
-import java.io.File;
-
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.storage.StorageLevel;
 
-import tipl.formats.VirtualAim;
 import tipl.util.ArgumentParser;
 import tipl.util.TIPLGlobal;
-
+/**
+ * This has all the static functions and settings for dealing with spark, particularly allowing for a custom configuration from the command line and singleton access to the JavaSparkContext. It also calculates partitions and a few other commonly used operations.
+ * @author mader
+ *
+ */
 abstract public class SparkGlobal {
 	static protected JavaSparkContext currentContext=null;
 	static public boolean inheritContext(final JavaSparkContext activeContext) {
@@ -86,7 +87,7 @@ abstract public class SparkGlobal {
 	 * Basic text describing how the persistence is mapped to integer values for input
 	 * @return
 	 */
-	public static String getPersistanceText() {
+	public static String getPersistenceText() {
 		return "Memory only ("+MEMORY_ONLY+"), "+
 				"Serialized Memory only ("+MEMORY_ONLY_SER+"), "+
 				"Memory and disk ("+MEMORY_AND_DISK+"), "+
@@ -116,9 +117,11 @@ abstract public class SparkGlobal {
 	 * asserts the persistence on a DTImg or JavaRDD if the sparkpersistence value is above 0 otherwise it does nothing
 	 * @param inImage
 	 */
+	@SuppressWarnings("rawtypes")
 	public static void assertPersistance(DTImg inImage) {
 		if (sparkPersistence>=0) inImage.persist(getSparkPersistence());
 	}
+	@SuppressWarnings("rawtypes")
 	public static void assertPerstance(JavaRDD inRdd) {
 		if (sparkPersistence>=0) inRdd.persist(getSparkPersistence());
 	}
@@ -164,7 +167,7 @@ abstract public class SparkGlobal {
 		sparkLocal=sp.getOptionString("@sparklocal",sparkLocal,"The local drive to cache onto");
 		setSlicesPerCore(sp.getOptionInt("@sparkpartitions", getSlicesPerCore(), "The number of slices to load onto a single operating core", 
 				1, Integer.MAX_VALUE));
-		setSparkPersistance(sp.getOptionInt("@sparkpersist", getSparkPersistenceValue(), "Image default persistance options",
+		setSparkPersistance(sp.getOptionInt("@sparkpersist", getSparkPersistenceValue(), "Image default persistance options:"+getPersistenceText(),
 				-1,4));
 
 		

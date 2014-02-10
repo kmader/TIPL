@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="jython" name="Create Runnable Jar for Project TIPL">
+<project default="scala" name="Create Runnable Jar for Project TIPL">
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <target name="core">
@@ -34,7 +34,7 @@
         	<zipfileset excludes="META-INF/*.SF" src="../libraries/jython-standalone-2.5.3.jar"/>
         </jar>
     </target>
-    <target name="scala" depends="core">
+    <target name="scala" depends="jython">
        <jar destfile="../build/TIPL_scala.jar" filesetmanifest="mergewithoutmain">
         	<manifest>
                 <attribute name="Main-Class" value="scala.tools.nsc.MainGenericRunner"/>
@@ -46,6 +46,7 @@
         	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/jline.jar"/>
         	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scalap.jar"/>
         	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scalacheck.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scala-partest.jar"/>
         	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scala-dbc.jar"/>
         </jar>
     </target>

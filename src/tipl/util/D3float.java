@@ -25,6 +25,9 @@ public class D3float implements Serializable {
 	public D3float(final double xi, final double yi, final double zi) {
 		setVals(xi, yi, zi);
 	}
+	public D3float(double xi) {
+		setVals(xi,xi,xi);
+	}
 
 	public double prod() {
 		double out = x;

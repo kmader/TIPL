@@ -13,19 +13,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import tipl.util.D3int;
+import tipl.util.TImgBlock;
+import tipl.util.TImgTools;
+
 import com.sun.media.jai.codec.ImageCodec;
 import com.sun.media.jai.codec.ImageEncoder;
 import com.sun.media.jai.codec.TIFFEncodeParam;
-import com.sun.media.jai.codec.TIFFField;
 import com.sun.media.jai.codecimpl.util.DataBufferFloat;
 import com.sun.media.jai.codecimpl.util.RasterFactory;
-
-import tipl.formats.DirectoryReader.DRFactory;
-import tipl.util.D3float;
-import tipl.util.D3int;
-import tipl.util.TIPLGlobal;
-import tipl.util.TImgBlock;
-import tipl.util.TImgTools;
 /**
  * A function for writing images based on the slices inside. 
  * @author mader

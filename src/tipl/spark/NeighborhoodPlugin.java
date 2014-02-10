@@ -14,7 +14,7 @@ import tipl.util.TImgBlock;
 
 /**
  * 
- * A generic interface for neighborhood operations and filters
+ * A generic interface for neighborhood operations and filters and the basis for making more complicated algorithms for image processing using the fan-out/shuffle, group, and map operations. 
  * 
  * @author mader
  * 

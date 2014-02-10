@@ -3,22 +3,28 @@
  */
 package tipl.util;
 
+import static ch.lambdaj.Lambda.DESCENDING;
+import static ch.lambdaj.Lambda.filter;
+import static ch.lambdaj.Lambda.having;
+import static ch.lambdaj.Lambda.on;
+import static ch.lambdaj.Lambda.sort;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 import net.java.sezpoz.Indexable;
 import tipl.formats.TImgRO;
-import static ch.lambdaj.Lambda.*;
-import static  org.hamcrest.Matchers.*;
 
 /**
  * @author mader

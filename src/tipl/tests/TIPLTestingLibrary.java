@@ -11,7 +11,6 @@ import java.util.List;
 
 import tipl.formats.TImgRO;
 import tipl.util.D3int;
-import static ch.lambdaj.Lambda.*;
 
 /**
  * @author mader

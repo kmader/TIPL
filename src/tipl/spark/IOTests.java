@@ -21,32 +21,30 @@ package tipl.spark;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
-import org.apache.spark.api.java.function.VoidFunction;
+import org.apache.spark.api.java.function.PairFunction;
 
-import scala.Tuple1;
 import scala.Tuple2;
 import scala.Tuple3;
 import scala.concurrent.duration.Duration;
 import tipl.formats.TImgRO;
-import tipl.tests.TestPosFunctions;
 import tipl.util.ArgumentParser;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
-/** Computes an approximation to pi */
+/**
+ * A very general test of the IO abilities of spark based on the picompute code
+ * @author mader
+ *
+ */
+@Deprecated
 public class IOTests {
 
 	

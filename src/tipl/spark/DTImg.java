@@ -6,11 +6,16 @@ package tipl.spark;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.spark.Partitioner;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
@@ -85,12 +90,52 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 					cSlice, cPos, sliceDim));
 		}
 	}
-	
-	
-	protected static <U extends Cloneable> JavaPairRDD<D3int, TImgBlock<U>> ImportObject(final JavaSparkContext jsc,final String objFileName) {
-		JavaRDD outImage=jsc.objectFile(objFileName);
-		throw new IllegalArgumentException("NOt ready yet");
+	/**
+	 * Another version of the read slice code where the read itself is a future rather than upon creation
+	 * 
+	 * @author mader
+	 * 
+	 * @param <W>
+	 *            the type of the image as an array
+	 */
+	protected static class ReadSlicePromise<W extends Cloneable> extends
+			PairFunction<Integer, D3int, TImgBlock<W>> {
+		protected final String imgPath;
+		protected final int imgType;
+		protected final D3int imgPos;
+		protected final D3int sliceDim;
+
+		/**
+		 * The function for reading slices from an image
+		 * 
+		 * @param imgName
+		 *            the path to the image
+		 * @param inType
+		 *            the type of image to be loaded (must match with W, convert
+		 *            later)
+		 * @param imPos
+		 *            the starting position of the image
+		 * @param imgDim
+		 *            the dimensions of the image
+		 */
+		public ReadSlicePromise(String imgName, int inType, final D3int imPos,
+				final D3int imgDim) {
+			this.imgPos = imPos;
+			this.sliceDim = new D3int(imgDim.x, imgDim.y, 1);
+			// this is important since spark instances do not know the current
+			// working directory
+			this.imgPath = (new File(imgName)).getAbsolutePath();
+			this.imgType = inType;
+		}
+		@Override
+		public Tuple2<D3int, TImgBlock<W>> call(Integer sliceNum) {
+			final D3int cPos = new D3int(imgPos.x, imgPos.y, imgPos.z
+					+ sliceNum);
+			return new Tuple2<D3int, TImgBlock<W>>(cPos, new TImgBlock.TImgBlockFile<W>(
+					imgPath,sliceNum.intValue(),imgType, cPos, sliceDim,TImgBlock.zero));
+		}
 	}
+	
 	/**
 	 * import an image from a path by reading line by line
 	 * 
@@ -115,7 +160,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		 **/
 		final int partitionCount = SparkGlobal.calculatePartitions(cImg.getDim().z);
 		return jsc.parallelize(l, partitionCount)
-				.map(new ReadSlice<U>(imgName, imgType, cImg.getPos(), cImg
+				.map(new ReadSlicePromise<U>(imgName, imgType, cImg.getPos(), cImg
 						.getDim()));
 	}
 
@@ -166,7 +211,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 * @param imgType
 	 * @param path
 	 */
-	protected DTImg(TImgRO parent, JavaPairRDD<D3int, TImgBlock<T>> newImage,
+	protected DTImg(TImgTools.HasDimensions parent, JavaPairRDD<D3int, TImgBlock<T>> newImage,
 			int imgType,String path) {
 		this.baseImg = newImage;
 		this.imageType = imgType;
@@ -196,9 +241,50 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 */
 	static public <Fc extends Cloneable> DTImg<Fc> ReadImage(JavaSparkContext jsc, final String imgName, int imgType) {
 		JavaPairRDD<D3int, TImgBlock<Fc>> newImage = ImportImage(jsc, imgName, imgType);
-		TImgRO parent = TImgTools.ReadTImg(imgName);
+		TImgTools.HasDimensions parent = TImgTools.ReadTImg(imgName);
 		DTImg<Fc> outImage=new DTImg<Fc>(parent,newImage,imgType,imgName);
 		return outImage;
+	}
+	
+	static public <Fc extends Cloneable> DTImg<Fc> ReadObjectFile(JavaSparkContext jsc, final String imgName, int imgType) {
+		final JavaRDD<TImgBlock<Fc>> newImage=jsc.objectFile(imgName);
+		final TImgBlock<Fc> cBlock=newImage.first();
+		JavaPairRDD<D3int,TImgBlock<Fc>> baseImg=newImage.map(new PairFunction<TImgBlock<Fc>,D3int,TImgBlock<Fc>>() {
+
+			@Override
+			public Tuple2<D3int, TImgBlock<Fc>> call(final TImgBlock<Fc> arg0)
+					throws Exception {
+				return new Tuple2<D3int, TImgBlock<Fc>>(arg0.getPos(),arg0);
+			}
+			
+		});
+		//TODO this assumes slices for normal data you will need to prowl the whole thing
+		return new DTImg<Fc>(new TImgTools.HasDimensions() {
+			final D3int pos=cBlock.getPos();
+			final D3int dim=new D3int(cBlock.getDim().x,cBlock.getDim().y,(int) newImage.count());
+			@Override
+			public D3int getDim() {return dim;}
+
+			@Override
+			public D3float getElSize() {
+				return new D3float(1.0f);
+			}
+
+			@Override
+			public D3int getOffset() {return new D3int(0,0,0);}
+
+			@Override
+			public D3int getPos() {return pos;}
+
+			@Override
+			public String getProcLog() { return "";}
+
+			@Override
+			public float getShortScaleFactor() {return 1;}
+			
+		},baseImg,imgType,imgName);
+		
+		
 	}
 
 	@Override
@@ -229,12 +315,18 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		});
 	}
 	/**
-	 * Save the image in parallel using the built in serializer
+	 * Save the image in parallel using the built in serializer, it first transforms the image into a list of blocks rather than the pair
 	 * @param path
 	 */
 	public void HSave(String path) {
 		final String outpath=(new File(path)).getAbsolutePath();
-		this.baseImg.setName(path).saveAsObjectFile(outpath);
+		this.baseImg.setName(path).map(new Function<Tuple2<D3int,TImgBlock<T>>,TImgBlock<T>>() {
+			@Override
+			public TImgBlock<T> call(final Tuple2<D3int, TImgBlock<T>> arg0)
+					throws Exception {
+				return arg0._2;
+			}
+		}).saveAsObjectFile(outpath);
 	}
 
 	@Override
@@ -364,6 +456,42 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 			final int outType) {
 		return DTImg.<U>WrapRDD(this, this.baseImg.map(mapFunc), outType);
 	}
+	/**
+	 * Performs a subselection (a function filter) of the dataset based on the blocks
+	 * @param filtFunc the function to filter with
+	 * @return a subselection of the image
+	 */
+	public  DTImg<T> subselect(
+			final Function<Tuple2<D3int,TImgBlock<T>>,Boolean> filtFunc
+			) {
+		final JavaPairRDD<D3int,TImgBlock<T>> subImg=this.baseImg.filter(filtFunc);
+		DTImg<T> outImage=DTImg.WrapRDD(this,subImg , this.getImageType());
+		//TODO Only works on slices
+		int sliceCount=(int) subImg.count();
+		outImage.setDim(new D3int(outImage.getDim().x,outImage.getDim().y,sliceCount));
+		outImage.setPos(subImg.first()._1);
+		return outImage;
+	}
+	/**
+	 * The same as subselect but takes a function which operates on just the positions instead (needs to be erased because of strange type erasure behavior)
+	 * @param filtFunc
+	 * @return
+	 */
+	public  DTImg<T> subselectPos(
+			final Function<D3int,Boolean> filtFunc
+			) {
+		return subselect(new Function<Tuple2<D3int,TImgBlock<T>>,Boolean>() {
+
+			@Override
+			public Boolean call(Tuple2<D3int, TImgBlock<T>> arg0)
+					throws Exception {
+				return filtFunc.call(arg0._1);
+			}
+			
+		});
+	}
+	
+	
 	
 	/**
 	 * first spreads the slices out, then runs a group by key, then applies the given mapfunction and creates a new DTImg that wraps around the object
@@ -377,6 +505,48 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 			final int outType) {
 		return DTImg.<U>WrapRDD(this, this.spreadSlices(spreadWidth).groupByKey(getPartitions()).map(mapFunc), outType);
 	}
+	
+	public void showPartitions() {
+		//this.baseImg.mapPartition()
+		List<String> curPartitions=this.baseImg.mapPartitions(new FlatMapFunction<Iterator<Tuple2<D3int,TImgBlock<T>>>,String>() {
+
+			@Override
+			public Iterable<String> call(
+					Iterator<Tuple2<D3int, TImgBlock<T>>> arg0)
+					throws Exception {
+				List<String> outList=new LinkedList<String>();
+				outList.add("\nPartition:");
+				while (arg0.hasNext()) outList.add(""+arg0.next()._1.z);
+				return outList;
+			}
+			
+		}).collect();
+		String partStr="";
+
+		for(String cPartition : curPartitions) partStr+=", "+cPartition;
+		System.out.println("Partitions=>"+partStr);
+	}
+	public void setRDDName(String cName) {
+		this.baseImg.setName(cName);
+	}
+	public Partitioner getPartitioner() {
+		return new Partitioner() {
+			final int slCnt=getDim().z;
+			final int ptCnt=SparkGlobal.calculatePartitions(getDim().z);
+			final int slPpt=SparkGlobal.getSlicesPerCore();
+			@Override
+			public int getPartition(Object arg0) {
+				D3int curPos=((Tuple2<D3int,TImgBlock<T>>) arg0)._1;
+				return (int) Math.floor(curPos.z*1.0/slPpt);
+			}
+
+			@Override
+			public int numPartitions() {
+				return ptCnt;
+			}
+			
+		};
+	}
 	/**
 	 * the number of partitions to use when breaking up data
 	 * @return partition count
@@ -387,7 +557,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	public void cache() {
 		this.baseImg=this.baseImg.cache();
 	}
-
+	
 	/**
 	 * Switches the JavaRDD to memory on the disk
 	 */

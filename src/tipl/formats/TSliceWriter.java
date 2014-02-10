@@ -1,6 +1,5 @@
 package tipl.formats;
 
-import java.io.FileFilter;
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,9 +10,6 @@ import java.util.HashMap;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 import net.java.sezpoz.Indexable;
-import scala.tools.nsc.settings.Final;
-import tipl.formats.DirectoryReader.DRFactory;
-import tipl.formats.DirectoryReader.DReader;
 import tipl.util.ArgumentList.TypedPath;
 import tipl.util.TImgBlock;
 

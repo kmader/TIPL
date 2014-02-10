@@ -1,6 +1,6 @@
 package tipl.tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,15 +8,15 @@ import java.util.List;
 import org.junit.Test;
 
 import scala.Tuple2;
+import tipl.formats.TImgRO;
+import tipl.spark.NeighborhoodPlugin.FloatFilter;
+import tipl.spark.NeighborhoodPlugin.FloatFilterSlice;
+import tipl.spark.NeighborhoodPlugin.GatherBasedPlugin;
 import tipl.tools.BaseTIPLPluginIn;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.D4int;
 import tipl.util.TImgBlock;
-import tipl.formats.TImgRO;
-import tipl.spark.NeighborhoodPlugin.FloatFilter;
-import tipl.spark.NeighborhoodPlugin.FloatFilterSlice;
-import tipl.spark.NeighborhoodPlugin.GatherBasedPlugin;
 
 public class FloatFilterTest {
 	

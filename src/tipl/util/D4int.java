@@ -1,7 +1,6 @@
 
 package tipl.util;
 
-import java.io.Serializable;
 /**
  * D4int is an index with the addition of an offset which can be useful for addressing specific regions in an image
  * can also eventually be used to better sort 4d data

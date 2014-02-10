@@ -1,6 +1,5 @@
 package tipl.formats;
 
-import tipl.util.TImgBlock;
 
 /** Interface for writing TImg files to a data source */
 public interface TWriter {
