@@ -22,7 +22,7 @@ public class TIPLGlobal {
 	public static final int DEBUG_STATUS=2;
 	public static final int DEBUG_BASIC=1;
 	public static final int DEBUG_OFF=0;
-	private static int TIPLDebugLevel=DEBUG_BASIC;
+	private static int TIPLDebugLevel=DEBUG_MSGS;
 	/**
 	 * returns the level (see enumeration above for more on the levels
 	 * @return
@@ -32,7 +32,7 @@ public class TIPLGlobal {
 	 * returns of the debug level is above DEBUG_OFF
 	 * @return
 	 */
-	public static boolean getDebug() {return TIPLDebugLevel>DEBUG_MSGS;}
+	public static boolean getDebug() {return TIPLDebugLevel>=DEBUG_MSGS;}
 	public static void setDebug(int debugVal) {
 		assert(debugVal>=0);
 		assert(debugVal<=5);

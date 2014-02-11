@@ -128,7 +128,10 @@ abstract public class SparkGlobal {
 	}
 	@SuppressWarnings("rawtypes")
 	static public void assertPerstance(JavaRDD inRdd) {
-		if (sparkPersistence>=0) inRdd.persist(getSparkPersistence());
+		if (sparkPersistence>=0) { 
+			if (inRdd.getStorageLevel()!=StorageLevel.NONE()) inRdd.unpersist();
+			inRdd.persist(getSparkPersistence());
+			}
 	}
 	static public void setSparkPersistance(int inPersist) {
 		assert(inPersist<4);
@@ -162,7 +165,6 @@ abstract public class SparkGlobal {
 	}
 
 	static public Partitioner getPartitioner(final D3int dim) {
-		
 		return new Partitioner() {
 			final int slCnt=dim.z;
 			final int ptCnt=SparkGlobal.calculatePartitions(dim.z);

@@ -29,6 +29,7 @@ import tipl.formats.TSliceWriter;
 import tipl.util.ArgumentList.TypedPath;
 import tipl.util.D3float;
 import tipl.util.D3int;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgBlock;
 import tipl.util.TImgTools;
 
@@ -218,11 +219,12 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 */
 	protected DTImg(TImgTools.HasDimensions parent, JavaPairRDD<D3int, TImgBlock<T>> newImage,
 			int imgType,String path) {
-		this.baseImg = newImage;
+		this.baseImg = newImage;//.partitionBy(SparkGlobal.getPartitioner(getDim()));
 		this.imageType = imgType;
 		TImgTools.mirrorImage(parent, this);
 		this.path = path;
 		SparkGlobal.assertPersistance(this);
+		
 	}
 	
 	/** factory for wrapping RDDs into DTImg classes
@@ -509,13 +511,40 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 			final PairFunction<Tuple2<D3int, List<TImgBlock<T>>>, D3int, TImgBlock<U>> mapFunc,
 			final int outType) {
 		
-		/** return DTImg.<U>WrapRDD(this, this.spreadSlices(spreadWidth).
-				groupByKey(getPartitions()).
-				partitionBy(SparkGlobal.getPartitioner(getDim())).
-				map(mapFunc), outType); **/
-		return DTImg.<U>WrapRDD(this, this.spreadSlices3(spreadWidth).
-				map(mapFunc), outType);
+		JavaPairRDD<D3int, List<TImgBlock<T>>> joinImg;
+		/** joinImg=this.spreadSlices(spreadWidth).
+				groupByKey(getPartitions());
+				//partitionBy(SparkGlobal.getPartitioner(getDim()));
+		**/
+		final JavaPairRDD<D3int,TImgBlock<T>> savedBase=getBaseImg();
+		final D3int imSize=getDim();
+		final D3int ipos=getPos();
+		savedBase.context().broadcast(savedBase);
+		joinImg=savedBase.map(new PairFunction<Tuple2<D3int, TImgBlock<T>>, D3int, List<TImgBlock<T>>>() {
+		
+			@Override
+			public Tuple2<D3int, List<TImgBlock<T>>> call(
+					Tuple2<D3int, TImgBlock<T>> arg0) throws Exception {
+				List<TImgBlock<T>> outList=new ArrayList<TImgBlock<T>>(2*spreadWidth+1);
+				outList.add(arg0._2());
+				
+				for(int i=-spreadWidth;i<=spreadWidth;i++) {
+					if(i!=0) {
+						D3int lookupPos=new D3int(ipos.x,ipos.y,ipos.z+i);
+						List<TImgBlock<T>> tempList=savedBase.lookup(lookupPos);
+						if(TIPLGlobal.getDebug()) System.out.println("Lookup:"+lookupPos+", "+tempList.size());
+						outList.addAll(tempList);
+					}
+				}
+				return new Tuple2<D3int, List<TImgBlock<T>>>(arg0._1,outList);
+			}
+			
+		});
+		
+		return DTImg.<U>WrapRDD(this, joinImg.
+				map(mapFunc), outType); 
 	}
+
 	
 	
 	public void showPartitions() {
@@ -549,30 +578,14 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	public int getPartitions() {
 		return  SparkGlobal.calculatePartitions(getDim().z);
 	}
-	public void cache() {
-		this.baseImg=this.baseImg.cache();
-	}
-	
 	/**
-	 * Switches the JavaRDD to memory on the disk
-	 */
-	public void persistToDisk() {
-		persist(StorageLevel.MEMORY_AND_DISK());
-	}
-	/**
-	 * Set the persistence level of the image
+	 * Set the persistence level of the image only if none has been set so far.
 	 * @param setLevel the level from the storagelevel class
 	 */
 	public void persist(StorageLevel setLevel) {
-		this.baseImg.persist(setLevel);
+		if(this.baseImg.getStorageLevel()==StorageLevel.NONE()) this.baseImg.persist(setLevel);
 	}
 
-	/**
-	 * Switches the JavaRDD to only the disk
-	 */
-	public void persistToDiskOnly() {
-		persist(StorageLevel.DISK_ONLY());
-	}
 
 	@Override
 	public void setCompression(boolean inData) {
@@ -673,8 +686,19 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 * @param offsetList the offsets of the starting position of the blocks
 	 * @return
 	 */
-	public JavaPairRDD<D3int, TImgBlock<T>> spreadBlocks(final D3int blockDimension,final D3int[] offsetList) {
-		return baseImg.flatMap(new BlockSpreader(offsetList,blockDimension,getDim()));
+	public JavaPairRDD<D3int, TImgBlock<T>> spreadBlocks(final D3int[] offsetList) {
+		return baseImg.flatMap(new BlockSpreader(offsetList,getDim()));
+	}
+	/**
+	 * Spread out image over slices
+	 * 
+	 * @param windowSize
+	 *            range above and below to spread
+	 * @return
+	 */
+	protected JavaPairRDD<D3int, TImgBlock<T>> spreadSlices(final int windowSize) {
+		return baseImg.flatMap(BlockSpreader.<T>SpreadSlices(windowSize,getDim()));
+		
 	}
 	/** 
 	 * A class for spreading out blocks
@@ -685,16 +709,18 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	protected static class BlockSpreader<T extends Cloneable> extends PairFlatMapFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<T>> {
 		
 		protected final D3int[] inOffsetList;
-		protected final D3int blockDimension;
+		
 		protected final D3int imgDim;
 		// Since we can't have constructors here (probably should make it into a subclass)
-		public BlockSpreader(D3int[] inOffsetList,D3int blockDimension,D3int imgDim){
+		public BlockSpreader(D3int[] inOffsetList,D3int imgDim){
 			this.inOffsetList=inOffsetList;
-			//this.inOffsetList=new D3int[inOffsetList.length];
-			//for(int i=0;i<inOffsetList.length;i++) this.inOffsetList[i]=new D3int(inOffsetList[i]);
-			//System.arraycopy(inOffsetList, 0, this.inOffsetList, 0, inOffsetList.length);
-			this.blockDimension=blockDimension;
-			this.imgDim=imgDim;
+			this.imgDim=imgDim;	
+		}
+		static public <Fc extends Cloneable> BlockSpreader<Fc> SpreadSlices(final int windowSize,final D3int imgDim) {
+			final D3int sliceDim = new D3int(imgDim.x, imgDim.y, 1);
+			final D3int[] offsetList=new D3int[2*windowSize+1];
+			for(int i=-windowSize;i<=windowSize;i++) offsetList[i+windowSize]=new D3int(0,0,i);
+			return new BlockSpreader<Fc>(offsetList,imgDim);
 			
 		}
 		@Override
@@ -712,28 +738,13 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 				if (nPos.z >= 0 & nPos.z < imgDim.z)
 					outList.add(new Tuple2<D3int, TImgBlock<T>>(
 							nPos, new TImgBlock<T>(inSlice
-									.getClone(), nPos, blockDimension,
+									.getClone(), nPos, inSlice.getDim(),
 									nOffset)));
 			}
 			return outList;
 		}
 	}
-	/**
-	 * Spread out image over slices
-	 * 
-	 * @param windowSize
-	 *            range above and below to spread
-	 * @return
-	 */
-	protected JavaPairRDD<D3int, TImgBlock<T>> spreadSlices(final int windowSize) {
-		final D3int sliceDim = new D3int(getDim().x, getDim().y, 1);
-		
-		final D3int[] offsetList=new D3int[2*windowSize+1];
-		for(int i=-windowSize;i<=windowSize;i++) offsetList[i+windowSize]=new D3int(0,0,i);
-		
-		return spreadBlocks(sliceDim,offsetList);
-		
-	}
+
 	
 
 }
