@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,9 @@ import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 
 import scala.Tuple2;
+import static ch.lambdaj.Lambda.on;
+import static ch.lambdaj.Lambda.sort;
+import static ch.lambdaj.Lambda.DESCENDING;
 import tipl.formats.TImgRO;
 import tipl.spark.NeighborhoodPlugin.GatherBasedPlugin;
 import tipl.tests.TestPosFunctions;
@@ -62,9 +66,9 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 		final TImgRO testImg = TestPosFunctions.wrapIt(boxSize,
 				new TestPosFunctions.SphericalLayeredImage(boxSize/2, boxSize/2, boxSize/2, 0, 1, 2));
 			//	new TestPosFunctions.DiagonalPlaneFunction());
+		TImgTools.WriteTImg(testImg, "/Users/mader/Desktop/test.tif");
 		
-		
-		final DTImg<boolean[]> testDImg=DTImg.<boolean[]>ConvertTImg(SparkGlobal.getContext(), testImg, TImgTools.IMAGETYPE_BOOL);
+		final DTImg<boolean[]> testDImg=DTImg.<boolean[]>ConvertTImg(SparkGlobal.getContext("ComponentLabeling-Context"), testImg, TImgTools.IMAGETYPE_BOOL);
 		CL curPlugin=new CL(testDImg);
 		
 		curPlugin.execute();
@@ -91,7 +95,7 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 	 */
 	protected static Map<Long,Long> groupCount(DTImg<long[]> inLabelImg) {
 		final D3int wholeSize=inLabelImg.getDim();
-		final Map<Long,Long> grpCount2=inLabelImg.getBaseImg().values().
+		return inLabelImg.getBaseImg().values().
 				flatMap(new FlatMapFunction<TImgBlock<long[]>,Long>() {
 					
 					@Override
@@ -111,37 +115,6 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 
 			
 		}).countByValue();
-		final Map<Long,Long> grpCount=inLabelImg.getBaseImg().values().map(
-				new Function<TImgBlock<long[]>,Map<Long,Long>>() {
-
-					@Override
-					public Map<Long,Long> call(
-							TImgBlock<long[]> inBlock) throws Exception {
-						final long[] cSlice=inBlock.get();
-						Map<Long,Long> outMapping=new HashMap<Long,Long>();
-						final Long one=new Long(1);
-						for(long ival : cSlice) {
-							if (ival>0) {
-								final Long cKey=new Long(ival);
-								if (outMapping.containsKey(cKey)) outMapping.put(cKey, outMapping.get(cKey)+one);
-								else outMapping.put(cKey, one);
-							}
-						}
-						return outMapping;
-					}
-
-				}).reduce(new Function2<Map<Long,Long>,Map<Long,Long>,Map<Long,Long>>() {
-
-					@Override
-					public Map<Long, Long> call(Map<Long, Long> arg0,
-							Map<Long, Long> arg1) throws Exception {
-						
-						return joinMap(arg0,arg1,LongAdder);
-					}
-					
-				});
-		
-		return grpCount;
 				
 	}
 	/**
@@ -181,12 +154,11 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 	 * @param inMaskImg the binary input image
 	 * @return labeled image as long[]
 	 */
-	protected static DTImg<long[]> makeLabelImage(DTImg<boolean[]> inMaskImg) {
+	protected static DTImg<long[]> makeLabelImage(DTImg<boolean[]> inMaskImg,final D3int ns,final  BaseTIPLPluginIn.morphKernel mKernel) {
 		final D3int wholeSize=inMaskImg.getDim();
 		// give every voxel a unique label as a long
 		return inMaskImg.map(
 				new PairFunction<Tuple2<D3int, TImgBlock<boolean[]>>,D3int,TImgBlock<long[]>>() {
-
 					@Override
 					public Tuple2<D3int, TImgBlock<long[]>> call(
 							Tuple2<D3int, TImgBlock<boolean[]>> arg0) throws Exception {
@@ -194,16 +166,21 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 						final boolean[] cSlice=inBlock.get();
 						final D3int spos=inBlock.getPos();
 						final D3int sdim=inBlock.getDim();
+						final D3int gOffset=new D3int(0,0,0);
 						final long[] oSlice=new long[cSlice.length];
 						for(int z=0;z<sdim.z;z++) {
 							for(int y=0;y<sdim.y;y++) {
 								for(int x=0;x<sdim.x;x++) {
-									
 									int off=(int) (z*sdim.y+y)*sdim.x+x;
 									if (cSlice[off]) {
-										// the initial label is just the index of the voxel in the whole image
-										long label=((z+spos.z)*wholeSize.y+(y+spos.y))*wholeSize.x+x+spos.x;
+										long label;
+										// the default label is just the index of the voxel in the whole image
+										if (oSlice[off]==0) label=((z+spos.z)*wholeSize.y+(y+spos.y))*wholeSize.x+x+spos.x;
+										else label=oSlice[off];
 										oSlice[off]=label;
+										for (D4int scanPos : GatherBasedPlugin.getScanPositions(mKernel,new D3int(x,y,z),gOffset, off, sdim, ns)) {
+											if(cSlice[scanPos.offset]) oSlice[scanPos.offset]=label;
+										}
 									}
 								}
 							}
@@ -227,7 +204,8 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 		 */
 		public static int RGET_MAX_ITERS=2; 
 		public OmnidirectionalMap(int guessLength) {
-			mapElements=new HashSet<long[]>(guessLength);
+			
+			mapElements=new LinkedHashSet<long[]>(guessLength);
 		}
 		/** for presorted elements
 		 * @param ele
@@ -528,14 +506,16 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 					}
 				}
 			}
-			OmnidirectionalMap pairs=new OmnidirectionalMap(eleCount);
+			
+			OmnidirectionalMap pairs=new OmnidirectionalMap(2*eleCount);
 			final Long[] emptyLongArray=new Long[1];
 			List<Long[]> pairList=new ArrayList<Long[]>();
 			for(int i=0;i<eleCount;i++) {
-				if (neighborList[i].size()>1) {
-					for(Long valA : neighborList[i]) {
-						for(Long valB : neighborList[i]) {
-							if (valA!=valB) pairs.put(valA, valB);
+				if (neighborList[i].size()>2) {
+					Long[] iterArray=neighborList[i].toArray(new Long[neighborList[i].size()]);
+					for(int ax=0;ax<(iterArray.length-1);ax++) {
+						for(int bx=ax+1;bx<iterArray.length;bx++) {
+							pairs.put(iterArray[ax], iterArray[bx]);
 						}
 					}
 				}
@@ -547,7 +527,7 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 	
 	@Override
 	public boolean execute() {
-		labelImg=makeLabelImage(this.maskImg);
+		labelImg=makeLabelImage(this.maskImg,getNeighborSize(),getMKernel());
 		
 		boolean stillMerges=true;
 		int i=0;
@@ -565,6 +545,7 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 		stillMerges=true;
 		/** 
 		 * round 2 process the whole image
+		 * iteratively merge these groups until no more merges remain
 		 */
 		while(stillMerges) {
 			String curGrpSummary="";
@@ -590,7 +571,22 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 			i++;
 			
 		}
-		// now iteratively merge these groups until no more merges remain
+		
+		// now sort by voxel count
+		Map<Long,Long> cGrp=groupCount(labelImg);
+		String curGrpSummary="";
+		
+		List<Entry<Long,Long>> finalMap=sort(cGrp.entrySet(),on(Map.Entry.class).getValue(),DESCENDING);
+		Map<Long,Long> reArrangement=new HashMap<Long,Long>(finalMap.size());
+		int outDex=1;
+		for(Entry<Long,Long> cEntry : finalMap) {
+			if (curGrpSummary.length()<100) curGrpSummary+=cEntry.getKey()+"=>"+outDex+"\t"+cEntry.getValue()+" voxels\n";;
+			reArrangement.put(cEntry.getKey(), new Long(outDex));
+			outDex++;
+		}
+		System.out.println("Final List:\n"+curGrpSummary);
+		labelImg=mergeGroups(labelImg, reArrangement);
+		
 		return true;
 	}
 	
@@ -598,7 +594,7 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 	@Override
 	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
 		// TODO Auto-generated method stub
-		return null;
+		return p;
 	}
 
 	@Override

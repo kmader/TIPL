@@ -85,7 +85,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 
 		p.checkForInvalid();
 
-		JavaSparkContext jsc = SparkGlobal.getContext(SparkGlobal.getMasterName(),"FilterTest");
+		JavaSparkContext jsc = SparkGlobal.getContext("FilterTest");
 		long start1=System.currentTimeMillis();
 		DTImg<float[]> cImg = DTImg.<float[]>ReadImage(jsc,imagePath,TImgTools.IMAGETYPE_FLOAT);
 		cImg.setRDDName("Loading Data");

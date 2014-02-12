@@ -42,7 +42,7 @@ abstract public class SparkGlobal {
 		return masterName;
 	}
 	static public JavaSparkContext getContext() {
-		if(currentContext==null) currentContext=getContext(getMasterName(),"temporaryContext");
+		if(currentContext==null) currentContext=getContext("temporaryContext");
 		return currentContext;
 	}
 	/**
@@ -51,9 +51,9 @@ abstract public class SparkGlobal {
 	 * @param jobName
 	 * @return
 	 */
-	static public JavaSparkContext getContext(final String inMasterName,final String jobName) {
+	static public JavaSparkContext getContext(final String jobName) {
+		
 		if(currentContext==null) {
-			masterName=inMasterName;
 			if(maxCores>0) System.setProperty("spark.cores.max", ""+maxCores);
 			if(memorySettings.length()>0) System.setProperty("spark.executor.memory", ""+memorySettings);
 			if(sparkLocal.length()>0) System.setProperty("spark.local.dir", ""+sparkLocal);

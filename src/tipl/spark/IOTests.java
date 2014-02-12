@@ -199,7 +199,7 @@ public class IOTests {
 		maximumSlice=p.getOptionInt("maxs", maximumSlice, "The maximum slice to keep");
 		p.checkForInvalid();
 		
-		JavaSparkContext jsc = SparkGlobal.getContext(masterName,"IOTest");
+		JavaSparkContext jsc = SparkGlobal.getContext("IOTest");
 		long start1=System.currentTimeMillis();
 		Result outCount1=sendTImgTest(jsc,imagePath);
 		long startLocal=System.currentTimeMillis();
