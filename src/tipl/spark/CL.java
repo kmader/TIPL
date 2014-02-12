@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,8 +18,10 @@ import java.util.Set;
 
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
+import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 
 import scala.Tuple2;
@@ -40,6 +43,7 @@ import tipl.util.TImgTools;
  * @author mader
  *
  */
+@SuppressWarnings("serial")
 public class CL extends GatherBasedPlugin<boolean[],int[]> {
 	protected static void checkVals(final ITIPLPluginIn CL, final int maxLabel,
 			final double avgCount) {
@@ -87,6 +91,26 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 	 */
 	protected static Map<Long,Long> groupCount(DTImg<long[]> inLabelImg) {
 		final D3int wholeSize=inLabelImg.getDim();
+		final Map<Long,Long> grpCount2=inLabelImg.getBaseImg().values().
+				flatMap(new FlatMapFunction<TImgBlock<long[]>,Long>() {
+					
+					@Override
+					public Iterable<Long> call(
+							TImgBlock<long[]> inBlock) throws Exception {
+						final long[] cSlice=inBlock.get();
+						final Long one=new Long(1);
+						List<Long> outData=new LinkedList<Long>();
+						for(long ival : cSlice) {
+							if (ival>0) {
+								final Long cKey=new Long(ival);
+								outData.add(cKey);
+						}
+					}
+					return outData;
+					}
+
+			
+		}).countByValue();
 		final Map<Long,Long> grpCount=inLabelImg.getBaseImg().values().map(
 				new Function<TImgBlock<long[]>,Map<Long,Long>>() {
 
@@ -286,6 +310,14 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 		}
 
 	}
+	/**
+	 * Looks for all the connections in an image by scanning neighbors
+	 * @param labeledImage
+	 * @param neighborSize
+	 * @param mKernel
+	 * @param fullIteration
+	 * @return
+	 */
 	protected static JavaPairRDD<D3int,OmnidirectionalMap> slicesToConnections(DTImg<long[]> labeledImage,D3int neighborSize,BaseTIPLPluginIn.morphKernel mKernel,boolean fullIteration) {
 		JavaPairRDD<D3int,List<TImgBlock<long[]>>> fannedImage;
 		if (fullIteration) 
@@ -301,15 +333,15 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 		return fannedImage.map(new GetConnectedComponents(mKernel,neighborSize));
 	}
 	/**
-	 * 
+	 * Searches for new groups in the images by scanning all neighbors
 	 * @param labeledImage
 	 * @param neighborSize
 	 * @param mKernel
 	 * @param fullIteration perform the fanning out (or not)
 	 * @return
 	 */
-	protected static Map<Long,Long> scanForNewGroups(DTImg<long[]> labeledImage,D3int neighborSize,BaseTIPLPluginIn.morphKernel mKernel,boolean fullIteration) {
-		JavaPairRDD<D3int,OmnidirectionalMap> connectedGroups = slicesToConnections(labeledImage,neighborSize,mKernel,fullIteration);
+	protected static Map<Long,Long> scanForNewGroups(DTImg<long[]> labeledImage,D3int neighborSize,BaseTIPLPluginIn.morphKernel mKernel) {
+		JavaPairRDD<D3int,OmnidirectionalMap> connectedGroups = slicesToConnections(labeledImage,neighborSize,mKernel,false);
 		
 		OmnidirectionalMap groupList=connectedGroups.values().reduce(new Function2<OmnidirectionalMap,OmnidirectionalMap,OmnidirectionalMap>() {
 
@@ -518,7 +550,6 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 		labelImg=makeLabelImage(this.maskImg);
 		
 		boolean stillMerges=true;
-		boolean fullIterations=false;
 		int i=0;
 		/** runs for slice based iterations for awhile and then move to whole image iterations once
 		 * the slice based one flatten out.
@@ -528,8 +559,13 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 			labelImg=smOutput._1;
 			System.out.println("Iter: "+i+", Full:"+(false)	+"\n\tMerges "+smOutput._2);
 			stillMerges=(smOutput._2>0);
+			i++;
 		}
+		
 		stillMerges=true;
+		/** 
+		 * round 2 process the whole image
+		 */
 		while(stillMerges) {
 			String curGrpSummary="";
 			Map<Long,Long> cGrp=groupCount(labelImg);
@@ -537,24 +573,18 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 				curGrpSummary+=cEntry.getKey()+"\t"+cEntry.getValue()+"\n";
 				if (curGrpSummary.length()>50) break;
 			}
-			Map<Long,Long> curMap=scanForNewGroups(labelImg, getNeighborSize(), getMKernel(),true);
+			Map<Long,Long> curMap=scanForNewGroups(labelImg, getNeighborSize(), getMKernel());
 			String curMapSummary="";
 			for(Entry<Long,Long> cEntry : curMap.entrySet()) {
 				curMapSummary+=cEntry.getKey()+"=>"+cEntry.getValue()+",";
 				if (curMapSummary.length()>50) break;
 			}
-			System.out.println("Iter: "+i+", Full:"+fullIterations	+"\n"+curGrpSummary+"\tMerges "+curMap.size()+":\n\t"+curMapSummary);
+			System.out.println("Iter: "+i+", Full:"+(true)	+"\n"+curGrpSummary+"\tMerges "+curMap.size()+":\n\t"+curMapSummary);
 			
 			if (curMap.size()>0) {
 				labelImg=mergeGroups(labelImg, curMap);
 			} else {
-				if(!fullIterations) {
-					fullIterations=true;
-					stillMerges=true;
-				} else {
-					stillMerges=false;
-				}
-				
+				stillMerges=false;
 			}
 			
 			i++;

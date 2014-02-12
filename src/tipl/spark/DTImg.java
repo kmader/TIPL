@@ -43,6 +43,7 @@ import tipl.util.TImgTools;
  * @author mader
  * 
  */
+@SuppressWarnings("serial")
 public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	/**
 	 * 
@@ -457,8 +458,8 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	}
 
 	/**
-	 * passes basically directly through to the JavaPair rdd but it wraps
-	 * everything in a DTImg class
+	 * passes basically directly through to the JavaPair RDD but it wraps
+	 * everything in a DTImg class. Automatically partition
 	 * 
 	 * @param mapFunc
 	 * @return
@@ -466,7 +467,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	public <U extends Cloneable> DTImg<U> map(
 			final PairFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<U>> mapFunc,
 			final int outType) {
-		return DTImg.<U>WrapRDD(this, this.baseImg.map(mapFunc), outType);
+		return DTImg.<U>WrapRDD(this, this.baseImg.map(mapFunc).partitionBy(SparkGlobal.getPartitioner(getDim())), outType);
 	}
 	/**
 	 * Performs a subselection (a function filter) of the dataset based on the blocks
