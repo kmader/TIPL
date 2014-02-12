@@ -1,5 +1,6 @@
 package tipl.tools;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ import tipl.util.TIPLPluginManager;
 abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 		ITIPLPluginIn {
 	/** The kernel used for filtering operations */
-	public static interface filterKernel {
+	public static interface filterKernel extends Serializable {
 		/**
 		 * Given voxel @ x1, y1, z1 the function adds weighting coefficient for
 		 * voxel ( x2, y2, z2 ), value value.
@@ -46,7 +47,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 	 * The kernel used can be custom defined using the morphKernel interface
 	 * containing just one function
 	 */
-	public static interface morphKernel {
+	public static interface morphKernel extends Serializable {
 		/**
 		 * Given voxel (linear position off) @ x1, y1, z1 is (boolean) the voxel
 		 * ( x2, y2, z2 ) at linear position (off2) inside. off and off2 are
@@ -133,7 +134,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 	 * A generic interface for thresholding operations, typically only one
 	 * function is needed but the interface provides all anyways
 	 */
-	public static interface TIPLFilter {
+	public static interface TIPLFilter extends Serializable {
 		double meanV = 0.0;
 		double callT = 0;
 
@@ -795,7 +796,8 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 
 	}
 
-	/** Simple DRM code to prevent copying 
+	/** 
+	 * Simple DRM code to prevent copying 
 	 * */
 	private void Verify() {
 		final SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd");

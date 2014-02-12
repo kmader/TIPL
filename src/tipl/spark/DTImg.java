@@ -252,16 +252,27 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		DTImg<Fc> outImage=new DTImg<Fc>(parent,newImage,imgType,imgName);
 		return outImage;
 	}
+	/**
+	 * Produce a new DTImg from an existing TImgRO object
+	 * @param jsc the JavaSparkContext
+	 * @param inImage the input inmage to convert
+	 * @param imgType the type of the image (must match Fc)
+	 * @return
+	 */
+	static public <Fc extends Cloneable> DTImg<Fc> ConvertTImg(JavaSparkContext jsc, final TImgRO inImage, int imgType) {
+		JavaPairRDD<D3int, TImgBlock<Fc>> newImage = MigrateImage(jsc, inImage, imgType);
+		return new DTImg<Fc>(inImage,newImage,imgType,inImage.getPath());
+	}
 	
 	static public <Fc extends Cloneable> DTImg<Fc> ReadObjectFile(JavaSparkContext jsc, final String imgName, int imgType) {
-		final JavaRDD<TImgBlock<Fc>> newImage=jsc.objectFile(imgName);
-		final TImgBlock<Fc> cBlock=newImage.first();
-		JavaPairRDD<D3int,TImgBlock<Fc>> baseImg=newImage.map(new PairFunction<TImgBlock<Fc>,D3int,TImgBlock<Fc>>() {
-
+		final JavaRDD<Tuple2<D3int,TImgBlock<Fc>>> newImage=jsc.objectFile(imgName);
+		final Tuple2<D3int,TImgBlock<Fc>> cTuple=newImage.first();
+		final TImgBlock<Fc> cBlock=cTuple._2();
+		JavaPairRDD<D3int,TImgBlock<Fc>> baseImg=newImage.map(new PairFunction<Tuple2<D3int,TImgBlock<Fc>>,D3int,TImgBlock<Fc>>() {
 			@Override
-			public Tuple2<D3int, TImgBlock<Fc>> call(final TImgBlock<Fc> arg0)
+			public Tuple2<D3int, TImgBlock<Fc>> call(final Tuple2<D3int,TImgBlock<Fc>> arg0)
 					throws Exception {
-				return new Tuple2<D3int, TImgBlock<Fc>>(arg0.getPos(),arg0);
+				return arg0;
 			}
 			
 		});
@@ -327,13 +338,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 */
 	public void HSave(String path) {
 		final String outpath=(new File(path)).getAbsolutePath();
-		this.baseImg.setName(path).map(new Function<Tuple2<D3int,TImgBlock<T>>,TImgBlock<T>>() {
-			@Override
-			public TImgBlock<T> call(final Tuple2<D3int, TImgBlock<T>> arg0)
-					throws Exception {
-				return arg0._2;
-			}
-		}).saveAsObjectFile(outpath);
+		this.baseImg.setName(path).rdd().saveAsObjectFile(outpath);
 	}
 
 	@Override
@@ -512,10 +517,10 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 			final int outType) {
 		
 		JavaPairRDD<D3int, List<TImgBlock<T>>> joinImg;
-		/** joinImg=this.spreadSlices(spreadWidth).
-				groupByKey(getPartitions());
-				//partitionBy(SparkGlobal.getPartitioner(getDim()));
-		**/
+		joinImg=this.spreadSlices(spreadWidth).
+				groupByKey(getPartitions()).
+				partitionBy(SparkGlobal.getPartitioner(getDim()));
+		/**
 		final JavaPairRDD<D3int,TImgBlock<T>> savedBase=getBaseImg();
 		final D3int imSize=getDim();
 		final D3int ipos=getPos();
@@ -540,7 +545,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 			}
 			
 		});
-		
+		**/
 		return DTImg.<U>WrapRDD(this, joinImg.
 				map(mapFunc), outType); 
 	}

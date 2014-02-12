@@ -96,19 +96,21 @@ public class TImgBlock<V extends Cloneable> implements Serializable {
 	 */
 	static abstract public class TImgBlockFuture<Fu extends Cloneable> extends TImgBlock<Fu> {
 		// should be more or less final
-		private volatile Fu sliceData;
-		private boolean isRead=false;
+		transient private Fu sliceData;
+		transient private boolean isRead=false;
 		protected boolean cacheResult=true;
 		protected int readTimes=0;
 		private static final long serialVersionUID = 5184302069088589618L;
+		
 		protected static final boolean debug=TIPLGlobal.getDebug();
 		protected TImgBlockFuture(D3int pos,D3int dim,D3int offset) {
 			super(pos,dim,offset);
 		}
 		
 		@Override
-		public Fu get() {
-			if(debug) System.out.println("Calling read function:"+this);
+		synchronized public Fu get() {
+			readTimes++;
+			if(debug) System.out.println("Calling read function:(#"+readTimes+"):"+this);
 			if(isRead) return sliceData;
 			else {
 				final Fu cSlice = getSliceData();
@@ -143,7 +145,7 @@ public class TImgBlock<V extends Cloneable> implements Serializable {
 			this.imgType=imageType;
 		}
 		protected Fu getSliceData() {
-			readTimes++;
+			readTimes+=100;
 			if(debug) System.out.println("Reading (#"+readTimes+") slice:"+this);
 			return (Fu) TImgTools.ReadTImgSlice(fileName,sliceNumber, imgType);
 		}

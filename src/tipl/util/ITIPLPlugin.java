@@ -3,6 +3,8 @@
  */
 package tipl.util;
 
+import java.io.Serializable;
+
 /**
  * The TIPLPlugin interface is designed to unify the interface for all plugins
  * to a fixed set of commands this makes it easier to automate usage, reduces
@@ -14,7 +16,7 @@ package tipl.util;
  * @author mader
  * 
  */
-public interface ITIPLPlugin extends ArgumentParser.IsetParameter {
+public interface ITIPLPlugin extends ArgumentParser.IsetParameter, Serializable{
 	/**
 	 * forces the execution of the plugin otherwise lazy evaluation might be
 	 * used
