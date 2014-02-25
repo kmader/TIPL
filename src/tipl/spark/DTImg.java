@@ -32,6 +32,8 @@ import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgBlock;
 import tipl.util.TImgTools;
+import tipl.spark.hadoop.BinaryOutputFormat;
+import org.apache.hadoop.mapred.OutputFormat;
 
 /**
  * A distributed TImg based on a JavaRDD class and several subclass types I
@@ -340,6 +342,8 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	public void HSave(String path) {
 		final String outpath=(new File(path)).getAbsolutePath();
 		this.baseImg.setName(path).rdd().saveAsObjectFile(outpath);
+		//this.baseImg.setName(path).saveAsHadoopFile(outpath, D3int.class, TImgBlock.class, BinaryOutputFormat.class);
+	
 	}
 
 	@Override

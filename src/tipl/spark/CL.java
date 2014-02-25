@@ -62,11 +62,12 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 		System.out.println("Testing runVoxelsIntInt");
 		ArgumentParser p=SparkGlobal.activeParser(args);
 		int boxSize=p.getOptionInt("boxsize", 8, "The dimension of the image used for the analysis");
+		String writeIt=p.getOptionPath("out", "", "write image as output file");
 		p.checkForInvalid();
 		final TImgRO testImg = TestPosFunctions.wrapIt(boxSize,
 				new TestPosFunctions.SphericalLayeredImage(boxSize/2, boxSize/2, boxSize/2, 0, 1, 2));
 			//	new TestPosFunctions.DiagonalPlaneFunction());
-		TImgTools.WriteTImg(testImg, "/Users/mader/Desktop/test.tif");
+		if (writeIt.length()>0) TImgTools.WriteTImg(testImg,writeIt);
 		
 		final DTImg<boolean[]> testDImg=DTImg.<boolean[]>ConvertTImg(SparkGlobal.getContext("ComponentLabeling-Context"), testImg, TImgTools.IMAGETYPE_BOOL);
 		CL curPlugin=new CL(testDImg);
@@ -560,7 +561,7 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 				curMapSummary+=cEntry.getKey()+"=>"+cEntry.getValue()+",";
 				if (curMapSummary.length()>50) break;
 			}
-			System.out.println("Iter: "+i+", Full:"+(true)	+"\n"+curGrpSummary+"\tMerges "+curMap.size()+":\n\t"+curMapSummary);
+			System.out.println("Iter: "+i+", Full:"+(true)	+"\n"+curGrpSummary+"\tMerges "+curMap.size()+": Groups:"+cGrp.size()+"\n\t"+curMapSummary);
 			
 			if (curMap.size()>0) {
 				labelImg=mergeGroups(labelImg, curMap);
@@ -584,7 +585,7 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 			reArrangement.put(cEntry.getKey(), new Long(outDex));
 			outDex++;
 		}
-		System.out.println("Final List:\n"+curGrpSummary);
+		System.out.println("Final List:\n"+curGrpSummary+"\n Total Elements:\t"+reArrangement.size());
 		labelImg=mergeGroups(labelImg, reArrangement);
 		
 		return true;
@@ -593,7 +594,7 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 
 	@Override
 	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
-		// TODO Auto-generated method stub
+		// TODO Add some nice settings here
 		return p;
 	}
 

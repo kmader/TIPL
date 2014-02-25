@@ -4,6 +4,9 @@ import org.apache.spark.Partitioner;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.storage.StorageLevel;
+import org.apache.spark.serializer.KryoRegistrator;
+
+import com.esotericsoftware.kryo.Kryo;
 
 import scala.Tuple2;
 import tipl.util.ArgumentParser;
@@ -37,6 +40,10 @@ abstract public class SparkGlobal {
 	}
 	static public String memorySettings="";
 	static public String sparkLocal="/scratch"; // much better than tmp
+	static public boolean useKyro=true;
+	static public int kyroBufferSize=200;
+	static public int shuffleBufferSize=50*1024;
+	static public boolean useCompression=true;
 	static protected String getMasterName() {
 		if(masterName.length()<1) masterName="local["+TIPLGlobal.availableCores+"]";
 		return masterName;
@@ -45,6 +52,7 @@ abstract public class SparkGlobal {
 		if(currentContext==null) currentContext=getContext("temporaryContext");
 		return currentContext;
 	}
+
 	/**
 	 * Create or reuses the instance of the JavaSparkContext
 	 * @param masterName
@@ -57,6 +65,16 @@ abstract public class SparkGlobal {
 			if(maxCores>0) System.setProperty("spark.cores.max", ""+maxCores);
 			if(memorySettings.length()>0) System.setProperty("spark.executor.memory", ""+memorySettings);
 			if(sparkLocal.length()>0) System.setProperty("spark.local.dir", ""+sparkLocal);
+			if(useKyro) {
+				System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
+				System.setProperty("spark.kryo.registrator", "tipl.spark.TIPLRegistrator");
+				System.setProperty("spark.kryoserializer.buffer.mb",""+kyroBufferSize); 
+			}
+			System.setProperty("spark.shuffle.compress", ""+useCompression);
+			System.setProperty("spark.shuffle.spill.compress", ""+useCompression);
+			System.setProperty("spark.shuffle.file.buffer.kb",""+shuffleBufferSize);
+			//System.setProperty("spark.rdd.compress", ""+useCompression);
+			
 			currentContext=new JavaSparkContext(getMasterName(), jobName,System.getenv("SPARK_HOME"), JavaSparkContext.jarOfClass(SparkGlobal.class));
 			StopSparkeAtFinish(currentContext);
 		}
@@ -202,6 +220,9 @@ abstract public class SparkGlobal {
 		masterName=sp.getOptionString("@masternode",getMasterName(),"The name of the master node to connect to");
 		memorySettings=sp.getOptionString("@sparkmemory",memorySettings,"The memory per job");
 		sparkLocal=sp.getOptionString("@sparklocal",sparkLocal,"The local drive to cache onto");
+		useKyro=sp.getOptionBoolean("@sparkkyro",useKyro,"Use the kyro serializer");
+		useCompression=sp.getOptionBoolean("@sparkcompression",useCompression,"Use compression in spark for RDD and Shuffles");
+		
 		setSlicesPerCore(sp.getOptionInt("@sparkpartitions", getSlicesPerCore(), "The number of slices to load onto a single operating core", 
 				1, Integer.MAX_VALUE));
 		setSparkPersistance(sp.getOptionInt("@sparkpersist", getSparkPersistenceValue(), "Image default persistance options:"+getPersistenceText(),
