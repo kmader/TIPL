@@ -166,7 +166,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		final List<Integer> l = new ArrayList<Integer>(imgDim.z);
 		for (int i = 0; i < imgDim.z; i++) {
 			l.add(i);
-		}
+		}	
 		/**
 		 * performance is much better when partition count matches slice count
 		 * (or is at least larger than 2)

@@ -6,6 +6,7 @@ package tipl.formats;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -39,7 +40,7 @@ public class TiffFolder extends DirectoryReader {
 	}
 
 	public static class TIFSliceReader extends SliceReader {
-		private Raster activeRaster;
+		public Raster activeRaster;
 
 		public TIFSliceReader(final File infile) throws IOException {
 			final FileInputStream in = new FileInputStream(infile);
@@ -53,6 +54,7 @@ public class TiffFolder extends DirectoryReader {
 			final ImageDecoder dec = ImageCodec.createImageDecoder(names[0],
 					stream, null);
 			final RenderedImage im = dec.decodeAsRenderedImage();
+			
 			SetupFromRenderImage(im);
 		}
 
@@ -62,14 +64,23 @@ public class TiffFolder extends DirectoryReader {
 
 		@Override
 		public Object polyReadImage(final int asType) throws IOException {
-
+			
 			switch (imageType) {
 			case 0: // Char use the interface for short with a different max val
 			case 2: // Int
 			case 10: // binary also uses the same reader
-				int[] gi = new int[sliceSize];
-				gi = activeRaster.getPixels(0, 0, activeRaster.getWidth(),
+				
+				int[]  gi =  new int[sliceSize];
+				if (readAsByte) {
+					// how to handle a 24 bit color image, just take the red channel
+					byte[] gb=( (DataBufferByte) activeRaster.getDataBuffer()).getData();
+					for(int i=0;i<sliceSize;i++) gi[i]=gb[3*i];
+				} else {
+					gi = activeRaster.getPixels(0, 0, activeRaster.getWidth(),
 						activeRaster.getHeight(), gi);
+				}
+				
+				
 				// System.out.println("Getting pixels:"+dataType+", converting to:"+asType+", status:"+gi);
 				return TImgTools.convertIntArray(gi, asType, true, 1, maxVal);
 			case 3: // Float
@@ -82,9 +93,10 @@ public class TiffFolder extends DirectoryReader {
 				throw new IOException("Input file format is not known!!!!");
 			}
 		}
-
+		protected boolean readAsByte=false;
 		private void SetupFromRenderImage(final RenderedImage im)
 				throws IOException {
+			readAsByte=false;
 			switch (im.getColorModel().getPixelSize()) {
 			case 1: // Boolean
 				imageType = 10;
@@ -97,6 +109,11 @@ public class TiffFolder extends DirectoryReader {
 			case 16: // Integer
 				imageType = 2;
 				maxVal = 65536;
+				break;
+			case 24: // sometimes ok for jpeg images
+				imageType=0;
+				maxVal=255;
+				readAsByte=true;
 				break;
 			case 32: // Float
 				imageType = 3;
@@ -120,7 +137,7 @@ public class TiffFolder extends DirectoryReader {
 
 	}
 
-	final static String version = "08-03-2013";
+	final static String version = "26-02-2014";
 	final static public FileFilter tifFilter = new FileFilter() {
 		@Override
 		public boolean accept(final File file) {
@@ -141,7 +158,7 @@ public class TiffFolder extends DirectoryReader {
 		@Override
 		public DirectoryReader get(final String path) {
 			try {
-				return new TiffFolder(path);
+				return new TiffFolder(path,tifFilter,"tiff");
 			} catch (final Exception e) {
 				System.out.println("Error converting or reading slice");
 				e.printStackTrace();
@@ -155,6 +172,39 @@ public class TiffFolder extends DirectoryReader {
 		}
 	};
 	
+	final static public FileFilter jpegFilter = new FileFilter() {
+		@Override
+		public boolean accept(final File file) {
+			if (file.getAbsolutePath().endsWith(".jpg"))
+				return true;
+			if (file.getAbsolutePath().endsWith(".JPG"))
+				return true;
+			if (file.getAbsolutePath().endsWith(".jpeg"))
+				return true;
+			if (file.getAbsolutePath().endsWith(".JPEG"))
+				return true;
+			return false;
+		}
+	};
+	@DirectoryReader.DReader(name = "jpeg")
+	final public static DRFactory jpreaderFactory = new DRFactory() {
+		@Override
+		public DirectoryReader get(final String path) {
+			try {
+				return new TiffFolder(path,jpegFilter,"jpeg");
+			} catch (final Exception e) {
+				System.out.println("Error converting or reading slice");
+				e.printStackTrace();
+				return null;
+			}
+		}
+
+		@Override
+		public FileFilter getFilter() {
+			return TiffFolder.jpegFilter;
+		}
+	};
+	
 	public static void main(final ArgumentParser p) {
 		System.out.println("TiffFolder Tool v" + VirtualAim.kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
@@ -163,7 +213,7 @@ public class TiffFolder extends DirectoryReader {
 		final String outputFile = p.getOptionString("output", "test.tif",
 				"Aim File to Convert");
 		try {
-			final TiffFolder inputAim = new TiffFolder(inputFile);
+			final TiffFolder inputAim = new TiffFolder(inputFile,tifFilter,"main");
 			final VirtualAim bob = new VirtualAim(inputAim.getImage());
 			bob.WriteAim(outputFile);
 		} catch (final Exception e) {
@@ -176,9 +226,13 @@ public class TiffFolder extends DirectoryReader {
 	public static void main(final String[] args) {
 		main(new ArgumentParser(args));
 	}
-
-	public TiffFolder(final String path) throws IOException {
-		super(path, tifFilter, new TiffSliceFactory());
+	/** 
+	 * operating as a tiff or jpeg folder
+	 */
+	protected final String pluginMode;
+	public TiffFolder(final String path,final FileFilter ffilter,final String mode) throws IOException {
+		super(path, ffilter, new TiffSliceFactory());
+		pluginMode=mode;
 
 	}
 
@@ -201,7 +255,7 @@ public class TiffFolder extends DirectoryReader {
 	@Override
 	public String readerName() {
 		// TODO Auto-generated method stub
-		return "Tiff-Folder-Reader " + version;
+		return pluginMode+"-Folder-Reader " + version+":"+this;
 	}
 
 }

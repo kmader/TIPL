@@ -22,14 +22,10 @@ public class FloatFilterTest {
 	
 	static public class FloatFilterTestImpl extends FloatFilter {
 		@Override
-		public BaseTIPLPluginIn.filterKernel getKernel() {
+		public BaseTIPLPluginIn.filterKernel getImageKernel() {
 			return BaseTIPLPluginIn.gaussFilter(0.4);
 		}
 
-		@Override
-		public BaseTIPLPluginIn.morphKernel getMKernel() {
-			return new BaseTIPLPluginIn.stationaryKernel(BaseTIPLPluginIn.fullKernel);	
-		}
 		
 		@Override
 		public D3int getNeighborSize() {
@@ -42,11 +38,6 @@ public class FloatFilterTest {
 			return false;
 		}
 
-		@Override
-		public ArgumentParser setParameter(ArgumentParser p, String prefix) {
-			// TODO Auto-generated method stub
-			return null;
-		}
 
 		@Override
 		public String getPluginName() {
@@ -56,30 +47,15 @@ public class FloatFilterTest {
 	}
 	static public class FloatFilterTestImpl2 extends FloatFilterSlice {
 		@Override
-		public BaseTIPLPluginIn.filterKernel getKernel() {
+		public BaseTIPLPluginIn.filterKernel getImageKernel() {
 			return BaseTIPLPluginIn.gaussFilter(0.4);
 		}
 
-		@Override
-		public BaseTIPLPluginIn.morphKernel getMKernel() {
-			return new BaseTIPLPluginIn.stationaryKernel(BaseTIPLPluginIn.fullKernel);
-		}
 		
-		@Override
-		public D3int getNeighborSize() {
-			return new D3int(1,1,1);
-		}
-
 		@Override
 		public boolean execute() {
 			// TODO Auto-generated method stub
 			return false;
-		}
-
-		@Override
-		public ArgumentParser setParameter(ArgumentParser p, String prefix) {
-			// TODO Auto-generated method stub
-			return null;
 		}
 
 		@Override
@@ -150,7 +126,7 @@ public class FloatFilterTest {
 	@Test
 	public void testKernel() {
 		// everything should be inside this kernel
-		assert(ff.getMKernel().inside(-1, -1, 0, 50, 0, -30, 0, 10));
+		assert(ff.getKernel().inside(-1, -1, 0, 50, 0, -30, 0, 10));
 	}
 	protected static float[] inSlice=(float[]) lineImg.getPolyImage(5, 3);
 	protected static List<TImgBlock<float[]>> someSlices=makeSomeSlices(lineImg,2);

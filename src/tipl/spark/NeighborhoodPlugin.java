@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import scala.Tuple2;
+import tipl.formats.TImgRO;
 import tipl.tools.BaseTIPLPlugin;
 import tipl.tools.BaseTIPLPluginIn;
 import tipl.util.D3int;
@@ -54,16 +55,12 @@ extends Serializable, ITIPLPlugin {
 
 	@SuppressWarnings("serial")
 	public abstract class GatherBasedPlugin<U extends Cloneable, V extends Cloneable>
-	extends BaseTIPLPlugin implements NeighborhoodPlugin<U, V> {
+	extends BaseTIPLPluginIn implements NeighborhoodPlugin<U, V> {
 
 		public GatherBasedPlugin() {
 		}
 
-		abstract public BaseTIPLPluginIn.filterKernel getKernel();
-
-		abstract public BaseTIPLPluginIn.morphKernel getMKernel();
-
-		abstract public D3int getNeighborSize();
+		abstract public BaseTIPLPluginIn.filterKernel getImageKernel();
 
 	}
 
@@ -90,12 +87,12 @@ extends Serializable, ITIPLPlugin {
 			final List<TImgBlock<U>> inBlocks = inTuple._2();
 			final TImgBlock<U> templateBlock = inBlocks.get(0);
 			final D3int blockSize = templateBlock.getDim();
-			final BaseTIPLPluginIn.morphKernel mKernel = getMKernel();
+			final BaseTIPLPluginIn.morphKernel mKernel = getKernel();
 			final int eleCount = (int) templateBlock.getDim().prod();
 			// the output image
 			final V outData = createObj(eleCount);
 			final BaseTIPLPluginIn.filterKernel[] kernelList = new BaseTIPLPluginIn.filterKernel[eleCount];
-			for(int i=0;i<eleCount;i++) kernelList[i]=getKernel();
+			for(int i=0;i<eleCount;i++) kernelList[i]=getImageKernel();
 			for (final TImgBlock<U> cBlock : inBlocks) {
 				final U curBlock = cBlock.get();
 				for (int zp = 0; zp < templateBlock.getDim().z; zp++) {
@@ -123,6 +120,11 @@ extends Serializable, ITIPLPlugin {
 		abstract protected double getEle(U obj, int index);
 
 		abstract protected void setEle(V obj, int index, double val);
+		DTImg<U> basisImage;
+		public void LoadImages(TImgRO[] inputImages) {
+			if (!(basisImage instanceof DTImg)) throw new IllegalArgumentException("This only works with DTImg");
+			basisImage=(DTImg<U>) inputImages[0];
+		}
 	}
 
 	/**
@@ -152,7 +154,7 @@ extends Serializable, ITIPLPlugin {
 			final List<TImgBlock<float[]>> inBlocks = inTuple._2();
 			final TImgBlock<float[]> templateBlock = inBlocks.get(0);
 			final D3int blockSize = templateBlock.getDim();
-			final BaseTIPLPluginIn.morphKernel mKernel = getMKernel();
+			final BaseTIPLPluginIn.morphKernel mKernel = getKernel();
 			// the output image
 			final float[] outData = new float[templateBlock.get().length];
 			// Make the output image first as kernels, then add the respective
@@ -161,7 +163,7 @@ extends Serializable, ITIPLPlugin {
 			                                                                                     .prod()];
 
 			for (int ci = 0; ci < curKernels.length; ci++)
-				curKernels[ci] = getKernel();
+				curKernels[ci] = getImageKernel();
 
 			for (final TImgBlock<float[]> cBlock : inBlocks) {
 				final float[] curBlock = cBlock.get();

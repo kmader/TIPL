@@ -88,6 +88,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 		JavaSparkContext jsc = SparkGlobal.getContext("FilterTest");
 		long start1=System.currentTimeMillis();
 		DTImg<float[]> cImg = DTImg.<float[]>ReadImage(jsc,imagePath,TImgTools.IMAGETYPE_FLOAT);
+		
 		cImg.setRDDName("Loading Data");
 
 		DTImg<float[]> filtImg;
@@ -140,33 +141,22 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 	}
 
 	@Override
-	public BaseTIPLPluginIn.filterKernel getKernel() {
+	public BaseTIPLPluginIn.filterKernel getImageKernel() {
 		return BaseTIPLPluginIn.gaussFilter(1.0);
 	}
 
-	@Override
-	public BaseTIPLPluginIn.morphKernel getMKernel() {
-		return BaseTIPLPluginIn.fullKernel;
-	}
 	@Override
 	public String getPluginName() {
 		// TODO Auto-generated method stub
 		return FilterTest.class.getCanonicalName();
 	}
 
-
-	protected D3int nsize=new D3int(1,1,1);
 	@Override
 	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
-		// TODO Auto-generated method stub
-		nsize=p.getOptionD3int(prefix+"filtersize", nsize, "The size of the neighborhood for the filter");
+		super.setParameter(p,prefix);
 		return p;
 	}
 
-	@Override
-	public D3int getNeighborSize() {
-		return nsize;
-	}
 	@Override
 	public boolean execute() {
 		// TODO Auto-generated method stub
