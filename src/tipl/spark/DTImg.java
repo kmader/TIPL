@@ -23,6 +23,7 @@ import org.apache.spark.storage.StorageLevel;
 
 import scala.Tuple2;
 import scala.Tuple3;
+import tipl.formats.FImage;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.TSliceWriter;
@@ -515,6 +516,53 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 			final int outType) {
 		return DTImg.<U>WrapRDD(this, this.baseImg.map(mapFunc).partitionBy(SparkGlobal.getPartitioner(getDim())), outType);
 	}
+	/**
+	 * passes basically directly through to the JavaPair RDD but it wraps
+	 * everything in a DTImg class and automatically partitions
+	 * 
+	 * @param mapFunc
+	 * @return
+	 */
+	public <U extends Cloneable> DTImg<U> mapValues(
+			final Function<TImgBlock<T>, TImgBlock<U>> mapFunc,
+			final int outType) {
+		return DTImg.<U>WrapRDD(this, this.baseImg.mapValues(mapFunc).partitionBy(SparkGlobal.getPartitioner(getDim())), outType);
+	}
+	/**
+	 * apply a given voxel function in parallel to every point in the image
+	 * @param inFunction
+	 * @param outType
+	 * @return
+	 */
+	public DTImg<float[]> applyVoxelFunction(final FImage.VoxelFunction inFunction,int outType) {
+		return mapValues(new Function<TImgBlock<T>,TImgBlock<float[]>>() {
+
+			@Override
+			public TImgBlock<float[]> call(TImgBlock<T> startingBlock) throws Exception {
+				
+				T curPts=startingBlock.get();
+				double[] dblPts = (double[]) TImgTools.convertArrayType(curPts, TImgTools.identifySliceType(curPts), 
+						TImgTools.IMAGETYPE_DOUBLE, true, 1, Integer.MAX_VALUE);
+				float[] outPts = new float[dblPts.length];
+				for(int zi=0;zi<startingBlock.getDim().z;zi++) {
+					Double zpos=new Double(zi+getPos().z);
+					for(int yi=0;yi<startingBlock.getDim().y;yi++) {
+						Double ypos=new Double(yi+getPos().y);
+						for(int xi=0;xi<startingBlock.getDim().x;xi++) {
+							int ind=(zi*getDim().z+yi)*getDim().y+xi;
+							Double xpos=new Double(xi+getPos().x);
+							Double[] ipos=new Double[] {xpos,ypos,zpos};
+							outPts[ind]=(float) inFunction.get(ipos, dblPts[ind]);
+						}
+					}
+				}
+				return new TImgBlock<float[]>(outPts,startingBlock);
+				
+			}
+			
+		},outType);
+	}
+	
 	/**
 	 * Performs a subselection (a function filter) of the dataset based on the blocks
 	 * @param filtFunc the function to filter with

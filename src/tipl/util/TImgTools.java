@@ -245,6 +245,12 @@ public class TImgTools {
 				if (gf[i])
 					gout[i] = 1.0f;
 			return gout;
+		case IMAGETYPE_DOUBLE: // Float - Long
+			final double[] goutd = new double[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				if (gf[i])
+					goutd[i] = 1.0f;
+			return goutd;
 		case IMAGETYPE_BOOL: // Mask
 			return gf;
 		default:
@@ -333,6 +339,7 @@ public class TImgTools {
 		}
 
 	}
+	
 
 	@Deprecated
 	public static Object convertIntArray(final int[] gi, final int asType,
@@ -372,7 +379,13 @@ public class TImgTools {
 				gf[i] = (gi[i] - (isSigned ? maxVal / 2.0f : 0.0f))
 						* ShortScaleFactor;
 			return gf;
-
+			
+		case IMAGETYPE_DOUBLE: // Float - Long
+			final double[] gd = new double[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				gd[i] = (gi[i] - (isSigned ? maxVal / 2.0f : 0.0f))
+						* ShortScaleFactor;
+			return gd;
 		case IMAGETYPE_BOOL: // Mask
 			final boolean[] gbool = new boolean[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
@@ -418,7 +431,13 @@ public class TImgTools {
 				gf[i] = (gs[i] - (isSigned ? maxVal / 2.0f : 0.0f))
 						* ShortScaleFactor;
 			return gf;
-
+		case IMAGETYPE_DOUBLE: // Float - Long
+			final double[] gd = new double[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				gd[i] = (gs[i] - (isSigned ? maxVal / 2.0f : 0.0f))
+						* ShortScaleFactor;
+			return gd;
+			
 		case IMAGETYPE_BOOL: // Mask
 			final boolean[] gbool = new boolean[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
