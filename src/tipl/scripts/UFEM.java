@@ -194,7 +194,7 @@ public class UFEM implements Runnable {
 				.println(" Runs Segmentation and Generates Distance Map Script v"
 						+ UFEM.kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p = TIPLGlobal.activeParser(args);
 		final UFEM cScript = new UFEM(p);
 
 		p.checkForInvalid();
@@ -453,22 +453,13 @@ public class UFEM implements Runnable {
 						"scriptMulticore",
 						1,
 						"Number of different stages of the script in parallel (mask distance generation for example)");
-		TIPLGlobal.availableCores = p.getOptionInt("maxcores",
-				TIPLGlobal.availableCores,
-				"Number of cores/threads to use for processing");
-
-		TIPLGlobal.supportedIOThreads = p.getOptionInt("maxiothread",
-				TIPLGlobal.supportedIOThreads,
-				"Number of cores/threads to use for read/write operations");
+		
 
 		multiJobs = p
 				.getOptionBoolean(
 						"multiJobs",
 						"Submit additional jobs [merlin only!] for subtasks (distance map, voronoi volumes, shape analysis)");
-		VirtualAim.scratchLoading = p.getOptionBoolean("local",
-				"Load image data from local filesystems");
-		VirtualAim.scratchDirectory = p.getOptionString("localdir",
-				"/home/scratch/", "Directory to save local data to");
+
 
 		// Read Filenames
 		ufiltAimFile = p.getOptionPath("ufilt", "", "Input unfiltered image");

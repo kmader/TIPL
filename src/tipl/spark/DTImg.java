@@ -33,6 +33,7 @@ import tipl.util.TIPLGlobal;
 import tipl.util.TImgBlock;
 import tipl.util.TImgTools;
 import tipl.spark.hadoop.BinaryOutputFormat;
+
 import org.apache.hadoop.mapred.OutputFormat;
 
 /**
@@ -91,8 +92,11 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 
 		@Override
 		public Tuple2<D3int, TImgBlock<W>> call(Integer sliceNum) {
+			if(!TIPLGlobal.waitForReader()) throw new IllegalArgumentException("Timed Out Waiting for Reader"+this);
+			
 			final W cSlice = (W) TImgTools.ReadTImgSlice(imgPath,
 					sliceNum.intValue(), imgType);
+			TIPLGlobal.returnReader();
 			final D3int cPos = new D3int(imgPos.x, imgPos.y, imgPos.z
 					+ sliceNum);
 			return new Tuple2<D3int, TImgBlock<W>>(cPos, new TImgBlock<W>(
@@ -146,7 +150,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	}
 	
 	/**
-	 * import an image from a path by reading line by line
+	 * import an image from a path as a future by reading line by line, useful when many will be filtered out anyways
 	 * 
 	 * @param jsc
 	 * @param imgName
@@ -171,6 +175,44 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		return jsc.parallelize(l, partitionCount)
 				.map(new ReadSlicePromise<U>(imgName, imgType, cImg.getPos(), cImg
 						.getDim()));
+	}
+	/**
+	 * import an image from a path by reading in chunks based on the maximum number of cores
+	 * 
+	 * @param jsc
+	 * @param imgName
+	 * @param imgType
+	 * @return
+	 */
+	protected static <U extends Cloneable> JavaPairRDD<D3int, TImgBlock<U>> ImportImageSerial(
+			final JavaSparkContext jsc, final String imgName, final int imgType) {
+		assert (TImgTools.isValidType(imgType));
+		final TImgRO cImg = TImgTools.ReadTImg(imgName, false, true);
+		final D3int imgDim = cImg.getDim();
+		final int partitionCount=TIPLGlobal.getMaximumReaders();
+		final int slicesPerReader=(int) Math.ceil(imgDim.z/partitionCount);
+		final List<int[]> l = new ArrayList<int[]>(partitionCount);
+		for (int i = 0; i < imgDim.z; i+=slicesPerReader) {
+			final int maxSlice=Math.min(i+slicesPerReader, imgDim.z);
+			l.add(new int[] {i,maxSlice});
+		}
+		
+		return jsc.parallelize(l, partitionCount).flatMap(new PairFlatMapFunction<int[],D3int,TImgBlock<U>>() {
+
+			@Override
+			public Iterable<Tuple2<D3int, TImgBlock<U>>> call(int[] sliceRange)
+					throws Exception {
+				final PairFunction<Integer, D3int, TImgBlock<U>> standardPairFcn=new ReadSlice<U>(imgName,imgType,cImg.getPos(),cImg.getDim());
+						
+				ArrayList<Tuple2<D3int, TImgBlock<U>>> outSlices=new ArrayList<Tuple2<D3int, TImgBlock<U>>>(sliceRange[1]-sliceRange[0]+1);
+				
+				for(int s=sliceRange[0];s<sliceRange[1];s++) {
+					outSlices.add(standardPairFcn.call(s));
+				}
+				return outSlices;
+			}
+			
+		});
 	}
 
 	/**

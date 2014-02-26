@@ -2,6 +2,8 @@ package tipl.util;
 
 import java.io.Serializable;
 
+import tipl.spark.SparkGlobal;
+
 /**
  * The representation of a single block in an image (typically a slice) containing the original position and any offset from this position which is useful for filtering
  * 
@@ -147,7 +149,12 @@ public class TImgBlock<V extends Cloneable> implements Serializable {
 		protected Fu getSliceData() {
 			readTimes+=100;
 			if(debug) System.out.println("Reading (#"+readTimes+") slice:"+this);
-			return (Fu) TImgTools.ReadTImgSlice(fileName,sliceNumber, imgType);
+			if(!TIPLGlobal.waitForReader()) throw new IllegalArgumentException("Process was interupted while waiting for reader");
+				Fu outSlice=(Fu) TImgTools.ReadTImgSlice(fileName,sliceNumber, imgType);
+				TIPLGlobal.returnReader();
+				return outSlice;
+			
+			
 		}
 		@Override
 		public String toString() {

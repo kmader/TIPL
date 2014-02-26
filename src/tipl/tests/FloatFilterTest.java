@@ -109,7 +109,7 @@ public class FloatFilterTest {
 		D3int blockSize=new D3int(10);
 		D3int offset=new D3int(0);
 		for(int i=0;i<10000;i++) {
-			List<D4int> scanpos=GatherBasedPlugin.getScanPositions(start, offset, 0, blockSize, ns);
+			List<D4int> scanpos=BaseTIPLPluginIn.getScanPositions(start, offset, 0, blockSize, ns);
 			long offsum=0;
 			for (D4int scanpoint: scanpos) offsum+=scanpoint.offset;
 		}
@@ -120,31 +120,31 @@ public class FloatFilterTest {
 		D3int ns=new D3int(1);
 		D3int blockSize=new D3int(10);
 		D3int offset=new D3int(0);
-		List<D4int> scanpos=GatherBasedPlugin.getScanPositions(start, offset, 0, blockSize, ns);
+		List<D4int> scanpos=BaseTIPLPluginIn.getScanPositions(start, offset, 0, blockSize, ns);
 		assertEquals(scanpos.size(),27);
 		//test the bottom corner
 		start=new D3int(0);
-		scanpos=GatherBasedPlugin.getScanPositions(start, offset, 0, blockSize, ns);
+		scanpos=BaseTIPLPluginIn.getScanPositions(start, offset, 0, blockSize, ns);
 		assertEquals(scanpos.size(),8);
 		//test the top corner
 		start=new D3int(9);
-		scanpos=GatherBasedPlugin.getScanPositions(start, offset, 0, blockSize, ns);
+		scanpos=BaseTIPLPluginIn.getScanPositions(start, offset, 0, blockSize, ns);
 		assertEquals(scanpos.size(),8);
 		
 		//test the bottomish corner
 		start=new D3int(0,1,1);
-		scanpos=GatherBasedPlugin.getScanPositions(start, offset, 0, blockSize, ns);
+		scanpos=BaseTIPLPluginIn.getScanPositions(start, offset, 0, blockSize, ns);
 		assertEquals(scanpos.size(),18);
 		
 		//test the bottomish corner
 		start=new D3int(1,0,0);
-		scanpos=GatherBasedPlugin.getScanPositions(start, offset, 0, blockSize, ns);
+		scanpos=BaseTIPLPluginIn.getScanPositions(start, offset, 0, blockSize, ns);
 		assertEquals(scanpos.size(),12);
 		
 		//test a big window
 		start=new D3int(4,4,4);
 		ns=new D3int(4,4,4);
-		scanpos=GatherBasedPlugin.getScanPositions(start, offset, 0, blockSize, ns);
+		scanpos=BaseTIPLPluginIn.getScanPositions(start, offset, 0, blockSize, ns);
 		assertEquals(scanpos.size(),9*9*9);
 	}
 	@Test

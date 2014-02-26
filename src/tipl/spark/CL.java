@@ -24,6 +24,7 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.broadcast.Broadcast;
 
 import scala.Tuple2;
 import static ch.lambdaj.Lambda.on;
@@ -32,6 +33,7 @@ import static ch.lambdaj.Lambda.DESCENDING;
 import tipl.formats.TImgRO;
 import tipl.spark.NeighborhoodPlugin.GatherBasedPlugin;
 import tipl.tests.TestPosFunctions;
+import tipl.tools.BaseTIPLPlugin;
 import tipl.tools.BaseTIPLPluginIn;
 import tipl.tools.BaseTIPLPluginIn.filterKernel;
 import tipl.tools.BaseTIPLPluginIn.morphKernel;
@@ -48,7 +50,7 @@ import tipl.util.TImgTools;
  *
  */
 @SuppressWarnings("serial")
-public class CL extends GatherBasedPlugin<boolean[],int[]> {
+public class CL extends BaseTIPLPluginIn {//extends GatherBasedPlugin<boolean[],int[]> {
 	protected static void checkVals(final ITIPLPluginIn CL, final int maxLabel,
 			final double avgCount) {
 		/** System.out.println("Maximum Label of CL Image:" + getMax(CL)
@@ -63,7 +65,7 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 		ArgumentParser p=SparkGlobal.activeParser(args);
 		int boxSize=p.getOptionInt("boxsize", 8, "The dimension of the image used for the analysis");
 		String writeIt=p.getOptionPath("out", "", "write image as output file");
-		p.checkForInvalid();
+		
 		final TImgRO testImg = TestPosFunctions.wrapIt(boxSize,
 				new TestPosFunctions.SphericalLayeredImage(boxSize/2, boxSize/2, boxSize/2, 0, 1, 2));
 			//	new TestPosFunctions.DiagonalPlaneFunction());
@@ -71,6 +73,8 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 		
 		final DTImg<boolean[]> testDImg=DTImg.<boolean[]>ConvertTImg(SparkGlobal.getContext("ComponentLabeling-Context"), testImg, TImgTools.IMAGETYPE_BOOL);
 		CL curPlugin=new CL(testDImg);
+		curPlugin.setParameter(p,"");
+		p.checkForInvalid();
 		
 		curPlugin.execute();
 		
@@ -83,12 +87,6 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 	}
 	final protected DTImg<boolean[]> maskImg;
 	protected DTImg<long[]> labelImg;
-	@Override
-	public Tuple2<D3int, TImgBlock<int[]>> GatherBlocks(
-			Tuple2<D3int, List<TImgBlock<boolean[]>>> inBlocks) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 	/** 
 	 * Get a summary of the groups and the count in each
 	 * @param inLabelImg
@@ -179,7 +177,7 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 										if (oSlice[off]==0) label=((z+spos.z)*wholeSize.y+(y+spos.y))*wholeSize.x+x+spos.x;
 										else label=oSlice[off];
 										oSlice[off]=label;
-										for (D4int scanPos : GatherBasedPlugin.getScanPositions(mKernel,new D3int(x,y,z),gOffset, off, sdim, ns)) {
+										for (D4int scanPos : BaseTIPLPluginIn.getScanPositions(mKernel,new D3int(x,y,z),gOffset, off, sdim, ns)) {
 											if(cSlice[scanPos.offset]) oSlice[scanPos.offset]=label;
 										}
 									}
@@ -353,7 +351,9 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 			}
 			
 		});
+		
 		System.out.println("Merges per slice");
+		
 		long totalMerges=0;
 		for (Long cVal: mergeCmds.values().map(new Function<Map<Long,Long>,Long>() {
 
@@ -366,6 +366,7 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 			System.out.println("\t"+cVal);
 			totalMerges+=cVal;
 		}
+		
 		JavaPairRDD<D3int,TImgBlock<long[]>> newlabeledImage=labeledImage.getBaseImg().
 				join(mergeCmds, SparkGlobal.getPartitioner(labeledImage.getDim()))
 				.mapValues(new Function<Tuple2<TImgBlock<long[]>,Map<Long,Long>>,TImgBlock<long[]>>()
@@ -397,7 +398,7 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 	}
 	
 	/**
-	 * A rather ugly function to turn the neighbor lists into specific succint merge commands
+	 * A rather ugly function to turn the neighbor lists into specific succinct merge commands
 	 * @param groupList
 	 * @return
 	 */
@@ -442,16 +443,16 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 	}
 	
 	protected static DTImg<long[]> mergeGroups(DTImg<long[]> labeledImage,final Map<Long,Long> mergeCommands) {
-		SparkGlobal.getContext().broadcast(mergeCommands);
+		final Broadcast<Map<Long,Long>> broadcastMergeCommands=SparkGlobal.getContext().broadcast(mergeCommands);
 		DTImg<long[]> newlabeledImage=labeledImage.map(new PairFunction<Tuple2<D3int,TImgBlock<long[]>>,D3int,TImgBlock<long[]>>() {
-
+			final Map<Long,Long> cMergeCommands=broadcastMergeCommands.value();
 			@Override
 			public Tuple2<D3int, TImgBlock<long[]>> call(
 					Tuple2<D3int, TImgBlock<long[]>> arg0) throws Exception {
 				final long[] curSlice=arg0._2.get();
 				final long[] outSlice=new long[curSlice.length];
 				for(int i=0;i<curSlice.length;i++) {
-					outSlice[i]=mergeCommands.get(curSlice[i]);
+					outSlice[i]=cMergeCommands.get(curSlice[i]);
 				}
 				return new Tuple2<D3int,TImgBlock<long[]>>(arg0._1,new TImgBlock<long[]>(outSlice,arg0._2));
 			}
@@ -499,7 +500,7 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 							final int off = ((zp) * blockSize.y + (yp))
 									* blockSize.x + (xp);
 							
-							for(D4int cPos : getScanPositions(mKernel,new D3int(xp,yp,zp),cBlock.getOffset(),off, blockSize,ns)) {
+							for(D4int cPos : BaseTIPLPluginIn.getScanPositions(mKernel,new D3int(xp,yp,zp),cBlock.getOffset(),off, blockSize,ns)) {
 								final long cval=curBlock[cPos.offset];
 								if (cval>0) neighborList[off].add(new Long(cval));
 							}
@@ -528,15 +529,15 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 	
 	@Override
 	public boolean execute() {
-		labelImg=makeLabelImage(this.maskImg,getNeighborSize(),getMKernel());
+		labelImg=makeLabelImage(this.maskImg,getNeighborSize(),getKernel());
 		
-		boolean stillMerges=true;
+		boolean stillMerges=runSliceMergesFirst;
 		int i=0;
 		/** runs for slice based iterations for awhile and then move to whole image iterations once
 		 * the slice based one flatten out.
 		 */
 		while(stillMerges) {
-			Tuple2<DTImg<long[]>,Long> smOutput=scanAndMerge(labelImg,getNeighborSize(), getMKernel());
+			Tuple2<DTImg<long[]>,Long> smOutput=scanAndMerge(labelImg,getNeighborSize(), getKernel());
 			labelImg=smOutput._1;
 			System.out.println("Iter: "+i+", Full:"+(false)	+"\n\tMerges "+smOutput._2);
 			stillMerges=(smOutput._2>0);
@@ -555,7 +556,7 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 				curGrpSummary+=cEntry.getKey()+"\t"+cEntry.getValue()+"\n";
 				if (curGrpSummary.length()>50) break;
 			}
-			Map<Long,Long> curMap=scanForNewGroups(labelImg, getNeighborSize(), getMKernel());
+			Map<Long,Long> curMap=scanForNewGroups(labelImg, getNeighborSize(), getKernel());
 			String curMapSummary="";
 			for(Entry<Long,Long> cEntry : curMap.entrySet()) {
 				curMapSummary+=cEntry.getKey()+"=>"+cEntry.getValue()+",";
@@ -591,22 +592,16 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 		return true;
 	}
 	
-
+	protected boolean runSliceMergesFirst=true;
 	@Override
 	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
-		// TODO Add some nice settings here
+		runSliceMergesFirst=p.getOptionBoolean("slicemerging", runSliceMergesFirst,"Run slice merges before entire image merges, faster for very large data sets");
 		return p;
 	}
 
-	@Override
-	public filterKernel getKernel() {
-		// TODO Auto-generated method stub
-		//return BaseTIPLPluginIn.gaussFilter(1.0);
-		throw new IllegalArgumentException(this+" does not have a kernel to get");
-	}
 
 	@Override
-	public morphKernel getMKernel() {
+	public morphKernel getKernel() {
 		// TODO Auto-generated method stub
 		return BaseTIPLPluginIn.fullKernel;
 	}
@@ -621,6 +616,11 @@ public class CL extends GatherBasedPlugin<boolean[],int[]> {
 	public String getPluginName() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	@Override
+	public void LoadImages(TImgRO[] inImages) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

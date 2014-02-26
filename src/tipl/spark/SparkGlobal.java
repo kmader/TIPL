@@ -1,5 +1,7 @@
 package tipl.spark;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.spark.Partitioner;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -40,9 +42,9 @@ abstract public class SparkGlobal {
 	}
 	static public String memorySettings="";
 	static public String sparkLocal="/scratch"; // much better than tmp
-	static public boolean useKyro=true;
+	static public boolean useKyro=false;
 	static public int kyroBufferSize=200;
-	static public int shuffleBufferSize=50*1024;
+	static public int shuffleBufferSize=20*1024;
 	static public boolean useCompression=true;
 	static protected String getMasterName() {
 		if(masterName.length()<1) masterName="local["+TIPLGlobal.availableCores+"]";
@@ -164,6 +166,7 @@ abstract public class SparkGlobal {
 		assert(slicesPerCore>0);
 		intSlicesPerCore=slicesPerCore;
 	}
+
 	/**
 	 * Calculates the number of partitions based on a given dataset and slices per core distribution
 	 * @param slices

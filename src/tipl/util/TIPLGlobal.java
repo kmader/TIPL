@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import tipl.formats.VirtualAim;
 import tipl.tools.BaseTIPLPluginIn;
@@ -71,7 +72,9 @@ public class TIPLGlobal {
 		return Executors.newFixedThreadPool(Math.min(TIPLGlobal.availableCores,numOfCores),TIPLGlobal.daemonFactory);
 	}
 	public static ExecutorService requestSimpleES() { return requestSimpleES(TIPLGlobal.availableCores);}
-	
+	public static ExecutorService getIOExecutor() {
+		return requestSimpleES(availableReaders.get());
+	}
 	public static ArgumentParser activeParser(String[] args) {return activeParser(new ArgumentParser(args));}
 	/**
 	 * parser which actively changes local, maxcores, maxiothread and other TIPL wide parameters
@@ -86,8 +89,8 @@ public class TIPLGlobal {
 				TIPLGlobal.availableCores,
 				"Number of cores/threads to use for processing");
 
-		TIPLGlobal.supportedIOThreads = sp.getOptionInt("@maxiothread",
-				TIPLGlobal.supportedIOThreads,
+		TIPLGlobal.maximumParallelReaders = sp.getOptionInt("@maxiothread",
+				TIPLGlobal.maximumParallelReaders,
 				"Number of cores/threads to use for read/write operations");
 		TIPLGlobal.setDebug( sp.getOptionInt("@debug",
 				TIPLGlobal.getDebugLevel(),
@@ -120,8 +123,60 @@ public class TIPLGlobal {
 	public static Runtime curRuntime = Runtime.getRuntime();
 	/** number of cores available for processing tasks */
 	public static int availableCores = curRuntime.availableProcessors();
-	/** maximum number of IO operations to perform at the same time */
-	public static int supportedIOThreads = 4;
+
+	/**
+	 * the maximum number of cores allowed to be reading files simultaneously
+	 */
+	static protected int maximumParallelReaders=1;
+	
+	static public int getMaximumReaders() { return maximumParallelReaders;}
+	static public void setMaximumReaders(int newMax) {
+		assert(newMax>0);
+		maximumParallelReaders=newMax;
+	}
+	
+	/**
+	 * The number of readers available on the given node
+	 */
+	static protected AtomicInteger availableReaders=null;
+	static public boolean requestReader() {
+		if(availableReaders==null) {
+				availableReaders=new AtomicInteger(maximumParallelReaders);
+		}
+		int coreCount=availableReaders.decrementAndGet();
+		if (coreCount<0) {
+			returnReader();
+			return false;
+		}
+		return true;
+	}
+	static public int requestAllReaders() {
+		if(availableReaders==null) {
+			availableReaders=new AtomicInteger(maximumParallelReaders);
+		}
+		return availableReaders.getAndSet(0);
+		
+	}
+	/**
+	 * try and get a reader and repeat until it is gotten
+	 * @return whether or not it was successful
+	 */
+	static public boolean waitForReader() {
+		while(!requestReader()) {
+			if(TIPLGlobal.getDebug()) System.out.println("Requesting Reader:"+availableReaders.get());
+			try {
+				Thread.sleep(500);
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.out.println("Interrupted while waiting for reader!");
+				return false;
+			}
+		}
+		return true;
+	}
+	static public void returnReader() {
+		availableReaders.incrementAndGet();
+	}
 	/**
 	 * so the threads do not need to manually be shutdown
 	 * 
@@ -225,20 +280,12 @@ public class TIPLGlobal {
 		});
 	}
 
-	/** get executor for IO operations */
-	public static ExecutorService getIOExecutor() {
-		return Executors.newFixedThreadPool(IOThreads(), daemonFactory);
-	}
 
 	/** get executor service for tasks */
 	public static ExecutorService getTaskExecutor() {
 		return Executors.newFixedThreadPool(availableCores, daemonFactory);
 	}
 
-	/** actual number of IO threads to use */
-	public static int IOThreads() {
-		return BaseTIPLPluginIn.min(supportedIOThreads, availableCores);
-	}
 
 	/**
 	 * reserve cores for an operation that other threads can then no longer user

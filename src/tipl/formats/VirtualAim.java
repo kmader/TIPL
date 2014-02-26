@@ -2184,12 +2184,12 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 
 	/** how many cores does the plugin want (-1 = as many as possible) */
 	public int neededCores() {
-
-		int cCore = TIPLGlobal.IOThreads();
+		final int readerCount = TIPLGlobal.getMaximumReaders();
+		int cCore = readerCount;
 		if ((5 * cCore) > (dim.z))
 			cCore = (int) Math.ceil(dim.z / 5);
-		if (cCore > TIPLGlobal.IOThreads())
-			cCore = TIPLGlobal.IOThreads(); // can't really make use of much
+		if (cCore >readerCount)
+			cCore = readerCount; // can't really make use of much
 											// more than 4 processors due to
 											// file system limitations
 		if (cCore < 1)
