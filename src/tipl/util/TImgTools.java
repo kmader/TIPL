@@ -278,7 +278,7 @@ public class TImgTools {
 			// Read integer data type in
 			final int[] gi = new int[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
-				gi[i] = gi[i];
+				gi[i] = gs[i];
 			return gi;
 
 		case IMAGETYPE_FLOAT: // Float - Long
@@ -303,7 +303,7 @@ public class TImgTools {
 	@Deprecated
 	public static Object convertFloatArray(final float[] gf, final int asType,
 			final boolean isSigned, final float shortScaleFactor) {
-		assert (asType >= 0 && asType <= 3) || asType == 10;
+		assert isValidType(asType);
 		final int sliceSize = gf.length;
 		switch (asType) {
 		case IMAGETYPE_CHAR: // Char
@@ -326,8 +326,20 @@ public class TImgTools {
 				gi[i] = (int) ((gf[i] / shortScaleFactor) + (isSigned ? 32768
 						: 0));
 			return gi;
+		case IMAGETYPE_LONG: // Long
+			// Read integer data type in
+			final long[] gl = new long[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				gl[i] = (long) ((gf[i] / shortScaleFactor) + (isSigned ? 32768
+						: 0));
+			return gl;
 		case IMAGETYPE_FLOAT: // Float - Long
 			return gf;
+		case IMAGETYPE_DOUBLE: // double
+			final double[] gd = new double[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				gd[i] = gf[i];
+			return gd;
 		case IMAGETYPE_BOOL: // Mask
 			final boolean[] gbool = new boolean[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
@@ -592,8 +604,12 @@ public class TImgTools {
 			return "16bit";
 		case IMAGETYPE_INT:
 			return "32bit-integer";
+		case IMAGETYPE_LONG:
+			return "64bit-long";
 		case IMAGETYPE_FLOAT:
 			return "32bit-float";
+		case IMAGETYPE_DOUBLE:
+			return "64bit-double";
 		default:
 			throw new IllegalArgumentException("Type of object:" + inType
 					+ " cannot be determined!! Proceed with extreme caution");
@@ -616,15 +632,19 @@ public class TImgTools {
 			return new double[] {Short.MIN_VALUE,Short.MAX_VALUE};
 		case IMAGETYPE_INT:
 			return new double[] {Integer.MIN_VALUE,Integer.MAX_VALUE};
+		case IMAGETYPE_LONG:
+			return new double[] {Long.MIN_VALUE,Long.MAX_VALUE};
 		case IMAGETYPE_FLOAT:
 			return new double[] {Float.MIN_VALUE,Float.MAX_VALUE};
+		case IMAGETYPE_DOUBLE:
+			return new double[] {Double.MIN_VALUE,Double.MAX_VALUE};
 		default:
 			throw new IllegalArgumentException("Type of object:" + inType
 					+ " cannot be determined!! Proceed with extreme caution");
 		}
 	}
 	/** 
-	 * calcualte how much memory is used when allocating large arrays
+	 * calculate how much memory is used when allocating large arrays
 	 * @param inType
 	 * @param arrSize
 	 * @return
@@ -658,6 +678,10 @@ public class TImgTools {
 				return new int[arrSize];
 			case IMAGETYPE_FLOAT:
 				return new float[arrSize];
+			case IMAGETYPE_DOUBLE:
+				return new double[arrSize];
+			case IMAGETYPE_LONG:
+				return new long[arrSize];
 			default:
 				throw new IllegalArgumentException("Type of object:" + inType
 						+ " cannot be determined!! Proceed with extreme caution");
@@ -677,7 +701,15 @@ public class TImgTools {
 	 * @return true if valid otherwise false
 	 */
 	public static boolean isValidType(final int asType) {
-		return (asType >= 0 && asType <= 3) || asType == 10;
+		if(asType==IMAGETYPE_BOOL) return true;
+		if(asType==IMAGETYPE_CHAR) return true;
+		if(asType==IMAGETYPE_INT) return true;
+		if(asType==IMAGETYPE_FLOAT) return true;
+		if(asType==IMAGETYPE_SHORT) return true;
+		if(TIPLGlobal.getDebug()) System.err.println("Double and long type images are not yet fully supported, proceed with caution:"+asType);
+		if(asType==IMAGETYPE_DOUBLE) return true;
+		if(asType==IMAGETYPE_LONG) return true;
+		return false;
 	}
 
 	/**
@@ -767,6 +799,10 @@ public class TImgTools {
 			return 4;
 		case IMAGETYPE_FLOAT:
 			return 4;
+		case IMAGETYPE_DOUBLE:
+			return 8;
+		case IMAGETYPE_LONG:
+			return 8;
 		case IMAGETYPE_BOOL:
 			return 1;
 		}

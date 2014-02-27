@@ -171,6 +171,9 @@ public interface TImgRO extends TImgTools.HasDimensions,Serializable {
 	/**
 	 * Is the image signed (should an offset be added / subtracted when the data
 	 * is loaded to preserve the sign)
+	 * Note
+	 * the array conversion does nothing strange when getsigned is off (it is only in place to ensure a consist translation between char/short to int/float but is probably out of date
+	 *
 	 */
 	public boolean getSigned();
 

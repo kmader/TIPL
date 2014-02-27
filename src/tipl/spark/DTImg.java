@@ -3,7 +3,12 @@
  */
 package tipl.spark;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,7 +32,9 @@ import tipl.formats.FImage;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.TSliceWriter;
+import tipl.tests.TestPosFunctions;
 import tipl.util.ArgumentList.TypedPath;
+import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
@@ -49,6 +56,20 @@ import org.apache.hadoop.mapred.OutputFormat;
  */
 @SuppressWarnings("serial")
 public class DTImg<T extends Cloneable> implements TImg, Serializable {
+	public static void main(String[] args) {
+		
+		System.out.println("DTImage Convertor");
+		ArgumentParser p=SparkGlobal.activeParser(args);
+		boolean writeAsTextFile=p.getOptionBoolean("astext",true,"Write the output as multiple text files");
+		final String imagePath=p.getOptionPath("input", "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory) to read in");
+		String writeIt=p.getOptionPath("output", imagePath+"-txt", "write image as output file");
+		p.checkForInvalid();
+
+		JavaSparkContext jsc = SparkGlobal.getContext("DTImg-Tool");
+		DTImg<int[]> cImg = DTImg.<int[]>ReadImage(jsc,imagePath,TImgTools.IMAGETYPE_INT);
+		if(writeAsTextFile) if(writeIt.length()>0) cImg.HSave(writeIt);
+
+	}
 	/**
 	 * 
 	 */
@@ -379,13 +400,60 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		});
 	}
 	/**
-	 * Save the image in parallel using the built in serializer, it first transforms the image into a list of blocks rather than the pair
+	 * Save the image into a series of text files without header (format x,y,z,val)
 	 * @param path
 	 */
 	public void HSave(String path) {
-		final String outpath=(new File(path)).getAbsolutePath();
-		this.baseImg.setName(path).rdd().saveAsObjectFile(outpath);
-		//this.baseImg.setName(path).saveAsHadoopFile(outpath, D3int.class, TImgBlock.class, BinaryOutputFormat.class);
+		final boolean makeFolder = (new File(path)).mkdir();
+		if (makeFolder) {
+			System.out.println("Directory: " + path + " created");
+		}
+		final String absTP = 
+				(new File(path)).getAbsolutePath()+"/";
+		
+		String plPath = absTP + "procLog.log";
+		baseImg.foreach(new VoidFunction<Tuple2<D3int, TImgBlock<T>>>() {
+			
+			@Override
+			public void call(final Tuple2<D3int, TImgBlock<T>> inBlock) throws Exception {
+				final D3int pos=inBlock._1();
+				final TImgBlock<T> startingBlock=inBlock._2();
+				final OutputStreamWriter outFile=new OutputStreamWriter(new FileOutputStream(absTP+"block."+pos.x+"_"+pos.y+"_"+pos.z+".csv"),"UTF-8");
+				T curPts=startingBlock.get();
+				double[] dblPts = (double[]) TImgTools.convertArrayType(curPts, TImgTools.identifySliceType(curPts), 
+						TImgTools.IMAGETYPE_DOUBLE, true, 1, Integer.MAX_VALUE);
+				float[] outPts = new float[dblPts.length];
+				for(int zi=0;zi<startingBlock.getDim().z;zi++) {
+					int zpos=zi+pos.z;
+					for(int yi=0;yi<startingBlock.getDim().y;yi++) {
+						int ypos=yi+pos.y;
+						for(int xi=0;xi<startingBlock.getDim().x;xi++) {
+							int ind=(zi*getDim().z+yi)*getDim().y+xi;
+							int xpos=xi+pos.x;
+							outFile.write(xpos+","+ypos+","+zpos+","+dblPts[ind]+"\n");
+						}
+					}
+				}
+
+			}
+
+		});
+		try {
+			FileWriter fstream = new FileWriter(plPath);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write(this.getProcLog()+"\n");
+			out.write("POS:"+this.getPos()+"\n");
+			out.write("ELESIZE:"+this.getElSize()+"\n");
+			out.write("DIM:"+this.getDim()+"\n");
+			// Close the output stream
+			out.close();
+			fstream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Error, Header for "+plPath+" could not be written");
+		}
+		
+		
 	
 	}
 
@@ -422,7 +490,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	@Override
 	public Object getPolyImage(int sliceNumber, int asType) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new IllegalArgumentException("Not implemented yet");
 	}
 
 	@Override
@@ -444,10 +512,11 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	public float getShortScaleFactor() {
 		return ssf;
 	}
+	
 
 	@Override
 	public boolean getSigned() {
-		return true;
+		return false;
 	}
 
 	@Override
