@@ -116,7 +116,6 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 			filtImg.setRDDName("Filter:Iter"+ic);
 			filtImg.showPartitions();
 		}
-		filtImg.HSave(imagePath+"/badass");
 
 		DTImg<boolean[]> thOutImg=filtImg.map(new PairFunction<Tuple2<D3int, TImgBlock<float[]>>,D3int,TImgBlock<boolean[]>>() {
 

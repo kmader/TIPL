@@ -562,9 +562,9 @@ public class UFOAM {
 		labelsAim = null;
 		DG = null;
 		if (fullGrow) {
-			ITIPLPluginIO CV2 = TIPLPluginManager.createBestPluginIO("cVoronoi",new TImg[] {labelsAim,maskAim});
+			ITIPLPluginIO CV2 = TIPLPluginManager.createBestPluginIO("cVoronoi",new TImg[] {bubblelabelsAim,maskAim});
 			CV2.setParameter("-preservelabels -maxdistance=1");
-			CV2.LoadImages(new TImg[] {labelsAim,maskAim});
+			CV2.LoadImages(new TImg[] {bubblelabelsAim,maskAim});
 			CV2.execute();
 			bubblelabelsAim = CV2.ExportImages(bubblelabelsAim)[0];
 			CV2 = null;

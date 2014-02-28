@@ -76,6 +76,7 @@ abstract public class SparkGlobal {
 			System.setProperty("spark.shuffle.spill.compress", ""+useCompression);
 			System.setProperty("spark.shuffle.file.buffer.kb",""+shuffleBufferSize);
 			//System.setProperty("spark.rdd.compress", ""+useCompression);
+			System.setProperty("spark.storage.memoryFraction","0.4"); // there is a fair amount of overhead in my scripts
 			
 			currentContext=new JavaSparkContext(getMasterName(), jobName,System.getenv("SPARK_HOME"), JavaSparkContext.jarOfClass(SparkGlobal.class));
 			StopSparkeAtFinish(currentContext);
