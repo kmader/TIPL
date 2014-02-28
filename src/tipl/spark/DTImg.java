@@ -412,6 +412,8 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 				(new File(path)).getAbsolutePath()+"/";
 		
 		String plPath = absTP + "procLog.log";
+		final boolean isSigned=this.getSigned();
+		final float ssf=this.getShortScaleFactor();
 		baseImg.foreach(new VoidFunction<Tuple2<D3int, TImgBlock<T>>>() {
 			
 			@Override
@@ -421,8 +423,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 				final OutputStreamWriter outFile=new OutputStreamWriter(new FileOutputStream(absTP+"block."+pos.x+"_"+pos.y+"_"+pos.z+".csv"),"UTF-8");
 				T curPts=startingBlock.get();
 				double[] dblPts = (double[]) TImgTools.convertArrayType(curPts, TImgTools.identifySliceType(curPts), 
-						TImgTools.IMAGETYPE_DOUBLE, true, 1, Integer.MAX_VALUE);
-				float[] outPts = new float[dblPts.length];
+						TImgTools.IMAGETYPE_DOUBLE, isSigned, ssf, Integer.MAX_VALUE);
 				for(int zi=0;zi<startingBlock.getDim().z;zi++) {
 					int zpos=zi+pos.z;
 					for(int yi=0;yi<startingBlock.getDim().y;yi++) {
@@ -434,6 +435,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 						}
 					}
 				}
+				outFile.close();
 
 			}
 

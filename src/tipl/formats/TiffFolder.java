@@ -66,9 +66,9 @@ public class TiffFolder extends DirectoryReader {
 		public Object polyReadImage(final int asType) throws IOException {
 			
 			switch (imageType) {
-			case 0: // Char use the interface for short with a different max val
-			case 2: // Int
-			case 10: // binary also uses the same reader
+			case TImgTools.IMAGETYPE_CHAR: // Char use the interface for short with a different max val
+			case TImgTools.IMAGETYPE_INT: // Int
+			case TImgTools.IMAGETYPE_BOOL: // binary also uses the same reader
 				
 				int[]  gi =  new int[sliceSize];
 				if (readAsByte) {
@@ -80,43 +80,47 @@ public class TiffFolder extends DirectoryReader {
 						activeRaster.getHeight(), gi);
 				}
 				
-				
 				// System.out.println("Getting pixels:"+dataType+", converting to:"+asType+", status:"+gi);
-				return TImgTools.convertIntArray(gi, asType, true, 1, maxVal);
-			case 3: // Float
+				return TImgTools.convertIntArray(gi, asType, useSignedConversion, 1, maxVal);
+			case TImgTools.IMAGETYPE_FLOAT: // Float
 				float[] gf = new float[sliceSize];
 				gf = activeRaster.getPixels(0, 0, activeRaster.getWidth(),
 						activeRaster.getHeight(), gf);
 				// System.out.println("Getting pixels:"+dataType+", converting to:"+asType+", status:"+gf);
-				return TImgTools.convertFloatArray(gf, asType, true, 1);
+				return TImgTools.convertFloatArray(gf, asType, useSignedConversion, 1);
 			default:
 				throw new IOException("Input file format is not known!!!!");
 			}
 		}
+		/**
+		 * should the conversions be signed
+		 */
+		protected boolean useSignedConversion=false;
 		protected boolean readAsByte=false;
 		private void SetupFromRenderImage(final RenderedImage im)
 				throws IOException {
 			readAsByte=false;
 			switch (im.getColorModel().getPixelSize()) {
-			case 1: // Boolean
-				imageType = 10;
+			case 1: // boolean
+				imageType = TImgTools.IMAGETYPE_BOOL;
 				maxVal = 1;
 				break;
 			case 8: // Char
-				imageType = 0;
+				imageType = TImgTools.IMAGETYPE_CHAR;
 				maxVal = 255;
 				break;
 			case 16: // Integer
-				imageType = 2;
+				imageType = TImgTools.IMAGETYPE_INT;
 				maxVal = 65536;
 				break;
+				
 			case 24: // sometimes ok for jpeg images
-				imageType=0;
+				imageType=TImgTools.IMAGETYPE_CHAR;
 				maxVal=255;
 				readAsByte=true;
 				break;
 			case 32: // Float
-				imageType = 3;
+				imageType = TImgTools.IMAGETYPE_FLOAT;
 				maxVal = 65536;
 				break;
 			default:
