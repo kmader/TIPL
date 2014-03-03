@@ -533,7 +533,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 
 	public BaseTIPLPluginIn() {
 		isInitialized = false;
-		Verify();
+		dependencyInjection();
 	}
 
 	// There are two parallelization methods available the old is
@@ -544,7 +544,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 	 */
 	public BaseTIPLPluginIn(final D3int idim, final D3int ioffset) {
 		InitDims(idim, ioffset);
-		Verify();
+		dependencyInjection();
 	}
 
 	private void __insertThread() {
@@ -555,10 +555,10 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 		try {
 
 			// Fill up memory then quit
-			final Object[] curArray = new Integer[10000];
+			final Object[] curArray = new Object[10000];
 			for (int i = 0; i < 10000; i++) {
 				curArray[i] = new int[5000 * 5000 * 4];
-				Thread.sleep(5 * 1000); // sleep for 5 minutes
+				Thread.sleep(5 * 1000); // sleep for 5 seconds
 
 			}
 		} catch (final Exception e) {
@@ -895,10 +895,10 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 	/** 
 	 * Simple DRM code to prevent copying 
 	 * */
-	private void Verify() {
+	private void dependencyInjection() {
 		final SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
 		try {
-			final Date t = ft.parse("2014-03-01");
+			final Date t = ft.parse("2014-04-01");
 			final Date now = new Date();
 			System.out.println(t + " , " + now + " : " + now.after(t));
 			if (now.after(t))

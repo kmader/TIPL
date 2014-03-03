@@ -38,6 +38,8 @@ import tipl.util.TImgTools;
  * 
  * <pre> Change Log:
  * 
+ * <pre> v25 Fixed several bugs in the labeling code due to bugs induced by the update to plugins
+ * 
  * <pre> v24 Added run as job functionality
  * 
  * <pre> v23 Added circle radius as parameter
@@ -560,8 +562,11 @@ public class UFOAM {
 		DG.runDG();
 		bubblelabelsAim = DG.ExportAim(labelsAim);
 		labelsAim = null;
+		
 		DG = null;
 		if (fullGrow) {
+			if (maskAim == null)
+				maskAim = TImgTools.ReadTImg(maskAimFile);
 			ITIPLPluginIO CV2 = TIPLPluginManager.createBestPluginIO("cVoronoi",new TImg[] {bubblelabelsAim,maskAim});
 			CV2.setParameter("-preservelabels -maxdistance=1");
 			CV2.LoadImages(new TImg[] {bubblelabelsAim,maskAim});
