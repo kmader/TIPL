@@ -131,6 +131,7 @@ public class kVoronoi extends VoronoiTransform {
 		super.LoadImages(inImages);
 			
 	}
+	
 	protected void EdgeMask(final TImgRO maskAim) {
 		final boolean cIE=includeEdges;
 		mask = TImgTools.makeTImgFullReadable(maskAim).getBoolAim();
@@ -249,8 +250,8 @@ public class kVoronoi extends VoronoiTransform {
 		}
 	}
 
-
-	protected void runPreScan() {
+	@Override
+	protected void customInitSteps() {
 		int maxVal = -1;
 		emptyVoxels = 0;
 		outsideMask = 0;
@@ -287,7 +288,7 @@ public class kVoronoi extends VoronoiTransform {
 
 	public void runTransform() {
 		if (!preScanDone)
-			runPreScan();
+			customInitSteps();
 		cMaxDist = ((int) (maxUsuableDistance / distScalar));
 		changes = true;
 

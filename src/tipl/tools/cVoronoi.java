@@ -307,8 +307,10 @@ public class cVoronoi extends VoronoiTransform {
 	public String getPluginName() {
 		return "cVoronoi";
 	}
-
-	protected void prerun() {
+	/**
+	 * generate a new image tmask and create the nvlist of the points in the current image
+	 */
+	protected void customInitSteps() {
 		nvlist = new cVorList();
 		int off = 0;
 		double fullVoxels = 0;

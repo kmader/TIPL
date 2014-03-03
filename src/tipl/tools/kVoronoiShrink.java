@@ -205,7 +205,7 @@ public class kVoronoiShrink extends kVoronoi {
 	public void runTransform(final double maxIterDist) {
 		maxUsuableDistance = maxIterDist;
 		if (!preScanDone)
-			runPreScan();
+			customInitSteps();
 		cMaxDist = ((int) (maxIterDist / distScalar));
 		changes = true;
 

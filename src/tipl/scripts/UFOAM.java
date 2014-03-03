@@ -565,11 +565,9 @@ public class UFOAM {
 		
 		DG = null;
 		if (fullGrow) {
-			if (maskAim == null)
-				maskAim = TImgTools.ReadTImg(maskAimFile);
-			ITIPLPluginIO CV2 = TIPLPluginManager.createBestPluginIO("cVoronoi",new TImg[] {bubblelabelsAim,maskAim});
+			ITIPLPluginIO CV2 = TIPLPluginManager.createBestPluginIO("cVoronoi",new TImg[] {bubblelabelsAim,bubblesAim});
 			CV2.setParameter("-preservelabels -maxdistance=1");
-			CV2.LoadImages(new TImg[] {bubblelabelsAim,maskAim});
+			CV2.LoadImages(new TImg[] {bubblelabelsAim,bubblesAim});
 			CV2.execute();
 			bubblelabelsAim = CV2.ExportImages(bubblelabelsAim)[0];
 			CV2 = null;

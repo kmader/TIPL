@@ -223,8 +223,12 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 		}
 		InitDims(idim, ioffset);
 		isInitialized = true;
-
+		customInitSteps();
 	}
+	/**
+	 * the code to run at the end of the initialization
+	 */
+	abstract protected void customInitSteps();
 
 	/**
 	 * LoadImages assumes the first image is the label image and the second is
