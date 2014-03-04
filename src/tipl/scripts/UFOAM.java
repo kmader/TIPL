@@ -360,7 +360,7 @@ public class UFOAM {
 				}
 			}
 			if (notValid)
-				System.exit(1);
+				throw new IllegalArgumentException("One or more of the arguments is invalid");
 		}
 
 	}
@@ -892,7 +892,7 @@ public class UFOAM {
 			if (maskAim == null)
 				maskAim = TImgTools.ReadTImg(maskAimFile);
 			final XDF cXDF = new XDF();
-			cXDF.setParameter("-rdfsize=" + rdfSize + ", -iterations="
+			cXDF.setParameter("-rdfsize=" + new D3int(rdfSize) + " -iterations="
 					+ rdfIter);
 			cXDF.LoadImages(new TImgRO[] { bubblesAim, maskAim });
 			cXDF.milMode = rdfMILmode; // for volanic rock this makes sense

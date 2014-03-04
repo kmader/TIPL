@@ -794,27 +794,27 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		// Allocate new aim file
 		final int aimLength = getDim().x * getDim().y * getDim().z;
 		switch (asType) {
-		case 0:
+		case TImgTools.IMAGETYPE_CHAR:
 			aimByte = null;
 			TIPLGlobal.runGC();
 			aimByte = new char[aimLength];
 			break;
-		case 1:
+		case  TImgTools.IMAGETYPE_SHORT:
 			aimShort = null;
 			TIPLGlobal.runGC();
 			aimShort = new short[aimLength];
 			break;
-		case 2:
+		case  TImgTools.IMAGETYPE_INT:
 			aimInt = null;
 			TIPLGlobal.runGC();
 			aimInt = new int[aimLength];
 			break;
-		case 3:
+		case  TImgTools.IMAGETYPE_FLOAT:
 			aimFloat = null;
 			TIPLGlobal.runGC();
 			aimFloat = new float[aimLength];
 			break;
-		case 10:
+		case  TImgTools.IMAGETYPE_BOOL:
 			aimMask = null;
 			TIPLGlobal.runGC();
 			aimMask = new boolean[aimLength];
@@ -822,7 +822,9 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		default:
 			System.out.println("!!Aim Read Violation, Cannot Read "
 					+ fullAimLoadedAs + " as boolean!");
-			System.exit(-1);
+			throw new IllegalArgumentException("!!Aim Read Violation, Cannot Read "
+					+ fullAimLoadedAs + " as boolean!");
+			
 		}
 		// Convert or read in aim file
 		runSliceLoader(1, asType);
@@ -846,9 +848,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 				aimMask = null;
 				break;
 			default:
-				System.out.println("!!Aim Read Violation, Cannot Read "
+				throw new IllegalArgumentException("!!Aim Read Violation, Cannot Read "
 						+ fullAimLoadedAs + " as boolean!");
-				System.exit(-1);
 			}
 		}
 
@@ -2361,7 +2362,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 				imglist = null;
 				ischGuet = false;
 				return false;
-				// System.exit(0);
 			}
 			dim = new D3int(-1, -1, zlen);
 		} else if (spath.endsWith("ISQ")) {

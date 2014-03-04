@@ -163,6 +163,7 @@ public class BaseBlockRunner implements IBlockRunner {
 			System.out.println(" Arguments::");
 			System.out.println(" ");
 			System.out.println(p.getHelp());
+			
 			System.exit(0);
 		}
 		p.checkForInvalid();

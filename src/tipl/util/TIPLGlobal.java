@@ -73,7 +73,7 @@ public class TIPLGlobal {
 	}
 	public static ExecutorService requestSimpleES() { return requestSimpleES(TIPLGlobal.availableCores);}
 	public static ExecutorService getIOExecutor() {
-		return requestSimpleES(availableReaders.get());
+		return requestSimpleES(requestAvailableReaderCount());
 	}
 	public static ArgumentParser activeParser(String[] args) {return activeParser(new ArgumentParser(args));}
 	/**
@@ -155,7 +155,12 @@ public class TIPLGlobal {
 			availableReaders=new AtomicInteger(maximumParallelReaders);
 		}
 		return availableReaders.getAndSet(0);
-		
+	}
+	static public int requestAvailableReaderCount() {
+		int rCount=requestAllReaders();
+		// 
+		for(int i=0;i<rCount;i++) returnReader();
+		return rCount;
 	}
 	/**
 	 * try and get a reader and repeat until it is gotten

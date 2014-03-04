@@ -804,6 +804,7 @@ public class XDF extends BaseTIPLPluginMult {
 	}
 	@Override
 	public ArgumentParser setParameter(ArgumentParser p,String cPrefix) {
+		
 		int rdfs = p.getOptionInt(cPrefix + "rdfs", -1, "RDF Size (-1 leaves the value as default)");
 		if (rdfs>0) rdfSize=new D3int(rdfs); // if it is greater than 0 recreate it
 		rdfSize = p.getOptionD3int(cPrefix + "rdfsize", rdfSize,

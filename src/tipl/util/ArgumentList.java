@@ -403,7 +403,8 @@ public class ArgumentList {
 			final String[] temp = sStr.split(delimiter);
 			if (temp.length < 3) {
 				System.err.println("Not a valid D3float input: " + inStr);
-				System.exit(0);
+				throw new IllegalArgumentException("Not a valid D3float input: " + inStr);
+				
 			}
 			return new D3float(Float.valueOf(temp[0]).floatValue(), Float
 					.valueOf(temp[1]).floatValue(), Float.valueOf(temp[2])
@@ -420,8 +421,8 @@ public class ArgumentList {
 				sStr = sStr.substring(sPos + 1, fPos);
 			final String[] temp = sStr.split(delimiter);
 			if (temp.length < 3) {
-				System.err.println("Not a valid D3float input: " + inStr);
-				System.exit(0);
+				System.err.println("Not a valid D3int input: " + inStr);
+				throw new IllegalArgumentException("Not a valid D3int input: " + inStr);
 			}
 			return new D3int(Integer.valueOf(temp[0]).intValue(), Integer
 					.valueOf(temp[1]).intValue(), Integer.valueOf(temp[2])

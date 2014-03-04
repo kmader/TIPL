@@ -635,7 +635,7 @@ public class UFEM implements Runnable {
 		}
 
 		if (notValid)
-			System.exit(1);
+			throw new IllegalArgumentException("One or more of the arguments is invalid");
 
 		if (doFixMasks)
 			stageList = "40," + stageList; // special fixmask routine

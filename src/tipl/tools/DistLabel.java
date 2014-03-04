@@ -483,9 +483,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 				if (mcore < 0)
 					mcore = lightestCore(bfArray);
 				if (mcore < 0) {
-					System.out
-							.println("ERROR - No Filler Threads Available?? ");
-					System.exit(0);
+					throw new IllegalArgumentException("ERROR - No Filler Threads Available?? ");
 				}
 				bfArray[mcore].addBubble(cBubble);
 				final int cbcnt = bfArray[mcore].pendingBubbles();

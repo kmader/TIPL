@@ -1326,9 +1326,8 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 					AnalyzeSlice(cSlice, noThresh, 1);
 				}
 			} else {
-				System.out.println("ERROR: Map of type : "
+				throw new IllegalArgumentException("ERROR: Map of type : "
 						+ mapA.getImageType() + " not supported!");
-				System.exit(-1);
 			}
 			System.out.println("Done Reading..."
 					+ (System.currentTimeMillis() - start) / (60 * 1000F)
