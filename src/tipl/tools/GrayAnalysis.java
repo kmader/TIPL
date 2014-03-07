@@ -1,8 +1,6 @@
 package tipl.tools;
 
-//import java.awt.*;
-//import java.awt.image.*;
-//import java.awt.image.ColorModel.*;
+
 import java.io.FileWriter;
 import java.util.Date;
 import java.util.Hashtable;
@@ -38,8 +36,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		return "GrayAnalysis";
 	}
 	
-	public static final String kVer = "01-14-14 v 103";
-	// LinkedList<GrayVoxels> gvArray;
+	public static final String kVer = "03-06-14 v 104";
 	public static boolean doPreload = false;
 
 	/**
@@ -346,9 +343,9 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static GrayVoxels[] StartHistogram(final TImgRO inGfilt,
+	public static void StartHistogram(final TImgRO inGfilt,
 			final String outFile) {
-		return StartHistogram(inGfilt, outFile, false);
+		StartHistogram(inGfilt, outFile, false);
 	}
 
 	/**
@@ -359,7 +356,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	 * @param outFile
 	 *            path and name of output file
 	 */
-	public static GrayVoxels[] StartHistogram(final TImgRO inGfilt,
+	public static void StartHistogram(final TImgRO inGfilt,
 			final String outFile, final boolean removeBlanks) {
 		final GrayAnalysis newGray = new GrayAnalysis();
 		newGray.mapA = inGfilt;
@@ -370,7 +367,6 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		newGray.noBlank = removeBlanks;
 		newGray.SetupGA();
 		newGray.execute();
-		return newGray.gvArray;
 	}
 
 	/**
@@ -387,10 +383,10 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	 * @param steps
 	 *            the number of bins to use
 	 */
-	public static GrayVoxels[] StartHistogram(final TImgRO inGfilt,
+	public static void StartHistogram(final TImgRO inGfilt,
 			final String outFile, final float minVal, final float maxVal,
 			final int steps) {
-		return StartHistogram(inGfilt, outFile, minVal, maxVal, steps, false);
+		 StartHistogram(inGfilt, outFile, minVal, maxVal, steps, false);
 	}
 
 	/**
@@ -407,7 +403,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	 * @param steps
 	 *            the number of bins to use
 	 */
-	public static GrayVoxels[] StartHistogram(final TImgRO inGfilt,
+	public static void StartHistogram(final TImgRO inGfilt,
 			final String outFile, final float minVal, final float maxVal,
 			final int steps, final boolean removeBlanks) {
 		final GrayAnalysis newGray = new GrayAnalysis();
@@ -423,7 +419,6 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		newGray.useFMap = true;
 		newGray.SetupGA();
 		newGray.execute();
-		return newGray.gvArray;
 	}
 
 	public static void StartLacunaAnalysis(final TImgRO inMap,
@@ -626,22 +621,21 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
 		StartFProfile(inGfilt, maskedF, outFile, threshVal);
 	}
-
-	protected GrayVoxels[] gvArray;
 	protected TImgRO mapA;
 	protected double mapScaleFactor = 1.0;
 	protected TImgRO gfiltA;
 	protected int maxGroup = 0;
-	protected double totVox = 0;
-	protected double totSum = 0;
-	protected double totSqSum = 0;
+	
+	static protected double totVox = 0;
+	static protected double totSum = 0;
+	static protected double totSqSum = 0;
+	
 	protected double fmin = 0;
 	protected double fmax = 32765;
 	static final int MAXARRVAL = 500000; // Integer.MAX_VALUE;
 	/** the number of points to use in a standard float profile plot */
 	public static int PROFILEPOINTS = 1000;
 	public int fbins = MAXARRVAL;
-	boolean debugMode;
 	private boolean useGFILT;
 	private boolean useFMap;
 	public boolean invertGFILT;
@@ -737,7 +731,6 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	
 	@Override
 	public ArgumentParser setParameter(ArgumentParser inArgs,final String prefix) {
-		debugMode = inArgs.getOptionBoolean(prefix+"debug",debugMode,"Print out debugging information");
 		useComma = inArgs.getOptionBoolean(prefix+"usecsv",useComma,"Use commas in output");
 		useThresh = inArgs.getOptionBoolean(prefix+"usethresh",useThresh,"use threshold value");
 
@@ -801,7 +794,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		System.out.println("Map Aim: " + mapName);
 		if (useGFILT)
 			System.out.println("Gray Value Aim: " + gfiltName);
-		System.out.println("Debug: " + debugMode);
+		System.out.println("Debug: " + TIPLGlobal.getDebug());
 		System.out.println("Template CSV: " + insName);
 		System.out.println("Output CSV: " + csvName);
 
@@ -986,11 +979,15 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	 * @param noThresh
 	 * @param operationMode
 	 */
-	protected void AnalyzeSlice(final int sliceNumber, final boolean noThresh,
-			final int operationMode) {
+	static protected void AnalyzeSlice(
+			TImgRO mapA,TImgRO gfiltA,
+			final GrayVoxels[] gvArray,
+			final int sliceNumber, final boolean noThresh,final int operationMode,
+			double fmin,double fmax,int fbins,boolean invertGFILT,int maxGroup,
+			double threshVal,boolean useGFILT) {
 		// Operation Mode -> 0- find COM/COV, 1- find covariance matrix, 2- find
 		// extents
-		if (debugMode)
+		if (TIPLGlobal.getDebug())
 			System.out.println("Reading MapSlice " + sliceNumber + "/"
 					+ mapA.getDim().z);
 		final TImg.TImgFull fullMapA = new TImg.TImgFull(mapA);
@@ -1011,7 +1008,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 			float[] fmapSlice = fullMapA.getFloatArray(sliceNumber);
 			mapSlice = new int[fmapSlice.length];
 			for (int cIndex = 0; cIndex < fmapSlice.length; cIndex++)
-				mapSlice[cIndex] = f2i(fmapSlice[cIndex]);
+				mapSlice[cIndex] = f2i(fmapSlice[cIndex],fmin,fmax,fbins);
 			fmapSlice = null;
 			break;
 		case 10:
@@ -1028,7 +1025,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
 		}
 
-		if (debugMode)
+		if (TIPLGlobal.getDebug())
 			System.out.println("Reading gfiltSlice " + sliceNumber + "/"
 					+ gfiltA.getDim().z);
 
@@ -1066,7 +1063,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 			}
 		}
 		double cVal;
-		if (debugMode)
+		if (TIPLGlobal.getDebug())
 			System.out.println("Reading Points " + mapSlice.length);
 		for (int cIndex = 0; cIndex < mapSlice.length; cIndex++) {
 			final int cMapVal = mapSlice[cIndex];
@@ -1093,6 +1090,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 					totVox++;
 					totSum += cVal;
 					totSqSum += Math.pow(cVal, 2);
+					
 					if (cVal < fbins) {
 
 						final Double[] cPos = TImgTools.getXYZVecFromVec(mapA,
@@ -1111,7 +1109,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 									cPos[2].floatValue());
 						}
 					} else {
-						if (debugMode)
+						if (TIPLGlobal.getDebug())
 							System.out.println(" Value " + cVal
 									+ " Above Max : " + fbins);
 					}
@@ -1119,11 +1117,11 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 				}
 			}
 		}
-		if (debugMode)
+		if (TIPLGlobal.getDebug())
 			System.out.println("Done Reading Points " + mapSlice.length);
 	}
 
-	private int f2i(final double val) {
+	static private int f2i(final double val,double fmin, double fmax, int fbins) {
 		if (val < fmin)
 			return 0;
 		if (val > fmax)
@@ -1131,7 +1129,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		return (int) (((val - fmin) / (fmax - fmin) * fbins));
 	}
 
-	private float i2f(final int val) {
+	static private float i2f(final int val,double fmin, double fmax, int fbins) {
 		if (val < 0)
 			return (float) fmin;
 		if (val > fbins)
@@ -1139,6 +1137,567 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		return (float) (val * (fmax - fmin) / (fbins + 0.0) + (float) fmin);
 	}
 
+	protected void writeHeader(boolean useInsert) {
+		try {
+			if (useInsert) {
+				final CSVFile insFile = CSVFile.FromPath(insName, 2);
+				for (int i = 0; i < 2; i++) {
+					headerStr += insFile.getRawHeader(i);
+					if (i == 0) {
+						if (meancol)
+							headerStr += ", " + analysisName + ":(" + 1.0
+									/ gfiltA.getShortScaleFactor() + ")"
+									+ ":" + gfiltA.getPath();
+						else if (cntcol)
+							headerStr += ", " + analysisName + ":"
+									+ mapA.getPath();
+					}
+					if (i == 1) {
+						if (meancol)
+							headerStr += ", " + analysisName;
+						if (stdcol)
+							headerStr += ", " + analysisName + "_STD";
+						if (mincol)
+							headerStr += ", " + analysisName + "_MIN";
+						if (maxcol)
+							headerStr += ", " + analysisName + "_MAX";
+						if (cntcol)
+							headerStr += ", " + analysisName + "_CNT";
+						// CoV
+						if (covcol)
+							headerStr += ", " + analysisName + "_CX";
+						if (covcol)
+							headerStr += ", " + analysisName + "_CY";
+						if (covcol)
+							headerStr += ", " + analysisName + "_CZ";
+						// SoV
+						if (sovcol)
+							headerStr += ", " + analysisName + "_SX";
+						if (sovcol)
+							headerStr += ", " + analysisName + "_SY";
+						if (sovcol)
+							headerStr += ", " + analysisName + "_SZ";
+						// CoM
+						if (comcol)
+							headerStr += ", " + analysisName + "_WX";
+						if (comcol)
+							headerStr += ", " + analysisName + "_WY";
+						if (comcol)
+							headerStr += ", " + analysisName + "_WZ";
+						// Grad
+						if (gradcol)
+							headerStr += ", " + analysisName + "_GRAD_X";
+						if (gradcol)
+							headerStr += ", " + analysisName + "_GRAD_Y";
+						if (gradcol)
+							headerStr += ", " + analysisName + "_GRAD_Z";
+						// Angle
+						if (angcol)
+							headerStr += ", " + analysisName + "_ANGLE";
+						if (includeShapeTensor) {
+							for (final char cX : "XYZ".toCharArray()) {
+								for (final char cY : "XYZ".toCharArray()) {
+									headerStr += ", " + analysisName
+											+ "_SHAPET_" + cX + "" + cY;
+								}
+							}
+						}
+
+					}
+					headerStr += "\n";
+				}
+				insFile.close();
+			} else {
+				if (lacunaMode) {
+					headerStr = "// Sample: " + mapA.getSampleName()
+							+ ", Map: " + mapA.getPath();
+					if (useGFILT)
+						headerStr += ", " + analysisName + " Dist : "
+								+ gfiltA.getPath() + "(" + 1.0
+								/ gfiltA.getShortScaleFactor() + ")";
+					headerStr += "\n//LACUNA_NUMBER, TRIANGLES, SCALE_X, SCALE_Y, SCALE_Z, POS_X, POS_Y, POS_Z , STD_X, STD_Y, STD_Z,";
+					headerStr += "PROJ_X, PROJ_Y, PROJ_Z, PCA1_X, PCA1_Y, PCA1_Z, PCA1_S, PCA2_X, PCA2_Y, PCA2_Z, PCA2_S, PCA3_X, PCA3_Y, PCA3_Z, PCA3_S,";
+					headerStr += "PROJ_PCA1, PROJ_PCA2, PROJ_PCA3,";
+					headerStr += "OBJ_RADIUS, OBJ_RADIUS_STD, VOLUME, VOLUME_BOX";
+					if (useGFILT | boxDist) {
+						headerStr += ", " + analysisName + "_Grad_X,"
+								+ analysisName + "_Grad_Y," + analysisName
+								+ "_Grad_Z," + analysisName + "_Angle";
+						headerStr += ", " + analysisName
+								+ "_Distance_Mean," + analysisName
+								+ "_Distance_COV, " + analysisName
+								+ "_Distance_STD";
+					}
+					if (includeShapeTensor) {
+						for (final char cX : "XYZ".toCharArray()) {
+							for (final char cY : "XYZ".toCharArray()) {
+								headerStr += ", SHAPET_" + cX + "" + cY;
+							}
+						}
+					}
+					headerStr += "\n";
+
+				} else {
+					headerStr += analysisName + " Histogram \n";
+					headerStr += "Sample Name:        	"
+							+ mapA.getSampleName() + "\n";
+					headerStr += "Map Aim File:          	"
+							+ mapA.getPath() + "\n";
+					headerStr += "GrayScale Aim File: 	" + gfiltName + "\n";
+					headerStr += "Dim:        		" + mapA.getDim().x + "	"
+							+ mapA.getDim().y + "	" + mapA.getDim().z
+							+ "\n";
+					headerStr += "Off:        		    " + mapA.getOffset().x
+							+ " 	    " + mapA.getOffset().y + " 	    "
+							+ mapA.getOffset().z + "\n";
+					headerStr += "Pos:        		    " + mapA.getPos().x
+							+ " 	   " + mapA.getPos().y + " 	    "
+							+ mapA.getPos().z + "\n";
+					headerStr += "El_size_mm: 		" + mapA.getElSize().x
+							+ "	" + mapA.getElSize().y + "	"
+							+ mapA.getElSize().z + "\n";
+
+				}
+
+			}
+			final FileWriter out = new FileWriter(csvName, false);
+			out.write(headerStr);
+			out.flush();
+			out.close();
+
+		} catch (final Exception e) {
+			System.out.println("Writing Output File Problem");
+			e.printStackTrace();
+		}
+	}
+	protected GrayVoxels[] runAllSlices() {
+		GrayVoxels[] gvArray = new GrayVoxels[fbins];
+		// gvArray = new LinkedList<GrayVoxels>();
+		// Initialize
+		System.out.println("Initializing GrayVoxel Array...");
+
+		// Faster To Put if outside of for-loop, methinks
+		if (useFMap) {
+			for (int cVox = 0; cVox < fbins; cVox++)
+				gvArray[cVox] = new GrayVoxels(i2f(cVox,fmin,fmax,fbins));
+		} else if (useFloat) {
+			for (int cVox = 0; cVox < fbins; cVox++)
+				gvArray[cVox] = new GrayVoxels(mapScaleFactor * cVox);
+		} else {
+			for (int cVox = 0; cVox < fbins; cVox++)
+				gvArray[cVox] = new GrayVoxels(cVox);
+		}
+
+		long start = System.currentTimeMillis();
+		System.out.println("Reading Slices... " + mapA.getDim().z);
+		if ((mapA.getImageType() == 1) | (mapA.getImageType() == 2)
+				| (mapA.getImageType() == 3)) {
+			for (int cSlice = 0; cSlice < mapA.getDim().z; cSlice++) {
+				if (TIPLGlobal.getDebug())
+					System.out.println("Reading Slices " + cSlice + "/"
+							+ mapA.getDim().z);
+				AnalyzeSlice(mapA, gfiltA,gvArray,cSlice, 
+						noThresh,0, fmin, fmax, fbins, invertGFILT, 
+						maxGroup, threshVal, useGFILT);
+					
+			}
+			System.out.println("Rescanning Slices for COV Matrix... "
+					+ mapA.getDim().z);
+			for (int cSlice = 0; cSlice < mapA.getDim().z; cSlice++) {
+				if (TIPLGlobal.getDebug())
+					System.out.println("Reading Slices " + cSlice + "/"
+							+ mapA.getDim().z);
+				AnalyzeSlice(mapA, gfiltA,gvArray,cSlice, 
+						noThresh,1, fmin, fmax, fbins, invertGFILT, 
+						maxGroup, threshVal, useGFILT);
+			}
+		} else {
+			throw new IllegalArgumentException("ERROR: Map of type : "
+					+ mapA.getImageType() + " not supported!");
+		}
+		System.out.println("Done Reading..."
+				+ (System.currentTimeMillis() - start) / (60 * 1000F)
+				+ "mins, Objects:" + maxGroup + "; Voxels:" + totVox);
+		long restart = System.currentTimeMillis();
+		if ((lacunaMode) || (angcol)) {
+			System.out.println("Generating Diagonalization...");
+			for (int cGroup = 1; cGroup <= maxGroup; cGroup++) {
+				if ((gvArray[cGroup].count() > 5)) { // At least 5 voxels
+					gvArray[cGroup].diag();
+				}
+
+			}
+
+			System.out.println("Done Diagonalizing..."
+					+ (System.currentTimeMillis() - restart) / (60 * 1000F)
+					+ "mins , Rescanning for Diagonal Extents...");
+			restart = System.currentTimeMillis();
+			if ((mapA.getImageType() == 1) | (mapA.getImageType() == 2)
+					| (mapA.getImageType() == 3)) {
+				for (int cSlice = 0; cSlice < mapA.getDim().z; cSlice++) {
+					if (TIPLGlobal.getDebug())
+						System.out.println("Reading Slices " + cSlice + "/"
+								+ mapA.getDim().z);
+					AnalyzeSlice(mapA, gfiltA,gvArray,cSlice, 
+							noThresh,2, fmin, fmax, fbins, invertGFILT, 
+							maxGroup, threshVal, useGFILT);
+				}
+			}
+			System.out.println("Done Extening..."
+					+ (System.currentTimeMillis() - restart) / (60 * 1000F)
+					+ " mins");
+		}
+		if (boxDist) {
+			System.out.println("Calculating ROI Box Distance...");
+			for (int cGroup = 1; cGroup < maxGroup; cGroup++)
+				gvArray[cGroup].calculateBoxDist(mapA.getPos().x,
+						mapA.getPos().y, mapA.getPos().z, mapA.getDim().x
+								+ mapA.getPos().x,
+						mapA.getDim().y + mapA.getPos().y, mapA.getDim().z
+								+ mapA.getPos().z);
+		}
+		return gvArray;
+	}
+	protected void writeOutputToCSV(GrayVoxels[] gvArray,boolean useInsert) {
+		try {
+			
+			final FileWriter out = new FileWriter(csvName, true);
+			if (useInsert) {
+				
+				final CSVFile insFile = CSVFile.FromPath(insName, 2);
+				// Insert values as last two columns
+				while (!insFile.fileDone) {
+					final Hashtable cLine = insFile.lineAsDictionary();
+					if (cLine.containsKey("lacuna_number")) {
+						
+						// the default values for the line
+						double valMean = 0;
+						double valStd = -1;
+						double valCnt = 0;
+						double valMin = 0;
+						double valMax = 0;
+
+						double covX = 0;
+						double covY = 0;
+						double covZ = 0;
+
+						double sovX = -5;
+						double sovY = -5;
+						double sovZ = -5;
+
+						double comX = 0;
+						double comY = 0;
+						double comZ = 0;
+
+						double gradX = 0;
+						double gradY = 0;
+						double gradZ = 0;
+
+						double angT = 0;
+						String gtStr = "";
+
+						String outString = insFile.readLine().getLine();
+						
+						final int curRow = (new Integer(
+								(String) cLine.get("lacuna_number")))
+								.intValue();
+						
+						if (TIPLGlobal.getDebug()) 
+							System.out.println("Processing Line:#"+curRow);
+						
+						
+						if ((curRow > 0) & (curRow <= maxGroup)) {
+							valMean = gvArray[curRow].mean();
+							valStd = gvArray[curRow].std();
+							valCnt = gvArray[curRow].count();
+							valMin = gvArray[curRow].min();
+							valMax = gvArray[curRow].max();
+
+							covX = gvArray[curRow].meanx();
+							covY = gvArray[curRow].meany();
+							covZ = gvArray[curRow].meanz();
+
+							sovX = gvArray[curRow].stdx();
+							sovY = gvArray[curRow].stdy();
+							sovZ = gvArray[curRow].stdz();
+
+							comX = gvArray[curRow].wmeanx();
+							comY = gvArray[curRow].wmeany();
+							comZ = gvArray[curRow].wmeanz();
+
+							gradX = gvArray[curRow].gradx();
+							gradY = gvArray[curRow].grady();
+							gradZ = gvArray[curRow].gradz();
+
+							angT = gvArray[curRow].angVec(0);
+							gtStr = gvArray[curRow].getTensorString();
+
+						} else {
+							System.out
+									.println("ERROR: Index NOT IN MAP!!!...Index:"
+											+ curRow
+											+ " Objects:"
+											+ maxGroup);
+						}
+						if (meancol)
+							outString += ", " + valMean;
+						if (stdcol)
+							outString += ", " + valStd;
+						if (mincol)
+							outString += ", " + valMin;
+						if (maxcol)
+							outString += ", " + valMax;
+						if (cntcol)
+							outString += ", " + valCnt;
+						// CoV
+						if (covcol) {
+							outString += ", " + covX;
+							outString += ", " + covY;
+							outString += ", " + covZ;
+						}
+						// SoV
+						if (sovcol) {
+							outString += ", " + sovX;
+							outString += ", " + sovY;
+							outString += ", " + sovZ;
+						}
+						// CoM
+						if (comcol) {
+							outString += ", " + comX;
+							outString += ", " + comY;
+							outString += ", " + comZ;
+						}
+						// Grad
+						if (gradcol) {
+							outString += ", " + gradX;
+							outString += ", " + gradY;
+							outString += ", " + gradZ;
+						}
+						// Angle
+						if (angcol) {
+							outString += ", " + angT;
+						}
+						if (includeShapeTensor)
+							outString += gtStr;
+						outString += "\n";
+						out.append(outString);
+
+					} else {
+						if (!insFile.fileDone)
+							System.out
+									.println("ERROR: Line missing LACUNA_NUMBER column...");
+
+					}
+				}
+				insFile.close();
+			} else if (lacunaMode) {
+
+				// Write Lacuna Style Output File
+				for (int cGroup = 1; cGroup <= maxGroup; cGroup++) {
+					if ((gvArray[cGroup].count() > 5)) { // At least 5
+						// voxels
+						String lacString = "";
+						lacString = cGroup + ", 0 ," + mapA.getElSize().x
+								+ "," + mapA.getElSize().y + ","
+								+ mapA.getElSize().z;
+						// Position
+						lacString += "," + gvArray[cGroup].meanx() + ","
+								+ gvArray[cGroup].meany() + ","
+								+ gvArray[cGroup].meanz();
+						// STD
+						lacString += "," + gvArray[cGroup].stdx() + ","
+								+ gvArray[cGroup].stdy() + ","
+								+ gvArray[cGroup].stdz();
+						// Projection XYZ
+						lacString += "," + gvArray[cGroup].rangex() + ","
+								+ gvArray[cGroup].rangey() + ","
+								+ gvArray[cGroup].rangez();
+						// PCA Components
+						for (int cpca = 0; cpca < 3; cpca++) {
+							lacString += ","
+									+ gvArray[cGroup].getComp(cpca)[0]
+									+ ","
+									+ gvArray[cGroup].getComp(cpca)[1]
+									+ ","
+									+ gvArray[cGroup].getComp(cpca)[2]
+									+ "," + gvArray[cGroup].getScore(cpca);
+						}
+						lacString += "," + gvArray[cGroup].rangep1() + ","
+								+ gvArray[cGroup].rangep2() + ","
+								+ gvArray[cGroup].rangep3();
+						// Radius
+						lacString += "," + gvArray[cGroup].radius() + ","
+								+ gvArray[cGroup].stdr();
+						// Volume
+						lacString += ","
+								+ gvArray[cGroup].count()
+								+ ","
+								+ (gvArray[cGroup].rangep1()
+										* gvArray[cGroup].rangep2() * gvArray[cGroup]
+											.rangep3());
+						if (useGFILT | boxDist) {
+							// Grad X,y,z, angle
+							lacString += ", " + gvArray[cGroup].gradx()
+									+ ", " + gvArray[cGroup].grady() + ","
+									+ gvArray[cGroup].gradz() + ","
+									+ gvArray[cGroup].angVec(0);
+							// Distance mean, cov, std
+							lacString += ", " + gvArray[cGroup].mean()
+									+ "," + gvArray[cGroup].mean() + ","
+									+ gvArray[cGroup].std();
+						}
+						if (includeShapeTensor)
+							lacString += gvArray[cGroup].getTensorString();
+						out.append(lacString + "\n");
+					}
+				}
+
+			} else {
+				headerStr = "";
+				headerStr += "Total Number of voxels 	:" + totVox;
+				if (useGFILT)
+					headerStr += "	Scaled By = " + 1.0
+							/ gfiltA.getShortScaleFactor();
+				headerStr += "\n Mean =	"
+						+ totSum
+						/ totVox
+						+ "	sd =	"
+						+ Math.sqrt(totSqSum / totVox
+								- Math.pow(totSum / totVox, 2))
+						+ " 	Threshold =	" + threshVal + "\n";
+				headerStr += "Mean_unit   =	" + totSum / totVox
+						+ " 	[short intensity]\n";
+				headerStr += "SD_unit     =	"
+						+ Math.sqrt(totSqSum / totVox
+								- Math.pow(totSum / totVox, 2))
+						+ "	[short intensity]\n";
+				headerStr += "Median_unit =	0 	[short intensity]\n";
+				headerStr += "---------------------------------------------------\n";
+				headerStr += maxGroup + "	Bins with Size	      "
+						+ mapScaleFactor + "	each\n";
+				headerStr += "BinSize in Units [";
+				if (useFloat)
+					headerStr += "Scaled";
+				headerStr += "]	 " + mapScaleFactor + "	each\n";
+				headerStr += "Region Number" + dlmChar + "Count";
+
+				if (useGFILT)
+					headerStr += dlmChar + "Gray-Mean" + dlmChar
+							+ "Gray-Std" + dlmChar + "Gray-Min" + dlmChar
+							+ "Gray-Max";
+				// CoV
+				if (covcol)
+					headerStr += dlmChar + "COV-X" + dlmChar + "COV-Y"
+							+ dlmChar + "COV-Z";
+				// SoV
+				if (sovcol)
+					headerStr += dlmChar + "SOV-X" + dlmChar + "SOV-Y"
+							+ dlmChar + "SOV-Z";
+				// CoM
+				if (comcol)
+					headerStr += dlmChar + "COM-X" + dlmChar + "COM-Y"
+							+ dlmChar + "COM-Z";
+				// GRAD
+				if (gradcol)
+					headerStr += dlmChar + "GRAD-X" + dlmChar + "GRAD-Y"
+							+ dlmChar + "GRAD-Z";
+				// ANG
+				if (angcol)
+					headerStr += dlmChar + "ANGLE";
+
+				// PCA Cols
+
+				if (pcacols)
+					headerStr += dlmChar + "PCA1-X" + dlmChar + "PCA1-Y"
+							+ dlmChar + "PCA1-Z" + dlmChar + "PCA1-S";
+				if (pcacols)
+					headerStr += dlmChar + "PCA2-X" + dlmChar + "PCA2-Y"
+							+ dlmChar + "PCA3-Z" + dlmChar + "PCA1-S";
+				if (pcacols)
+					headerStr += dlmChar + "PCA3-X" + dlmChar + "PCA3-Y"
+							+ dlmChar + "PCA3-Z" + dlmChar + "PCA1-S";
+				if (includeShapeTensor) {
+					for (final char cX : "XYZ".toCharArray()) {
+						for (final char cY : "XYZ".toCharArray()) {
+							headerStr += dlmChar + "SHAPET_" + cX + "" + cY;
+						}
+					}
+				}
+				headerStr += "\n";
+
+				out.append(headerStr);
+				for (int cGroup = 1; cGroup < maxGroup; cGroup++) {
+					if ((gvArray[cGroup].count() < 1) && (noBlank)) {
+						// Do Nothing
+						// Since there are no voxels and blank is suppressed
+					} else {
+						String extraColString = "";
+						if (useGFILT | boxDist)
+							extraColString += dlmChar
+									+ gvArray[cGroup].mean() + dlmChar
+									+ gvArray[cGroup].std() + dlmChar
+									+ gvArray[cGroup].min() + dlmChar
+									+ gvArray[cGroup].max();
+						// CoV
+						if (covcol)
+							extraColString += dlmChar
+									+ gvArray[cGroup].meanx() + dlmChar
+									+ gvArray[cGroup].meany() + dlmChar
+									+ gvArray[cGroup].meanz();
+
+						// SoV
+						if (sovcol)
+							extraColString += dlmChar
+									+ gvArray[cGroup].stdx() + dlmChar
+									+ gvArray[cGroup].stdy() + dlmChar
+									+ gvArray[cGroup].stdz();
+
+						// CoM
+						if (comcol)
+							extraColString += dlmChar
+									+ gvArray[cGroup].wmeanx() + dlmChar
+									+ gvArray[cGroup].wmeany() + dlmChar
+									+ gvArray[cGroup].wmeanz();
+
+						// GRAD
+						if (gradcol)
+							extraColString += dlmChar
+									+ gvArray[cGroup].gradx() + dlmChar
+									+ gvArray[cGroup].grady() + dlmChar
+									+ gvArray[cGroup].gradz();
+
+						// Angle
+						if (gradcol)
+							extraColString += dlmChar
+									+ gvArray[cGroup].angVec(0);
+
+						// PCA Cols
+						if (pcacols) {
+							gvArray[cGroup].diag();
+							for (int cpca = 0; cpca < 3; cpca++) {
+								extraColString += dlmChar
+										+ gvArray[cGroup].getComp(cpca)[0]
+										+ dlmChar
+										+ gvArray[cGroup].getComp(cpca)[1]
+										+ dlmChar
+										+ gvArray[cGroup].getComp(cpca)[2];
+							}
+						}
+						if (includeShapeTensor)
+							extraColString += gvArray[cGroup]
+									.getTensorString(dlmChar);
+						out.append(gvArray[cGroup].toString(dlmChar)
+								+ extraColString + "\n");
+					}
+				}
+			}
+			out.flush();
+			out.close();
+		} catch (final Exception e) {
+			System.out.println("Writing Output File Problem");
+			e.printStackTrace();
+		}
+	} 
 	/**
 	 * Actually runs the grayanalysis code on the dataset, can be run inside of
 	 * a thread
@@ -1157,552 +1716,18 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		if (useGFILT)
 			gfiltGood = gfiltA.isGood();
 		if ((mapA.isGood()) & (gfiltGood)) {
-			try {
-				if (useInsert) {
-					final CSVFile insFile = CSVFile.FromPath(insName, 2);
-					for (int i = 0; i < 2; i++) {
-						headerStr += insFile.getRawHeader(i);
-						if (i == 0) {
-							if (meancol)
-								headerStr += ", " + analysisName + ":(" + 1.0
-										/ gfiltA.getShortScaleFactor() + ")"
-										+ ":" + gfiltA.getPath();
-							else if (cntcol)
-								headerStr += ", " + analysisName + ":"
-										+ mapA.getPath();
-						}
-						if (i == 1) {
-							if (meancol)
-								headerStr += ", " + analysisName;
-							if (stdcol)
-								headerStr += ", " + analysisName + "_STD";
-							if (mincol)
-								headerStr += ", " + analysisName + "_MIN";
-							if (maxcol)
-								headerStr += ", " + analysisName + "_MAX";
-							if (cntcol)
-								headerStr += ", " + analysisName + "_CNT";
-							// CoV
-							if (covcol)
-								headerStr += ", " + analysisName + "_CX";
-							if (covcol)
-								headerStr += ", " + analysisName + "_CY";
-							if (covcol)
-								headerStr += ", " + analysisName + "_CZ";
-							// SoV
-							if (sovcol)
-								headerStr += ", " + analysisName + "_SX";
-							if (sovcol)
-								headerStr += ", " + analysisName + "_SY";
-							if (sovcol)
-								headerStr += ", " + analysisName + "_SZ";
-							// CoM
-							if (comcol)
-								headerStr += ", " + analysisName + "_WX";
-							if (comcol)
-								headerStr += ", " + analysisName + "_WY";
-							if (comcol)
-								headerStr += ", " + analysisName + "_WZ";
-							// Grad
-							if (gradcol)
-								headerStr += ", " + analysisName + "_GRAD_X";
-							if (gradcol)
-								headerStr += ", " + analysisName + "_GRAD_Y";
-							if (gradcol)
-								headerStr += ", " + analysisName + "_GRAD_Z";
-							// Angle
-							if (angcol)
-								headerStr += ", " + analysisName + "_ANGLE";
-							if (includeShapeTensor) {
-								for (final char cX : "XYZ".toCharArray()) {
-									for (final char cY : "XYZ".toCharArray()) {
-										headerStr += ", " + analysisName
-												+ "_SHAPET_" + cX + "" + cY;
-									}
-								}
-							}
-
-						}
-						headerStr += "\n";
-					}
-					insFile.close();
-				} else {
-					if (lacunaMode) {
-						headerStr = "// Sample: " + mapA.getSampleName()
-								+ ", Map: " + mapA.getPath();
-						if (useGFILT)
-							headerStr += ", " + analysisName + " Dist : "
-									+ gfiltA.getPath() + "(" + 1.0
-									/ gfiltA.getShortScaleFactor() + ")";
-						headerStr += "\n//LACUNA_NUMBER, TRIANGLES, SCALE_X, SCALE_Y, SCALE_Z, POS_X, POS_Y, POS_Z , STD_X, STD_Y, STD_Z,";
-						headerStr += "PROJ_X, PROJ_Y, PROJ_Z, PCA1_X, PCA1_Y, PCA1_Z, PCA1_S, PCA2_X, PCA2_Y, PCA2_Z, PCA2_S, PCA3_X, PCA3_Y, PCA3_Z, PCA3_S,";
-						headerStr += "PROJ_PCA1, PROJ_PCA2, PROJ_PCA3,";
-						headerStr += "OBJ_RADIUS, OBJ_RADIUS_STD, VOLUME, VOLUME_BOX";
-						if (useGFILT | boxDist) {
-							headerStr += ", " + analysisName + "_Grad_X,"
-									+ analysisName + "_Grad_Y," + analysisName
-									+ "_Grad_Z," + analysisName + "_Angle";
-							headerStr += ", " + analysisName
-									+ "_Distance_Mean," + analysisName
-									+ "_Distance_COV, " + analysisName
-									+ "_Distance_STD";
-						}
-						if (includeShapeTensor) {
-							for (final char cX : "XYZ".toCharArray()) {
-								for (final char cY : "XYZ".toCharArray()) {
-									headerStr += ", SHAPET_" + cX + "" + cY;
-								}
-							}
-						}
-						headerStr += "\n";
-
-					} else {
-						headerStr += analysisName + " Histogram \n";
-						headerStr += "Sample Name:        	"
-								+ mapA.getSampleName() + "\n";
-						headerStr += "Map Aim File:          	"
-								+ mapA.getPath() + "\n";
-						headerStr += "GrayScale Aim File: 	" + gfiltName + "\n";
-						headerStr += "Dim:        		" + mapA.getDim().x + "	"
-								+ mapA.getDim().y + "	" + mapA.getDim().z
-								+ "\n";
-						headerStr += "Off:        		    " + mapA.getOffset().x
-								+ " 	    " + mapA.getOffset().y + " 	    "
-								+ mapA.getOffset().z + "\n";
-						headerStr += "Pos:        		    " + mapA.getPos().x
-								+ " 	   " + mapA.getPos().y + " 	    "
-								+ mapA.getPos().z + "\n";
-						headerStr += "El_size_mm: 		" + mapA.getElSize().x
-								+ "	" + mapA.getElSize().y + "	"
-								+ mapA.getElSize().z + "\n";
-
-					}
-
-				}
-				final FileWriter out = new FileWriter(csvName, false);
-				out.write(headerStr);
-				out.flush();
-				out.close();
-
-			} catch (final Exception e) {
-				System.out.println("Writing Output File Problem");
-				e.printStackTrace();
-			}
+			writeHeader(useInsert);
 			// Restart running time
 
-			gvArray = new GrayVoxels[fbins];
-			// gvArray = new LinkedList<GrayVoxels>();
-			// Initialize
-			System.out.println("Initializing GrayVoxel Array...");
-
-			// Faster To Put if outside of for-loop, methinks
-			if (useFMap) {
-				for (int cVox = 0; cVox < fbins; cVox++)
-					gvArray[cVox] = new GrayVoxels(i2f(cVox));
-			} else if (useFloat) {
-				for (int cVox = 0; cVox < fbins; cVox++)
-					gvArray[cVox] = new GrayVoxels(mapScaleFactor * cVox);
-			} else {
-				for (int cVox = 0; cVox < fbins; cVox++)
-					gvArray[cVox] = new GrayVoxels(cVox);
-			}
-
-			start = System.currentTimeMillis();
-			System.out.println("Reading Slices... " + mapA.getDim().z);
-			if ((mapA.getImageType() == 1) | (mapA.getImageType() == 2)
-					| (mapA.getImageType() == 3)) {
-				for (int cSlice = 0; cSlice < mapA.getDim().z; cSlice++) {
-					if (debugMode)
-						System.out.println("Reading Slices " + cSlice + "/"
-								+ mapA.getDim().z);
-					AnalyzeSlice(cSlice, noThresh, 0);
-				}
-				System.out.println("Rescanning Slices for COV Matrix... "
-						+ mapA.getDim().z);
-				for (int cSlice = 0; cSlice < mapA.getDim().z; cSlice++) {
-					if (debugMode)
-						System.out.println("Reading Slices " + cSlice + "/"
-								+ mapA.getDim().z);
-					AnalyzeSlice(cSlice, noThresh, 1);
-				}
-			} else {
-				throw new IllegalArgumentException("ERROR: Map of type : "
-						+ mapA.getImageType() + " not supported!");
-			}
-			System.out.println("Done Reading..."
-					+ (System.currentTimeMillis() - start) / (60 * 1000F)
-					+ "mins, Objects:" + maxGroup + "; Voxels:" + totVox);
-			long restart = System.currentTimeMillis();
-			if ((lacunaMode) || (angcol)) {
-				System.out.println("Generating Diagonalization...");
-				for (int cGroup = 1; cGroup <= maxGroup; cGroup++) {
-					if ((gvArray[cGroup].count() > 5)) { // At least 5 voxels
-						gvArray[cGroup].diag();
-					}
-
-				}
-
-				System.out.println("Done Diagonalizing..."
-						+ (System.currentTimeMillis() - restart) / (60 * 1000F)
-						+ "mins , Rescanning for Diagonal Extents...");
-				restart = System.currentTimeMillis();
-				if ((mapA.getImageType() == 1) | (mapA.getImageType() == 2)
-						| (mapA.getImageType() == 3)) {
-					for (int cSlice = 0; cSlice < mapA.getDim().z; cSlice++) {
-						if (debugMode)
-							System.out.println("Reading Slices " + cSlice + "/"
-									+ mapA.getDim().z);
-						AnalyzeSlice(cSlice, noThresh, 2);
-					}
-				}
-				System.out.println("Done Extening..."
-						+ (System.currentTimeMillis() - restart) / (60 * 1000F)
-						+ " mins");
-			}
-			if (boxDist) {
-				System.out.println("Calculating ROI Box Distance...");
-				for (int cGroup = 1; cGroup < maxGroup; cGroup++)
-					gvArray[cGroup].calculateBoxDist(mapA.getPos().x,
-							mapA.getPos().y, mapA.getPos().z, mapA.getDim().x
-									+ mapA.getPos().x,
-							mapA.getDim().y + mapA.getPos().y, mapA.getDim().z
-									+ mapA.getPos().z);
-			}
+			
+			GrayVoxels[] gvArray=runAllSlices();
 
 			TIPLGlobal.runGC();
-			try {
-
-				final FileWriter out = new FileWriter(csvName, true);
-				if (useInsert) {
-					final CSVFile insFile = CSVFile.FromPath(insName, 2);
-					// Insert values as last two columns
-					while (!insFile.fileDone) {
-						final Hashtable cLine = insFile.lineAsDictionary();
-						if (cLine.containsKey("lacuna_number")) {
-							final int curRow = (new Integer(
-									(String) cLine.get("lacuna_number")))
-									.intValue();
-							double valMean = 0;
-							double valStd = -1;
-							double valCnt = 0;
-							double valMin = 0;
-							double valMax = 0;
-
-							double covX = 0;
-							double covY = 0;
-							double covZ = 0;
-
-							double sovX = -5;
-							double sovY = -5;
-							double sovZ = -5;
-
-							double comX = 0;
-							double comY = 0;
-							double comZ = 0;
-
-							double gradX = 0;
-							double gradY = 0;
-							double gradZ = 0;
-
-							double angT = 0;
-							String gtStr = "";
-
-							String outString = insFile.readLine().getLine();
-							if ((curRow > 0) & (curRow <= maxGroup)) {
-								valMean = gvArray[curRow].mean();
-								valStd = gvArray[curRow].std();
-								valCnt = gvArray[curRow].count();
-								valMin = gvArray[curRow].min();
-								valMax = gvArray[curRow].max();
-
-								covX = gvArray[curRow].meanx();
-								covY = gvArray[curRow].meany();
-								covZ = gvArray[curRow].meanz();
-
-								sovX = gvArray[curRow].stdx();
-								sovY = gvArray[curRow].stdy();
-								sovZ = gvArray[curRow].stdz();
-
-								comX = gvArray[curRow].wmeanx();
-								comY = gvArray[curRow].wmeany();
-								comZ = gvArray[curRow].wmeanz();
-
-								gradX = gvArray[curRow].gradx();
-								gradY = gvArray[curRow].grady();
-								gradZ = gvArray[curRow].gradz();
-
-								angT = gvArray[curRow].angVec(0);
-								gtStr = gvArray[curRow].getTensorString();
-
-							} else {
-								System.out
-										.println("ERROR: Index NOT IN MAP!!!...Index:"
-												+ curRow
-												+ " Objects:"
-												+ maxGroup);
-							}
-							if (meancol)
-								outString += ", " + valMean;
-							if (stdcol)
-								outString += ", " + valStd;
-							if (mincol)
-								outString += ", " + valMin;
-							if (maxcol)
-								outString += ", " + valMax;
-							if (cntcol)
-								outString += ", " + valCnt;
-							// CoV
-							if (covcol) {
-								outString += ", " + covX;
-								outString += ", " + covY;
-								outString += ", " + covZ;
-							}
-							// SoV
-							if (sovcol) {
-								outString += ", " + sovX;
-								outString += ", " + sovY;
-								outString += ", " + sovZ;
-							}
-							// CoM
-							if (comcol) {
-								outString += ", " + comX;
-								outString += ", " + comY;
-								outString += ", " + comZ;
-							}
-							// Grad
-							if (gradcol) {
-								outString += ", " + gradX;
-								outString += ", " + gradY;
-								outString += ", " + gradZ;
-							}
-							// Angle
-							if (angcol) {
-								outString += ", " + angT;
-							}
-							if (includeShapeTensor)
-								outString += gtStr;
-							outString += "\n";
-							out.append(outString);
-
-						} else {
-							if (!insFile.fileDone)
-								System.out
-										.println("ERROR: Line missing LACUNA_NUMBER column...");
-
-						}
-					}
-					insFile.close();
-				} else if (lacunaMode) {
-
-					// Write Lacuna Style Output File
-					for (int cGroup = 1; cGroup <= maxGroup; cGroup++) {
-						if ((gvArray[cGroup].count() > 5)) { // At least 5
-							// voxels
-							String lacString = "";
-							lacString = cGroup + ", 0 ," + mapA.getElSize().x
-									+ "," + mapA.getElSize().y + ","
-									+ mapA.getElSize().z;
-							// Position
-							lacString += "," + gvArray[cGroup].meanx() + ","
-									+ gvArray[cGroup].meany() + ","
-									+ gvArray[cGroup].meanz();
-							// STD
-							lacString += "," + gvArray[cGroup].stdx() + ","
-									+ gvArray[cGroup].stdy() + ","
-									+ gvArray[cGroup].stdz();
-							// Projection XYZ
-							lacString += "," + gvArray[cGroup].rangex() + ","
-									+ gvArray[cGroup].rangey() + ","
-									+ gvArray[cGroup].rangez();
-							// PCA Components
-							for (int cpca = 0; cpca < 3; cpca++) {
-								lacString += ","
-										+ gvArray[cGroup].getComp(cpca)[0]
-										+ ","
-										+ gvArray[cGroup].getComp(cpca)[1]
-										+ ","
-										+ gvArray[cGroup].getComp(cpca)[2]
-										+ "," + gvArray[cGroup].getScore(cpca);
-							}
-							lacString += "," + gvArray[cGroup].rangep1() + ","
-									+ gvArray[cGroup].rangep2() + ","
-									+ gvArray[cGroup].rangep3();
-							// Radius
-							lacString += "," + gvArray[cGroup].radius() + ","
-									+ gvArray[cGroup].stdr();
-							// Volume
-							lacString += ","
-									+ gvArray[cGroup].count()
-									+ ","
-									+ (gvArray[cGroup].rangep1()
-											* gvArray[cGroup].rangep2() * gvArray[cGroup]
-												.rangep3());
-							if (useGFILT | boxDist) {
-								// Grad X,y,z, angle
-								lacString += ", " + gvArray[cGroup].gradx()
-										+ ", " + gvArray[cGroup].grady() + ","
-										+ gvArray[cGroup].gradz() + ","
-										+ gvArray[cGroup].angVec(0);
-								// Distance mean, cov, std
-								lacString += ", " + gvArray[cGroup].mean()
-										+ "," + gvArray[cGroup].mean() + ","
-										+ gvArray[cGroup].std();
-							}
-							if (includeShapeTensor)
-								lacString += gvArray[cGroup].getTensorString();
-							out.append(lacString + "\n");
-						}
-					}
-
-				} else {
-					headerStr = "";
-					headerStr += "Total Number of voxels 	:" + totVox;
-					if (useGFILT)
-						headerStr += "	Scaled By = " + 1.0
-								/ gfiltA.getShortScaleFactor();
-					headerStr += "\n Mean =	"
-							+ totSum
-							/ totVox
-							+ "	sd =	"
-							+ Math.sqrt(totSqSum / totVox
-									- Math.pow(totSum / totVox, 2))
-							+ " 	Threshold =	" + threshVal + "\n";
-					headerStr += "Mean_unit   =	" + totSum / totVox
-							+ " 	[short intensity]\n";
-					headerStr += "SD_unit     =	"
-							+ Math.sqrt(totSqSum / totVox
-									- Math.pow(totSum / totVox, 2))
-							+ "	[short intensity]\n";
-					headerStr += "Median_unit =	0 	[short intensity]\n";
-					headerStr += "---------------------------------------------------\n";
-					headerStr += maxGroup + "	Bins with Size	      "
-							+ mapScaleFactor + "	each\n";
-					headerStr += "BinSize in Units [";
-					if (useFloat)
-						headerStr += "Scaled";
-					headerStr += "]	 " + mapScaleFactor + "	each\n";
-					headerStr += "Region Number" + dlmChar + "Count";
-
-					if (useGFILT)
-						headerStr += dlmChar + "Gray-Mean" + dlmChar
-								+ "Gray-Std" + dlmChar + "Gray-Min" + dlmChar
-								+ "Gray-Max";
-					// CoV
-					if (covcol)
-						headerStr += dlmChar + "COV-X" + dlmChar + "COV-Y"
-								+ dlmChar + "COV-Z";
-					// SoV
-					if (sovcol)
-						headerStr += dlmChar + "SOV-X" + dlmChar + "SOV-Y"
-								+ dlmChar + "SOV-Z";
-					// CoM
-					if (comcol)
-						headerStr += dlmChar + "COM-X" + dlmChar + "COM-Y"
-								+ dlmChar + "COM-Z";
-					// GRAD
-					if (gradcol)
-						headerStr += dlmChar + "GRAD-X" + dlmChar + "GRAD-Y"
-								+ dlmChar + "GRAD-Z";
-					// ANG
-					if (angcol)
-						headerStr += dlmChar + "ANGLE";
-
-					// PCA Cols
-
-					if (pcacols)
-						headerStr += dlmChar + "PCA1-X" + dlmChar + "PCA1-Y"
-								+ dlmChar + "PCA1-Z" + dlmChar + "PCA1-S";
-					if (pcacols)
-						headerStr += dlmChar + "PCA2-X" + dlmChar + "PCA2-Y"
-								+ dlmChar + "PCA3-Z" + dlmChar + "PCA1-S";
-					if (pcacols)
-						headerStr += dlmChar + "PCA3-X" + dlmChar + "PCA3-Y"
-								+ dlmChar + "PCA3-Z" + dlmChar + "PCA1-S";
-					if (includeShapeTensor) {
-						for (final char cX : "XYZ".toCharArray()) {
-							for (final char cY : "XYZ".toCharArray()) {
-								headerStr += dlmChar + "SHAPET_" + cX + "" + cY;
-							}
-						}
-					}
-					headerStr += "\n";
-
-					out.append(headerStr);
-					for (int cGroup = 1; cGroup < maxGroup; cGroup++) {
-						if ((gvArray[cGroup].count() < 1) && (noBlank)) {
-							// Do Nothing
-							// Since there are no voxels and blank is suppressed
-						} else {
-							String extraColString = "";
-							if (useGFILT | boxDist)
-								extraColString += dlmChar
-										+ gvArray[cGroup].mean() + dlmChar
-										+ gvArray[cGroup].std() + dlmChar
-										+ gvArray[cGroup].min() + dlmChar
-										+ gvArray[cGroup].max();
-							// CoV
-							if (covcol)
-								extraColString += dlmChar
-										+ gvArray[cGroup].meanx() + dlmChar
-										+ gvArray[cGroup].meany() + dlmChar
-										+ gvArray[cGroup].meanz();
-
-							// SoV
-							if (sovcol)
-								extraColString += dlmChar
-										+ gvArray[cGroup].stdx() + dlmChar
-										+ gvArray[cGroup].stdy() + dlmChar
-										+ gvArray[cGroup].stdz();
-
-							// CoM
-							if (comcol)
-								extraColString += dlmChar
-										+ gvArray[cGroup].wmeanx() + dlmChar
-										+ gvArray[cGroup].wmeany() + dlmChar
-										+ gvArray[cGroup].wmeanz();
-
-							// GRAD
-							if (gradcol)
-								extraColString += dlmChar
-										+ gvArray[cGroup].gradx() + dlmChar
-										+ gvArray[cGroup].grady() + dlmChar
-										+ gvArray[cGroup].gradz();
-
-							// Angle
-							if (gradcol)
-								extraColString += dlmChar
-										+ gvArray[cGroup].angVec(0);
-
-							// PCA Cols
-							if (pcacols) {
-								gvArray[cGroup].diag();
-								for (int cpca = 0; cpca < 3; cpca++) {
-									extraColString += dlmChar
-											+ gvArray[cGroup].getComp(cpca)[0]
-											+ dlmChar
-											+ gvArray[cGroup].getComp(cpca)[1]
-											+ dlmChar
-											+ gvArray[cGroup].getComp(cpca)[2];
-								}
-							}
-							if (includeShapeTensor)
-								extraColString += gvArray[cGroup]
-										.getTensorString(dlmChar);
-							out.append(gvArray[cGroup].toString(dlmChar)
-									+ extraColString + "\n");
-						}
-					}
-				}
-				out.flush();
-				out.close();
-			} catch (final Exception e) {
-				System.out.println("Writing Output File Problem");
-				e.printStackTrace();
-			}
+			
+			writeOutputToCSV(gvArray,useInsert);
 		} else {
-			System.out.println("Files Not Present");
+			throw new IllegalArgumentException("Files Not Present");
 		}
-
 		final float eTime = (System.currentTimeMillis() - start) / (60 * 1000F);
 
 		String outString = "";

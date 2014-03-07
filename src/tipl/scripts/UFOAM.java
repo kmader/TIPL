@@ -892,7 +892,7 @@ public class UFOAM {
 			if (maskAim == null)
 				maskAim = TImgTools.ReadTImg(maskAimFile);
 			final XDF cXDF = new XDF();
-			cXDF.setParameter("-rdfsize=" + new D3int(rdfSize) + " -iterations="
+			cXDF.setParameter("-rdfsize=" + new D3int(rdfSize) + " -iter="
 					+ rdfIter);
 			cXDF.LoadImages(new TImgRO[] { bubblesAim, maskAim });
 			cXDF.milMode = rdfMILmode; // for volanic rock this makes sense
@@ -983,16 +983,17 @@ public class UFOAM {
 	public void useOutputDirectory() {
 		final String[] activeArguments = { "plat", "bubbleseeds", "labels",
 				"threshout", "floatout", "distmap", "thickmap", "bubbles",
-				"mask", "bubblelabels", "rdf", "curvature", "rdf", "ridge" };
-
-		for (int i = 0; i < activeArguments.length; i++) {
-			if (!p.hasOption(activeArguments[i])) {
-				p.addOption(activeArguments[i], outputDirectory + "/"
-						+ activeArguments[i] + ".tif");
-				System.out.println("\t -" + activeArguments[i] + " = "
-						+ outputDirectory + "/" + activeArguments[i] + ".tif");
+				"mask", "bubblelabels", "rdf", "curvature", "rdf", "ridge","neighbors"};
+ 		for (String curArg: activeArguments) {
+			if (!p.hasOption(curArg)) {
+				p.addOption(curArg, outputDirectory + "/"
+						+curArg + ".tif");
+				System.out.println("\t -" + curArg + " = "
+						+ outputDirectory + "/" + curArg + ".tif");
 			}
 		}
+		if(!p.hasOption("csv")) p.addOption("csv", outputDirectory + "/"
+				+ "clpor");
 
 	}
 

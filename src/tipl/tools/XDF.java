@@ -809,7 +809,7 @@ public class XDF extends BaseTIPLPluginMult {
 		if (rdfs>0) rdfSize=new D3int(rdfs); // if it is greater than 0 recreate it
 		rdfSize = p.getOptionD3int(cPrefix + "rdfsize", rdfSize,
 				"RDF Size");
-		mcIter = p.getOptionInt(cPrefix + "iter", mcIter, "iterations");
+		mcIter = p.getOptionInt(cPrefix + "iter", mcIter, "iteration count for correlation function");
 		tensorCutOff = (float) p.getOptionDouble(cPrefix + "tensorthresh",
 				tensorCutOff, "Threshold for RDF tensor");
 		final boolean asFloat = p.getOptionBoolean(cPrefix + "asfloat",
