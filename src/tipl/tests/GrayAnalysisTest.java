@@ -6,9 +6,12 @@ import org.junit.Test;
 
 import tipl.formats.TImgRO;
 import tipl.tools.ComponentLabel;
+import tipl.tools.GrayAnalysis;
 import tipl.util.D3float;
+import tipl.util.ITIPLPlugin;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.ITIPLPluginIn;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 /**
@@ -17,13 +20,13 @@ import tipl.util.TImgTools;
  * @author mader
  * 
  */
-public class CLTest {
+public class GrayAnalysisTest {
 	protected static void checkVals(final ITIPLPluginIn CL, final int maxLabel,
 			final double avgCount) {
 		System.out.println("Maximum Label of CL Image:" + getMax(CL)
 				+ ", average count:" + getAvg(CL));
-		assertEquals(getMax(CL), maxLabel);
-		assertEquals(getAvg(CL), avgCount, 0.1);
+		assertEquals(maxLabel,getMax(CL));
+		assertEquals(avgCount,getAvg(CL), 0.1);
 	}
 
 	protected static double getAvg(final ITIPLPluginIn iP) {
@@ -40,47 +43,7 @@ public class CLTest {
 		return CL;
 	}
 
-	@Test
-	public void testComponentLimit() {
-		System.out.println("Testing Component volume limits");
-		final TImgRO testImg = TestPosFunctions.wrapIt(10,
-				new TestPosFunctions.DiagonalPlaneAndDotsFunction());
-		ComponentLabel CL = (ComponentLabel) makeCL(testImg);
-		final D3float voxSize = new D3float(1.0, 1.0, 1.0);
-		CL.setParameter("-kernel=2 -sphradius=1.0");
-		// 1 volumed things
-		CL.runVolume(voxSize, 0, 1000);
-		checkVals(CL, 393, 1.4);
-		// remove the smallest component
-		CL = (ComponentLabel) makeCL(testImg);
-		CL.setParameter("-kernel=2 -sphradius=1.0");
-		// 1 volumed things
-		CL.runVolume(voxSize, 0, 162);
-		checkVals(CL, 392, 1);
-
-		// remove it with the export mask
-		CL = (ComponentLabel) makeCL(testImg);
-		CL.setParameter("-kernel=2 -sphradius=1.0");
-		CL.runVoxels(0);
-		checkVals(CL, 393, 1.4);
-		// just the small objects
-		final TImgRO outImageSmall = CL.ExportMaskAimVolume(
-				TImgTools.makeTImgExportable(testImg), voxSize, 0, 162);
-		final ComponentLabel CLsmall = (ComponentLabel) makeCL(outImageSmall);
-		CLsmall.setParameter("-kernel=2 -sphradius=1.0");
-		CLsmall.runVoxels(0);
-		checkVals(CLsmall, 392, 1);
-
-		// just the big object
-		final TImgRO outImageBig = CL.ExportMaskAimVolume(
-				TImgTools.makeTImgExportable(testImg), voxSize, 162);
-		final ComponentLabel CLbig = (ComponentLabel) makeCL(outImageBig);
-		CLbig.setParameter("-kernel=2 -sphradius=1.0");
-		CLbig.runVoxels(0);
-		checkVals(CLbig, 1, 163);
-		System.out.println("Made it to end!");
-	}
-
+	
 	/**
 	 * Test method for {@link tipl.tools.ComponentLabel#execute()}.
 	 */
@@ -89,9 +52,20 @@ public class CLTest {
 		System.out.println("Testing execute");
 		final TImgRO testImg = TestPosFunctions.wrapIt(10,
 				new TestPosFunctions.SheetImageFunction());
-		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test2.tif");
-		final ITIPLPluginIn CL = makeCL(testImg);
+		final ITIPLPluginIO CL = makeCL(testImg);
 		CL.execute();
+		TImgRO labelImage=CL.ExportImages(testImg)[0];
+		ITIPLPlugin cGA=GrayAnalysis.StartLacunaAnalysis(labelImage,"/tmp/junk.txt","First Run");
+		if (TIPLGlobal.getDebug()) {
+			System.out.println("Groups:"+cGA.getInfo("groups"));
+			System.out.println("Average X Position:"+cGA.getInfo("average,meanx"));
+			System.out.println("Average Y Position:"+cGA.getInfo("average,meany"));
+			System.out.println("Average Z Position:"+cGA.getInfo("average,meanz"));
+		}
+		assertEquals(5.0,((Double) cGA.getInfo("average,meanx")).doubleValue(),0.1);
+		assertEquals(4.5,((Double) cGA.getInfo("average,meany")).doubleValue(),0.1);
+		assertEquals(4.5,((Double) cGA.getInfo("average,meanz")).doubleValue(),0.1);
+		assertEquals(5,((Long) cGA.getInfo("groups")).longValue());
 		checkVals(CL, 5, 100);
 
 	}
@@ -134,7 +108,7 @@ public class CLTest {
 	/**
 	 * Test spherical radius.
 	 */
-	@Test
+	//@Test
 	public void testSphRadius() {
 		// offset lines
 		TImgRO testImg = TestPosFunctions

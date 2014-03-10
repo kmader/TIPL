@@ -132,7 +132,7 @@ public class UFOAM {
 		System.out.println(" Optimized for the dk31 style foams");
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 
-		final UFOAM curScript = new UFOAM(new ArgumentParser(args));
+		final UFOAM curScript = new UFOAM(TIPLGlobal.activeParser(args));
 
 		curScript.runScript();
 
@@ -161,13 +161,6 @@ public class UFOAM {
 		stageList = p.getOptionString("stagelist", stageList,
 				"Run the given stages (eg 1,2,3,5 )");
 
-		TIPLGlobal.availableCores = p.getOptionInt("maxcores",
-				TIPLGlobal.availableCores,
-				"Number of cores/threads to use for processing");
-		VirtualAim.scratchLoading = p.getOptionBoolean("local",
-				"Load image data from local filesystems");
-		VirtualAim.scratchDirectory = p.getOptionString("localdir",
-				"/home/scratch/", "Directory to save local data to");
 		ufiltAimFile = p.getOptionString("ufilt", "", "Input unfiltered image");
 		outputDirectory = p
 				.getOptionString(

@@ -2,6 +2,7 @@ package tipl.tools;
 
 
 import java.io.FileWriter;
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.Hashtable;
 
@@ -421,18 +422,19 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		newGray.execute();
 	}
 
-	public static void StartLacunaAnalysis(final TImgRO inMap,
+	public static ITIPLPlugin StartLacunaAnalysis(final TImgRO inMap,
 			final String outName, final String aName) {
-		StartLacunaAnalysis(inMap, outName, aName, false);
+		return StartLacunaAnalysis(inMap, outName, aName, false);
 	}
 
-	public static void StartLacunaAnalysis(final TImgRO inMap,
+	public static ITIPLPlugin StartLacunaAnalysis(final TImgRO inMap,
 			final String outName, final String aName,
 			final boolean includeShapeT) {
 		final GrayAnalysis newGray = new GrayAnalysis(inMap, (TImg) null,
 				outName, aName);
 		newGray.includeShapeTensor = includeShapeT;
 		newGray.execute();
+		return newGray;
 	}
 
 	/**
@@ -974,19 +976,18 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
 	}
 	/**
-	 * The core of the grayanalysis tool which analyzes each slice that it is given
+	 * The core of the grayanalysis tool which analyzes each slice that it is given. Made it static to keep the functions consequences clear
 	 * @param sliceNumber
 	 * @param noThresh
-	 * @param operationMode
+	 * @param operationMode -> 0- find COM/COV, 1- find covariance matrix, 2- find extents
 	 */
-	static protected void AnalyzeSlice(
+	static protected int AnalyzeSlice(
 			TImgRO mapA,TImgRO gfiltA,
 			final GrayVoxels[] gvArray,
 			final int sliceNumber, final boolean noThresh,final int operationMode,
 			double fmin,double fmax,int fbins,boolean invertGFILT,int maxGroup,
 			double threshVal,boolean useGFILT) {
-		// Operation Mode -> 0- find COM/COV, 1- find covariance matrix, 2- find
-		// extents
+		// 
 		if (TIPLGlobal.getDebug())
 			System.out.println("Reading MapSlice " + sliceNumber + "/"
 					+ mapA.getDim().z);
@@ -1019,19 +1020,19 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 					mapSlice[cIndex] = 127;
 			break;
 		default:
-			System.err.println("Type " + mapA.getImageType()
+			throw new IllegalArgumentException("Type " + mapA.getImageType()
 					+ " is not supported");
-			return;
 
 		}
 
-		if (TIPLGlobal.getDebug())
-			System.out.println("Reading gfiltSlice " + sliceNumber + "/"
-					+ gfiltA.getDim().z);
+		
 
 		int[] gfiltSlice = new int[1];
 		float[] fgfiltSlice = new float[1];
 		if (useGFILT) {
+			if (TIPLGlobal.getDebug())
+				System.out.println("Reading gfiltSlice " + sliceNumber + "/"
+						+ gfiltA.getDim().z);
 			final TImg.TImgFull fullGfiltA = new TImg.TImgFull(gfiltA);
 			switch (gfiltA.getImageType()) {
 			case 0:
@@ -1057,9 +1058,8 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 						gfiltSlice[cIndex] = 127;
 				break;
 			default:
-				System.err.println("Gfilt" + gfiltA + ":Type "
+				throw new IllegalArgumentException("Gfilt" + gfiltA + ":Type "
 						+ gfiltA.getImageType() + " is not supported");
-				return;
 			}
 		}
 		double cVal;
@@ -1090,12 +1090,11 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 					totVox++;
 					totSum += cVal;
 					totSqSum += Math.pow(cVal, 2);
-					
 					if (cVal < fbins) {
 
 						final Double[] cPos = TImgTools.getXYZVecFromVec(mapA,
 								cIndex, sliceNumber);
-
+						
 						if (operationMode == 0) {
 							gvArray[cMapVal].addVox(cPos[0].floatValue(),
 									cPos[1].floatValue(), cPos[2].floatValue(),
@@ -1119,6 +1118,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		}
 		if (TIPLGlobal.getDebug())
 			System.out.println("Done Reading Points " + mapSlice.length);
+		return maxGroup;
 	}
 
 	static private int f2i(final double val,double fmin, double fmax, int fbins) {
@@ -1296,7 +1296,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 				if (TIPLGlobal.getDebug())
 					System.out.println("Reading Slices " + cSlice + "/"
 							+ mapA.getDim().z);
-				AnalyzeSlice(mapA, gfiltA,gvArray,cSlice, 
+				maxGroup=AnalyzeSlice(mapA, gfiltA,gvArray,cSlice, 
 						noThresh,0, fmin, fmax, fbins, invertGFILT, 
 						maxGroup, threshVal, useGFILT);
 					
@@ -1307,7 +1307,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 				if (TIPLGlobal.getDebug())
 					System.out.println("Reading Slices " + cSlice + "/"
 							+ mapA.getDim().z);
-				AnalyzeSlice(mapA, gfiltA,gvArray,cSlice, 
+				maxGroup=AnalyzeSlice(mapA, gfiltA,gvArray,cSlice, 
 						noThresh,1, fmin, fmax, fbins, invertGFILT, 
 						maxGroup, threshVal, useGFILT);
 			}
@@ -1338,7 +1338,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 					if (TIPLGlobal.getDebug())
 						System.out.println("Reading Slices " + cSlice + "/"
 								+ mapA.getDim().z);
-					AnalyzeSlice(mapA, gfiltA,gvArray,cSlice, 
+					maxGroup=AnalyzeSlice(mapA, gfiltA,gvArray,cSlice, 
 							noThresh,2, fmin, fmax, fbins, invertGFILT, 
 							maxGroup, threshVal, useGFILT);
 				}
@@ -1356,6 +1356,12 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 						mapA.getDim().y + mapA.getPos().y, mapA.getDim().z
 								+ mapA.getPos().z);
 		}
+		
+		if(TIPLGlobal.getDebug())  
+			for(GrayVoxels curVox : gvArray) 
+				if (curVox.count()>0) System.out.println(curVox.getLabel()+", "+curVox.toString()+"="+curVox.count());
+		
+		
 		return gvArray;
 	}
 	protected void writeOutputToCSV(GrayVoxels[] gvArray,boolean useInsert) {
@@ -1367,7 +1373,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 				final CSVFile insFile = CSVFile.FromPath(insName, 2);
 				// Insert values as last two columns
 				while (!insFile.fileDone) {
-					final Hashtable cLine = insFile.lineAsDictionary();
+					final Hashtable<String,String> cLine = insFile.lineAsDictionary();
 					if (cLine.containsKey("lacuna_number")) {
 						
 						// the default values for the line
@@ -1399,7 +1405,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 						String outString = insFile.readLine().getLine();
 						
 						final int curRow = (new Integer(
-								(String) cLine.get("lacuna_number")))
+								cLine.get("lacuna_number")))
 								.intValue();
 						
 						if (TIPLGlobal.getDebug()) 
@@ -1698,6 +1704,52 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 			e.printStackTrace();
 		}
 	} 
+	protected GrayVoxels[] intGvArray = new GrayVoxels[0];
+	/**
+	 * getInfo for GrayAnalysis supports the request for 
+	 * <li> bins which returns the GrayVoxels array
+	 * <li> groups which returns the group count as a long
+	 * 
+	 */
+	@Override
+	public Object getInfo(String request) {
+		String niceRequest=request.trim().toLowerCase();
+		if(niceRequest.equalsIgnoreCase("bins")) return intGvArray;
+		if(niceRequest.equalsIgnoreCase("groups")) return new Long(maxGroup);
+		if(niceRequest.contains("average")) {
+			
+			String[] fullRequest= niceRequest.split(",");
+			Method callMethod=null;
+			try {
+				callMethod=GrayVoxels.class.getDeclaredMethod(fullRequest[1], null);
+			
+				int grpCount=0;
+				double valSum=0;
+				for(GrayVoxels curVox: intGvArray) 
+				
+				if(curVox.count()>0) {
+					grpCount++;
+					valSum+=((Double) callMethod.invoke(curVox, null)).doubleValue();
+					}
+				return new Double(valSum*1.0/grpCount);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new IllegalArgumentException("Method Could Not be found in "+GrayVoxels.class+e);
+			}
+		}
+		if(niceRequest.equalsIgnoreCase("average_volume")) {
+			int grpCount=0;
+			long voxCount=0;
+			for(GrayVoxels curVox: intGvArray) 
+				if(curVox.count()>0) {
+					grpCount++;
+					voxCount+=curVox.count();
+					}
+			return new Double(voxCount*1.0/grpCount);
+		}
+		
+		return super.getInfo(request);
+	}
 	/**
 	 * Actually runs the grayanalysis code on the dataset, can be run inside of
 	 * a thread
@@ -1720,11 +1772,11 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 			// Restart running time
 
 			
-			GrayVoxels[] gvArray=runAllSlices();
+			intGvArray=runAllSlices();
 
 			TIPLGlobal.runGC();
 			
-			writeOutputToCSV(gvArray,useInsert);
+			writeOutputToCSV(intGvArray,useInsert);
 		} else {
 			throw new IllegalArgumentException("Files Not Present");
 		}
