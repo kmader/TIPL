@@ -21,6 +21,9 @@
             <zipfileset excludes="META-INF/*.SF" src="../libraries/VIB-lib.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../libraries/sezpoz-1.9.jar"/>
 	    <zipfileset excludes="META-INF/*.SF" src="../libraries/lambdaj-2.4-with-dependencies.jar"/>
+	    <manifest>
+                <attribute name="Sealed" value="false"/>
+        </manifest>
         </jar>
     </target>
     <target name="jython" depends="core">

@@ -237,6 +237,9 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		});
 	}
 
+	
+	
+	static protected final boolean futureTImgMigrate=true;
 	/**
 	 * import an image from an existing TImgRO by reading in every slice (this
 	 * is no manually done and singe core..)
@@ -252,20 +255,32 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		final D3int imgDim = cImg.getDim();
 		final D3int imgPos = cImg.getPos();
 		final D3int sliceDim = new D3int(imgDim.x, imgDim.y, 1);
+		final D3int zero=new D3int(0);
 		final List<Tuple2<D3int, TImgBlock<U>>> inSlices = new ArrayList<Tuple2<D3int, TImgBlock<U>>>(
 				imgDim.z);
 		for (int i = 0; i < imgDim.z; i++) {
+			final int curSlice=i;
 			final D3int nPos = new D3int(imgPos.x, imgPos.y, imgPos.z + i);
-			inSlices.add(new Tuple2<D3int, TImgBlock<U>>(nPos,
-					new TImgBlock<U>((U) cImg.getPolyImage(i, imgType), nPos,
-							sliceDim)));
+			TImgBlock<U> curBlock;
+			if(futureTImgMigrate) curBlock=new TImgBlock.TImgBlockFromImage<U>(cImg, curSlice, imgType, nPos, sliceDim, zero);
+			else curBlock=new TImgBlock<U>((U) cImg.getPolyImage(curSlice, imgType), nPos,sliceDim);
+			
+			inSlices.add(new Tuple2<D3int, TImgBlock<U>>(nPos,curBlock));
 		}
-		return jsc.parallelizePairs(inSlices);
+		final int partitionCount = SparkGlobal.calculatePartitions(cImg.getDim().z);
+		return jsc.parallelizePairs(inSlices,partitionCount);
 	}
 
 	final int imageType;
 	/** should be final but sometimes it changes **/
 	protected JavaPairRDD<D3int, TImgBlock<T>> baseImg;
+	/** get the javasparkcontext not the scala sparkcontext
+	 * 
+	 * @return
+	 */
+	public JavaSparkContext getContext() {
+		return new JavaSparkContext(getBaseImg().context());
+	}
 	public JavaPairRDD<D3int, TImgBlock<T>> getBaseImg() {
 		return baseImg;
 	}

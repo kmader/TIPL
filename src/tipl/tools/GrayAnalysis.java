@@ -1063,8 +1063,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 			}
 		}
 		double cVal;
-		if (TIPLGlobal.getDebug())
-			System.out.println("Reading Points " + mapSlice.length);
+		
 		for (int cIndex = 0; cIndex < mapSlice.length; cIndex++) {
 			final int cMapVal = mapSlice[cIndex];
 

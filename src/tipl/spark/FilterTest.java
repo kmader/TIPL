@@ -3,6 +3,8 @@ package tipl.spark;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.spark.AccumulableParam;
+import org.apache.spark.Accumulator;
 import org.apache.spark.Partition;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -13,6 +15,8 @@ import org.apache.spark.api.java.function.PairFunction;
 import scala.Tuple2;
 import scala.Tuple3;
 import scala.concurrent.duration.Duration;
+import tipl.formats.TImgRO;
+import tipl.tests.TestPosFunctions;
 import tipl.tools.BaseTIPLPluginIn;
 import tipl.util.ArgumentList.TypedPath;
 import tipl.util.ArgumentParser;
@@ -75,6 +79,11 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 		ArgumentParser p=SparkGlobal.activeParser(args);
 
 		final String imagePath=p.getOptionPath("path", "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory) to read in");
+		int boxSize=p.getOptionInt("boxsize", 8, "The dimension of the image used for the analysis");
+
+		final TImgRO testImg = TestPosFunctions.wrapIt(boxSize,
+				new TestPosFunctions.SphericalLayeredImage(boxSize/2, boxSize/2, boxSize/2, 0, 1, 2));
+
 		int iters=p.getOptionInt("iters", 1, "The number of iterations to use for the filter");
 		final float threshold=p.getOptionFloat("threshold", -1, "Threshold Value");
 
@@ -87,8 +96,11 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 
 		JavaSparkContext jsc = SparkGlobal.getContext("FilterTest");
 		long start1=System.currentTimeMillis();
-		DTImg<float[]> cImg = DTImg.<float[]>ReadImage(jsc,imagePath,TImgTools.IMAGETYPE_FLOAT);
-		
+		DTImg<float[]> cImg;
+		if(imagePath.length()>0) cImg=DTImg.<float[]>ReadImage(jsc,imagePath,TImgTools.IMAGETYPE_FLOAT);
+		else cImg = DTImg.<float[]>ConvertTImg(jsc, testImg, TImgTools.IMAGETYPE_FLOAT);
+
+
 		cImg.setRDDName("Loading Data");
 
 		DTImg<float[]> filtImg;
@@ -103,39 +115,67 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 			});
 		} else filtImg=cImg;
 		cImg.showPartitions();
+
+		final Accumulator<Double> timeElapsed=filtImg.getContext().accumulator(new Double(0));
+		final Accumulator<Integer> mapOperations=filtImg.getContext().accumulator(new Integer(0));
 		filtImg.setRDDName("Running Filter");
+
 		for(int ic=0;ic<iters;ic++) {
 			filtImg=filtImg.spreadMap(f.getNeighborSize().z, new PairFunction<Tuple2<D3int,List<TImgBlock<float[]>>>,D3int,TImgBlock<float[]>>() {
 				@Override
 				public Tuple2<D3int, TImgBlock<float[]>> call(
 						Tuple2<D3int, List<TImgBlock<float[]>>> arg0)
 								throws Exception {
-					return f.GatherBlocks(arg0);
+					long start=System.currentTimeMillis();
+					Tuple2<D3int, TImgBlock<float[]>> outVal=f.GatherBlocks(arg0);
+					// add execution time
+					timeElapsed.$plus$eq(new Double(System.currentTimeMillis() - start));
+					mapOperations.$plus$eq(1);
+					return outVal;
+
 				}
 			}, TImgTools.IMAGETYPE_FLOAT);
 			filtImg.setRDDName("Filter:Iter"+ic);
 			filtImg.showPartitions();
 		}
 
-		DTImg<boolean[]> thOutImg=filtImg.map(new PairFunction<Tuple2<D3int, TImgBlock<float[]>>,D3int,TImgBlock<boolean[]>>() {
+		if (imagePath.length()>0) {
+			DTImg<boolean[]> thOutImg=filtImg.map(new PairFunction<Tuple2<D3int, TImgBlock<float[]>>,D3int,TImgBlock<boolean[]>>() {
 
-			@Override
-			public Tuple2<D3int, TImgBlock<boolean[]>> call(
-					Tuple2<D3int, TImgBlock<float[]>> arg0) throws Exception {
-				final TImgBlock<float[]> inBlock=arg0._2;
-				final float[] cSlice=inBlock.get();
-				final boolean[] oSlice=new boolean[cSlice.length];
-				for(int i=0;i<oSlice.length;i++) oSlice[i]=cSlice[i]>threshold;
-				return  new Tuple2<D3int, TImgBlock<boolean[]>>(arg0._1,
-						new TImgBlock<boolean[]>(oSlice,inBlock.getPos(),inBlock.getDim()));
-			}
+				@Override
+				public Tuple2<D3int, TImgBlock<boolean[]>> call(
+						Tuple2<D3int, TImgBlock<float[]>> arg0) throws Exception {
+					final TImgBlock<float[]> inBlock=arg0._2;
+					final float[] cSlice=inBlock.get();
+					final boolean[] oSlice=new boolean[cSlice.length];
+					for(int i=0;i<oSlice.length;i++) oSlice[i]=cSlice[i]>threshold;
+					return  new Tuple2<D3int, TImgBlock<boolean[]>>(arg0._1,
+							new TImgBlock<boolean[]>(oSlice,inBlock.getPos(),inBlock.getDim()));
+				}
 
-		},TImgTools.IMAGETYPE_BOOL);
+			},TImgTools.IMAGETYPE_BOOL);
 
-		thOutImg.DSave(new TypedPath(imagePath+"/threshold"));
+			thOutImg.DSave(new TypedPath(imagePath+"/threshold"));
+		} else filtImg.getBaseImg().collect();
 
-		System.out.println(String.format("Distributed Image\n\tVolume Fraction: \t\t%s\n\tCalculation time: \t%s","HAI",
-				Duration.create(System.currentTimeMillis() - start1, TimeUnit.MILLISECONDS) ));
+		double runTime=System.currentTimeMillis() - start1;
+		double mapTime=timeElapsed.value();
+		int mapOps=mapOperations.value();
+		String outPrefix="SP_OUT,\t"+SparkGlobal.getMasterName()+",\t"+iters+",\t"+filtImg.getDim().x+","+filtImg.getDim().y+","+filtImg.getDim().z;
+		  System.out.println(String.format("SP_OUT,\tImage Filter,\tTotal,\t\t\tPer Iteration\n"
+		 
+				+ "SP_OUT,\tMapTime Time, \t%f,\t%f\n"
+				+ "SP_OUT,\tScript time, \t%f\t%f\n"
+				+ "SP_OUT,\tEfficiency, \t%f pct,",
+				Math.round(mapTime*10.)/10.,
+				Math.round(mapTime/iters*10.)/10.,
+				Math.round(runTime*10.)/10.,
+				Math.round(runTime/iters*10.)/10.,
+				Math.round(mapTime/runTime*1000.)/1000.));
+		// for reading in with other tools
+		System.out.println("CSV_OUT,"+SparkGlobal.getMasterName()+","+iters+","+
+		filtImg.getDim().x+","+filtImg.getDim().y+","+filtImg.getDim().z+","+mapTime+","+
+				runTime+","+mapOps+","+SparkGlobal.maxCores+","+SparkGlobal.getSparkPersistenceValue()+","+SparkGlobal.useCompression);
 		jsc.stop();
 	}
 

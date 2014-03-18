@@ -2,6 +2,7 @@ package tipl.util;
 
 import java.io.Serializable;
 
+import tipl.formats.TImgRO;
 import tipl.spark.SparkGlobal;
 
 /**
@@ -126,6 +127,50 @@ public class TImgBlock<V extends Cloneable> implements Serializable {
 		abstract protected Fu getSliceData();
 		
 	}
+	/**
+	 * Read from the given slice in the future (send the object across the wire and read it on the other side, good for virtual objects)
+	 * @author mader
+	 *
+	 * @param <Fu>
+	 */
+	static public class TImgBlockFromImage<Fu extends Cloneable> extends TImgBlockFuture<Fu> {
+		protected final TImgRO inImObj;
+		protected final int sliceNumber;
+		protected final int imgType;
+		/**
+		 * 
+		 * Create a new block with an offset given a chunk of data and position, dimensions
+		 * @param path
+		 * @param sliceNumber
+		 * @param imageType
+		 * @param pos position of the upper left corner of the block
+		 * @param dim the dimension of the block 
+		 * @param offset the offset of the block 
+		 */
+		public TImgBlockFromImage(final TImgRO inImObj,final int sliceNumber,final int imageType,D3int pos,D3int dim,D3int offset) {
+			super(pos,dim,offset);
+			assert(TImgTools.isValidType(imageType));
+			this.inImObj=inImObj;
+			this.sliceNumber=sliceNumber;
+			this.imgType=imageType;
+		}
+		@SuppressWarnings("unchecked")
+		protected Fu getSliceData() {
+				Fu outSlice=(Fu) inImObj.getPolyImage(sliceNumber, imgType);
+				return outSlice;
+		}
+		@Override
+		public String toString() {
+			return "TBF:sl="+sliceNumber+",obj="+inImObj;
+		}
+		
+	}
+	/**
+	 * For reading files remotely, creates a future object with the path and slice number of the file to read
+	 * @author mader
+	 *
+	 * @param <Fu>
+	 */
 	static public class TImgBlockFile<Fu extends Cloneable> extends TImgBlockFuture<Fu> {
 		protected final String fileName;
 		protected final int sliceNumber;
