@@ -52,11 +52,12 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	 * @param aName
 	 *            name of analysis in the output file (header column prefix)
 	 */
-	public static void AddDensityColumn(final TImgRO inDMap, final String inName,
+	public static ITIPLPlugin AddDensityColumn(final TImgRO inDMap, final String inName,
 			final String outName, final String aName) {
 		final GrayAnalysis newGray = new GrayAnalysis(inDMap, inName, outName,
 				aName);
 		newGray.execute();
+		return newGray;
 	}
 
 	/**
@@ -74,7 +75,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	 *            name of analysis in the output file (header column prefix,
 	 *            _distance will be appended)
 	 */
-	public static void AddDistanceColumn(final TImgRO inMap, final TImgRO inGfilt,
+	public static ITIPLPlugin AddDistanceColumn(final TImgRO inMap, final TImgRO inGfilt,
 			final String inName, final String outName, final String aName) {
 		final GrayAnalysis newGray = new GrayAnalysis(inMap, inGfilt, inName,
 				outName, aName);
@@ -98,6 +99,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
 		newGray.SetupGA();
 		newGray.execute();
+		return newGray;
 	}
 
 	/**
@@ -115,11 +117,12 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	 * @param aName
 	 *            name of analysis in the output file (header column prefix)
 	 */
-	public static void AddFixedColumn(final TImgRO inMap, final TImgRO inGfilt,
+	public static ITIPLPlugin AddFixedColumn(final TImgRO inMap, final TImgRO inGfilt,
 			final String inName, final String outName, final String aName) {
 		final GrayAnalysis newGray = new GrayAnalysis(inMap, inGfilt, inName,
 				outName, aName);
 		newGray.execute();
+		return newGray;
 	}
 
 	/**
@@ -137,7 +140,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	 * @param aName
 	 *            name of analysis in the output file (header column prefix)
 	 */
-	public static void AddRegionColumn(final TImgRO inMap, final TImgRO inGfilt,
+	public static ITIPLPlugin AddRegionColumn(final TImgRO inMap, final TImgRO inGfilt,
 			final String inName, final String outName, final String aName) {
 
 		final GrayAnalysis newGray = new GrayAnalysis(inMap, inGfilt, inName,
@@ -149,6 +152,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		newGray.maxcol = false;
 		newGray.useThresh = false;
 		newGray.execute();
+		return newGray;
 
 	}
 
@@ -1400,7 +1404,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
 						double angT = 0;
 						String gtStr = "";
-
+						
 						String outString = insFile.readLine().getLine();
 						
 						final int curRow = (new Integer(

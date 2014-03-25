@@ -9,7 +9,8 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 
 
-/** Simple generic tool for reading and parsing CSV files 
+/** 
+ * Simple generic tool for reading and parsing CSV files 
  * */
 public class CSVFile {
 	public static class ColumnData {
@@ -71,7 +72,12 @@ public class CSVFile {
 	 * 
 	 */
 	private ParseableLine[] rawHeader;
-	public String getRawHeader(int i) {return rawHeader[i].getLine();}
+	public String getRawHeader(int i) {
+		assert(i>0);
+		assert(i<headerlines);
+		
+		return rawHeader[i].getLine();
+		}
 	public boolean isStrict; // All lines must be same length or read until one
 								// is too short
 	public boolean fileDone = true;
@@ -123,12 +129,20 @@ public class CSVFile {
 		}
 		
 	}
+	
 	public static CSVFile FromString(final String[] inString,final int _headerlines) {
 		return new CSVFile(new StrReader(inString),_headerlines);
 	}
+	
+	/**
+	 * Hidden method so it can only be created through the factories
+	 * @param readableObj
+	 * @param _headerlines
+	 */
 	private CSVFile(final CanReadLines readableObj,final int _headerlines) {
 		bufRdr=readableObj;
 		headerlines = _headerlines;
+		readLine(true); // get the buffer running
 		readHeader();
 		isStrict = false;
 		fileDone = false;
@@ -152,7 +166,7 @@ public class CSVFile {
 	 * @return
 	 */
 	public Hashtable<String, String> lineAsDictionary() {
-		ParseableLine cline=readLine();
+		ParseableLine cline=readLine(true);
 		return ZipArrays(getHeader(),cline.getSplitLine(),isStrict);
 	}
 	/**
@@ -187,7 +201,7 @@ public class CSVFile {
 	protected void readHeader() {
 		rawHeader = new ParseableLine[headerlines];
 		for (int i = 0; i < headerlines; i++) {
-			rawHeader[i] = readLine();
+			rawHeader[i] = readLine(true);
 		}
 	}
 	
@@ -227,8 +241,33 @@ public class CSVFile {
 		}
 	}
 	public static final ParseableLine emptyList=new ParseableLine("",",");
-	
+	protected ParseableLine lastReadLine=emptyList;
+	protected ParseableLine nextReadLine=emptyList;
+	/**
+	 * the public method always returns a cached result
+	 * @return
+	 */
 	public ParseableLine readLine() {
+		return readLine(false);
+	}
+	/**
+	 * read the line
+	 * @param fresh if this is false it returns the last read line 
+	 * @return
+	 */
+	protected ParseableLine readLine(boolean fresh) {
+		if(fresh) {
+			// always stay one step ahead so the EOF fails quickly
+			lastReadLine=nextReadLine;
+			nextReadLine=rawReadLine();
+		}
+		return lastReadLine;
+	}
+	/**
+	 * This function should to be visible because if it is mixed with lineAsDictionary it will cause skipping
+	 * @return
+	 */
+	private ParseableLine rawReadLine() {
 		String rline;
 		try {
 			if ((rline = bufRdr.readLine()) != null) {

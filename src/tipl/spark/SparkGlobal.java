@@ -45,7 +45,15 @@ abstract public class SparkGlobal {
 	static public boolean useKyro=false;
 	static public int kyroBufferSize=200;
 	static public int shuffleBufferSize=20*1024;
+	static public int maxMBforReduce=128;
 	static public boolean useCompression=true;
+	static public double memFraction=0.3;
+	static public int retainedStages=10;
+	/**
+	 * how long to remember in seconds stage and task information (default 6 hours)
+	 */
+	static public int metaDataMemoryTime=6*60*60;
+	
 	static protected String getMasterName() {
 		if(masterName.length()<1) masterName="local["+TIPLGlobal.availableCores+"]";
 		return masterName;
@@ -75,8 +83,15 @@ abstract public class SparkGlobal {
 			System.setProperty("spark.shuffle.compress", ""+useCompression);
 			System.setProperty("spark.shuffle.spill.compress", ""+useCompression);
 			System.setProperty("spark.shuffle.file.buffer.kb",""+shuffleBufferSize);
-			//System.setProperty("spark.rdd.compress", ""+useCompression);
-			System.setProperty("spark.storage.memoryFraction","0.4"); // there is a fair amount of overhead in my scripts
+			
+			System.setProperty("spark.rdd.compress", ""+useCompression);
+			
+			System.setProperty("spark.storage.memoryFraction",""+memFraction); // there is a fair amount of overhead in my scripts
+			System.setProperty("spark.shuffle.consolidateFiles","true"); // considates intermediate files
+			System.setProperty("spark.speculation","true"); // start rerunning long running jobs
+			System.setProperty("spark.reducer.maxMbInFlight",""+maxMBforReduce); // size of data to send to each reduce task (should be larger than any output)
+			System.setProperty("spark.ui.retainedStages",""+retainedStages); // number of stages to retain before GC
+			System.setProperty("spark.cleaner.ttl",""+metaDataMemoryTime); // time to remember metadats
 			
 			currentContext=new JavaSparkContext(getMasterName(), jobName,System.getenv("SPARK_HOME"), JavaSparkContext.jarOfClass(SparkGlobal.class));
 			StopSparkeAtFinish(currentContext);
@@ -101,7 +116,7 @@ abstract public class SparkGlobal {
 	
 	
 	/**
-	 * The default persistance settings basically copied from spark
+	 * The default persistence settings basically copied from spark
 	 */
 	public final static int MEMORY_ONLY=0;
 	public final static int MEMORY_ONLY_SER=1;

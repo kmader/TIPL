@@ -156,7 +156,10 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 			},TImgTools.IMAGETYPE_BOOL);
 
 			thOutImg.DSave(new TypedPath(imagePath+"/threshold"));
-		} else filtImg.getBaseImg().collect();
+		} else {
+			filtImg.getBaseImg().sample(true, 2/filtImg.getDim().z,1);
+			//filtImg.getBaseImg().collect();
+		}
 
 		double runTime=System.currentTimeMillis() - start1;
 		double mapTime=timeElapsed.value();
