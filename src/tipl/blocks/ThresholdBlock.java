@@ -9,7 +9,10 @@ import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
 
-/** perform a threshold on an input image and remove edges if needed **/
+/** perform a threshold on an input image and remove edges if needed 
+ * added a maxthreshvalue so the upper limit can be set as well
+ * when operated in flip mode it simply takes the reverse (less than minimum and greater than maximum)
+ * **/
 public class ThresholdBlock extends BaseTIPLBlock {
 	@BaseTIPLBlock.BlockIdentity(blockName = "ThresholdBlock",
 			inputNames= {"gray valued image"}, 
@@ -38,7 +41,7 @@ public class ThresholdBlock extends BaseTIPLBlock {
 		return cPeel.ExportImages(cAim)[0];
 	}
 
-	protected double threshVal, remEdgesRadius;
+	protected double threshVal,maxThreshVal, remEdgesRadius;
 	protected boolean rmEdges,flipThreshold;
 	public String prefix;
 	
@@ -99,15 +102,15 @@ public class ThresholdBlock extends BaseTIPLBlock {
 		final boolean[] scdat = new boolean[inImg.length];
 		for (int i = 0; i < inImg.length; i++) {
 			if (isFlipped) 
-				scdat[i] = inImg[i] < threshVal;
+				scdat[i] = (inImg[i] < threshVal) & (inImg[i]>maxThreshVal);
 			else 
-				scdat[i] = inImg[i] > threshVal;
+				scdat[i] = (inImg[i] > threshVal) & (inImg[i]<maxThreshVal);
 		}
 		rawImgPlus = null;
 		TImg threshImg = rawImg.inheritedAim(scdat, rawImg.getDim(),
 				rawImg.getOffset());
 		threshImg.appendProcLog("CMD:Threshold, Value:" + (isFlipped ? iopString : opString) + " "
-				+ threshVal);
+				+ threshVal+ " and "+(isFlipped ? opString : iopString)+" "+maxThreshVal);
 		TImgTools.RemoveTImgFromCache(getFileParameter("gfilt"));
 		/*
 		 * perform some post threshold operations on the image to clean it up if needed
@@ -174,7 +177,9 @@ public class ThresholdBlock extends BaseTIPLBlock {
 	@Override
 	public ArgumentParser setParameterBlock(final ArgumentParser p) {
 		threshVal = p.getOptionDouble(prefix + "threshvalue", 2200,
-				"Value used to threshold image");
+				"Minimum value used to threshold image");
+		threshVal = p.getOptionDouble(prefix + "maxthreshvalue", Float.MAX_VALUE,
+				"Maximum value to be included");
 		flipThreshold = p.getOptionBoolean(prefix + "flipthresh",
 				"Flip the threshold criteria (<) instead of (>)");
 		rmEdges = p.getOptionBoolean(prefix + "removeedges",

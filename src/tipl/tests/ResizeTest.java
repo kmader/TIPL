@@ -20,6 +20,7 @@ import tipl.util.D3int;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TIPLPluginManager.PluginInfo;
+import tipl.util.TImgTools;
 
 /**
  * Test the Resize class using synthetic data
@@ -84,7 +85,7 @@ public class ResizeTest {
 	public static void testSlicesMatchInt(final PluginInfo idPlugin,final TImgRO testImg) {
 		// offset lines
 
-		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
+		 TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Slices Match");
 		ITIPLPluginIO RS = makeRS(idPlugin,testImg);
 

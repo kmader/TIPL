@@ -15,6 +15,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import tipl.formats.VirtualAim;
 import tipl.tools.BaseTIPLPluginIn;
+import tipl.util.TIPLMongo.ITIPLUsage;
+import tipl.util.TIPLMongo.TIPLUsage;
 
 public class TIPLGlobal {
 	public static final int DEBUG_ALL=5;
@@ -23,7 +25,7 @@ public class TIPLGlobal {
 	public static final int DEBUG_STATUS=2;
 	public static final int DEBUG_BASIC=1;
 	public static final int DEBUG_OFF=0;
-	private static int TIPLDebugLevel=DEBUG_MSGS;
+	private static int TIPLDebugLevel=DEBUG_BASIC;
 	/**
 	 * returns the level (see enumeration above for more on the levels
 	 * @return
@@ -329,6 +331,8 @@ public class TIPLGlobal {
 		}
 
 	}
+	
+	// ImageJ portion of the code
 	protected static ImageJ IJcore = null;
 	public static int IJmode=ImageJ.NO_SHOW;
 	public static ImageJ getIJInstance() {
@@ -338,6 +342,31 @@ public class TIPLGlobal {
 		}
 		if (IJcore==null) IJcore=new ImageJ(IJmode);
 		return IJcore;
+	}
+	
+	// Usage portion of the code
+	protected static ITIPLUsage tuCore=null;
+	public static ITIPLUsage getUsage() {
+		if (tuCore==null) tuCore=TIPLUsage.getTIPLUsage();
+		return tuCore;
+	}
+	public static ITIPLUsage isLocalUsage(int checkLocalId) {
+		if (checkLocalId==22515) tuCore = new ITIPLUsage() {
+
+			@Override
+			public void registerPlugin(String pluginName, String args) {
+				System.out.println("USAGE_PLUGIN:"+pluginName+","+args);
+				
+			}
+
+			@Override
+			public void registerImage(String imageName, String dim, String info) {
+				System.out.println("USAGE_IMAGE:"+imageName+","+dim+","+info);
+				
+			}
+			
+		};
+		return tuCore;
 	}
 	
 	

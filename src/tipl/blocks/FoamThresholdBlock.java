@@ -53,20 +53,20 @@ public class FoamThresholdBlock extends ThresholdBlock {
 	@Override
 	public ArgumentParser setParameterBlock(final ArgumentParser inp) {
 		final ArgumentParser p=super.setParameterBlock(inp);
-		closeIter = p.getOptionInt(prefix+"closeIter", closeIter,
+		closeIter = p.getOptionInt(prefix+"closeiter", closeIter,
 				"Number of closing iterations to perform on PlatBorders");
-		closeNH = p.getOptionInt(prefix+"closeNH", closeNH, "Neighborhood used for closing");
+		closeNH = p.getOptionInt(prefix+"closenh", closeNH, "Neighborhood used for closing");
 
-		openIter = p.getOptionInt(prefix+"openIter", openIter,
+		openIter = p.getOptionInt(prefix+"openiter", openIter,
 				"Number of opening iterations to perform on Bubbles");
-		openNH = p.getOptionInt(prefix+"openNH", openNH,
+		openNH = p.getOptionInt(prefix+"opennh", openNH,
 				"Neighborhood used for opening");
 		eroOccup = p
-				.getOptionDouble(prefix+"eroOccup", eroOccup,
+				.getOptionDouble(prefix+"erooccup", eroOccup,
 						"Minimum neighborhood occupancy % for to prevent erosion deletion");
-		dilNH = p.getOptionInt(prefix+"dilNH", dilNH, "Neighborhood used for dilation");
+		dilNH = p.getOptionInt(prefix+"dilnh", dilNH, "Neighborhood used for dilation");
 
-		dilOccup = p.getOptionDouble(prefix+"dilOccup", dilOccup,
+		dilOccup = p.getOptionDouble(prefix+"diloccup", dilOccup,
 				"Minimum neighborhood occupancy % for dilation addition");
 		morphRadius = p
 				.getOptionDouble(
@@ -102,35 +102,36 @@ public class FoamThresholdBlock extends ThresholdBlock {
 			afterCloseImg = platClose.ExportImages(inImage)[0];
 
 		} else { 
-				afterCloseImg=inImage;
-			}
-			if (clthresh) return performComponentLabeling(afterCloseImg,minVolumePct);
-			else return afterCloseImg;
+			afterCloseImg=inImage;
 		}
-
-		@Override
-		protected TImg postNotthreshFunction(TImg inImage) {
-			final TImg afterCloseImg;
-			if (closeIter>0) {
-				Morpho bubOpen = new Morpho(inImage);
-				bubOpen.openMany(openIter, openNH, 1.0);
-				bubOpen.useSphKernel(morphRadius * openNH);
-				// bubOpen.erode(2,0.041);
-				afterCloseImg = bubOpen.ExportAim(inImage);
-			} else {
-				afterCloseImg=inImage;
-			}
-			if (clnotthresh) return performComponentLabeling(afterCloseImg,minVolumePct);
-			else return afterCloseImg;
-		}
-		protected static TImg performComponentLabeling(TImg inImage,double minVolPct) {
-			System.out.println("Running Component Label Check " + inImage.getSampleName()
-					+ " ...");
-			final ComponentLabel myCL = new ComponentLabel(inImage);
-			myCL.runRelativeVolume(minVolPct, 101);
-			return myCL.ExportImages(inImage)[1];
-		}
-
-
-
+		
+		if (clthresh) return performComponentLabeling(afterCloseImg,minVolumePct);
+		else return afterCloseImg;
 	}
+
+	@Override
+	protected TImg postNotthreshFunction(TImg inImage) {
+		final TImg afterCloseImg;
+		if (closeIter>0) {
+			Morpho bubOpen = new Morpho(inImage);
+			bubOpen.openMany(openIter, openNH, 1.0);
+			bubOpen.useSphKernel(morphRadius * openNH);
+			// bubOpen.erode(2,0.041);
+			afterCloseImg = bubOpen.ExportAim(inImage);
+		} else {
+			afterCloseImg=inImage;
+		}
+		if (clnotthresh) return performComponentLabeling(afterCloseImg,minVolumePct);
+		else return afterCloseImg;
+	}
+	protected static TImg performComponentLabeling(TImg inImage,double minVolPct) {
+		System.out.println("Running Component Label Check " + inImage.getSampleName()
+				+ " ...");
+		final ComponentLabel myCL = new ComponentLabel(inImage);
+		myCL.runRelativeVolume(minVolPct, 101);
+		return myCL.ExportImages(inImage)[1];
+	}
+
+
+
+}

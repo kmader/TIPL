@@ -747,7 +747,9 @@ public class TImgTools {
 	}
 
 	public static TImg ReadTImg(final String path) {
-		return getStorage().readTImg(path);
+		TImg outImg=getStorage().readTImg(path);
+		TIPLGlobal.getUsage().registerImage(path,outImg.getDim().toString(),"read");
+		return outImg;
 	}
 	
 	/**
@@ -775,7 +777,9 @@ public class TImgTools {
 	 */
 	public static TImg ReadTImg(final String path, final boolean readFromCache,
 			final boolean saveToCache) {
-		return getStorage().readTImg(path,readFromCache,saveToCache);
+		TImg outImg=getStorage().readTImg(path,readFromCache,saveToCache);
+		TIPLGlobal.getUsage().registerImage(path,outImg.getDim().toString(),"read");
+		return outImg;
 	}
 
 	public static boolean RemoveTImgFromCache(final String path) {
@@ -850,6 +854,7 @@ public class TImgTools {
 
 	public static boolean WriteTImg(final TImgRO curImg, final String path,
 			final boolean saveToCache) {
+		TIPLGlobal.getUsage().registerImage(path,curImg.getDim().toString(), curImg+"");
 		return getStorage().writeTImg(curImg, path, saveToCache);
 	}
 
@@ -866,6 +871,8 @@ public class TImgTools {
 	@Deprecated
 	public static void WriteTImg(final TImgRO inImg, final String outpath,
 			final int outType, final float scaleVal, final boolean IisSigned,final boolean toCache) {
+		TIPLGlobal.getUsage().registerImage(outpath,inImg.getDim().toString(), inImg+", "+outType);
+		
 		getStorage().writeTImg(inImg, outpath, outType,scaleVal,IisSigned,toCache);
 	}
 }

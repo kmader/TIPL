@@ -2,6 +2,7 @@ package tipl.tools;
 
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLGlobal;
 
 /**
  * Abstract Class for performing TIPLPlugin TIPLPlugin is the class for Plug-ins
@@ -12,6 +13,7 @@ import tipl.util.ITIPLPlugin;
 abstract public class BaseTIPLPlugin implements ITIPLPlugin {
 
 	public BaseTIPLPlugin() {
+		TIPLGlobal.getUsage().registerPlugin(getPluginName(), this.toString());
 	}
 
 	/**

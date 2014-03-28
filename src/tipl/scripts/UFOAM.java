@@ -268,7 +268,8 @@ public class UFOAM {
 
 		dontContour = p.getOptionBoolean("nocontour",
 				"Do not a contour of the plateau borders");
-		writeShapeTensor = p.getOptionBoolean("shapetensor",
+		
+		writeShapeTensor = p.getOptionBoolean("shapetensor",true,
 				"Include Shape Tensor");
 		// Neighbor Parameters
 		neighborDist = p
