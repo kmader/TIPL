@@ -764,7 +764,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 		final int filterType = p
 				.getOptionInt(prefix + "filter", 0,
 						NEAREST_NEIGHBOR+" - Nearest Neighbor,"+
-				GAUSSIAN+" - Gaussian, "+GRADIENT+" - Gradient, "+LAPLACE+" - Laplace, "+LAPLACE+" - Median");
+				GAUSSIAN+" - Gaussian, "+GRADIENT+" - Gradient, "+LAPLACE+" - Laplace, "+MEDIAN+" - Median");
 		final double filterParameter = p
 				.getOptionDouble(
 						prefix + "filtersetting",

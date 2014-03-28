@@ -481,6 +481,13 @@ public class ArgumentList {
 	public void blockOverwrite() {
 		overwritable = false;
 	}
+	
+	/**
+	 * allows arguments to be overwritten
+	 */
+	public void releaseOverwrite() {
+		overwritable = false;
+	}
 
 	/**
 	 * can arguments be overwritten (used in blocks)

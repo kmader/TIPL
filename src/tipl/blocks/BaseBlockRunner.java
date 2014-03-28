@@ -71,7 +71,7 @@ public class BaseBlockRunner implements IBlockRunner {
 	public void connectInput(String inputName, ITIPLBlock outputBlock,
 			String outputName) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -141,7 +141,7 @@ public class BaseBlockRunner implements IBlockRunner {
 		for(ITIPLBlock cBlock : blockList) if (cBlock.neededMemory()>cneededMemory) cneededMemory=cBlock.neededMemory();
 		return cneededMemory;
 	}
-	
+
 	@Override
 	public boolean isComplete() {
 		boolean allComplete=true;
@@ -163,12 +163,12 @@ public class BaseBlockRunner implements IBlockRunner {
 			System.out.println(" Arguments::");
 			System.out.println(" ");
 			System.out.println(p.getHelp());
-			
+
 			System.exit(0);
 		}
 		p.checkForInvalid();
 	}
-	
+
 	/**
 	 * @param args
 	 */
@@ -176,7 +176,7 @@ public class BaseBlockRunner implements IBlockRunner {
 		System.out.println("BaseBlockRunner v" + kVer);
 		System.out.println("Runs a series of blocks by their name");
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		
+
 		ArgumentParser p = TIPLGlobal.activeParser(args);
 		final String blocknames = p.getOptionString("blocknames", "",
 				"Class names of the blocks to run");
@@ -184,7 +184,7 @@ public class BaseBlockRunner implements IBlockRunner {
 			IBlockRunner cr=new BaseBlockRunner(); 
 			int blockIndex=1;
 			for(String blockname : blocknames.split(",")) {
-				
+
 				ITIPLBlock cBlock = null;
 				try {
 					cBlock = (ITIPLBlock) Class.forName(blockname).newInstance();
@@ -213,12 +213,12 @@ public class BaseBlockRunner implements IBlockRunner {
 
 			checkHelp(p);
 			p.checkForInvalid();
-			
-				if (runAsJob) {
-					jobToRun.submit();
-				} else {
-					cr.execute();
-				}
+
+			if (runAsJob) {
+				jobToRun.submit();
+			} else {
+				cr.execute();
+			}
 
 
 		} else
