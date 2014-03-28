@@ -66,6 +66,11 @@ public class CL extends BaseTIPLPluginIn {//extends GatherBasedPlugin<boolean[],
 		
 		System.out.println("Testing Component Label Code");
 		ArgumentParser p=SparkGlobal.activeParser(args);
+		
+		mainCall(p);
+
+	}
+	public static void mainCall(ArgumentParser p) {
 		int boxSize=p.getOptionInt("boxsize", 8, "The dimension of the image used for the analysis");
 		int layerWidth=p.getOptionInt("width", boxSize/4, "The width of the layer used for the analysis");
 		String writeIt=p.getOptionPath("out", "", "write image as output file");
@@ -82,7 +87,6 @@ public class CL extends BaseTIPLPluginIn {//extends GatherBasedPlugin<boolean[],
 		
 		curPlugin.execute();
 		
-
 	}
 	public CL(final DTImg<boolean[]> inImage) {
 		maskImg=inImage;

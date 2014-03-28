@@ -20,7 +20,7 @@ import tipl.util.TImgTools;
 public class AnalyzePhase extends BaseTIPLBlock {
 	/**
 	 * A class for the shape and neighbor analysis based on two easily
-	 * overridden functions for generating the voroni and neighborhood
+	 * overridden functions for generating the voronoi and neighborhood
 	 * calculating plugins
 	 * 
 	 * @author mader
@@ -86,7 +86,7 @@ public class AnalyzePhase extends BaseTIPLBlock {
 			new BlockImage("mask", "mask.tif", "Mask Image", true) };
 
 	public final IBlockImage[] outImages = new IBlockImage[] { new BlockImage(
-			"labeled", "labeled.tif", "Labeled Image", true) };
+			"labeled", "labeled.tif", "Labeled Image", false) };
 
 	protected ShapeAndNeighborAnalysis SNA = new ShapeAndNeighborAnalysis();
 
@@ -150,14 +150,10 @@ public class AnalyzePhase extends BaseTIPLBlock {
 
 	@Override
 	public ArgumentParser setParameterBlock(final ArgumentParser p) {
-		minVoxCount = p.getOptionInt("minvoxcount", 1, "Minimum voxel count");
+		minVoxCount = p.getOptionInt(prefix+"minvoxcount", 1, "Minimum voxel count");
 		// sphKernelRadius=p.getOptionDouble("sphkernelradius",1.74,"Radius of spherical kernel to use for component labeling: vertex sharing is sqrt(3)*r, edge sharing is sqrt(2)*r,face sharing is 1*r ");
-		writeShapeTensor = p.getOptionBoolean("shapetensor",
-				"Include Shape Tensor");
-		phaseName = p.getOptionString("phase", "pores", "Phase name");
-		TIPLGlobal.availableCores = p.getOptionInt("maxcores",
-				TIPLGlobal.availableCores,
-				"Number of cores/threads to use for processing");
+		writeShapeTensor = p.getOptionBoolean(prefix+"shapetensor",true,"Include Shape Tensor");
+		phaseName = p.getOptionString(prefix+"phase", "pores", "Phase name");
 		final ArgumentParser p2 = SNA.getNeighborPlugin().setParameter(p,
 				prefix);
 		return CL.setParameter(p2, prefix);

@@ -24,6 +24,8 @@ import tipl.util.TImgTools;
 
 /**
  * A basic concrete implementation of TIPLBlock with the helper functions
+ * Handles checking for files and determining ready status
+ * Can be launched from either this script or the blockrunner tool
  * 
  * @author mader
  * 
@@ -271,11 +273,11 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 		}
 
 		try {
-			System.out.println("Trying-Image Found: "+filename+(readImageDuringTry ? "and will be open..." : "will be assumed to be ok!"));
+			System.out.println("Trying-Image Found: "+filename+(readImageDuringTry ? " and will be open..." : " will be assumed to be ok!"));
 			if (!readImageDuringTry) return true;
 			
 			tempAim = TImgTools.ReadTImg(filename); // ReadTImg (should be, but currently that eats way too much computer time)
-			System.out.println("Trying-Image Opened, checking dimensions:"+tempAim.getDim());
+			System.out.println("Trying-Image Opened, checking dimensions: "+tempAim.getDim());
 			if (tempAim.getDim().prod() < 1)
 				return false;
 			return (tempAim.isGood());
