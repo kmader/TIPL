@@ -9,6 +9,7 @@ import static ch.lambdaj.Lambda.having;
 import static ch.lambdaj.Lambda.on;
 import static ch.lambdaj.Lambda.sort;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
@@ -71,6 +72,11 @@ public class TIPLPluginManager {
 		 * @return
 		 */
 		int speedRank() default 10;
+		/**
+		 * does the plugin require Spark in order to run
+		 * @return
+		 */
+		boolean sparkBased() default false;
 	}
 	/**
 	 * The static method to create a new TIPLPlugin 
@@ -163,7 +169,16 @@ public class TIPLPluginManager {
 	protected static PluginInfo getBestPlugin(final String pluginType,final TImgRO[] inImages) {
 		//TODO get size from other images at some point
 		long imVoxCount=(long) inImages[0].getDim().prod();
-		return getFastestPlugin(getPluginsBySize(getPluginsNamed(pluginType),imVoxCount));
+		List<PluginInfo> bestPlugins=getPluginsBySize(getPluginsNamed(pluginType),imVoxCount);
+		// remove spark plugins
+		List<PluginInfo> noSparkPlugins=filter(
+				having(on(PluginInfo.class).sparkBased(),is(false)),
+				bestPlugins);
+		String outPlugName = "Available Plugins for "+pluginType+" are: ";
+		
+		for (PluginInfo cPlug : bestPlugins) outPlugName+=","+cPlug.toString();
+		if (TIPLGlobal.getDebug()) System.out.println(outPlugName);
+		return getFastestPlugin(noSparkPlugins);
 	}
 	/**
 	 * get the best suited plugin for the given images

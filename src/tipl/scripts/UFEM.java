@@ -583,8 +583,9 @@ public class UFEM implements Runnable {
 		lacMaxVol = p.getOptionDouble("lacMaxVol", 2.74e-6,
 				"Largest lacuna size (defaults is 1000vx) in mm3");
 
-		canMinVol = p.getOptionDouble("canMinVol", 2.74e-6,
-				"Smallest lacuna size (defaults to minVoxCnt if empty) in mm3");
+		canMinVol = p.getOptionDouble("canMinVol", lacMaxVol,
+				"Smallest lacuna size (defaults to lacMaxVol if empty) in mm3");
+		
 		canMaxVol = p.getOptionDouble("canMaxVol", 0,
 				"Largest lacuna size (defaults is no limit) in mm3");
 		makePreviews = p.getOptionBoolean("makepreview", "Make previews");
@@ -716,7 +717,7 @@ public class UFEM implements Runnable {
 		if (maskAim == null)
 			maskAim = TImgTools.ReadTImg(maskAimFile);
 
-		ITIPLPluginIO KV = TIPLPluginManager.createBestPluginIO("kVoronoi",new TImg[] {null,maskAim});
+		ITIPLPluginIO KV = TIPLPluginManager.createBestPluginIO("kVoronoi",new TImg[] {maskAim});
 		KV.setParameter("-includeedges=true");
 		KV.LoadImages(new TImg[] {null,maskAim});
 		

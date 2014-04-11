@@ -32,17 +32,24 @@ import scala.Tuple2;
 import static ch.lambdaj.Lambda.on;
 import static ch.lambdaj.Lambda.sort;
 import static ch.lambdaj.Lambda.DESCENDING;
+import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.formats.TImgRO.CanExport;
 import tipl.spark.NeighborhoodPlugin.GatherBasedPlugin;
 import tipl.tests.TestPosFunctions;
 import tipl.tools.BaseTIPLPlugin;
+import tipl.tools.BaseTIPLPluginIO;
 import tipl.tools.BaseTIPLPluginIn;
+import tipl.tools.ComponentLabel;
 import tipl.tools.BaseTIPLPluginIn.filterKernel;
 import tipl.tools.BaseTIPLPluginIn.morphKernel;
+import tipl.tools.ComponentLabel.CLFilter;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.D4int;
+import tipl.util.ITIPLPlugin;
 import tipl.util.ITIPLPluginIn;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgBlock;
 import tipl.util.TImgTools;
 
@@ -52,25 +59,57 @@ import tipl.util.TImgTools;
  *
  */
 @SuppressWarnings("serial")
-public class CL extends BaseTIPLPluginIn {//extends GatherBasedPlugin<boolean[],int[]> {
+public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],int[]> {
+	@TIPLPluginManager.PluginInfo(pluginType = "ComponentLabel",
+			desc="Spark-based component labeling",
+			sliceBased=false,
+			maximumSize=-1,
+			bytesPerVoxel=3,
+			sparkBased=true)
+	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new CL();
+		}
+	};
 	
-	protected static void checkVals(final ITIPLPluginIn CL, final int maxLabel,
-			final double avgCount) {
-		/** System.out.println("Maximum Label of CL Image:" + getMax(CL)
-				+ ", average count:" + getAvg(CL));
-		assertEquals(getMax(CL), maxLabel);
-		assertEquals(getAvg(CL), avgCount, 0.1);
-		 **/
+	protected boolean runSliceMergesFirst=true;
+	@Override
+	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
+		runSliceMergesFirst=p.getOptionBoolean("slicemerging", runSliceMergesFirst,"Run slice merges before entire image merges, faster for very large data sets");
+		return super.setParameter(p, prefix);
 	}
+
+
+	@Override
+	public String getPluginName() {
+		return "Spark-ComponentLabel";
+	}
+	
+	protected DTImg<boolean[]> maskImg;
+	protected DTImg<long[]> labelImg;
+	@Override
+	public void LoadImages(TImgRO[] inImages) {
+		assert(inImages.length>0);
+		
+		TImgRO inImage=inImages[0];
+		if (inImage instanceof DTImg<?> & inImage.getImageType()==TImgTools.IMAGETYPE_BOOL)
+			maskImg = (DTImg<boolean[]>) inImage;
+		else
+			maskImg=DTImg.<boolean[]>ConvertTImg(SparkGlobal.getContext(getPluginName()+"Context"), inImage, TImgTools.IMAGETYPE_BOOL);
+		
+	}
+	
 	public static void main(String[] args) {
 		
 		System.out.println("Testing Component Label Code");
 		ArgumentParser p=SparkGlobal.activeParser(args);
 		
-		mainCall(p);
+		testFunc(p);
 
 	}
-	public static void mainCall(ArgumentParser p) {
+	
+	public static void testFunc(ArgumentParser p) {
 		int boxSize=p.getOptionInt("boxsize", 8, "The dimension of the image used for the analysis");
 		int layerWidth=p.getOptionInt("width", boxSize/4, "The width of the layer used for the analysis");
 		String writeIt=p.getOptionPath("out", "", "write image as output file");
@@ -80,19 +119,50 @@ public class CL extends BaseTIPLPluginIn {//extends GatherBasedPlugin<boolean[],
 			//	new TestPosFunctions.DiagonalPlaneFunction());
 		if (writeIt.length()>0) TImgTools.WriteTImg(testImg,writeIt);
 		
-		final DTImg<boolean[]> testDImg=DTImg.<boolean[]>ConvertTImg(SparkGlobal.getContext("ComponentLabeling-Context"), testImg, TImgTools.IMAGETYPE_BOOL);
-		CL curPlugin=new CL(testDImg);
+		CL curPlugin=new CL();
+		
 		curPlugin.setParameter(p,"");
 		p.checkForInvalid();
+		
+		curPlugin.LoadImages(new TImgRO[] {testImg});
+		
 		
 		curPlugin.execute();
 		
 	}
-	public CL(final DTImg<boolean[]> inImage) {
-		maskImg=inImage;
+	public CL() {
 	}
-	final protected DTImg<boolean[]> maskImg;
-	protected DTImg<long[]> labelImg;
+	
+	protected ComponentLabel.CLFilter objFilter;
+	/**
+	 * run and return only the largest component
+	 */
+	public void runFirstComponent() {
+		objFilter = new ComponentLabel.CLFilter() {
+			int maxComp = -1;
+			int maxVol = -1;
+
+			@Override
+			public boolean accept(final int labelNumber, final int voxCount) {
+				return (labelNumber == maxComp);
+			}
+
+			@Override
+			public String getProcLog() {
+				return "Using largest component filter\n";
+			}
+
+			@Override
+			public void prescan(final int labelNumber, final int voxCount) {
+				if ((voxCount > maxVol) | (maxComp == -1)) {
+					maxComp = labelNumber;
+					maxVol = voxCount;
+				}
+			};
+		};
+		execute();
+	}
+
 	/** 
 	 * Get a summary of the groups and the count in each
 	 * @param inLabelImg
@@ -505,7 +575,9 @@ public class CL extends BaseTIPLPluginIn {//extends GatherBasedPlugin<boolean[],
 		}
 		
 		public D3int getNeighborSize() {return ns;}
+		
 		public BaseTIPLPluginIn.morphKernel getMKernel() {return mKernel;}
+		
 		@Override
 		public Tuple2<D3int,OmnidirectionalMap> call(Tuple2<D3int, List<TImgBlock<long[]>>> inTuple) {
 			final long start=System.currentTimeMillis();
@@ -635,36 +707,14 @@ public class CL extends BaseTIPLPluginIn {//extends GatherBasedPlugin<boolean[],
 		
 		return true;
 	}
-	
-	protected boolean runSliceMergesFirst=true;
-	@Override
-	public ArgumentParser setParameter(ArgumentParser p, String prefix) {
-		runSliceMergesFirst=p.getOptionBoolean("slicemerging", runSliceMergesFirst,"Run slice merges before entire image merges, faster for very large data sets");
-		return p;
-	}
 
 
 	@Override
-	public morphKernel getKernel() {
-		// TODO Auto-generated method stub
-		return BaseTIPLPluginIn.fullKernel;
-	}
-
-	@Override
-	public D3int getNeighborSize() {
-		// TODO Auto-generated method stub
-		return new D3int(1,1,1);
-	}
-
-	@Override
-	public String getPluginName() {
+	public TImg ExportAim(CanExport templateAim) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	@Override
-	public void LoadImages(TImgRO[] inImages) {
-		// TODO Auto-generated method stub
-		
-	}
+	
+
 
 }
