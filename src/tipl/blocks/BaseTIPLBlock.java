@@ -98,11 +98,12 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	
 	/**
 	 * A runnable block which takes the block itself as an argument so it can read parameters and other information from the block while running
+	 * It also internally reads parameters so clumsy hacks need not always be made
 	 * 
 	 * @author mader
 	 *
 	 */
-	public static interface BlockRunnable {
+	public static interface BlockRunnable extends ArgumentParser.IsetParameter {
 		/**
 		 * the run command itself
 		 * @param inBlockID the block being run
@@ -139,9 +140,9 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	 */
 	public static ITIPLBlock InlineBlock(final String name, final String prefix,
 			final String[] earlierPathArgs, final String[] outArgs,
-			final BlockRunnable job, final ArgumentParser.IsetParameter parFunc) {
+			final BlockRunnable job) {
 		return InlineBlock(name, prefix, new ITIPLBlock[] {}, earlierPathArgs,
-				outArgs, job, parFunc);
+				outArgs, job);
 	}
 
 	/**
@@ -161,8 +162,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	 */
 	public static ITIPLBlock InlineBlock(final String name, final String prefix,
 			final ITIPLBlock[] earlierBlocks, final String[] earlierPathArgs,
-			final String[] outputArgs, final BlockRunnable job,
-			final ArgumentParser.IsetParameter parFunc) {
+			final String[] outputArgs, final BlockRunnable job) {
 		final ITIPLBlock cBlock = new BaseTIPLBlock(name, earlierBlocks) {
 			protected String cPrefix=prefix;
 			@Override
@@ -218,7 +218,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 
 			@Override
 			public ArgumentParser setParameterBlock(final ArgumentParser p) {
-				ArgumentParser outPar = parFunc.setParameter(p, prefix);
+				ArgumentParser outPar = job.setParameter(p, prefix);
 				
 				return outPar;
 			}
