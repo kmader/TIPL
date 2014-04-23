@@ -760,7 +760,6 @@ public class FilterScale extends BaseTIPLPluginMult {
 	@Override
 	public ArgumentParser setParameter(final ArgumentParser p,
 			final String prefix) {
-		// p=super.setParameter(p,prefix);
 		final int filterType = p
 				.getOptionInt(prefix + "filter", 0,
 						NEAREST_NEIGHBOR+" - Nearest Neighbor,"+

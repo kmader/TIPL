@@ -26,7 +26,7 @@ import tipl.util.TImgTools;
  */
 public class ResizeBlock extends BaseTIPLBlock {
 	
-	@BaseTIPLBlock.BlockIdentity(blockName = "FilterBlock",
+	@BaseTIPLBlock.BlockIdentity(blockName = "ResizeBlock",
 			inputNames= {"entire image"}, 
 			outputNames= {"rescaled image"})
 	final public static TIPLBlockFactory myFactory = new BaseTIPLBlock.TIPLBlockFactory() {

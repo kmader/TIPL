@@ -95,7 +95,37 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 		}
 		p.checkForInvalid();
 	}
-
+	
+	/**
+	 * A runnable block which takes the block itself as an argument so it can read parameters and other information from the block while running
+	 * 
+	 * @author mader
+	 *
+	 */
+	public static interface BlockRunnable {
+		/**
+		 * the run command itself
+		 * @param inBlockID the block being run
+		 */
+		public void run(BaseTIPLBlock inBlockID);
+		
+	}
+	
+	/**
+	 * Just like runnable but allows an addition setup step
+	 * @author mader
+	 *
+	 */
+	public static interface ConfigurableBlockRunnable extends BlockRunnable {
+		/**
+		 * in case any setup needs to be run before the execution starts
+		 * useful for reading in parameters and other assorted tasks
+		 * @param inBlockID the block being run (typical use is to then grab the parameter list)
+		 */
+		public void setup(BaseTIPLBlock inBlockID);
+	}
+	
+	
 	/**
 	 * Create a block from a few parameters and a runnable
 	 * 
@@ -103,13 +133,13 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	 * @param prefix
 	 * @param earlierPathArgs
 	 * @param outArgs
-	 * @param job
+	 * @param job the command to actually be run (type blockrunnable or configurableblockrunnable)
 	 * @param parFunc
 	 * @return TIPLBlock to be run later
 	 */
 	public static ITIPLBlock InlineBlock(final String name, final String prefix,
 			final String[] earlierPathArgs, final String[] outArgs,
-			final Runnable job, final ArgumentParser.IsetParameter parFunc) {
+			final BlockRunnable job, final ArgumentParser.IsetParameter parFunc) {
 		return InlineBlock(name, prefix, new ITIPLBlock[] {}, earlierPathArgs,
 				outArgs, job, parFunc);
 	}
@@ -125,20 +155,20 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	 *            needed input arguments
 	 * @param outputArgs
 	 *            needed output arguments
-	 * @param job
+	 * @param job the command to actually be run (type blockrunnable or configurableblockrunnable)
 	 * @param parFunc
 	 * @return TIPLBlock to be run later
 	 */
 	public static ITIPLBlock InlineBlock(final String name, final String prefix,
 			final ITIPLBlock[] earlierBlocks, final String[] earlierPathArgs,
-			final String[] outputArgs, final Runnable job,
+			final String[] outputArgs, final BlockRunnable job,
 			final ArgumentParser.IsetParameter parFunc) {
 		final ITIPLBlock cBlock = new BaseTIPLBlock(name, earlierBlocks) {
 			protected String cPrefix=prefix;
 			@Override
 			protected IBlockImage[] bGetInputNames() {
 				final IBlockImage[] inNames = new BlockImage[earlierPathArgs.length];
-				for (int i = 0; i <= earlierPathArgs.length; i++) {
+				for (int i = 0; i < earlierPathArgs.length; i++) {
 					inNames[i] = new BlockImage(earlierPathArgs[i],
 							"No description provided", true);
 				}
@@ -148,7 +178,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 			@Override
 			protected IBlockImage[] bGetOutputNames() {
 				final IBlockImage[] outNames = new BlockImage[outputArgs.length];
-				for (int i = 0; i <= outputArgs.length; i++) {
+				for (int i = 0; i < outputArgs.length; i++) {
 					outNames[i] = new BlockImage(outputArgs[i],
 							"No description provided", true);
 				}
@@ -157,12 +187,13 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 
 			@Override
 			public boolean executeBlock() {
+				if (job instanceof ConfigurableBlockRunnable) ((ConfigurableBlockRunnable) job).setup(this);
 				if (!isReady()) {
 					System.out.println("Block is not ready!");
 					return false;
 				}
 				try {
-					job.run();
+					job.run(this);
 					return true;
 				} catch (final Exception e) {
 					System.out.println("Execution of block has failed!");
@@ -187,7 +218,9 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 
 			@Override
 			public ArgumentParser setParameterBlock(final ArgumentParser p) {
-				return parFunc.setParameter(p, prefix);
+				ArgumentParser outPar = parFunc.setParameter(p, prefix);
+				
+				return outPar;
 			}
 
 		};
