@@ -133,7 +133,7 @@ public class FloatFilterTest {
 	@Test
 	public void testGatherBlocks() {
 		int startSlice=2;
-		TImgBlock<float[]> outSlice=ff.GatherBlocks(new Tuple2<D3int,List<TImgBlock<float[]>>>(new D3int(0,0,startSlice),
+		TImgBlock<float[]> outSlice=ff.GatherBlocks(new Tuple2<D3int,Iterable<TImgBlock<float[]>>>(new D3int(0,0,startSlice),
 				someSlices))._2();
 		System.out.println(String.format("i\tIn\tOut"));
 		for(int i=0;i<inSlice.length;i++) {

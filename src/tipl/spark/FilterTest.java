@@ -121,10 +121,10 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 		filtImg.setRDDName("Running Filter");
 
 		for(int ic=0;ic<iters;ic++) {
-			filtImg=filtImg.spreadMap(f.getNeighborSize().z, new PairFunction<Tuple2<D3int,List<TImgBlock<float[]>>>,D3int,TImgBlock<float[]>>() {
+			filtImg=filtImg.spreadMap(f.getNeighborSize().z, new PairFunction<Tuple2<D3int,Iterable<TImgBlock<float[]>>>,D3int,TImgBlock<float[]>>() {
 				@Override
 				public Tuple2<D3int, TImgBlock<float[]>> call(
-						Tuple2<D3int, List<TImgBlock<float[]>>> arg0)
+						Tuple2<D3int, Iterable<TImgBlock<float[]>>> arg0)
 								throws Exception {
 					long start=System.currentTimeMillis();
 					Tuple2<D3int, TImgBlock<float[]>> outVal=f.GatherBlocks(arg0);

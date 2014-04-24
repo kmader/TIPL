@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections.IteratorUtils;
+
 import scala.Tuple2;
 import tipl.formats.TImgRO;
 import tipl.tools.BaseTIPLPlugin;
@@ -81,10 +83,10 @@ extends Serializable, ITIPLPlugin {
 
 		@Override
 		public Tuple2<D3int, TImgBlock<V>> GatherBlocks(
-				Tuple2<D3int, List<TImgBlock<U>>> inTuple) {
+				Tuple2<D3int, Iterable<TImgBlock<U>>> inTuple) {
 			final D3int ns = getNeighborSize();
 
-			final List<TImgBlock<U>> inBlocks = inTuple._2();
+			final List<TImgBlock<U>> inBlocks = IteratorUtils.toList(inTuple._2().iterator());
 			final TImgBlock<U> templateBlock = inBlocks.get(0);
 			final D3int blockSize = templateBlock.getDim();
 			final BaseTIPLPluginIn.morphKernel mKernel = getKernel();
@@ -136,7 +138,7 @@ extends Serializable, ITIPLPlugin {
 	 * @return
 	 */
 	public Tuple2<D3int, TImgBlock<V>> GatherBlocks(
-			Tuple2<D3int, List<TImgBlock<U>>> inBlocks);
+			Tuple2<D3int, Iterable<TImgBlock<U>>> inBlocks);
 
 
 	/** 
@@ -149,9 +151,9 @@ extends Serializable, ITIPLPlugin {
 
 		@Override
 		public Tuple2<D3int, TImgBlock<float[]>> GatherBlocks(
-				Tuple2<D3int, List<TImgBlock<float[]>>> inTuple) {
+				Tuple2<D3int, Iterable<TImgBlock<float[]>>> inTuple) {
 			final D3int ns = getNeighborSize();
-			final List<TImgBlock<float[]>> inBlocks = inTuple._2();
+			final List<TImgBlock<float[]>> inBlocks = IteratorUtils.toList(inTuple._2().iterator());
 			final TImgBlock<float[]> templateBlock = inBlocks.get(0);
 			final D3int blockSize = templateBlock.getDim();
 			final BaseTIPLPluginIn.morphKernel mKernel = getKernel();

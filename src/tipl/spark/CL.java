@@ -52,6 +52,7 @@ import tipl.util.ITIPLPluginIn;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgBlock;
 import tipl.util.TImgTools;
+import org.apache.commons.collections.IteratorUtils;
 
 /**
  * CL performs iterative component labeling using a very simple label and merge algorithm
@@ -372,7 +373,7 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
 	 * @return
 	 */
 	protected static JavaPairRDD<D3int,OmnidirectionalMap> slicesToConnections(DTImg<long[]> labeledImage,D3int neighborSize,BaseTIPLPluginIn.morphKernel mKernel,boolean fullIteration,final TimingObject inTO) {
-		JavaPairRDD<D3int,List<TImgBlock<long[]>>> fannedImage;
+		JavaPairRDD<D3int,Iterable<TImgBlock<long[]>>> fannedImage;
 		if (fullIteration) 
 			fannedImage=labeledImage.spreadSlices(neighborSize.z).
 			groupByKey().partitionBy(SparkGlobal.getPartitioner(labeledImage.getDim()));
@@ -384,7 +385,7 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
 		 * this is not yet implemented
 		 */
 		GetConnectedComponents gccObj=new GetConnectedComponents(inTO,mKernel,neighborSize);
-		JavaPairRDD<D3int,OmnidirectionalMap> outComponents=fannedImage.map(gccObj);
+		JavaPairRDD<D3int,OmnidirectionalMap> outComponents=fannedImage.mapToPair(gccObj);
 		return outComponents;
 	}
 	/**
@@ -564,7 +565,7 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
 	 * @author mader
 	 *
 	 */
-	static public class GetConnectedComponents extends PairFunction<Tuple2<D3int, List<TImgBlock<long[]>>>,D3int,OmnidirectionalMap> {
+	static public class GetConnectedComponents implements PairFunction<Tuple2<D3int, Iterable<TImgBlock<long[]>>>,D3int,OmnidirectionalMap> {
 		final protected BaseTIPLPluginIn.morphKernel mKernel;
 		final protected D3int ns;
 		public final TimingObject to;
@@ -579,11 +580,11 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
 		public BaseTIPLPluginIn.morphKernel getMKernel() {return mKernel;}
 		
 		@Override
-		public Tuple2<D3int,OmnidirectionalMap> call(Tuple2<D3int, List<TImgBlock<long[]>>> inTuple) {
+		public Tuple2<D3int,OmnidirectionalMap> call(Tuple2<D3int, Iterable<TImgBlock<long[]>>> inTuple) {
 			final long start=System.currentTimeMillis();
 			final D3int ns = getNeighborSize();
 			
-			final List<TImgBlock<long[]>> inBlocks = inTuple._2();
+			final List<TImgBlock<long[]>> inBlocks = IteratorUtils.toList(inTuple._2().iterator());
 			final TImgBlock<long[]> templateBlock = inBlocks.get(0);
 			final D3int blockSize = templateBlock.getDim();
 			final BaseTIPLPluginIn.morphKernel mKernel = getMKernel();

@@ -87,7 +87,7 @@ public class IOTests {
 		}
 		int blocks=sliceCount/10;
 		if (blocks<1) blocks=1;
-		return jsc.parallelize(l,blocks).map(new PairFunction<Integer,Integer,int[]>() {
+		return jsc.parallelize(l,blocks).mapToPair(new PairFunction<Integer,Integer,int[]>() {
 			@Override
 			public Tuple2<Integer,int[]> call(Integer sliceNum) {
 				final int[] cSlice=(int[]) TImgTools.ReadTImgSlice(imgName,sliceNum.intValue(),2);
@@ -96,7 +96,7 @@ public class IOTests {
 		});
 	}
 	public static JavaPairRDD<Integer,int[]> SpreadImage(final JavaPairRDD<Integer,int[]> inImg,final int windowSize) {
-		return inImg.flatMap(
+		return inImg.flatMapToPair(
 				  new PairFlatMapFunction<Tuple2<Integer,int[]>, Integer,int[]>() {
 				    public Iterable<Tuple2<Integer,int[]>> call(Tuple2<Integer,int[]> inD) {
 				    	List<Tuple2<Integer,int[]>> outList = new ArrayList<Tuple2<Integer,int[]>>(2*windowSize+1);
@@ -111,14 +111,17 @@ public class IOTests {
 	}
 	
 	@SuppressWarnings("serial")
-	public static JavaPairRDD<Integer,int[]> FilterImage(final JavaPairRDD<Integer,List<int[]>> inImg) {
-		return inImg.map(
-				new PairFunction<Tuple2<Integer,List<int[]>>,Integer,int[]>() {
+	public static JavaPairRDD<Integer,int[]> FilterImage(final JavaPairRDD<Integer,Iterable<int[]>> inImg) {
+		return inImg.mapToPair(
+				new PairFunction<Tuple2<Integer,Iterable<int[]>>,Integer,int[]>() {
 			@Override
-			public Tuple2<Integer, int[]> call(Tuple2<Integer, List<int[]>> groupImg)
+			public Tuple2<Integer, int[]> call(Tuple2<Integer, Iterable<int[]>> groupImg)
 					throws Exception {
-				int[] out=new int[groupImg._2().get(0).length];
-				final int sliceCnt=groupImg._2().size();
+				Iterable<int[]> inBlocks=groupImg._2();
+				int iterLength=0;
+				for(int[] cBlock : inBlocks) iterLength++;
+				int[] out=new int[iterLength];
+				final int sliceCnt=iterLength;
 				for(int[] cImg : groupImg._2()) for(int i=0;i<out.length;i++) out[i]+=cImg[i]/sliceCnt;
 				return new Tuple2<Integer,int[]>(groupImg._1(),out);
 			}

@@ -82,7 +82,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 * @param <W>
 	 *            the type of the image as an array
 	 */
-	protected static class ReadSlice<W extends Cloneable> extends
+	protected static class ReadSlice<W extends Cloneable> implements
 			PairFunction<Integer, D3int, TImgBlock<W>> {
 		protected final String imgPath;
 		protected final int imgType;
@@ -133,7 +133,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 * @param <W>
 	 *            the type of the image as an array
 	 */
-	protected static class ReadSlicePromise<W extends Cloneable> extends
+	protected static class ReadSlicePromise<W extends Cloneable> implements
 			PairFunction<Integer, D3int, TImgBlock<W>> {
 		protected final String imgPath;
 		protected final int imgType;
@@ -195,7 +195,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		 **/
 		final int partitionCount = SparkGlobal.calculatePartitions(cImg.getDim().z);
 		return jsc.parallelize(l, partitionCount)
-				.map(new ReadSlicePromise<U>(imgName, imgType, cImg.getPos(), cImg
+				.mapToPair(new ReadSlicePromise<U>(imgName, imgType, cImg.getPos(), cImg
 						.getDim()));
 	}
 	/**
@@ -219,7 +219,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 			l.add(new int[] {i,maxSlice});
 		}
 		
-		return jsc.parallelize(l, partitionCount).flatMap(new PairFlatMapFunction<int[],D3int,TImgBlock<U>>() {
+		return jsc.parallelize(l, partitionCount).flatMapToPair(new PairFlatMapFunction<int[],D3int,TImgBlock<U>>() {
 
 			@Override
 			public Iterable<Tuple2<D3int, TImgBlock<U>>> call(int[] sliceRange)
@@ -350,7 +350,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		final JavaRDD<Tuple2<D3int,TImgBlock<Fc>>> newImage=jsc.objectFile(imgName);
 		final Tuple2<D3int,TImgBlock<Fc>> cTuple=newImage.first();
 		final TImgBlock<Fc> cBlock=cTuple._2();
-		JavaPairRDD<D3int,TImgBlock<Fc>> baseImg=newImage.map(new PairFunction<Tuple2<D3int,TImgBlock<Fc>>,D3int,TImgBlock<Fc>>() {
+		JavaPairRDD<D3int,TImgBlock<Fc>> baseImg=newImage.mapToPair(new PairFunction<Tuple2<D3int,TImgBlock<Fc>>,D3int,TImgBlock<Fc>>() {
 			@Override
 			public Tuple2<D3int, TImgBlock<Fc>> call(final Tuple2<D3int,TImgBlock<Fc>> arg0)
 					throws Exception {
@@ -600,7 +600,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	public <U extends Cloneable> DTImg<U> map(
 			final PairFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<U>> mapFunc,
 			final int outType) {
-		return DTImg.<U>WrapRDD(this, this.baseImg.map(mapFunc).partitionBy(SparkGlobal.getPartitioner(getDim())), outType);
+		return DTImg.<U>WrapRDD(this, this.baseImg.mapToPair(mapFunc).partitionBy(SparkGlobal.getPartitioner(getDim())), outType);
 	}
 	/**
 	 * passes basically directly through to the JavaPair RDD but it wraps
@@ -694,41 +694,16 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 */
 	public <U extends Cloneable> DTImg<U> spreadMap(
 			final int spreadWidth,
-			final PairFunction<Tuple2<D3int, List<TImgBlock<T>>>, D3int, TImgBlock<U>> mapFunc,
+			final PairFunction<Tuple2<D3int, Iterable<TImgBlock<T>>>, D3int, TImgBlock<U>> mapFunc,
 			final int outType) {
 		
-		JavaPairRDD<D3int, List<TImgBlock<T>>> joinImg;
+		JavaPairRDD<D3int, Iterable<TImgBlock<T>>> joinImg;
 		joinImg=this.spreadSlices(spreadWidth).
 				groupByKey(getPartitions()).
 				partitionBy(SparkGlobal.getPartitioner(getDim()));
-		/**
-		final JavaPairRDD<D3int,TImgBlock<T>> savedBase=getBaseImg();
-		final D3int imSize=getDim();
-		final D3int ipos=getPos();
-		savedBase.context().broadcast(savedBase);
-		joinImg=savedBase.map(new PairFunction<Tuple2<D3int, TImgBlock<T>>, D3int, List<TImgBlock<T>>>() {
-		
-			@Override
-			public Tuple2<D3int, List<TImgBlock<T>>> call(
-					Tuple2<D3int, TImgBlock<T>> arg0) throws Exception {
-				List<TImgBlock<T>> outList=new ArrayList<TImgBlock<T>>(2*spreadWidth+1);
-				outList.add(arg0._2());
-				
-				for(int i=-spreadWidth;i<=spreadWidth;i++) {
-					if(i!=0) {
-						D3int lookupPos=new D3int(ipos.x,ipos.y,ipos.z+i);
-						List<TImgBlock<T>> tempList=savedBase.lookup(lookupPos);
-						if(TIPLGlobal.getDebug()) System.out.println("Lookup:"+lookupPos+", "+tempList.size());
-						outList.addAll(tempList);
-					}
-				}
-				return new Tuple2<D3int, List<TImgBlock<T>>>(arg0._1,outList);
-			}
-			
-		});
-		**/
+
 		return DTImg.<U>WrapRDD(this, joinImg.
-				map(mapFunc), outType); 
+				mapToPair(mapFunc), outType); 
 	}
 
 	
@@ -816,19 +791,19 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 
 	// Here are the specialty functions for DTImages
 	public JavaPairRDD<D3int,List<TImgBlock<T>>>  spreadSlices3(int windSize) {
-		JavaPairRDD<D3int, TImgBlock<T>> down1=baseImg.map(new BlockShifter(new D3int(0,0,-1)));
-		JavaPairRDD<D3int, TImgBlock<T>> up1=baseImg.map(new BlockShifter(new D3int(0,0,1)));
-		JavaPairRDD<D3int,Tuple3<List<TImgBlock<T>>,List<TImgBlock<T>>,List<TImgBlock<T>>>> joinImg=baseImg.cogroup(down1, up1, SparkGlobal.getPartitioner(getDim()));
-		return joinImg.mapValues(new Function<Tuple3<List<TImgBlock<T>>,List<TImgBlock<T>>,List<TImgBlock<T>>>,List<TImgBlock<T>>>() {
+		JavaPairRDD<D3int, TImgBlock<T>> down1=baseImg.mapToPair(new BlockShifter(new D3int(0,0,-1)));
+		JavaPairRDD<D3int, TImgBlock<T>> up1=baseImg.mapToPair(new BlockShifter(new D3int(0,0,1)));
+		JavaPairRDD<D3int,Tuple3<Iterable<TImgBlock<T>>,Iterable<TImgBlock<T>>,Iterable<TImgBlock<T>>>> joinImg=baseImg.cogroup(down1, up1, SparkGlobal.getPartitioner(getDim()));
+		return joinImg.mapValues(new Function<Tuple3<Iterable<TImgBlock<T>>,Iterable<TImgBlock<T>>,Iterable<TImgBlock<T>>>,List<TImgBlock<T>>>() {
 
 			@Override
 			public List<TImgBlock<T>> call(
-					Tuple3<List<TImgBlock<T>>, List<TImgBlock<T>>, List<TImgBlock<T>>> arg0)
+					Tuple3<Iterable<TImgBlock<T>>, Iterable<TImgBlock<T>>, Iterable<TImgBlock<T>>> arg0)
 					throws Exception {
 				// TODO Auto-generated method stub
-				List<TImgBlock<T>> alist=arg0._1();
-				List<TImgBlock<T>> blist=arg0._2();
-				List<TImgBlock<T>> clist=arg0._3();
+				List<TImgBlock<T>> alist=org.apache.commons.collections.IteratorUtils.toList(arg0._1().iterator());
+				List<TImgBlock<T>> blist=org.apache.commons.collections.IteratorUtils.toList(arg0._2().iterator());
+				List<TImgBlock<T>> clist=org.apache.commons.collections.IteratorUtils.toList(arg0._3().iterator());
 				List<TImgBlock<T>> outList=new ArrayList(alist.size()+blist.size()+clist.size());
 				outList.addAll(alist);
 				outList.addAll(blist);
@@ -845,7 +820,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 *
 	 * @param <T>
 	 */
-	protected static class BlockShifter<T extends Cloneable> extends PairFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<T>> {
+	protected static class BlockShifter<T extends Cloneable> implements PairFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<T>> {
 		protected final D3int inOffset;
 		// Since we can't have constructors here (probably should make it into a subclass)
 		public BlockShifter(D3int inOffset){
@@ -873,7 +848,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 * @return
 	 */
 	public JavaPairRDD<D3int, TImgBlock<T>> spreadBlocks(final D3int[] offsetList) {
-		return baseImg.flatMap(new BlockSpreader(offsetList,getDim()));
+		return baseImg.flatMapToPair(new BlockSpreader(offsetList,getDim()));
 	}
 	/**
 	 * Spread out image over slices
@@ -883,7 +858,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 * @return
 	 */
 	protected JavaPairRDD<D3int, TImgBlock<T>> spreadSlices(final int windowSize) {
-		return baseImg.flatMap(BlockSpreader.<T>SpreadSlices(windowSize,getDim()));
+		return baseImg.flatMapToPair(BlockSpreader.<T>SpreadSlices(windowSize,getDim()));
 		
 	}
 	/** 
@@ -892,7 +867,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 *
 	 * @param <T>
 	 */
-	protected static class BlockSpreader<T extends Cloneable> extends PairFlatMapFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<T>> {
+	protected static class BlockSpreader<T extends Cloneable> implements PairFlatMapFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<T>> {
 		
 		protected final D3int[] inOffsetList;
 		
