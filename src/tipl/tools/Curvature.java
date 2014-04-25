@@ -921,7 +921,7 @@ public class Curvature extends BaseTIPLPluginIO {
 		}
 
 	}
-
+	
 	/**
 	 * Object to divide the thread work into supportCores equal parts, default
 	 * is z-slices, customized to use the ranges specified by the fancy
@@ -929,38 +929,7 @@ public class Curvature extends BaseTIPLPluginIO {
 	 */
 	@Override
 	public Object divideThreadWork(final int cThread) {
-		final int minSlice = 0;
-		final int maxSlice = data3D.depth - 1;
-		int myNeededCores = neededCores();
-
-		if (3 * neededCores() > (maxSlice - minSlice)) {
-			myNeededCores = (int) Math.floor((maxSlice - minSlice) / 3.0); // At least 3 slices per
-			// core and definitely
-			// no overlap
-			if (myNeededCores < 1)
-				myNeededCores = 1;
-			if (TIPLGlobal.getDebug()) System.out.println("Updating Number of Needed Cores = "+myNeededCores);
-			
-		}
-			
-		if (cThread >= myNeededCores) return null;
-		final int range = (maxSlice - minSlice) / myNeededCores;
-
-		int startSlice=-1;
-		int endSlice = -1;
-
-		for (int i = 0; i <= cThread; i++) {
-			startSlice = endSlice+1; // must overlap since i<endSlice is always
-									// used, endslice is never run
-			endSlice = startSlice + range;
-		}
-		if (cThread == (neededCores() - 1))
-			endSlice = maxSlice;
-		
-		if(endSlice>maxSlice) endSlice=maxSlice;
-		
-
-		return (new int[] { startSlice, endSlice });
+		return BaseTIPLPluginIn.sliceProcessWork(cThread, neededCores(), 0, data3D.depth-1, 3);
 	}
 
 	@Override

@@ -206,14 +206,12 @@ public class VFilterScale extends FilterScale {
 			cachedSlices[iz - lowz] = null;
 
 		for (int oz = bSlice; oz < tSlice; oz++) {
-			// Object curSlice=null;
 			boolean[] blSlice = null;
 			char[] chSlice = null;
 			int[] itSlice = null;
 			short[] shSlice = null;
 			float[] ftSlice = null;
-			// if (zvalid) {
-			// }
+
 
 			// Slices to scan in the input image (should be preloaded)
 			// This code is still pretty crappy because if there are overlapping
@@ -227,14 +225,8 @@ public class VFilterScale extends FilterScale {
 			tiuppz = (int) Math.ceil(iposz + dnZ);
 			tilowz = max(lowz, tilowz);
 			tiuppz = min(tiuppz, uppz);
-			/*
-			 * cachedSlices=new Object[tiuppz-tilowz]; for(int iz=tilowz;
-			 * iz<tiuppz; iz++) { try {
-			 * cachedSlices[iz-tilowz]=_inputAim.PrivateSliceAccess(iz); } catch
-			 * (Exception e) {
-			 * System.err.println("Error Reading Slice!!! ["+oz+"]");
-			 * e.printStackTrace(); } }
-			 */
+
+			
 			for (int iz = lowz; iz < uppz; iz++) {
 				if ((iz >= tilowz) && (iz < tiuppz)) { // a slice we want to
 														// cache
@@ -414,26 +406,7 @@ public class VFilterScale extends FilterScale {
 
 							for (int iy = max(lowy, tilowy); iy < min(tiuppy,
 									uppy); iy++) {
-								// (iz*dim.y + iy)*dim.x + max(lowx,tilowx);
-								/*
-								 * if (oz>lastSlice) {
-								 * System.out.println("Slice:("
-								 * +max(lowz,tilowz)+
-								 * "-"+min(tiuppz,uppz)+")"+oz+
-								 * ", cop-in_sr:"+String
-								 * .format("%.2f",((max(lowz,tilowz)*dim.y +
-								 * iy)*dim.x +
-								 * max(lowx,tilowx)+0.0)/1e6)+" MVx, _sp:"
-								 * +String
-								 * .format("%.2f",((min(tiuppz,uppz)*dim.y +
-								 * iy)*dim.x +
-								 * max(lowx,tilowx)+0.0)/1e6)+" MVx, out:"
-								 * +String
-								 * .format("%.2f",(ooff+0.0)/1e6)+" MVx, "
-								 * +String
-								 * .format("%.2f",(ooff*100.0)/inoff)+" %");
-								 * lastSlice=oz; }
-								 */
+
 								int sOff2 = (iy) * dim.x + max(lowx, tilowx); // Offset
 																				// in
 																				// the

@@ -667,6 +667,61 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
 				.println("THIS IS AN pseudo-ABSTRACT FUNCTION AND DOES NOTHING, PLEASE EITHER TURN OFF MULTICORE SUPPORT OR REWRITE YOUR PLUGIN!!!!");
 		return; // nothing to do
 	}
+	/**
+	 * 
+	 * @param availableCores
+	 * @param minSlice
+	 * @param maxSlice
+	 * @param minSlicesPerCore
+	 * @return
+	 */
+	public static int maxUtilizedCores(final  int availableCores,final int minSlice,final int maxSlice, final int minSlicesPerCore) {
+		int myNeededCores = availableCores;
+
+		if (minSlicesPerCore * availableCores > (maxSlice - minSlice)) {
+			myNeededCores = (int) Math.floor((maxSlice - minSlice) / (minSlicesPerCore*1.0)); // At least 3 slices per
+			// core and definitely
+			// no overlap
+			if (myNeededCores < 1)
+				myNeededCores = 1;
+			if (TIPLGlobal.getDebug()) System.out.println("Updating Number of Needed Cores = "+myNeededCores);
+			
+		}
+		return myNeededCores;
+	}
+	/**
+	 * Slice-based division of work
+	 * @param curCore
+	 * @param availableCores
+	 * @param minSlice
+	 * @param maxSlice
+	 * @return
+	 */
+	public static int[] sliceProcessWork(final int curCore,final  int availableCores,final int minSlice,final int maxSlice, final int minSlicesPerCore) {
+
+			int myNeededCores = maxUtilizedCores(availableCores,minSlice,maxSlice,minSlicesPerCore);
+				
+			if (curCore >= myNeededCores) return null;
+			final int range = (int) Math.floor((maxSlice - minSlice) / (1.0*myNeededCores));
+
+			int startSlice=-1;
+			int endSlice = minSlice;
+
+			for (int i = 0; i <= curCore; i++) {
+				startSlice = endSlice; // must overlap since i<endSlice is always
+									   // used, endslice is never run
+				endSlice = startSlice + range;
+			}
+			if (curCore == (myNeededCores - 1))
+				endSlice = maxSlice;
+			
+			if(startSlice>maxSlice) return null;
+			if(endSlice>maxSlice) endSlice=maxSlice;
+			
+
+			return (new int[] { startSlice, endSlice });
+		
+	}
 
 
 	/**

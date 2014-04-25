@@ -6,6 +6,7 @@ import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
@@ -234,7 +235,9 @@ public class FilterScale extends BaseTIPLPluginMult {
 	public FilterScale(final TImgRO inAim) {
 		LoadImages(new TImgRO[] { inAim });
 	}
-
+	/**
+	 * calculate the dimensions of the output volume
+	 */
 	protected void CalcOutDim() {
 
 		final int nx = (int) Math.round((float) (upX + 0.0) / (dnX + 0.0)
@@ -262,6 +265,13 @@ public class FilterScale extends BaseTIPLPluginMult {
 				(int) Math.round((upY + 0.0) / (dnY + 0.0) * ipos.y),
 				(int) Math.round((upZ + 0.0) / (dnZ + 0.0) * ipos.z)); // rescale
 																		// outpos
+
+
+	}
+	/**
+	 * actually allocated the new dimensions
+	 */
+	protected void AllocateDim() {
 		//
 		if (oimageType == -1)
 			oimageType = imageType;
@@ -290,32 +300,19 @@ public class FilterScale extends BaseTIPLPluginMult {
 		procLog += "New output: dim-" + odim + ", pos:" + opos + ", "
 				+ StrPctRatio(odim.prod(), dim.prod()) + " VolRed, ImgT:"
 				+ imageType + "\n";
-
 	}
-
+	
+	@Override
+	public int neededCores() {
+		return BaseTIPLPluginIn.maxUtilizedCores(TIPLGlobal.availableCores, olowz, ouppz, 1);
+	}
 	/**
 	 * Object to divide the thread work into supportCores equal parts, default
 	 * is z-slices
 	 */
 	@Override
 	public Object divideThreadWork(final int cThread, final int maxCores) {
-		final int minSlice = olowz;
-		final int maxSlice = ouppz;
-		final int range = (maxSlice - minSlice) / maxCores;
-
-		int startSlice = minSlice;
-		int endSlice = startSlice + range;
-
-		for (int i = 0; i < cThread; i++) {
-			startSlice = endSlice;
-			endSlice = startSlice + range;
-		}
-
-		if (cThread == (maxCores - 1))
-			endSlice = maxSlice;
-		if (cThread >= maxCores)
-			return null;
-		return (new int[] { startSlice, endSlice });
+		return BaseTIPLPluginIn.sliceProcessWork(cThread, neededCores(), olowz, ouppz, 1);
 	}
 
 	@Override
@@ -427,6 +424,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 		elSize = inImg.getElSize();
 		ipos = inImg.getPos();
 		super.LoadImages(inImages);
+		CalcOutDim();
 	}
 
 	@Override
@@ -447,6 +445,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 				+ upY + "," + upZ + "), Downscale (" + dnX + "," + dnY + ","
 				+ dnZ + ")");
 		CalcOutDim();
+		AllocateDim();
 		runMulticore();
 		runCount++;
 		String filterNameOut = "NearestNeighbor";
@@ -503,15 +502,6 @@ public class FilterScale extends BaseTIPLPluginMult {
 
 						inoff = ((int) iposz * dim.y + (int) iposy) * dim.x
 								+ (int) iposx;
-						/*
-						 * if (oz>lastSlice) {
-						 * System.out.println("Slice:"+oz+", cop-in:"
-						 * +String.format
-						 * ("%.2f",(inoff+0.0)/1e6)+" MVx, out:"+String
-						 * .format("%.2f"
-						 * ,(ooff+0.0)/1e6)+" MVx, "+String.format(
-						 * "%.2f",(ooff*100.0)/inoff)+" %"); lastSlice=oz; }
-						 */
 
 						double dcVox = 0;
 						switch (imageType) {
@@ -566,25 +556,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 									uppy); iy++) {
 								inoff = (iz * dim.y + iy) * dim.x
 										+ max(lowx, tilowx);
-								/*
-								 * if (oz>lastSlice) {
-								 * System.out.println("Slice:("
-								 * +max(lowz,tilowz)+
-								 * "-"+min(tiuppz,uppz)+")"+oz+
-								 * ", cop-in_sr:"+String
-								 * .format("%.2f",((max(lowz,tilowz)*dim.y +
-								 * iy)*dim.x +
-								 * max(lowx,tilowx)+0.0)/1e6)+" MVx, _sp:"
-								 * +String
-								 * .format("%.2f",((min(tiuppz,uppz)*dim.y +
-								 * iy)*dim.x +
-								 * max(lowx,tilowx)+0.0)/1e6)+" MVx, out:"
-								 * +String
-								 * .format("%.2f",(ooff+0.0)/1e6)+" MVx, "
-								 * +String
-								 * .format("%.2f",(ooff*100.0)/inoff)+" %");
-								 * lastSlice=oz; }
-								 */
+
 								for (int ix = max(lowx, tilowx); ix < min(
 										tiuppx, uppx); ix++, inoff++) {
 									double dcVox = 0;
@@ -660,7 +632,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 		logAdd += "\n InMean:" + String.format("%.2f", inSum / inCnt)
 				+ ", OutMean:" + String.format("%.2f", outSum / outCnt) + ", "
 				+ String.format("%.2f", outCnt / 1e6) + " Mvx, "
-				+ String.format("%.2f", inCnt / 1e9) + " Gop, "
+				+ String.format("%.2f", inCnt / 1e3) + " Kop, "
 				+ String.format("%.2f", inCnt / outCnt) + " Op/Vx";
 		System.out.println(logAdd);
 		return true;
@@ -803,7 +775,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 		default:
 			throw new IllegalArgumentException("Filter type:"+filterType+" does not exist!");
 		}
-
+		CalcOutDim();
 		return p;
 
 	}

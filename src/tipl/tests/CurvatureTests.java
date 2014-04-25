@@ -54,14 +54,7 @@ public class CurvatureTests {
 		final TImgRO testImg = TestPosFunctions.wrapIt(8,
 				new TestPosFunctions.DiagonalPlaneAndDotsFunction());
 		ITIPLPluginIO cv = makeCurvature(testImg);
-		BaseTIPLPluginIn dv=((BaseTIPLPluginIn) cv);
-		for(int i=0;i<dv.neededCores();i++) {
-			Object inWork=dv.divideThreadWork(i);
-			if(inWork !=null) {
-				int[] cWork=(int[]) inWork;
-				System.out.println("Core:"+i+" ::"+testImg.getDim()+"="+cWork[0]+", "+cWork[0]);
-			}
-		}
+		
 		
 		//cv.execute();
 	}
@@ -73,7 +66,7 @@ public class CurvatureTests {
 			final TImgRO testImg = TestPosFunctions.wrapIt(coreCount,
 					new TestPosFunctions.DiagonalPlaneAndDotsFunction());
 			ITIPLPluginIO cv = makeCurvature(testImg);
-			TIPLTestingLibrary.testDivideWork(((BaseTIPLPluginIn) cv), testImg.getDim().z);
+			TIPLTestingLibrary.testDivideWork(((BaseTIPLPluginIn) cv),0, testImg.getDim().z-1,true);
 		}
 		
 		

@@ -150,19 +150,28 @@ public abstract class TIPLTestingLibrary {
 	 * @param pluginToTest
 	 * @param maxSlice
 	 */
-	public static void testDivideWork(BaseTIPLPluginIn pluginToTest,int maxSlice) {
-		System.out.println("Testing that work is divided into non-overlapping chunks between 1 and the last slice for:"+pluginToTest);
+	public static void testDivideWork(final BaseTIPLPluginIn pluginToTest,final int minSlice,final int maxSlice,final boolean checkOverlap) {
+		System.out.println("Testing that work is divided into non-overlapping chunks between "+minSlice+" and "+maxSlice+" for:"+pluginToTest);
 		
-		int lastSlice=-1;
+		int lastSlice=minSlice-1;
 		for(int i=0;i<pluginToTest.neededCores();i++) {
 			Object inWork=pluginToTest.divideThreadWork(i);
 			if(inWork !=null) { // if it is null there is no work to do
 				int[] cWork=(int[]) inWork;
-				System.out.println(pluginToTest+"Core:"+i+" :: ("+lastSlice+"-"+maxSlice+") => W<"+cWork[0]+", "+cWork[1]+">");
-
-				assertTrue(cWork[0]>lastSlice);
+				System.out.println(pluginToTest+": Core:"+i+" : ("+lastSlice+"-"+maxSlice+") => W<"+cWork[0]+", "+cWork[1]+">");
+				if (i==0) assertEquals(cWork[0],minSlice);
+				
+				if (checkOverlap) {
+					System.out.println("Checking Overlap");
+					assertTrue(cWork[0]>lastSlice);
+					assertTrue(cWork[1]>lastSlice);
+				} else {
+					assertTrue(cWork[0]>minSlice);
+					assertTrue(cWork[1]>minSlice);
+				}
+				assertTrue(cWork[1]>=cWork[0]);
+				System.out.println("Checking Bounds");
 				assertTrue(cWork[0]<=maxSlice);
-				assertTrue(cWork[1]>lastSlice);
 				assertTrue(cWork[1]<=maxSlice);
 				lastSlice=cWork[1];
 			} else {
@@ -170,6 +179,8 @@ public abstract class TIPLTestingLibrary {
 			}
 			
 		}
+		// make sure the entire dataset is spanned
+		assertEquals(lastSlice,maxSlice);
 		
 	}
 
