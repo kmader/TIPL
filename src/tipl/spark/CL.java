@@ -3,7 +3,9 @@
  */
 package tipl.spark;
 
-import static org.junit.Assert.assertEquals;
+import static ch.lambdaj.Lambda.DESCENDING;
+import static ch.lambdaj.Lambda.on;
+import static ch.lambdaj.Lambda.sort;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -17,42 +19,31 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.collections.IteratorUtils;
 import org.apache.spark.Accumulator;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
-import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.broadcast.Broadcast;
 
 import scala.Tuple2;
-import static ch.lambdaj.Lambda.on;
-import static ch.lambdaj.Lambda.sort;
-import static ch.lambdaj.Lambda.DESCENDING;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.TImgRO.CanExport;
-import tipl.spark.NeighborhoodPlugin.GatherBasedPlugin;
 import tipl.tests.TestPosFunctions;
-import tipl.tools.BaseTIPLPlugin;
 import tipl.tools.BaseTIPLPluginIO;
 import tipl.tools.BaseTIPLPluginIn;
 import tipl.tools.ComponentLabel;
-import tipl.tools.BaseTIPLPluginIn.filterKernel;
-import tipl.tools.BaseTIPLPluginIn.morphKernel;
-import tipl.tools.ComponentLabel.CLFilter;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.D4int;
 import tipl.util.ITIPLPlugin;
-import tipl.util.ITIPLPluginIn;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgBlock;
 import tipl.util.TImgTools;
-import org.apache.commons.collections.IteratorUtils;
 
 /**
  * CL performs iterative component labeling using a very simple label and merge algorithm

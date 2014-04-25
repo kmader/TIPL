@@ -79,7 +79,7 @@ public class AnalyzePhase extends BaseTIPLBlock {
 	public String phaseName;
 	// public double sphKernelRadius;
 	public boolean writeShapeTensor;
-	ITIPLPluginIO CL = new ComponentLabel();
+	ITIPLPluginIO CL = TIPLPluginManager.createFirstPluginIO("ComponentLabel");
 	public final IBlockImage[] inImages = new IBlockImage[] {
 			new BlockImage("segmented", "segmented.tif", "Segmented image",
 					true),

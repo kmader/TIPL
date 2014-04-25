@@ -2,14 +2,22 @@ package tipl.tests;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import tipl.formats.TImgRO;
 import tipl.tools.ComponentLabel;
 import tipl.util.D3float;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.ITIPLPluginIn;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
+import tipl.util.TIPLPluginManager.PluginInfo;
 
 /**
  * Test the component labeling class using a synthetically created image
@@ -17,7 +25,13 @@ import tipl.util.TImgTools;
  * @author mader
  * 
  */
+@RunWith(value=Parameterized.class)
 public class CLTest {
+	@Parameters
+	public static Collection<PluginInfo[]> getPlugins() {
+		List<PluginInfo> possibleClasses = TIPLPluginManager.getPluginsNamed("ComponentLabel");
+		return TIPLTestingLibrary.wrapCollection(possibleClasses);
+	}
 	protected static void checkVals(final ITIPLPluginIn CL, final int maxLabel,
 			final double avgCount) {
 		System.out.println("Maximum Label of CL Image:" + getMax(CL)
@@ -34,10 +48,15 @@ public class CLTest {
 		return ((Integer) iP.getInfo("maxlabel")).intValue();
 	}
 
-	protected static ITIPLPluginIO makeCL(final TImgRO sImg) {
-		final ITIPLPluginIO CL = new ComponentLabel();
+	protected ITIPLPluginIO makeCL(final TImgRO sImg) {
+		final ITIPLPluginIO CL = TIPLPluginManager.getPluginIO(pluginId);
 		CL.LoadImages(new TImgRO[] { sImg });
 		return CL;
+	}
+	final protected PluginInfo pluginId;
+	public CLTest(final PluginInfo pluginToUse) {
+		System.out.println("Using Plugin:"+pluginToUse);
+		pluginId=pluginToUse;
 	}
 
 	@Test
@@ -130,7 +149,7 @@ public class CLTest {
 		checkVals(CL, 0, 0);
 
 	}
-	
+
 	/**
 	 * Test spherical radius.
 	 */
@@ -210,6 +229,6 @@ public class CLTest {
 		CL.execute();
 		checkVals(CL, 1, 10);
 	}
-	 
+
 
 }

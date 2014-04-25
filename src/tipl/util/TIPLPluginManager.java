@@ -125,7 +125,7 @@ public class TIPLPluginManager {
 				System.out.println(bName + " loaded as: " + dBlock);
 				pluginList.put(bName, dBlock);
 			} catch (InstantiationException e) {
-				System.err.println("Plugin: "+bName.pluginType()+" "+bName.desc()+" could not be instanciated!");
+				System.err.println("Plugin: "+bName.pluginType()+" "+bName.desc()+" could not be loaded or instantiated by plugin manager!");
 			}
 		}
 		
@@ -198,7 +198,25 @@ public class TIPLPluginManager {
 	public static ITIPLPluginIO createBestPluginIO(final String pluginType,final TImgRO[] inImages) {
 		return getPluginIO(getBestPlugin(pluginType,inImages));
 	}
-
+	
+	/**
+	 * get the fastest (or first) suited plugin for the given images
+	 * @param pluginType name of the plugin
+	 * @return an instance of the plugin as an io plugin
+	 */
+	public static ITIPLPluginIO createFirstPluginIO(final String pluginType) {	
+		return getPluginIO(getFastestPlugin(getPluginsNamed(pluginType)));
+	}
+	/**
+	 * get the fastest (or first) suited plugin for the given images
+	 * @param pluginType name of the plugin
+	 * @return an instance of the plugin as  plugin
+	 */
+	public static ITIPLPlugin createFirstPlugin(final String pluginType) {	
+		return getPlugin(getFastestPlugin(getPluginsNamed(pluginType)));
+	}
+	
+	
 	/**
 	 * Converts a TIPLPlugin into a runnable to it can be given to a thread (this allows run to be permanently taken out of plugin function)
 	 * @param inPlug the plugin
