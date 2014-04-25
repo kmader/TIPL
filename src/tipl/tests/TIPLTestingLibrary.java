@@ -4,13 +4,16 @@
 package tipl.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import tipl.formats.TImgRO;
+import tipl.tools.BaseTIPLPluginIn;
 import tipl.util.D3int;
+import tipl.util.ITIPLPluginIO;
 
 /**
  * @author mader
@@ -141,6 +144,33 @@ public abstract class TIPLTestingLibrary {
 			if (cVal)
 				i++;
 		return i;
+	}
+	/**
+	 * A function to test that divideThreadWork (a function to be overridden in BaseTIPLPluginIn) is dividing work properly
+	 * @param pluginToTest
+	 * @param maxSlice
+	 */
+	public static void testDivideWork(BaseTIPLPluginIn pluginToTest,int maxSlice) {
+		System.out.println("Testing that work is divided into non-overlapping chunks between 1 and the last slice for:"+pluginToTest);
+		
+		int lastSlice=-1;
+		for(int i=0;i<pluginToTest.neededCores();i++) {
+			Object inWork=pluginToTest.divideThreadWork(i);
+			if(inWork !=null) { // if it is null there is no work to do
+				int[] cWork=(int[]) inWork;
+				System.out.println(pluginToTest+"Core:"+i+" :: ("+lastSlice+"-"+maxSlice+") => W<"+cWork[0]+", "+cWork[1]+">");
+
+				assertTrue(cWork[0]>lastSlice);
+				assertTrue(cWork[0]<=maxSlice);
+				assertTrue(cWork[1]>lastSlice);
+				assertTrue(cWork[1]<=maxSlice);
+				lastSlice=cWork[1];
+			} else {
+				break;
+			}
+			
+		}
+		
 	}
 
 }

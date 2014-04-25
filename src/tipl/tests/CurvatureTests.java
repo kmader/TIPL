@@ -1,6 +1,7 @@
 package tipl.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
 import java.util.List;
@@ -11,10 +12,12 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import tipl.formats.TImgRO;
+import tipl.tools.BaseTIPLPluginIn;
 import tipl.tools.ComponentLabel;
 import tipl.util.D3float;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.ITIPLPluginIn;
+import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 import tipl.util.TIPLPluginManager.PluginInfo;
@@ -41,6 +44,7 @@ public class CurvatureTests {
 	
 	final protected PluginInfo pluginId;
 	public CurvatureTests(final PluginInfo pluginToUse) {
+		TIPLGlobal.setDebug(TIPLGlobal.DEBUG_ALL);
 		System.out.println("Using Plugin:"+pluginToUse);
 		pluginId=pluginToUse;
 	}
@@ -50,13 +54,35 @@ public class CurvatureTests {
 		final TImgRO testImg = TestPosFunctions.wrapIt(8,
 				new TestPosFunctions.DiagonalPlaneAndDotsFunction());
 		ITIPLPluginIO cv = makeCurvature(testImg);
-		cv.execute();
+		BaseTIPLPluginIn dv=((BaseTIPLPluginIn) cv);
+		for(int i=0;i<dv.neededCores();i++) {
+			Object inWork=dv.divideThreadWork(i);
+			if(inWork !=null) {
+				int[] cWork=(int[]) inWork;
+				System.out.println("Core:"+i+" ::"+testImg.getDim()+"="+cWork[0]+", "+cWork[0]);
+			}
+		}
+		
+		//cv.execute();
+	}
+	
+	@Test
+	public void testDivideWork() {
+		System.out.println("Testing that work is divided into chunks between 1 and the last slice");
+		for (int coreCount=TIPLGlobal.availableCores-1;coreCount<2*TIPLGlobal.availableCores;coreCount+=2) {
+			final TImgRO testImg = TestPosFunctions.wrapIt(coreCount,
+					new TestPosFunctions.DiagonalPlaneAndDotsFunction());
+			ITIPLPluginIO cv = makeCurvature(testImg);
+			TIPLTestingLibrary.testDivideWork(((BaseTIPLPluginIn) cv), testImg.getDim().z);
+		}
+		
+		
 	}
 
 	/**
 	 * Test method for {@link tipl.tools.ComponentLabel#execute()}.
 	 */
-	@Test
+	//@Test
 	public void testExecute() {
 		System.out.println("Testing execute");
 		final TImgRO testImg = TestPosFunctions.wrapIt(50,

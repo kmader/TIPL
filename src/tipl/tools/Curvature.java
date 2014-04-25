@@ -33,6 +33,7 @@ import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 import Jama.EigenvalueDecomposition;
@@ -928,30 +929,36 @@ public class Curvature extends BaseTIPLPluginIO {
 	 */
 	@Override
 	public Object divideThreadWork(final int cThread) {
-		final int minSlice = 1;
+		final int minSlice = 0;
 		final int maxSlice = data3D.depth - 1;
 		int myNeededCores = neededCores();
 
-		if (3 * neededCores() > (maxSlice - minSlice))
-			myNeededCores = (maxSlice - minSlice) / 3; // At least 3 slices per
-														// core and definitely
-														// no overlap
-		if (myNeededCores < 1)
-			myNeededCores = 1;
+		if (3 * neededCores() > (maxSlice - minSlice)) {
+			myNeededCores = (int) Math.floor((maxSlice - minSlice) / 3.0); // At least 3 slices per
+			// core and definitely
+			// no overlap
+			if (myNeededCores < 1)
+				myNeededCores = 1;
+			if (TIPLGlobal.getDebug()) System.out.println("Updating Number of Needed Cores = "+myNeededCores);
+			
+		}
+			
+		if (cThread >= myNeededCores) return null;
 		final int range = (maxSlice - minSlice) / myNeededCores;
 
-		int startSlice = minSlice;
-		int endSlice = startSlice + range;
+		int startSlice=-1;
+		int endSlice = -1;
 
-		for (int i = 0; i < cThread; i++) {
-			startSlice = endSlice; // must overlap since i<endSlice is always
+		for (int i = 0; i <= cThread; i++) {
+			startSlice = endSlice+1; // must overlap since i<endSlice is always
 									// used, endslice is never run
 			endSlice = startSlice + range;
 		}
 		if (cThread == (neededCores() - 1))
 			endSlice = maxSlice;
-		if (cThread >= neededCores())
-			return null;
+		
+		if(endSlice>maxSlice) endSlice=maxSlice;
+		
 
 		return (new int[] { startSlice, endSlice });
 	}
