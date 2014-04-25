@@ -241,10 +241,13 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 			throw new IllegalArgumentException(
 					"Too few arguments for LoadImages in:" + getPluginName());
 		final TImgRO labelImg = inImages[0];
-		if (inImages.length < 2)
+		if (inImages.length < 2) {
 			ImportAim(labelImg);
-		final TImgRO maskImg = inImages[1];
-		ImportAim(labelImg, maskImg);
+		} else {
+			final TImgRO maskImg = inImages[1];
+			ImportAim(labelImg, maskImg);
+		}
+		
 	}
 
 	/** Code for writing the voronoi distances to an Aim file */
