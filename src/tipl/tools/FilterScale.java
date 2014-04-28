@@ -775,7 +775,8 @@ public class FilterScale extends BaseTIPLPluginMult {
 		default:
 			throw new IllegalArgumentException("Filter type:"+filterType+" does not exist!");
 		}
-		CalcOutDim();
+		
+		if (isInitialized) CalcOutDim(); // only run if the images have been loaded
 		return p;
 
 	}
