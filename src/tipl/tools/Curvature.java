@@ -929,7 +929,7 @@ public class Curvature extends BaseTIPLPluginIO {
 	 */
 	@Override
 	public Object divideThreadWork(final int cThread) {
-		return BaseTIPLPluginIn.sliceProcessWork(cThread, neededCores(), 0, data3D.depth-1, 3);
+		return BaseTIPLPluginIn.sliceProcessWork(cThread, neededCores(), 1, data3D.depth-1, 3);
 	}
 
 	@Override

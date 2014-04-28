@@ -9,9 +9,11 @@
             	<include name="META-INF/**/*.*"/>
             </fileset>
             <zipfileset excludes="META-INF/*.SF" src="../tipl-libraries/ij.jar"/>
+
             <!-- <zipfileset excludes="META-INF/*.SF" src="../tipl-libraries/ij2/ij-data-2.0.0-beta-7.jar"/> -->
+            <zipfileset excludes="META-INF/*.SF" src="../tipl-libraries/Jama.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../tipl-libraries/com.springsource.javax.media.jai.codec.jar"/> 
-           <zipfileset excludes="META-INF/*.SF" src="../tipl-libraries/com.springsource.javax.media.jai.core.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="../tipl-libraries/com.springsource.javax.media.jai.core.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../tipl-libraries/jai_imageio.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../tipl-libraries/mongo-db.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../tipl-libraries/sezpoz-1.9.jar"/>
@@ -37,7 +39,7 @@
             </manifest>
          	<zipfileset excludes="META-INF/MANIFEST.MF" src="TIPL_core.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../tipl-libraries/spark-core.jar"/>
-       		<zipfileset excludes="META-INF/*.SF" src="../tipl-libraries/jython-standalone-2.5.3.jar"/>
+       		<zipfileset excludes="META-INF/*.SF" src="../tipl-libraries/jython.jar"/>
          </jar>
     </target>
     <target name="fatspark" depends="core">

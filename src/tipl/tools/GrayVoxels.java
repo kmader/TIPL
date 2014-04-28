@@ -9,7 +9,12 @@ import Jama.Matrix;
 /**
  * Class for handling the 3D grayvalue data. Effectively used for the creation
  * of inertial tensors from position data. It handles computing averages,
- * covariances, diagonalizations and the like
+ * covariances, diagonalizations and the like.
+ * 
+ * It must first be run adding all voxels using the the addVox command
+ * for standard deviations and shape tensor it must be run again with the 
+ * addCovVox command
+ * 
  */
 public class GrayVoxels {
 	int voxelCount;
@@ -114,8 +119,13 @@ public class GrayVoxels {
 		voxelCount += voxelCount;
 	}
 
-	/** Function which ignores weights **/
-
+	/**
+	 * Calculate the covariances without a weight
+	 * @param x the 
+	 * @param y
+	 * @param z
+	 * @return
+	 */
 	public int addCovVox(final double x, final double y, final double z) {
 		if (useWeights)
 			return addCovVox(x, y, z, 1.0);
@@ -137,7 +147,15 @@ public class GrayVoxels {
 		return 1;
 	}
 
-	/** Function which uses the weights to calculate the covariances **/
+
+	/** Function which uses the weights to calculate the covariances
+	 * 
+	 * @param x position
+	 * @param y position
+	 * @param z position
+	 * @param pixVal the value of the pixel
+	 * @return
+	 */
 	public int addCovVox(final double x, final double y, final double z,
 			final double pixVal) {
 		if (!useWeights)
@@ -240,7 +258,7 @@ public class GrayVoxels {
 		}
 	}
 
-	public void calculateBoxDist(final double minX, final double minY,
+	public double calculateBoxDist(final double minX, final double minY,
 			final double minZ, final double maxX, final double maxY,
 			final double maxZ) {
 		// Calculate the distance away from the edge of the region of interest
@@ -271,6 +289,8 @@ public class GrayVoxels {
 		wx = meanx() * curValSum;
 		wy = meany() * curValSum;
 		wz = meanz() * curValSum;
+		
+		return boxDist;
 
 	}
 

@@ -16,6 +16,7 @@ import org.junit.Test;
 import tipl.formats.TImgRO;
 import tipl.tools.ComponentLabel;
 import tipl.tools.GrayAnalysis;
+import tipl.tools.GrayVoxels;
 import tipl.util.CSVFile;
 import tipl.util.D3float;
 import tipl.util.ITIPLPlugin;
@@ -61,6 +62,35 @@ public class GrayAnalysisTest {
 		rowCols[0]=i;
 		return rowCols;
 
+	}
+	
+	@Test
+	public void testGrayVoxel() {
+		System.out.println("Testing GrayVoxel Code");
+		GrayVoxels t = new GrayVoxels(107);
+		
+		t.addVox(0, 0, 0, 1);
+		t.addVox(1,2,3,1);
+		System.out.println("Testing basics");
+		assertEquals(107,t.getLabel(),0.5);
+		assertEquals(2,t.count(),0.5);
+		
+		System.out.println("Testing GrayVoxel Center of Volume");
+		t.calcCOV();
+		assertEquals(0.5, t.meanx(),1e-9);
+		assertEquals(1, t.meany(),1e-9);
+		assertEquals(1.5, t.meanz(),1e-9);
+
+		assertEquals(1.87087,t.calculateBoxDist(0, 0, 0, 1, 2, 3),1e-3);
+		System.out.println("Testing GrayVoxel Standard Deviation");
+		t.addCovVox(0, 0, 0, 1);
+		t.addCovVox(1,2,3,1);
+		
+		assertEquals(0.5, t.stdx(),1e-9);
+		assertEquals(1, t.stdy(),1e-9);
+		assertEquals(1.5, t.stdz(),1e-9);
+		
+		
 	}
 
 	//@Test

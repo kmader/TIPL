@@ -54,9 +54,7 @@ public class CurvatureTests {
 		final TImgRO testImg = TestPosFunctions.wrapIt(8,
 				new TestPosFunctions.DiagonalPlaneAndDotsFunction());
 		ITIPLPluginIO cv = makeCurvature(testImg);
-		
-		
-		//cv.execute();
+		cv.execute();
 	}
 	
 	@Test
