@@ -1,0 +1,3 @@
+[submodule "tipl-libraries"]
+	path = tipl-libraries
+	url = https://skicavs@bitbucket.org/skicavs/tipl-libraries.git
