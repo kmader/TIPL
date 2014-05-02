@@ -14,6 +14,7 @@ import tipl.blocks.ITIPLBlock;
 import tipl.util.ArgumentDialog;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
+import tipl.util.TIPLGlobal;
 
 /**
  * @author mader
@@ -63,7 +64,7 @@ public class ADTester {
 	public void testToDialog() {
 		final String[] strArr = new String[] { "-ted", "-bob=10",
 				"-scale=1.0,1.0,1.0", "-tandy=0.1", "-david=joey" };
-		final ArgumentParser p = new ArgumentParser(strArr);
+		final ArgumentParser p = TIPLGlobal.activeParser(strArr);
 		assertEquals(p.getOptionBoolean("ted", "Test-Help"), true);
 		assertEquals(p.getOptionInt("bob", 10, "Test-Help", 10, 11), 10);
 		final D3float fArgs = p

@@ -24,7 +24,7 @@ public class ArgumentParserTest {
 	@Test
 	public void testArgumentParser() {
 		final String[] strArr = new String[] { "bob", "dan", "joe" };
-		final ArgumentParser p = new ArgumentParser(strArr);
+		final ArgumentParser p = new ArgumentParser(strArr,true);
 		assertEquals(p.ParamCount(), 3);
 	}
 
@@ -36,7 +36,7 @@ public class ArgumentParserTest {
 	@Test
 	public void testGetOptionBoolean() {
 		final String[] strArr = new String[] { "-ted", "-teddy", "-bob=false" };
-		final ArgumentParser p = new ArgumentParser(strArr);
+		final ArgumentParser p = new ArgumentParser(strArr,true);
 		assertEquals(p.getOptionBoolean("ted", "Test-Help"), true);
 		assertEquals(p.getOptionBoolean("teddy", "Test-Help"), true);
 		assertEquals(p.getOptionBoolean("tedy", "Test-Help"), false);
@@ -52,7 +52,7 @@ public class ArgumentParserTest {
 	public void testGetOptionD3float() {
 		final String[] strArr = new String[] { "-scale=1.0,1.0,1.0",
 				"-object=(99e3,28e2,29e1)" };
-		final ArgumentParser p = new ArgumentParser(strArr);
+		final ArgumentParser p = new ArgumentParser(strArr,true);
 		final D3float fArgs = p
 				.getOptionD3float("scale", new D3float(), "junk");
 		assertEquals(fArgs.x, 1.0, .1);
@@ -73,7 +73,7 @@ public class ArgumentParserTest {
 	@Test
 	public void testGetOptionD3int() {
 		final String[] strArr = new String[] { "-scale=(1,2,3)", "-bale=3,4,5" };
-		final ArgumentParser p = new ArgumentParser(strArr);
+		final ArgumentParser p = new ArgumentParser(strArr,true);
 		D3int fArgs = p.getOptionD3int("scale", new D3int(1, 1, 1), "junk");
 		assertEquals(fArgs.x, 1);
 		assertEquals(fArgs.y, 2);
@@ -92,7 +92,7 @@ public class ArgumentParserTest {
 	@Test
 	public void testGetOptionDoubleStringDoubleString() {
 		final String[] strArr = new String[] { "-ted=0.1" };
-		final ArgumentParser p = new ArgumentParser(strArr);
+		final ArgumentParser p = new ArgumentParser(strArr,true);
 		assertEquals(p.getOptionDouble("ted", 0.1, "Test-Help"), 0.1, 0.01);
 	}
 
@@ -104,7 +104,7 @@ public class ArgumentParserTest {
 	@Test
 	public void testGetOptionDoubleStringDoubleStringDoubleDouble() {
 		final String[] strArr = new String[] { "-ted=0.1" };
-		final ArgumentParser p = new ArgumentParser(strArr);
+		final ArgumentParser p = new ArgumentParser(strArr,true);
 		assertEquals(p.getOptionDouble("ted", 0.1, "Test-Help", 0.0, 0.2), 0.1,
 				0.01);
 	}
@@ -117,7 +117,7 @@ public class ArgumentParserTest {
 	@Test
 	public void testGetOptionIntStringIntString() {
 		final String[] strArr = new String[] { "-bob=5" };
-		final ArgumentParser p = new ArgumentParser(strArr);
+		final ArgumentParser p = new ArgumentParser(strArr,true);
 		assertEquals(p.getOptionInt("bob", 1, "Test-Help"), 5);
 	}
 
@@ -129,7 +129,7 @@ public class ArgumentParserTest {
 	@Test
 	public void testGetOptionIntStringIntStringIntInt() {
 		final String[] strArr = new String[] { "-bob=10" };
-		final ArgumentParser p = new ArgumentParser(strArr);
+		final ArgumentParser p = new ArgumentParser(strArr,true);
 		assertEquals(p.getOptionInt("bob", 10, "Test-Help", 10, 11), 10);
 	}
 

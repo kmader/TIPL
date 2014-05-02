@@ -9,6 +9,7 @@ import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
@@ -564,7 +565,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 		System.out.println("Peel v" + kVer);
 		System.out.println(" Contours (and peels) given images v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p = TIPLGlobal.activeParser(args);
 		final String maskFile = p.getOptionString("input", "",
 				"Input mask image for contouring");
 		final String inputFile = p.getOptionString("target", "", "Input image");

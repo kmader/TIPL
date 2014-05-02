@@ -12,6 +12,7 @@ import tipl.formats.TImg;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPlugin;
 import tipl.util.ITIPLPluginIO;
+import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
@@ -22,8 +23,7 @@ import tipl.util.TImgTools;
 public class cVoronoi extends VoronoiTransform {
 	@TIPLPluginManager.PluginInfo(pluginType = "cVoronoi",
 			desc="Full memory center voronoi",
-			sliceBased=false,
-			maximumSize=1024*1024*1024)
+			sliceBased=false)
 	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
 		@Override
 		public ITIPLPlugin get() {
@@ -198,7 +198,7 @@ public class cVoronoi extends VoronoiTransform {
 				.println(" cVoronoi (Centroid-based voronoi) Script v" + kVer);
 		System.out.println(" Dilates and  v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p = TIPLGlobal.activeParser(args);
 
 		p.hasOption("debug");
 

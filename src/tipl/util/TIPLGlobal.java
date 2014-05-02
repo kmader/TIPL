@@ -77,7 +77,7 @@ public class TIPLGlobal {
 	public static ExecutorService getIOExecutor() {
 		return requestSimpleES(requestAvailableReaderCount());
 	}
-	public static ArgumentParser activeParser(String[] args) {return activeParser(new ArgumentParser(args));}
+	public static ArgumentParser activeParser(String[] args) {return activeParser(new ArgumentParser(args,true));}
 	/**
 	 * parser which actively changes local, maxcores, maxiothread and other TIPL wide parameters
 	 * @param sp input argumentparser

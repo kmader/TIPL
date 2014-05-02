@@ -16,7 +16,7 @@ import java.io.OutputStreamWriter;
 public class SGEJob {
 	public static void main(final String[] argv) {
 		final SGEJob test = new SGEJob();
-		final ArgumentParser p = test.setParameter(new ArgumentParser(argv));
+		final ArgumentParser p = test.setParameter(TIPLGlobal.activeParser(argv));
 
 		p.checkForInvalid();
 		test.submit();
@@ -187,7 +187,7 @@ public class SGEJob {
 
 	public SGEJob(final String[] cmdLine) {
 		init();
-		setParameter(new ArgumentParser(cmdLine));
+		setParameter(TIPLGlobal.activeParser(cmdLine));
 	}
 
 	protected String createHeader() {

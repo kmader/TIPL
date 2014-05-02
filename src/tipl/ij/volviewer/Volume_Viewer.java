@@ -157,7 +157,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 
 	@Override
 	public ArgumentParser setParameter(String inp) {
-		return setParameter(new ArgumentParser(inp.split(" ")), "");
+		return setParameter(TIPLGlobal.activeParser(inp.split(" ")), "");
 	}
 
 	@Override

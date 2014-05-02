@@ -6,6 +6,7 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
@@ -28,7 +29,7 @@ public class kVoronoi extends VoronoiTransform {
 		System.out.println(" kVoronoi Script v" + kVer);
 		System.out.println(" Dilates and  v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p = TIPLGlobal.activeParser(args);
 
 		p.hasOption("debug");
 

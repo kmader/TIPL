@@ -19,8 +19,7 @@ import tipl.util.TImgTools;
 public class XDF extends BaseTIPLPluginMult {
 	@TIPLPluginManager.PluginInfo(pluginType = "XDF",
 			desc="Full memory xdf command",
-			sliceBased=false,
-			maximumSize=1024*1024*1024)
+			sliceBased=false)
 	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
 		@Override
 		public ITIPLPlugin get() {

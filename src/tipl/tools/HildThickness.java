@@ -9,6 +9,7 @@ import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.SGEJob;
+import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
@@ -16,8 +17,7 @@ import tipl.util.TImgTools;
 public class HildThickness extends Thickness {
 	@TIPLPluginManager.PluginInfo(pluginType = "HildThickness",
 			desc="Full memory hildebrand thickness",
-			sliceBased=false,
-			maximumSize=1024*1024*1024)
+			sliceBased=false)
 	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
 		@Override
 		public ITIPLPlugin get() {
@@ -151,7 +151,7 @@ public class HildThickness extends Thickness {
 		System.out.println("Hildebrand-based Thickness Map v"
 				+ HildThickness.kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p =  TIPLGlobal.activeParser(args);
 		final String inAimFile = p.getOptionString("in", "",
 				"In image to calculate the thickness map of");
 

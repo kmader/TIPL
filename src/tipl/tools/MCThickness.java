@@ -7,6 +7,7 @@ import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
 import tipl.util.ITIPLPluginIO;
+import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
@@ -20,8 +21,7 @@ import tipl.util.TImgTools;
 public class MCThickness extends Thickness {
 	@TIPLPluginManager.PluginInfo(pluginType = "MCThickness",
 			desc="Full memory monte carlo thickness calculation tool",
-			sliceBased=false,
-			maximumSize=1024*1024*1024)
+			sliceBased=false)
 	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
 		@Override
 		public ITIPLPlugin get() {
@@ -73,7 +73,7 @@ public class MCThickness extends Thickness {
 		final String kVer = "120322_006";
 		System.out.println("Thickness v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		ArgumentParser p = new ArgumentParser(args);
+		ArgumentParser p =TIPLGlobal.activeParser(args);
 		final ITIPLPluginIO myThick = new MCThickness();
 		final String inputFile = p.getOptionString("input", "",
 				"Input distance map image");

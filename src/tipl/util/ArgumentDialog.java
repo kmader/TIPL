@@ -28,12 +28,12 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
 	 * @return the block with setParameter run
 	 */
 	public static ITIPLBlock GUIBlock(final ITIPLBlock blockToRun) {
-		ArgumentParser args = new ArgumentParser(new String[] {});
+		ArgumentParser args = TIPLGlobal.activeParser(new String[] {});
 		args = blockToRun.setParameter(args);
 		final ArgumentDialog guiArgs = new ArgumentDialog(args,
 				blockToRun.toString(), blockToRun.getInfo().getDesc());
 
-		args = new ArgumentParser(guiArgs.scrapeDialog());
+		args = TIPLGlobal.activeParser(guiArgs.scrapeDialog());
 		System.out.println(args);
 		blockToRun.setParameter(args);
 

@@ -58,10 +58,10 @@ public class TIPLPluginManager {
 		 */
 		boolean sliceBased() default false;
 		/**
-		 * the largest image it can handle in voxels (default -1 means unlimited, or memory limited)
+		 * the largest image it can handle in voxels ( -1 means unlimited, or memory limited), default is the longest an array is allowed to be
 		 * @return
 		 */
-		long maximumSize() default -1;
+		long maximumSize() default Integer.MAX_VALUE-1;
 		/**
 		 * the number of bytes used per voxel in the input image approximately, -1 means it cannot be estimated)
 		 * @return
@@ -168,16 +168,36 @@ public class TIPLPluginManager {
 	
 	protected static PluginInfo getBestPlugin(final String pluginType,final TImgRO[] inImages) {
 		//TODO get size from other images at some point
+		List<PluginInfo> namedPlugins=getPluginsNamed(pluginType);
+		if (namedPlugins.size()<1) throw new IllegalArgumentException("No plugins of type:"+pluginType+" have been loaded, check classpath, and annotation setup");
+		
+		String outPlugName = "Named Plugins Plugins for "+pluginType+" are: ";
+		
+		for (PluginInfo cPlug : namedPlugins) outPlugName+=","+cPlug.toString();
+		if (TIPLGlobal.getDebug()) System.out.println(outPlugName);
+		
 		long imVoxCount=(long) inImages[0].getDim().prod();
-		List<PluginInfo> bestPlugins=getPluginsBySize(getPluginsNamed(pluginType),imVoxCount);
+		List<PluginInfo> bestPlugins=getPluginsBySize(namedPlugins,imVoxCount);
+		if (bestPlugins.size()<1) throw new IllegalArgumentException("No plugins of type:"+pluginType+" can handle images sized:"+imVoxCount);
+		
+		
+		outPlugName = "Sized Plugins (>"+imVoxCount+") for "+pluginType+" are: ";
+		
+		for (PluginInfo cPlug : bestPlugins) outPlugName+=","+cPlug.toString();
+		if (TIPLGlobal.getDebug()) System.out.println(outPlugName);
+		
 		// remove spark plugins
 		List<PluginInfo> noSparkPlugins=filter(
 				having(on(PluginInfo.class).sparkBased(),is(false)),
 				bestPlugins);
-		String outPlugName = "Available Plugins for "+pluginType+" are: ";
+		if (noSparkPlugins.size()<1) throw new IllegalArgumentException("No plugins of type:"+pluginType+" can handle images sized:"+imVoxCount+" can run without Spark");
 		
-		for (PluginInfo cPlug : bestPlugins) outPlugName+=","+cPlug.toString();
+		
+		outPlugName = "Available Plugins for "+pluginType+" are: ";
+		
+		for (PluginInfo cPlug : noSparkPlugins) outPlugName+=","+cPlug.toString();
 		if (TIPLGlobal.getDebug()) System.out.println(outPlugName);
+		
 		return getFastestPlugin(noSparkPlugins);
 	}
 	/**

@@ -24,8 +24,7 @@ import tipl.util.TImgTools;
 public class GrayAnalysis extends BaseTIPLPluginIn {
 	@TIPLPluginManager.PluginInfo(pluginType = "GrayAnalysis",
 			desc="Full memory gray value analysis",
-			sliceBased=false,
-			maximumSize=1024*1024*1024)
+			sliceBased=false)
 	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
 		@Override
 		public ITIPLPlugin get() {
@@ -162,7 +161,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		System.out.println(" Gray Value and Lacuna Analysis v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p = TIPLGlobal.activeParser(args);
 		if (p.hasOption("?")) {
 			showHelp();
 		}

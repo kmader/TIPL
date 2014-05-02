@@ -6,6 +6,7 @@ import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
@@ -16,8 +17,7 @@ import tipl.util.TImgTools;
 public class DistGrow extends BaseTIPLPluginIO {
 	@TIPLPluginManager.PluginInfo(pluginType = "DistGrow",
 			desc="Full memory distance growing",
-			sliceBased=false,
-			maximumSize=1024*1024*1024)
+			sliceBased=false)
 	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
 		@Override
 		public ITIPLPlugin get() {
@@ -30,7 +30,7 @@ public class DistGrow extends BaseTIPLPluginIO {
 		System.out.println(" DistGrow Script v" + kVer);
 		System.out.println(" Gradient Guided Watershed and  v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p = TIPLGlobal.activeParser(args);
 
 		p.hasOption("debug");
 

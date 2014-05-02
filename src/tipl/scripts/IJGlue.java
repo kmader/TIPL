@@ -4,6 +4,7 @@ import ij.IJ;
 import tipl.formats.TImg;
 import tipl.formats.VirtualAim;
 import tipl.util.ArgumentParser;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 /**
@@ -34,7 +35,7 @@ public class IJGlue {
 				.println("IJGlue Provides Access to ImageJ Functions and Scripting  v"
 						+ kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p = TIPLGlobal.activeParser(args);
 		p.getOptionInt(
 				"stage",
 				0,

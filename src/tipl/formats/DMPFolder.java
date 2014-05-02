@@ -10,6 +10,7 @@ import java.io.IOException;
 
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 /**
@@ -152,7 +153,7 @@ public class DMPFolder extends DirectoryReader {
 	}
 
 	public static void main(final String[] args) {
-		main(new ArgumentParser(args));
+		main(TIPLGlobal.activeParser(args));
 	}
 
 	public DMPFolder(final String path) throws IOException {

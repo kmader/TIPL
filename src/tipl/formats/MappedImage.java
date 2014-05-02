@@ -6,6 +6,7 @@ package tipl.formats;
 import java.util.HashMap;
 
 import tipl.util.ArgumentParser;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 /**
@@ -346,7 +347,7 @@ public class MappedImage extends FuncImage {
 		System.out.println("MappedImage v" + kVer);
 		System.out.println("Maps an Image");
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p = TIPLGlobal.activeParser(args);
 		final String inputFile = p.getOptionString("convert", "",
 				"Aim File to Convert");
 		final String outputFile = p.getOptionString("output", "",

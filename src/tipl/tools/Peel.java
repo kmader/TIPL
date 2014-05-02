@@ -5,6 +5,7 @@ import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
@@ -15,8 +16,7 @@ import tipl.util.TImgTools;
 public class Peel extends BaseTIPLPluginMult {
 	@TIPLPluginManager.PluginInfo(pluginType = "Peel",
 			desc="Full memory peel command",
-			sliceBased=false,
-			maximumSize=1024*1024*1024)
+			sliceBased=false)
 	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
 		@Override
 		public ITIPLPlugin get() {
@@ -46,7 +46,7 @@ public class Peel extends BaseTIPLPluginMult {
 		System.out.println("Peel v" + kVer);
 		System.out.println(" Counts Peel for given images v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p = TIPLGlobal.activeParser(args);
 		final String inputFile = p.getOptionString("input", "", "Input image");
 		final String maskFile = p.getOptionString("mask", "",
 				"Input mask image");

@@ -58,7 +58,15 @@ public class ArgumentParser extends ArgumentList {
 	 * Creates a new arguments parser class from the standard string array input
 	 * to the static main function in a Java Class
 	 **/
-	public ArgumentParser(final String[] args) {
+	/**
+	 * Creates a new arguments parser class from the standard string array input
+	 * to the static main function in a Java Class
+	 * @param args the arguments from the command line as a list of strings
+	 * @param iKnowWhatImDoing an extravariable to prevent people from using this command directly
+	 * (use TIPLGlobal.activeParser instead)
+	 */
+	@Deprecated
+	public ArgumentParser(final String[] args,boolean iKnowWhatImDoing) {
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].startsWith("-") || args[i].startsWith("/")) {
 				final int loc = args[i].indexOf("=");

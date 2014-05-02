@@ -64,7 +64,7 @@ public class CurvatureTests {
 			final TImgRO testImg = TestPosFunctions.wrapIt(coreCount,
 					new TestPosFunctions.DiagonalPlaneAndDotsFunction());
 			ITIPLPluginIO cv = makeCurvature(testImg);
-			TIPLTestingLibrary.testDivideWork(((BaseTIPLPluginIn) cv),0, testImg.getDim().z-1,true);
+			TIPLTestingLibrary.testDivideWork(((BaseTIPLPluginIn) cv),1, testImg.getDim().z-1,true);
 		}
 		
 		

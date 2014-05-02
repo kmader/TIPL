@@ -18,6 +18,7 @@ import javax.media.jai.PlanarImage;
 
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 import com.sun.media.jai.codec.ByteArraySeekableStream;
@@ -228,7 +229,7 @@ public class TiffFolder extends DirectoryReader {
 	}
 
 	public static void main(final String[] args) {
-		main(new ArgumentParser(args));
+		main(TIPLGlobal.activeParser(args));
 	}
 	/** 
 	 * operating as a tiff or jpeg folder

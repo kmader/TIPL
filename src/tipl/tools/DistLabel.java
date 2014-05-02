@@ -20,8 +20,7 @@ import Jama.Matrix;
 public class DistLabel extends BaseTIPLPluginIO {
 	@TIPLPluginManager.PluginInfo(pluginType = "DistLabel",
 			desc="Full memory dist labeling",
-			sliceBased=false,
-			maximumSize=1024*1024*1024)
+			sliceBased=false)
 	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
 		@Override
 		public ITIPLPlugin get() {

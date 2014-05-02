@@ -13,8 +13,7 @@ import tipl.util.TIPLPluginManager;
 public class Morpho extends BaseTIPLPluginBW {
 	@TIPLPluginManager.PluginInfo(pluginType = "Morpho",
 			desc="Full memory morphological operations",
-			sliceBased=false,
-			maximumSize=1024*1024*1024)
+			sliceBased=false)
 	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
 		@Override
 		public ITIPLPlugin get() {

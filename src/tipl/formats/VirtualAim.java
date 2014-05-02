@@ -286,7 +286,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 	}
 
 	public static void main(final String[] args) {
-		main(new ArgumentParser(args));
+		main(TIPLGlobal.activeParser(args));
 	}
 
 	public static float max(final float a, final float b) {

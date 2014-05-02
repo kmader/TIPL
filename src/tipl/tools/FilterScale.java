@@ -104,7 +104,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 		System.out.println("FilterScale v" + kVer);
 		System.out.println(" FilterScales Aim files based on given criteria");
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p = TIPLGlobal.activeParser(args);
 		final String inputFile = p.getOptionString("input", "",
 				"Input masked image");
 		final String outputFile = p.getOptionString("output",

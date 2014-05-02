@@ -18,6 +18,7 @@ import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
@@ -138,7 +139,7 @@ public class FractalDimension extends BaseTIPLPluginInExecutor {
 		System.out.println("FractalDimension v" + kVer);
 		System.out.println(" Analyzes the fractal dimension of an image");
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p = TIPLGlobal.activeParser(args);
 		final String inputFile = p.getOptionString("input", "",
 				"Input masked image");
 		final String outputFile = p.getOptionString("output", "fd_table.csv",

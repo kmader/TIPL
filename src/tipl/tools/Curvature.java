@@ -47,7 +47,6 @@ public class Curvature extends BaseTIPLPluginIO {
 	@TIPLPluginManager.PluginInfo(pluginType = "Curvature",
 			desc="Full memory curvature (using VFIlterScale)",
 			sliceBased=false,
-			maximumSize=1024*1024*1024,
 			bytesPerVoxel=-1)
 	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
 		@Override
@@ -414,7 +413,7 @@ public class Curvature extends BaseTIPLPluginIO {
 		System.out.println("Curvature (filter/voxel-based) v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p = TIPLGlobal.activeParser(args);
 		final String inputFile = p.getOptionString("input", "",
 				"Input distance map image");
 

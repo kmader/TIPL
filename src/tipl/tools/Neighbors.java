@@ -10,6 +10,7 @@ import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
+import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
@@ -21,8 +22,7 @@ import tipl.util.TImgTools;
 public class Neighbors extends BaseTIPLPluginIO {
 	@TIPLPluginManager.PluginInfo(pluginType = "Neighbors",
 			desc="Full memory neighborhood analysis",
-			sliceBased=false,
-			maximumSize=1024*1024*1024)
+			sliceBased=false)
 	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
 		@Override
 		public ITIPLPlugin get() {
@@ -154,7 +154,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 				+ kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 		final Neighbors nbor = new Neighbors();
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p = TIPLGlobal.activeParser(args);
 		final String labelsAim = p.getOptionString("labels", "",
 				"Input labeled image");
 		final String countimageAim = p.getOptionString("countimage", "",

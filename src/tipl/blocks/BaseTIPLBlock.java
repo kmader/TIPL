@@ -71,7 +71,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	}
 	
 	protected ITIPLBlock[] prereqBlocks = new ITIPLBlock[] {};
-	protected ArgumentParser args = new ArgumentParser(new String[] {});
+	protected ArgumentParser args = TIPLGlobal.activeParser(new String[] {});
 	protected String blockName = "";
 	protected boolean skipBlock = true;
 	protected boolean saveToCache = false;

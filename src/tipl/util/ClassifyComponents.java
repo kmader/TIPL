@@ -79,7 +79,7 @@ public class ClassifyComponents {
 		System.out
 				.println(" Classify Components based on Morphological Analysis v"
 						+ kVer);
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p = TIPLGlobal.activeParser(args);
 
 		boolean debugMode = true;
 		boolean useor = false;

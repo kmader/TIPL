@@ -23,6 +23,7 @@ import net.java.sezpoz.Indexable;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
+import tipl.util.TIPLGlobal;
 
 // Logging
 /**
@@ -134,7 +135,7 @@ public abstract class DirectoryReader implements TReader {
 	}
 
 	public static void main(final String[] args) {
-		main(new ArgumentParser(args));
+		main(TIPLGlobal.activeParser(args));
 	}
 
 	protected File[] imglist;

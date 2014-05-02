@@ -11,6 +11,7 @@ import tipl.formats.TiffFolder.TIFSliceReader;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 
 import com.sun.media.jai.codec.FileSeekableStream;
@@ -46,7 +47,7 @@ public class TiffDirectory implements TImg {
 	}
 
 	public static void main(final String[] args) {
-		main(new ArgumentParser(args));
+		main(TIPLGlobal.activeParser(args));
 	}
 
 	private final int TAG_PROCLOGSTART = 1000;

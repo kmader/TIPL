@@ -348,7 +348,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
 		System.out.println(" Gray Value and Lacuna Analysis v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 		final GrayAnalysis2D ga2 = new GrayAnalysis2D(); 
-		final ArgumentParser p = new ArgumentParser(args);
+		final ArgumentParser p = TIPLGlobal.activeParser(args);
 		final boolean doProfile = p.getOptionBoolean("profile",
 				"Run Profile Command");
 		ga2.setParameter(p,"");
