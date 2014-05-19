@@ -5,6 +5,8 @@ import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
+import tipl.util.ArgumentList.Argument;
+
 /**
  * SGEJob is for creating and managing (later) SGEJobs, simplifying many of the
  * more complicated tasks in parallel computing with these tools
@@ -34,8 +36,19 @@ public class SGEJob {
 	 */
 	public static SGEJob runAsJob(final String className,
 			final ArgumentParser p, final String prefix) {
+		// since the core count is needed for running the job
+		
+		int coreCount=p.getOptionInt("sge:cores", 2, "Number of Cores to Use");
+		ArgumentParser subP = p.subArguments(prefix);
+		Argument mxCores=subP.getOption("@maxcores");
+		// make a synthetic argument containing the value
+		 ArgumentList.TypedArgument<Integer> maxCores = new ArgumentList.TypedArgument<Integer>("@maxcores", "Max Cores is set by the job itself",
+				coreCount);
+		 // insert it into the parameter list
+		 subP.putArg("@maxcores", maxCores);
+		 
 		final SGEJob test = new SGEJob(p, prefix, "$JCMD&" + className
-				+ p.subArguments(prefix).toString("&"));
+				+ subP.toString("&"));
 		return test;
 
 	}
@@ -110,7 +123,7 @@ public class SGEJob {
 	protected int cores = 2;
 
 	protected String logName = "SGEJob.log";
-	protected String jobName = "CallMeAl";
+	protected String jobName = "TIPLDefaultJob";
 	protected String queueName = "all.q";
 	protected String qsubPath = "/gpfs/home/gridengine/sge6.2u5p2/bin/lx26-amd64/qsub";
 	protected String tiplPath = "/afs/psi.ch/project/tipl/jar/TIPL.jar";
@@ -382,6 +395,11 @@ public class SGEJob {
 		javaString += "$JTEST\n sleep 1.5\n";
 		return javaString;
 	}
+	/**
+	 * code to run at the end of a job to clean everything up
+	 */
+	static String cleanupString="\n find /home/scratch -type d -name 'spark*' -mtime +4  -exec rm -rf {} \\;";
+	
 
 	public void submit() {
 		submitJob(jobToRun);
@@ -393,7 +411,7 @@ public class SGEJob {
 		if (waitForJob)
 			ePath += " -sync y";
 		System.out.println("JobSubmissionStatus:"
-				+ SGEJob.sendJob(ePath, jobInfo + cmdToRun));
+				+ SGEJob.sendJob(ePath, jobInfo + cmdToRun + cleanupString));
 	}
 
 }

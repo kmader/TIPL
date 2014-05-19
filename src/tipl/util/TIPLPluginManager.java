@@ -253,7 +253,6 @@ public class TIPLPluginManager {
 			
 		};
 	}
-	public TIPLPluginManager() {
-	}
+	
 
 }
