@@ -40,12 +40,15 @@ public class SGEJob {
 		
 		int coreCount=p.getOptionInt("sge:cores", 2, "Number of Cores to Use");
 		ArgumentParser subP = p.subArguments(prefix);
-		Argument mxCores=subP.getOption("@maxcores");
 		// make a synthetic argument containing the value
 		 ArgumentList.TypedArgument<Integer> maxCores = new ArgumentList.TypedArgument<Integer>("@maxcores", "Max Cores is set by the job itself",
 				coreCount);
+		 // jobs must also run headless
+		 ArgumentList.TypedArgument<Boolean> headless = new ArgumentList.TypedArgument<Boolean>("@headless", "Job must run headless",
+					true);
 		 // insert it into the parameter list
 		 subP.putArg("@maxcores", maxCores);
+		 subP.putArg("@headless", headless);
 		 
 		final SGEJob test = new SGEJob(p, prefix, "$JCMD&" + className
 				+ subP.toString("&"));
@@ -126,7 +129,8 @@ public class SGEJob {
 	protected String jobName = "TIPLDefaultJob";
 	protected String queueName = "all.q";
 	protected String qsubPath = "/gpfs/home/gridengine/sge6.2u5p2/bin/lx26-amd64/qsub";
-	protected String tiplPath = "/afs/psi.ch/project/tipl/jar/TIPL.jar";
+	protected String tiplPath = "/afs/psi.ch/project/tipl/jar/";
+	protected String sparkJarPath = "/afs/psi.ch/project/tipl/spark/jars/spark-assembly-1.0.0-SNAPSHOT-hadoop1.0.4.jar";
 	protected String tiplPathBeta = "/afs/psi.ch/project/tipl/jar/TIPL_beta.jar";
 	protected String javaCmdPath = "/afs/psi.ch/project/tipl/jvm/bin/java";
 	protected String jobToRun = "ls -R *";
@@ -373,7 +377,9 @@ public class SGEJob {
 			tiplPath = tiplPathBeta;
 
 		tiplPath = p.getOptionPath(argPrefix + "tiplpath", tiplPath,
-				"TIPL Jar Path");
+				"TIPL Path (directory not jar file itself)");
+		sparkJarPath = p.getOptionPath(argPrefix + "sparkpath", sparkJarPath,
+				"Spark Jar Path (path including the jar file)");
 		qsubPath = p.getOptionPath(argPrefix + "qsubpath", qsubPath,
 				"Path to qsub executable");
 		waitForJob = p.getOptionBoolean(argPrefix + "waitforjob",
@@ -385,13 +391,13 @@ public class SGEJob {
 	protected String setupJava() {
 		String javaString = "# Load the environment modules for this job (the order may be important): \n\n###################################################\n";
 		javaString += "# Set the environment variables:\n\n";
-		javaString += "export CLASSPATH=" + tiplPath + "\n";
+		javaString += "export CLASSPATH=" + tiplPath+"TIPL_core.jar"+":"+sparkJarPath + "\n";
 		javaString += "JAVACMD=\"" + javaCmdPath + "\"\n";
 		javaString += "JARGS=\"-d64 -Xmx" + jvmMaxMemory + " -Xms"
 				+ jvmStartMemory +" -Djava.awt.headless=true" + "\" \n";
 		javaString += "JCMD=\"time $JAVACMD $JARGS\" \n";
 		javaString += "JTEST=\"$JCMD -version\"\n";
-		javaString += "TIPLCMD=\"time $JCMD -jar " + tiplPath + " \"\n ";
+		javaString += "TIPLCMD=\"time $JCMD -jar " + tiplPath+ "TIPL.jar" + " \"\n ";
 		javaString += "$JTEST\n sleep 1.5\n";
 		return javaString;
 	}
