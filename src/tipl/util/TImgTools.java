@@ -134,8 +134,18 @@ public class TImgTools {
 	public static final int IMAGETYPE_LONG = 7;
 	
 	public static final String IMAGETYPE_HELP = "(boolean image/1bit="+IMAGETYPE_BOOL+", character image/8bit="+IMAGETYPE_CHAR+", short image/16bit="+IMAGETYPE_SHORT+", integer image/32bit="+IMAGETYPE_INT+", float image/32bit="+IMAGETYPE_FLOAT+")";
-
-
+	
+	/**
+	 * Check to see if the image is cached or otherwise fast access (used for
+	 * caching methods to avoid double caching), 0 is encoded disk-based, 1 is
+	 * memory map, 2 is in memory + computation, 3 is memory based, in general
+	 * each computational layer (FImage) subtracts 1 from the isFast
+	 */
+	public static int SPEED_DISK  = 0;
+	public static int SPEED_DISK_MMAP = 1;
+	public static int SPEED_DISK_AND_MEM =2;
+	public static int SPEED_MEMORY_CALCULATE =3;
+	public static int SPEED_MEMORY =4;
 	public static String appendProcLog(final String curLog, final String appText) {
 		return curLog + "\n" + new Date() + "\t" + appText;
 	}
@@ -170,7 +180,31 @@ public class TImgTools {
 		isMatch = isMatch & (inVA.getOffset().z == otherVA.getOffset().z);
 		return isMatch;
 	}
-
+	/**
+	 * Generic function for converting array types (with maxvalue as 127)
+	 * 
+	 * @param inArray
+	 *            the input array as an object
+	 * @param inType
+	 *            the type for the input
+	 * @param outType
+	 *            the desired type for the output
+	 * @param isSigned
+	 *            whether or not the value is signed
+	 * @param shortScaleFactor
+	 *            the factor to scale shorts/integers/chars by when converting
+	 *            to a float and vice versa
+	 *
+	 * @return slice as an object (must be casted)
+	 * @throws IOException
+	 */
+	public static Object convertArrayType(final Object inArray,
+			final int inType, final int outType, final boolean isSigned,
+			final float shortScaleFactor) {
+		return convertArrayType(inArray,
+				inType,  outType, isSigned,
+				shortScaleFactor,127);
+	}
 	/**
 	 * Generic function for converting array types
 	 * 

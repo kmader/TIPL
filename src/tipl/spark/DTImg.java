@@ -415,7 +415,96 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		});
 	}
 	/**
+	 * a function to turn a slice into a list of points
+	 * @author mader
+	 *
+	 * @param <U>
+	 */
+	public static class SliceToPoints<U extends Cloneable> implements PairFlatMapFunction<Tuple2<D3int,TImgBlock<U>>,D3int,Object> {
+		final int imageType;
+		public SliceToPoints(int inImageType) {
+			imageType=inImageType;
+		}
+		@Override
+		public Iterable<Tuple2<D3int, Object>> call(
+				Tuple2<D3int, TImgBlock<U>> arg0) throws Exception {
+			TImgBlock<U> cBlock=arg0._2;
+			final U curSlice=cBlock.get();
+			final D3int dim = cBlock.getDim();
+			final D3int pos = arg0._1;
+			int sliceLength;
+			switch(imageType) {
+			case TImgTools.IMAGETYPE_BOOL: 
+				sliceLength=((boolean[]) curSlice).length;
+				break;
+			case TImgTools.IMAGETYPE_CHAR: 
+				sliceLength=((char[]) curSlice).length;
+				break;
+			case TImgTools.IMAGETYPE_INT: 
+				sliceLength=((int[]) curSlice).length;
+				break;
+			case TImgTools.IMAGETYPE_FLOAT: 
+				sliceLength=((float[]) curSlice).length;
+				break;
+			case TImgTools.IMAGETYPE_DOUBLE: 
+				sliceLength=((double[]) curSlice).length;
+				break;
+			case TImgTools.IMAGETYPE_LONG: 
+				sliceLength=((long[]) curSlice).length;
+				break;
+			default:
+				throw new IllegalArgumentException("Image type :"+TImgTools.getImageTypeName(imageType)+" is not yet supported");
+				
+			}
+			ArrayList<Tuple2<D3int, Object>> outList=new ArrayList<Tuple2<D3int, Object>>(sliceLength);
+			int index=0;
+			for(int z=0;z<dim.z;z++) {
+				for(int y=0;z<dim.y;y++) {
+					for(int x=0;x<dim.x;x++) {
+						final D3int outPos=new D3int(pos.x+x,pos.y+y,pos.z+z);
+						Object outValue;
+						switch(imageType) {
+						case TImgTools.IMAGETYPE_BOOL: 
+							outValue=new Boolean(((boolean[]) curSlice)[index]);
+							break;
+						case TImgTools.IMAGETYPE_CHAR: 
+							outValue=new Character(((char[]) curSlice)[index]);
+							break;
+						case TImgTools.IMAGETYPE_INT: 
+							outValue=new Integer(((int[]) curSlice)[index]);
+							break;
+						case TImgTools.IMAGETYPE_FLOAT: 
+							outValue=new Float(((float[]) curSlice)[index]);
+							break;
+						case TImgTools.IMAGETYPE_DOUBLE: 
+							outValue=new Double(((double[]) curSlice)[index]);
+							break;
+						case TImgTools.IMAGETYPE_LONG: 
+							outValue=new Long(((long[]) curSlice)[index]);
+							break;
+						default:
+							throw new IllegalArgumentException("Image type :"+TImgTools.getImageTypeName(imageType)+" is not yet supported");
+							
+						}
+						outList.add(new Tuple2<D3int,Object>(outPos,outValue));
+					}
+				}
+			}
+			return outList;
+		}
+		
+	}
+	/**
+	 * Transform the DTImg into a KVImg
+	 */
+	public KVImg<Object> asKV() {
+		JavaPairRDD<D3int,Object> kvBase = baseImg.flatMapToPair(new SliceToPoints<T>(getImageType()));
+		return new KVImg(getDim(), getPos(), getElSize(), getImageType(), kvBase);
+		
+	}
+	/**
 	 * Save the image into a series of text files without header (format x,y,z,val)
+	 * 
 	 * @param path
 	 */
 	public void HSave(String path) {
