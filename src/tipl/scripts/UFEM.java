@@ -88,14 +88,14 @@ public class UFEM implements Runnable {
 		final Resize myResizer = new Resize(maskImage);
 		myResizer.find_edges();
 		myResizer.execute();
-		return myResizer.ExportAim(maskImage);
+		return myResizer.ExportImages(maskImage)[0];
 	}
 
 	public static TImg boundbox(final TImg cAim, final TImg maskAim) {
 		final Resize myResizer = new Resize(cAim);
 		myResizer.cutROI(maskAim);
 		myResizer.execute();
-		return myResizer.ExportAim(cAim);
+		return myResizer.ExportImages(cAim)[0];
 	}
 
 	/**
@@ -135,7 +135,8 @@ public class UFEM implements Runnable {
 			final EasyContour myContour = new EasyContour(maskAim);
 			myContour.useFixedCirc(remEdgesRadius);
 			myContour.execute();
-			return myContour.ExportAim(maskAim);
+			
+			return myContour.ExportImages(maskAim)[0];
 		} else {
 			TImg cleanedMaskAim;
 			if (doCL) {
@@ -154,7 +155,7 @@ public class UFEM implements Runnable {
 			myContour.usePoly(maskContourSteps, maskContourBW);
 			myContour.bothContourModes = removeMarrowCore;
 			myContour.execute();
-			final Morpho cleanContour = new Morpho(myContour.ExportAim(maskAim));
+			final Morpho cleanContour = new Morpho(myContour.ExportImages(maskAim)[0]);
 			myContour = null;
 
 			// At least one opening operation to get rid of artifacts near the
@@ -162,7 +163,7 @@ public class UFEM implements Runnable {
 			cleanContour.useSphKernel(morphRadius);
 			cleanContour.openMany(2, new D3int(1, 1, 3), 1.0);
 			cleanContour.closeMany(1, new D3int(1, 1, 1), 1.0);
-			return cleanContour.ExportAim(cleanedMaskAim);
+			return cleanContour.ExportImages(cleanedMaskAim)[0];
 		}
 
 	}
@@ -183,7 +184,7 @@ public class UFEM implements Runnable {
 		fs.SetScale(upsampleFactor, upsampleFactor, upsampleFactor,
 				downsampleFactor, downsampleFactor, downsampleFactor);
 		fs.runFilter();
-		return fs.ExportAim(ufiltAim);
+		return fs.ExportImages(ufiltAim)[0];
 	}
 
 	public static void main(final String[] args) {
@@ -244,7 +245,7 @@ public class UFEM implements Runnable {
 		final Peel cPeel = new Peel(cAim, maskAim, new D3int(iters), asBool);
 		System.out.println("Calculating Peel " + cAim + " ...");
 		cPeel.execute();
-		return cPeel.ExportAim(cAim);
+		return cPeel.ExportImages(cAim)[0];
 	}
 
 	/** A simple circular contour, edge removal, and peeling */
@@ -254,12 +255,12 @@ public class UFEM implements Runnable {
 		myContour.useFixedCirc(remEdgesRadius);
 		myContour.execute();
 		cAim.appendProcLog(myContour.getProcLog());
-		final Peel cPeel = new Peel(cAim, myContour.ExportAim(cAim), new D3int(
+		final Peel cPeel = new Peel(cAim, myContour.ExportImages(cAim)[0], new D3int(
 				1));
 		myContour = null;
 		System.out.println("Calculating Remove Edges Peel " + cAim + " ...");
 		cPeel.execute();
-		return cPeel.ExportAim(cAim);
+		return cPeel.ExportImages(cAim)[0];
 	}
 
 	/** Segment the thesheld bone file into a clean mask */
@@ -736,7 +737,7 @@ public class UFEM implements Runnable {
 		final FilterScale fs = new FilterScale(previewData);
 		fs.SetScale(1, 1, 1, 1, 1, 20);
 		fs.runFilter();
-		final TImg tempAim = fs.ExportAim(previewData);
+		final TImg tempAim = fs.ExportImages(previewData)[0];
 		TImgTools.WriteTImg(tempAim,previewName);
 	}
 
@@ -1291,7 +1292,7 @@ public class UFEM implements Runnable {
 
 			final Thickness KT = new HildThickness(canalDistAim);
 			KT.execute();
-			cdtbAim = KT.ExportAim(canalDistAim);
+			cdtbAim = KT.ExportImages(canalDistAim)[0];
 			canalDistAim = null;
 			TImgTools.WriteTImg(cdtbAim,cdtbAimFile);
 			GrayAnalysis.StartHistogram(cdtbAim, cdtbAimFile + ".csv");
@@ -1303,7 +1304,7 @@ public class UFEM implements Runnable {
 				maskdistAim = TImgTools.ReadTImg(maskdistAimFile);
 			final Thickness MKT = new HildThickness(maskdistAim);
 			MKT.execute();
-			mdtoAim = MKT.ExportAim(maskdistAim);
+			mdtoAim = MKT.ExportImages(maskdistAim)[0];
 			maskdistAim = null;
 			TImgTools.WriteTImg(mdtoAim,mdtoAimFile);
 			GrayAnalysis.StartHistogram(mdtoAim, mdtoAimFile + ".csv");

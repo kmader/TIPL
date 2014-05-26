@@ -78,7 +78,7 @@ public class Peel extends BaseTIPLPluginMult {
 				cPeel = new Peel(inputAim, new D3int(peelS));
 			System.out.println("Calculating Peel " + inputFile + " ...");
 			cPeel.execute();
-			final TImg outputAim = cPeel.ExportAim(inputAim);
+			final TImg outputAim = cPeel.ExportImages(inputAim)[0];
 			if (outputFile.length() > 0)
 				TImgTools.WriteTImg(outputAim,outputFile);
 
@@ -143,14 +143,11 @@ public class Peel extends BaseTIPLPluginMult {
 			return false;
 	}
 
-	/**
-	 * Exports the resized result based on a template aim
-	 * 
-	 * @param templateAim
-	 *            input template aim file
-	 */
-	@Override
-	public TImg ExportAim(final TImg.CanExport templateAim) {
+	public TImg[] ExportImages(final TImgRO templateImage) {
+		final TImg cImg = TImgTools.WrapTImgRO(templateImage);
+		return new TImg[] {CreateOutputImage(cImg)};
+	}
+	protected TImg CreateOutputImage(final TImg.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				TImg outVirtualAim;

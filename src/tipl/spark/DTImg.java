@@ -494,6 +494,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		}
 		
 	}
+	
 	/**
 	 * Transform the DTImg into a KVImg
 	 */
@@ -502,6 +503,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		return new KVImg(getDim(), getPos(), getElSize(), getImageType(), kvBase);
 		
 	}
+	
 	/**
 	 * Save the image into a series of text files without header (format x,y,z,val)
 	 * 

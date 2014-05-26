@@ -144,7 +144,7 @@ public class HildThickness extends Thickness {
 		KV = null;
 		final Thickness KT = new HildThickness(distAim);
 		KT.execute();
-		return new TImg[] { distAim, KT.ExportAim(distAim) };
+		return new TImg[] { distAim, KT.ExportImages(distAim)[0] };
 	}
 
 	public static void main(final String[] args) {

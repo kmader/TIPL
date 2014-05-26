@@ -117,7 +117,7 @@ public class FoamThresholdBlock extends ThresholdBlock {
 			bubOpen.openMany(openIter, openNH, 1.0);
 			bubOpen.useSphKernel(morphRadius * openNH);
 			// bubOpen.erode(2,0.041);
-			afterCloseImg = bubOpen.ExportAim(inImage);
+			afterCloseImg = bubOpen.ExportImages(inImage)[0];
 		} else {
 			afterCloseImg=inImage;
 		}

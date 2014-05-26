@@ -40,7 +40,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 			a = 0.0;
 		}
 
-		/** Calcualte Contour */
+		/** Calculate Contour */
 		@Override
 		protected void irun() {
 			a = 0;
@@ -595,7 +595,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 			final EasyContour myContour = new EasyContour(maskAim);
 			myContour.usePoly(ContourSteps, ContourBW);
 			myContour.execute();
-			final TImg contouredAim = myContour.ExportAim(maskAim);
+			final TImg contouredAim = myContour.ExportImages(maskAim)[0];
 			if (outputFile.length() > 0)
 				TImgTools.WriteTImg(maskAim,outputMaskFile);
 			if (inputFile.length() > 0) { // Read in labels
@@ -606,7 +606,7 @@ public class EasyContour extends BaseTIPLPluginBW {
 
 				System.out.println("Calculating Peel " + inputFile + " ...");
 				cPeel.execute();
-				final TImg outputAim = cPeel.ExportAim(inputAim);
+				final TImg outputAim = cPeel.ExportImages(inputAim)[0];
 				if (outputFile.length() > 0)
 					TImgTools.WriteTImg(outputAim,outputFile);
 

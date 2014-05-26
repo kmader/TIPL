@@ -191,7 +191,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 
 			if (countimageAim.length() > 0) {
 				System.out.println("Writing counts ...");
-				TImgTools.WriteTImg(nbor.ExportAim(inputAim),countimageAim, 0, 0, false,false);
+				TImgTools.WriteTImg(nbor.ExportImages(inputAim)[0],countimageAim, 0, 0, false,false);
 			}
 			if (voxcountimageAim.length() > 0) {
 
@@ -350,11 +350,7 @@ public class Neighbors extends BaseTIPLPluginIO {
 		return super.execute(command, cObj);
 	}
 
-	/** export the default (count image) */
-	@Override
-	public TImg ExportAim(final TImg.CanExport templateAim) {
-		return ExportCountImageAim(templateAim);
-	}
+
 
 	/**
 	 * function to export the count image as an aim file (the number of
@@ -397,9 +393,8 @@ public class Neighbors extends BaseTIPLPluginIO {
 	 */
 	@Override
 	public TImg[] ExportImages(final TImgRO templateImage) {
-		// TODO Auto-generated method stub
 		final TImg cImg = TImgTools.WrapTImgRO(templateImage);
-		return new TImg[] { ExportAim(cImg), ExportVoxCountImageAim(cImg) };
+		return new TImg[] { ExportCountImageAim(cImg), ExportVoxCountImageAim(cImg) };
 	}
 
 	/**

@@ -490,13 +490,12 @@ public class Curvature extends BaseTIPLPluginIO {
 		fs.SetScale(upV, upV, upV, dnV, dnV, dnV);
 		fs.runFilter();
 
-		final TImg floatImg = fs.ExportAim(inputAim);
-		// TImg floatAim=TImgTools.MakeTImgFullReadble(floatImg);
-		// floatAim.WriteAim("temp-curve-test.tif");
+		final TImg floatImg = fs.ExportImages(inputAim)[0];
+
 		final Curvature ccPlug = new Curvature(floatImg, processThresh);
 		ccPlug.sigma = isig * upV / dnV;
 		ccPlug.execute();
-		final TImg outAim = ccPlug.ExportAim(floatImg, 0);
+		final TImg outAim = ccPlug.CreateOutputImage(floatImg, 0);
 		// if (peelImage) outAim=(new Peel(outAim,inMask,0)).ExportAim(outAim);
 		return outAim;
 	}
@@ -954,12 +953,7 @@ public class Curvature extends BaseTIPLPluginIO {
 		return true;
 	}
 
-	/** export result to an aim structure **/
-	@Override
-	public TImg ExportAim(final TImgRO.CanExport templateAim) {
-		return ExportAim(templateAim, 0);
-	}
-
+	
 	/**
 	 * export result to an aim structure
 	 * 
@@ -968,7 +962,7 @@ public class Curvature extends BaseTIPLPluginIO {
 	 *            determinant / gaussian curvature, 2 = principal curvature
 	 *            eigenvalue 1)
 	 * **/
-	public TImg ExportAim(final TImgRO.CanExport templateAim,
+	public TImg CreateOutputImage(final TImgRO.CanExport templateAim,
 			final int exportType) {
 		if (isInitialized) {
 			if (runCount > 0) {
@@ -1093,6 +1087,12 @@ public class Curvature extends BaseTIPLPluginIO {
 		final int bSlice = range[0];
 		final int tSlice = range[1];
 		curvature(bSlice, tSlice);
+	}
+
+	@Override
+	public TImg[] ExportImages(TImgRO templateImage) {
+		TImgRO.CanExport templateAim = TImgTools.makeTImgExportable(templateImage);
+		return new TImg[] {CreateOutputImage(templateAim,0)};
 	}
 
 

@@ -66,7 +66,7 @@ public class MCThickness extends Thickness {
 		final Thickness KT = new MCThickness();
 		KT.LoadImages(new TImg[] {distmapAim});
 		KT.execute();
-		return KT.ExportAim(distmapAim);
+		return KT.ExportImages(distmapAim)[0];
 	}
 
 	public static void main(final String[] args) {

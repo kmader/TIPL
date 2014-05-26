@@ -38,9 +38,13 @@ public abstract class Thickness extends BaseTIPLPluginIO {
 		// Just Sit and wait
 	}
 
-	// Multithreading functions
 	@Override
-	public TImg ExportAim(final TImgRO.CanExport templateAim) {
+	public TImg[] ExportImages(final TImgRO templateImage) {
+		final TImg cImg = TImgTools.WrapTImgRO(templateImage);
+		return new TImg[] { CreateOutputImage(cImg) };
+	}
+	
+	protected TImg CreateOutputImage(final TImgRO.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				final TImg outAimData = templateAim.inheritedAim(outAim, dim,
@@ -61,7 +65,8 @@ public abstract class Thickness extends BaseTIPLPluginIO {
 							+ ", has not yet been initialized, exported does not make any sense");
 		}
 	}
-
+	
+	// Multithreading functions
 	protected void fillBubble(final int x, final int y, final int z,
 			final double cMaxVal, final boolean useSync) {
 		// Fill in the bubble based on the distance map

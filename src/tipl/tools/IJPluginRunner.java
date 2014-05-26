@@ -201,14 +201,14 @@ public class IJPluginRunner extends BaseTIPLPluginMult {
 
 	/** Export result as an Aim file */
 	@Override
-	public TImg ExportAim(final TImgRO.CanExport templateAim) {
+	public TImg[] ExportImages(final TImgRO templateAim) {
 		final TImg outImage=ImageStackToTImg.FromImagePlus(ipImg);
 		outImage.setPos(templateAim.getPos());
 		outImage.setOffset(templateAim.getOffset());
 		outImage.setElSize(templateAim.getElSize());
 		outImage.appendProcLog(templateAim.getProcLog());
 		outImage.appendProcLog(procLog);
-		return outImage;
+		return new TImg[] {outImage};
 	}
 
 	@Override

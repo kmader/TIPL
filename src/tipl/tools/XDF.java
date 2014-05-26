@@ -128,8 +128,11 @@ public class XDF extends BaseTIPLPluginMult {
 			return dist;
 		}
 
-		public TImg ExportAim(TImg.CanExport templateAim) {
-			final TImg outAim = templateAim.inheritedAim(rdf(), rlen,
+		public TImg createTImg(TImgRO templateImage) {
+
+			final TImg cImg = TImgTools.WrapTImgRO(templateImage);
+			
+			final TImg outAim = cImg.inheritedAim(rdf(), rlen,
 					new D3int(0));
 			outAim.setPos(new D3int(-len.x, -len.y, -len.z));
 			return outAim;
@@ -851,7 +854,7 @@ public class XDF extends BaseTIPLPluginMult {
 
 	public static TImg WriteHistograms(XDF cXDF, TImgRO.CanExport inAim,
 			String outfile) {
-		final TImg outAim = cXDF.ExportAim(inAim);
+		final TImg outAim = cXDF.ExportImages(inAim)[0];
 		GrayAnalysis.StartRProfile(outAim, outfile + "_r.txt", 0.0f);
 		GrayAnalysis.StartZProfile(outAim, outfile + "_z.txt", 0.0f);
 		GrayAnalysis.StartRCylProfile(outAim, outfile + "_rcyl.txt", 0.0f);
@@ -1199,27 +1202,27 @@ public class XDF extends BaseTIPLPluginMult {
 	}
 
 	@Override
-	public TImg ExportAim(TImg.CanExport templateAim) {
+	public TImg[] ExportImages(TImgRO templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
-				final TImg tempAim = rdf.ExportAim(templateAim);// .inheritedAim(rdf.rdf(),rdf.rlen,new
+				final TImg tempAim = rdf.createTImg(templateAim);// .inheritedAim(rdf.rdf(),rdf.rlen,new
 																// D3int(0));
 				tempAim.appendProcLog(procLog);
-				return tempAim;
+				return new TImg[] {tempAim};
 
 			} else {
 				System.err
 						.println("The plug-in : "
 								+ getPluginName()
 								+ ", has not yet been run, exported does not exactly make sense, original data will be sent.");
-				return null;
+				throw new IllegalArgumentException("Plugin has not been run yet!");
 			}
 		} else {
 			System.err
 					.println("The plug-in : "
 							+ getPluginName()
 							+ ", has not yet been initialized, exported does not make any sense");
-			return null;
+			throw new IllegalArgumentException("Plugin has not been initialized yet!");
 
 		}
 	}

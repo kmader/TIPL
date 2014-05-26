@@ -143,9 +143,9 @@ public class TImgTools {
 	 */
 	public static int SPEED_DISK  = 0;
 	public static int SPEED_DISK_MMAP = 1;
-	public static int SPEED_DISK_AND_MEM =2;
-	public static int SPEED_MEMORY_CALCULATE =3;
-	public static int SPEED_MEMORY =4;
+	public static int SPEED_DISK_AND_MEM = 2;
+	public static int SPEED_MEMORY_CALCULATE = 3;
+	public static int SPEED_MEMORY = 4;
 	public static String appendProcLog(final String curLog, final String appText) {
 		return curLog + "\n" + new Date() + "\t" + appText;
 	}
@@ -237,7 +237,10 @@ public class TImgTools {
 					shortScaleFactor, maxVal);
 		case IMAGETYPE_INT: // int
 			return convertIntArray((int[]) inArray, outType, isSigned,
-					shortScaleFactor);
+					shortScaleFactor,65536);
+		case IMAGETYPE_LONG: // int
+			return convertLongArray((long[]) inArray, outType, isSigned,
+					shortScaleFactor,65536);
 		case IMAGETYPE_FLOAT: // float
 			return convertFloatArray((float[]) inArray, outType, isSigned,
 					shortScaleFactor);
@@ -273,6 +276,15 @@ public class TImgTools {
 				if (gf[i])
 					gi[i] = 127;
 			return gi;
+			
+		case IMAGETYPE_LONG: // Spec / Int
+			// Read integer data type in
+			final long[] gl = new long[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				if (gf[i])
+					gl[i] = 127;
+			return gl;
+			
 		case IMAGETYPE_FLOAT: // Float - Long
 			final float[] gout = new float[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
@@ -315,6 +327,13 @@ public class TImgTools {
 				gi[i] = gs[i];
 			return gi;
 
+		case IMAGETYPE_LONG: // Spec / Int
+			// Read integer data type in
+			final long[] gl = new long[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				gl[i] = gs[i];
+			return gl;
+			
 		case IMAGETYPE_FLOAT: // Float - Long
 			final float[] gf = new float[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
@@ -418,6 +437,76 @@ public class TImgTools {
 			// Read integer data type in
 
 			return gi;
+		
+		case IMAGETYPE_LONG:
+			final long[] gl = new long[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				gl[i] =  gi[i];
+			return gl;
+			
+		case IMAGETYPE_FLOAT: // Float - Long
+			final float[] gf = new float[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				gf[i] = (gi[i] - (isSigned ? maxVal / 2.0f : 0.0f))
+						* ShortScaleFactor;
+			return gf;
+			
+		case IMAGETYPE_DOUBLE: // Float - Long
+			final double[] gd = new double[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				gd[i] = (gi[i] - (isSigned ? maxVal / 2.0f : 0.0f))
+						* ShortScaleFactor;
+			return gd;
+		case IMAGETYPE_BOOL: // Mask
+			final boolean[] gbool = new boolean[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				gbool[i] = gi[i] > 0;
+
+			return gbool;
+		default:
+			throw new IllegalArgumentException("Unknown data type!!!" + asType
+					+ ", " + gi);
+
+		}
+	}
+	
+	@Deprecated
+	public static Object convertLongArray(final long[] gi, final int asType,
+			final boolean isSigned, final float ShortScaleFactor,
+			final int maxVal) {
+		final int sliceSize = gi.length;
+		switch (asType) {
+		case IMAGETYPE_CHAR: // Char
+			final char[] gb = new char[sliceSize];
+			for (int i = 0; i < sliceSize; i++) {
+				gb[i] = (char) gi[i];
+			}
+
+			return gb;
+
+		case IMAGETYPE_SHORT: // Short
+			final short[] gs = new short[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				gs[i] = (short) gi[i];
+			return gs;
+
+		case IMAGETYPE_INT: // Spec / Int
+			final int[] gint = new int[sliceSize];
+			for (int i = 0; i < sliceSize; i++) {
+				if (gi[i]>Integer.MAX_VALUE) {
+					gint[i]=Integer.MAX_VALUE;
+					System.out.println("Unsafe conversion from long to integer, saturation has occurred");
+				} else {
+					gint[i] = (int) gi[i];
+				}
+			}
+				
+			return gint;
+
+		case IMAGETYPE_LONG: // Spec / Int
+			// Read integer data type in
+
+			return gi;
 
 		case IMAGETYPE_FLOAT: // Float - Long
 			final float[] gf = new float[sliceSize];
@@ -468,8 +557,15 @@ public class TImgTools {
 			// Read integer data type in
 			final int[] gi = new int[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
-				gi[i] = gi[i];
+				gi[i] = gs[i];
 			return gi;
+		
+		case IMAGETYPE_LONG: // Spec / Int
+			// Read integer data type in
+			final long[] gl = new long[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				gl[i] = gs[i];
+			return gl;
 
 		case IMAGETYPE_FLOAT: // Float - Long
 			final float[] gf = new float[sliceSize];
@@ -754,7 +850,7 @@ public class TImgTools {
 	 * @return an exportable version of inImg
 	 */
 	public static TImgRO.CanExport makeTImgExportable(final TImgRO inImg) {
-		return VirtualAim.TImgToVirtualAim(inImg);
+		return WrapTImgRO(inImg);
 	}
 
 	/**
@@ -846,10 +942,16 @@ public class TImgTools {
 		}
 		return -1;
 	}
-
+	/**
+	 * For wrapping a TImgRO object so that it can be changed
+	 * @param inImage
+	 * @return
+	 */
 	public static TImg WrapTImgRO(final TImgRO inImage) {
 		return getStorage().wrapTImgRO(inImage);
 	}
+
+
 
 	/**
 	 * Starts a new thread to save the current image without interrupting other

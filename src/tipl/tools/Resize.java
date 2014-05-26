@@ -333,15 +333,20 @@ public class Resize extends BaseTIPLPluginMult {
 		}
 		return super.execute(command, cObj);
 	}
-
+	
+	@Override
+	public TImg[] ExportImages(final TImgRO templateImage) {
+		final TImg cImg = TImgTools.WrapTImgRO(templateImage);
+		return new TImg[] { CreateOutputImage(cImg) };
+	}
+	
 	/**
 	 * Exports the resized result based on a template aim
 	 * 
 	 * @param templateAim
 	 *            input template aim file
 	 */
-	@Override
-	public TImg ExportAim(final TImgRO.CanExport templateAim) {
+	public TImg CreateOutputImage(final TImgRO.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				TImg outVirtualAim;

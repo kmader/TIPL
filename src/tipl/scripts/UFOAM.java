@@ -363,14 +363,14 @@ public class UFOAM {
 		final Resize myResizer = new Resize(maskAim);
 		myResizer.find_edges();
 		myResizer.execute();
-		maskAim = myResizer.ExportAim(maskAim);
+		maskAim = myResizer.ExportImages(maskAim)[0];
 	}
 
 	public TImg boundbox(final TImg cAim) {
 		final Resize myResizer = new Resize(cAim);
 		myResizer.cutROI(maskAim);
 		myResizer.execute();
-		return myResizer.ExportAim(cAim);
+		return myResizer.ExportImages(cAim)[0];
 	}
 
 	public void cleanMasks() {
@@ -388,7 +388,7 @@ public class UFOAM {
 
 		platClose.erode(new D3int(2, 2, 0), 0.2);
 
-		platAim = platClose.ExportAim(threshoutAim);
+		platAim = platClose.ExportImages(threshoutAim)[0];
 		platClose = null; // Done with platClose tool
 
 		final boolean[] platMask = TImgTools.makeTImgFullReadable(platAim)
@@ -406,7 +406,7 @@ public class UFOAM {
 		bubOpen.useSphKernel(morphRadius * openNH);
 		// bubOpen.erode(2,0.041);
 
-		bubblesAim = bubOpen.ExportAim(platAim);
+		bubblesAim = bubOpen.ExportImages(platAim)[0];
 		bubOpen = null;
 		if (doBCL) {
 			System.out.println("Running Bubble Component Label " + bubblesAim
@@ -451,7 +451,7 @@ public class UFOAM {
 			}
 
 			myContour.execute();
-			maskAim = myContour.ExportAim(platAim);
+			maskAim =myContour.ExportImages(platAim)[0];
 		} else {
 			final boolean[] blankMask = new boolean[(int) platAim.getDim()
 					.prod()];
@@ -474,7 +474,7 @@ public class UFOAM {
 		final Peel cPeel = new Peel(cAim, pAim, new D3int(iters));
 		System.out.println("Calculating Peel " + cAim + " ...");
 		cPeel.execute();
-		return cPeel.ExportAim(cAim);
+		return cPeel.ExportImages(cAim)[0];
 	}
 
 	/**
@@ -554,7 +554,7 @@ public class UFOAM {
 	public void runDistGrow() {
 		DistGrow DG = new DistGrowT(distmapAim, labelsAim, bubblesAim);
 		DG.runDG();
-		bubblelabelsAim = DG.ExportAim(labelsAim);
+		bubblelabelsAim = DG.ExportImages(labelsAim)[0];
 		labelsAim = null;
 		
 		DG = null;
@@ -576,7 +576,7 @@ public class UFOAM {
 			TImgTools.WriteTImg(bubbleseedsAim,bubbleseedsAimFile,0,1.0f,false,false);
 		}
 		DL.execute();
-		labelsAim = DL.ExportAim(distmapAim);
+		labelsAim = DL.ExportImages(distmapAim)[0];
 		DL = null;
 
 	}
@@ -606,7 +606,7 @@ public class UFOAM {
 		fs.SetScale(upsampleFactor, upsampleFactor, upsampleFactor,
 				downsampleFactor, downsampleFactor, downsampleFactor);
 		fs.runFilter();
-		floatAim = fs.ExportAim(ufiltAim);
+		floatAim = fs.ExportImages(ufiltAim)[0];
 		ufiltAim = null;
 		TIPLGlobal.runGC();
 	}
@@ -891,7 +891,7 @@ public class UFOAM {
 			cXDF.LoadImages(new TImgRO[] { bubblesAim, maskAim });
 			cXDF.milMode = rdfMILmode; // for volanic rock this makes sense
 			cXDF.execute();
-			rdfAim = cXDF.ExportAim(bubblesAim);
+			rdfAim = cXDF.ExportImages(bubblesAim)[0];
 			TImgTools.WriteTImg(rdfAim,rdfAimFile);
 			break;
 		case 11: // Z Profiles
@@ -953,7 +953,7 @@ public class UFOAM {
 		if (ridgeAimFile.length() > 0)
 			TImgTools.WriteTImg(KT.ExportRidgeAim(distmapAim),ridgeAimFile);
 		KT.execute();
-		thickmapAim = KT.ExportAim(distmapAim);
+		thickmapAim = KT.ExportImages(distmapAim)[0];
 		KT = null;
 	}
 

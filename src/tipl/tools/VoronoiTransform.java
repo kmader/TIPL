@@ -79,10 +79,6 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 		 */
 	}
 
-	@Override
-	public TImg ExportAim(final TImgRO.CanExport templateAim) {
-		return ExportVolumesAim(templateAim);
-	}
 
 	/** Code for exporting the voronoi distances to an Aim class */
 	public TImg ExportDistanceAim(final TImgRO.CanExport templateAim) {

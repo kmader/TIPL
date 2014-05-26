@@ -127,7 +127,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 			final FilterScale myFilterScaler = new FilterScale(inputAim);
 			System.out.println("Resizing" + inputFile + " ...");
 			cmdLineFilter(myFilterScaler, p);
-			final TImg outputAim = myFilterScaler.ExportAim(inputAim);
+			final TImg outputAim = myFilterScaler.ExportImages(inputAim)[0];
 			TImgTools.WriteTImg(outputAim,outputFile);
 
 		}
@@ -319,15 +319,20 @@ public class FilterScale extends BaseTIPLPluginMult {
 	public boolean execute() {
 		return runFilter();
 	}
-
+	
+	@Override
+	public TImg[] ExportImages(final TImgRO inImage) {
+		TImgRO.CanExport templateAim = TImgTools.makeTImgExportable(inImage);
+		return new TImg[] {CreateOutputImage(templateAim)};
+	}
 	/**
 	 * Exports the FilterScaled result based on a template aim
 	 * 
 	 * @param templateAim
 	 *            input template aim file
 	 */
-	@Override
-	public TImg ExportAim(final TImgRO.CanExport templateAim) {
+
+	public TImg CreateOutputImage(final TImgRO.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
 				TImg outVirtualAim;
@@ -791,4 +796,5 @@ public class FilterScale extends BaseTIPLPluginMult {
 		dnY = dy;
 		dnZ = dz;
 	}
+
 }

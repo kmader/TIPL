@@ -34,7 +34,7 @@ public class UFEMtests {
 	 */
 	@Test
 	public void testUFEM() {
-		UFEM.main(new String[] {"-ufilt=/Users/mader/Dropbox/TIPL/test/simplefoam/distmap.tif","-thresh=15","-resample"});
+		UFEM.main(new String[] {"-ufilt=/Users/mader/Dropbox/tipl/test/simplefoam/distmap.tif","-thresh=15","-resample"});
 		fail("Not yet implemented"); // TODO
 	}
 

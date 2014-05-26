@@ -345,22 +345,10 @@ public class ComponentLabel extends BaseTIPLPluginIO {
 	}
 
 	/**
-	 * Exports the labeled result based on a template aim
-	 * 
-	 * @param templateAim
-	 *            input template aim file
-	 */
-	@Override
-	public TImg ExportAim(final TImgRO.CanExport templateAim) {
-		return ExportLabelsAim(templateAim);
-	}
-
-	/**
 	 * This implementation exports the labels image and then the mask image
 	 */
 	@Override
 	public TImg[] ExportImages(final TImgRO templateImage) {
-		// TODO Auto-generated method stub
 		final TImgRO.CanExport cImg = TImgTools
 				.makeTImgExportable(templateImage);
 		return new TImg[] { ExportLabelsAim(cImg), ExportMaskAim(cImg) };

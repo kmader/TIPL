@@ -546,13 +546,15 @@ public class DistLabel extends BaseTIPLPluginIO {
 
 	/** Write the labeled bubbles to an image based on the template */
 	@Override
-	public TImg ExportAim(final TImgRO.CanExport templateAim) {
+	public TImg[] ExportImages(final TImgRO inTImg) {
+		TImgRO.CanExport templateAim = TImgTools.makeTImgExportable(inTImg);
+		
 		if (isInitialized) {
 			if (runCount > 0) {
 				final TImg outAimData = templateAim.inheritedAim(labels, dim,
 						offset);
 				outAimData.appendProcLog(procLog);
-				return outAimData;
+				return new TImg[] {outAimData};
 			} else {
 				throw new IllegalArgumentException(
 						"The plug-in : "

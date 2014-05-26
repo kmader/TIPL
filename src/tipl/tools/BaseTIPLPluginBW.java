@@ -23,28 +23,29 @@ abstract public class BaseTIPLPluginBW extends BaseTIPLPluginIO {
 		isInitialized = false;
 	}
 
-	/** initializer function taking an aim-file */
+	
 	@Override
-	public TImg ExportAim(final TImgRO.CanExport templateAim) {
+	public TImg[] ExportImages(final TImgRO templateImage) {
+		TImgRO.CanExport templateAim = TImgTools.makeTImgExportable(templateImage);
 		if (isInitialized) {
 			if (runCount > 0) {
 				final TImg outAimData = templateAim.inheritedAim(outAim, dim,
 						offset);
 				outAimData.appendProcLog(procLog);
-				return outAimData;
+				return  new TImg[] {outAimData};
 			} else {
 				System.err
 						.println("The plug-in : "
 								+ getPluginName()
 								+ ", has not yet been run, exported does not exactly make sense, original data will be sent.");
-				return templateAim.inheritedAim(inAim, dim, offset);
+				return new TImg[] {templateAim.inheritedAim(inAim, dim, offset)};
 			}
 		} else {
 			System.err
 					.println("The plug-in : "
 							+ getPluginName()
 							+ ", has not yet been initialized, exported does not make any sense");
-			return templateAim.inheritedAim(templateAim);
+			return  new TImg[] {templateAim.inheritedAim(templateAim)};
 
 		}
 	}

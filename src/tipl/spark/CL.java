@@ -122,6 +122,7 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
 		curPlugin.execute();
 		
 	}
+	
 	public CL() {
 	}
 	
@@ -698,13 +699,13 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
 				runTime+","+mapOps+","+SparkGlobal.maxCores+	","+SparkGlobal.getSparkPersistenceValue()+","+SparkGlobal.useCompression);
 		
 		return true;
-	}
-
+	} 
 
 	@Override
-	public TImg ExportAim(CanExport templateAim) {
-		// TODO Auto-generated method stub
-		return null;
+	public TImg[] ExportImages(final TImgRO templateImage) {
+		final TImgRO.CanExport cImg = TImgTools
+				.makeTImgExportable(templateImage);
+		return new TImg[] { labelImg, maskImg };
 	}
 	
 
