@@ -18,12 +18,13 @@ import tipl.util.TImgBlock;
 import tipl.util.TImgTools;
 
 /**
- * KVImg is a key value pair image consisting of a key (position formatted as D3int) and a value of type T
+ * KVImg is a key value pair image consisting of a key (position formatted as D3int) and a value of type T (extension of number)
+ * <strong>Note since neither Character or Boolean are subclasses of number they have both been replaced with Byte</strong>
  * 
  * @author mader
  *
  */
-public class KVImg<T> implements TImgRO,Serializable {
+public class KVImg<T extends Number> implements TImgRO,Serializable {
 	final protected JavaPairRDD<D3int, T> baseImg;
 	final protected D3int dim;
 	final protected D3int pos;
@@ -185,10 +186,10 @@ public class KVImg<T> implements TImgRO,Serializable {
 			final int index=curElement._1.intValue();
 			switch(cImageType) {
 			case TImgTools.IMAGETYPE_BOOL: 
-				((boolean[]) curSlice)[index]=((Boolean) curElement._2).booleanValue();
+				((boolean[]) curSlice)[index]=((Byte) curElement._2).byteValue()>0;
 				break;
 			case TImgTools.IMAGETYPE_CHAR: 
-				((char[]) curSlice)[index]=((Character) curElement._2).charValue();
+				((char[]) curSlice)[index]=(char) ((Byte) curElement._2).byteValue();
 				break;
 			case TImgTools.IMAGETYPE_INT: 
 				((int[]) curSlice)[index]=((Integer) curElement._2).intValue();

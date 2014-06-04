@@ -10,7 +10,7 @@ import tipl.tools.kVoronoiShrink as KV # voronoi transform
 import tipl.tools.Neighbors as Neighbors # neighbors
 import tipl.util.D3int as D3int # 3d points
 import tipl.util.D3float as D3float # 3d float points
-import tipl.util.ArgumentParser as AP
+import tipl.util.TIPLGlobal as TG
 import tipl.util.TImgTools as TIT
 import tipl.util.TImgTools.WriteBackground as WriteBackground
 import tipl.util.SGEJob as SGEJob
@@ -25,7 +25,7 @@ import os,sys,inspect
 from jarray import array,zeros # matrix library
 
 
-p=AP(sys.argv[1:])
+p=TG.activeParser(sys.argv[1:])
 p.blockOverwrite()  
 TIPLGlobal.availableCores=p.getOptionInt("maxcores",TIPLGlobal.availableCores,"Number of cores/threads to use for processing"); 
 VA.scratchLoading = p.getOptionBoolean("local","Load image data from local filesystems");

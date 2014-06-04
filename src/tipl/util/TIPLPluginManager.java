@@ -8,8 +8,8 @@ import static ch.lambdaj.Lambda.filter;
 import static ch.lambdaj.Lambda.having;
 import static ch.lambdaj.Lambda.on;
 import static ch.lambdaj.Lambda.sort;
-import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.either;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
@@ -142,8 +142,9 @@ public class TIPLPluginManager {
 		return filter(having(on(PluginInfo.class).pluginType(),equalToIgnoringCase(pluginType)),getAllPlugins());
 	}
 	public static List<PluginInfo> getPluginsBySize(final List<PluginInfo> inList,long voxelCount) {
-		return filter(having(on(PluginInfo.class).maximumSize(),
-				anyOf(greaterThan(voxelCount),lessThan(0L))), // either larger than the voxel count or negative 1
+		 return filter(having(on(PluginInfo.class).maximumSize(),
+				either(greaterThan(voxelCount)).
+				or(lessThan(0L))), // either larger than the voxel count or negative 1
 				inList);
 	}
 	/** 

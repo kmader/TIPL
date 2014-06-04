@@ -717,7 +717,7 @@ public class UFEM implements Runnable {
 	protected void makeMaskDist() {
 		if (maskAim == null)
 			maskAim = TImgTools.ReadTImg(maskAimFile);
-
+		
 		ITIPLPluginIO KV = TIPLPluginManager.createBestPluginIO("kVoronoi",new TImg[] {maskAim});
 		KV.setParameter("-includeedges=true");
 		KV.LoadImages(new TImg[] {null,maskAim});

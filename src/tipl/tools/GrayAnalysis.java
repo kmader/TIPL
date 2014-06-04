@@ -162,10 +162,40 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 
 		final ArgumentParser p = TIPLGlobal.activeParser(args);
-		if (p.hasOption("?")) {
-			showHelp();
+		boolean justHistogram = p.getOptionBoolean("histogram", false, "Just make a histogram from the data");
+		if(justHistogram) {
+			GrayAnalysis junk = new GrayAnalysis();
+			
+			String infile=p.getOptionPath("file", "gfilt.tif", "Name of the file to run a histogram on");
+			String outFile=p.getOptionPath("csv","gfilt.csv","Name of the output file");
+			boolean usefloat = p.getOptionBoolean("usefloat",false,"use scaled float values for bins");
+			boolean removeBlanks = p.getOptionBoolean("removeblanks",false,"remove blank fields");
+			
+			junk.fmin=p.getOptionDouble("fmin", junk.fmin, "minimum value for float datasets (make bins)");
+			junk.fmax=p.getOptionDouble("fmax", junk.fmax, "maximum value for float datasets (make bins)");
+			junk.fbins=p.getOptionInt("fsteps", junk.fbins, "bins (32767) for float datasets (make bins)");
+			
+			
+			
+			if (p.hasOption("?")) {
+				System.out.println(p.getHelp());
+				return;
+			}
+			
+			final TImgRO gfilt=TImgTools.ReadTImg(infile);
+			if(usefloat) 
+				StartHistogram(gfilt,outFile,junk.fmin,junk.fmax,junk.fbins,removeBlanks);
+			else 
+				StartHistogram(gfilt,outFile,removeBlanks);
+			return;
+		
 		}
-
+		if (p.hasOption("?")) {
+			System.out.println(p.getHelp());
+			showHelp();
+			return;
+		}
+		
 		final GrayAnalysis myGrayAnalysis = new GrayAnalysis(p);
 		myGrayAnalysis.execute();
 
@@ -221,7 +251,6 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		System.out.println("	-gradcol = write gradient as additional columns");
 		System.out.println("	-angcol = write angles as additional columns");
 		System.out.println("	-analysis = name for analysis");
-		System.exit(0);
 	}
 
 	/**
@@ -388,7 +417,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	 *            the number of bins to use
 	 */
 	public static void StartHistogram(final TImgRO inGfilt,
-			final String outFile, final float minVal, final float maxVal,
+			final String outFile, final double minVal, final double maxVal,
 			final int steps) {
 		 StartHistogram(inGfilt, outFile, minVal, maxVal, steps, false);
 	}
@@ -408,7 +437,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	 *            the number of bins to use
 	 */
 	public static void StartHistogram(final TImgRO inGfilt,
-			final String outFile, final float minVal, final float maxVal,
+			final String outFile, final double minVal, final double maxVal,
 			final int steps, final boolean removeBlanks) {
 		final GrayAnalysis newGray = new GrayAnalysis();
 		newGray.mapA = inGfilt;
@@ -998,24 +1027,19 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
 		int[] mapSlice;
 		switch (mapA.getImageType()) {
-		case 0:
-		case 1:
-			final short[] smapSlice = fullMapA.getShortArray(sliceNumber);
-			mapSlice = new int[smapSlice.length];
-			for (int cIndex = 0; cIndex < smapSlice.length; cIndex++)
-				mapSlice[cIndex] = smapSlice[cIndex];
-			break;
-		case 2:
+		case TImgTools.IMAGETYPE_CHAR:
+		case TImgTools.IMAGETYPE_SHORT:
+		case TImgTools.IMAGETYPE_INT:
 			mapSlice = fullMapA.getIntArray(sliceNumber);
 			break;
-		case 3:
+		case TImgTools.IMAGETYPE_FLOAT:
 			float[] fmapSlice = fullMapA.getFloatArray(sliceNumber);
 			mapSlice = new int[fmapSlice.length];
 			for (int cIndex = 0; cIndex < fmapSlice.length; cIndex++)
 				mapSlice[cIndex] = f2i(fmapSlice[cIndex],fmin,fmax,fbins);
 			fmapSlice = null;
 			break;
-		case 10:
+		case TImgTools.IMAGETYPE_BOOL:
 			final boolean[] bmap = fullMapA.getBoolArray(sliceNumber);
 			mapSlice = new int[bmap.length];
 			for (int cIndex = 0; cIndex < bmap.length; cIndex++)
@@ -1040,12 +1064,6 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 			switch (gfiltA.getImageType()) {
 			case 0:
 			case 1:
-				final short[] sgfiltSlice = fullGfiltA
-						.getShortArray(sliceNumber);
-				gfiltSlice = new int[sgfiltSlice.length];
-				for (int cIndex = 0; cIndex < sgfiltSlice.length; cIndex++)
-					gfiltSlice[cIndex] = sgfiltSlice[cIndex];
-				break;
 			case 2:
 				gfiltSlice = fullGfiltA.getIntArray(sliceNumber);
 				break;
@@ -1292,8 +1310,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
 		long start = System.currentTimeMillis();
 		System.out.println("Reading Slices... " + mapA.getDim().z);
-		if ((mapA.getImageType() == 1) | (mapA.getImageType() == 2)
-				| (mapA.getImageType() == 3)) {
+
 			for (int cSlice = 0; cSlice < mapA.getDim().z; cSlice++) {
 				if (TIPLGlobal.getDebug())
 					System.out.println("Reading Slices " + cSlice + "/"
@@ -1302,10 +1319,10 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 						noThresh,0, fmin, fmax, fbins, invertGFILT, 
 						maxGroup, threshVal, useGFILT);
 					
-			}
 			System.out.println("Rescanning Slices for COV Matrix... "
 					+ mapA.getDim().z);
-			for (int cSlice = 0; cSlice < mapA.getDim().z; cSlice++) {
+			
+			for ( cSlice = 0; cSlice < mapA.getDim().z; cSlice++) {
 				if (TIPLGlobal.getDebug())
 					System.out.println("Reading Slices " + cSlice + "/"
 							+ mapA.getDim().z);
@@ -1313,10 +1330,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 						noThresh,1, fmin, fmax, fbins, invertGFILT, 
 						maxGroup, threshVal, useGFILT);
 			}
-		} else {
-			throw new IllegalArgumentException("ERROR: Map of type : "
-					+ mapA.getImageType() + " not supported!");
-		}
+		} 
 		System.out.println("Done Reading..."
 				+ (System.currentTimeMillis() - start) / (60 * 1000F)
 				+ "mins, Objects:" + maxGroup + "; Voxels:" + totVox);

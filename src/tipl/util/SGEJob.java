@@ -404,7 +404,8 @@ public class SGEJob {
 	/**
 	 * code to run at the end of a job to clean everything up
 	 */
-	static String cleanupString="\n find /home/scratch -type d -name 'spark*' -mtime +4  -exec rm -rf {} \\;";
+	static String cleanupString="\n find /home/scratch -type d -name 'spark*' -mtime +4  -exec rm -rf {} \\; \n find /home/scratch -type d -name 'app-*' -mtime +4 -exec rm -rf {} \\; \n find /home/scratch -name 'virtAIM*' -mtime +4 -exec rm -rf {} \\; ";
+	
 	
 
 	public void submit() {

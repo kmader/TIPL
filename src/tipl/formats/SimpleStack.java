@@ -3,6 +3,7 @@
  */
 package tipl.formats;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import tipl.formats.TImgRO.TImgStack;
@@ -18,7 +19,12 @@ import tipl.util.TImgTools;
  * @author mader
  * 
  */
-public class SimpleStack<T> extends TImgStack {
+public class SimpleStack<T> extends TImgStack implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1770047414806023738L;
+
 	public static SimpleStack<boolean[]> BoolStack(final D3int cDim,
 			final D3int cPos, final D3float cEl) {
 		final int sliceDim = cDim.x * cDim.y;

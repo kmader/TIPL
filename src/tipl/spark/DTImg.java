@@ -420,13 +420,13 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	 *
 	 * @param <U>
 	 */
-	public static class SliceToPoints<U extends Cloneable> implements PairFlatMapFunction<Tuple2<D3int,TImgBlock<U>>,D3int,Object> {
+	public static class SliceToPoints<U extends Cloneable> implements PairFlatMapFunction<Tuple2<D3int,TImgBlock<U>>,D3int,Number> {
 		final int imageType;
 		public SliceToPoints(int inImageType) {
 			imageType=inImageType;
 		}
 		@Override
-		public Iterable<Tuple2<D3int, Object>> call(
+		public Iterable<Tuple2<D3int, Number>> call(
 				Tuple2<D3int, TImgBlock<U>> arg0) throws Exception {
 			TImgBlock<U> cBlock=arg0._2;
 			final U curSlice=cBlock.get();
@@ -456,19 +456,19 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 				throw new IllegalArgumentException("Image type :"+TImgTools.getImageTypeName(imageType)+" is not yet supported");
 				
 			}
-			ArrayList<Tuple2<D3int, Object>> outList=new ArrayList<Tuple2<D3int, Object>>(sliceLength);
+			ArrayList<Tuple2<D3int, Number>> outList=new ArrayList<Tuple2<D3int, Number>>(sliceLength);
 			int index=0;
 			for(int z=0;z<dim.z;z++) {
 				for(int y=0;z<dim.y;y++) {
 					for(int x=0;x<dim.x;x++) {
 						final D3int outPos=new D3int(pos.x+x,pos.y+y,pos.z+z);
-						Object outValue;
+						Number outValue;
 						switch(imageType) {
 						case TImgTools.IMAGETYPE_BOOL: 
-							outValue=new Boolean(((boolean[]) curSlice)[index]);
+							outValue=new Byte(((boolean[]) curSlice)[index] ? (byte) 0 : (byte) 127);
 							break;
 						case TImgTools.IMAGETYPE_CHAR: 
-							outValue=new Character(((char[]) curSlice)[index]);
+							outValue=new Byte((byte) ((char[]) curSlice)[index]);
 							break;
 						case TImgTools.IMAGETYPE_INT: 
 							outValue=new Integer(((int[]) curSlice)[index]);
@@ -486,7 +486,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 							throw new IllegalArgumentException("Image type :"+TImgTools.getImageTypeName(imageType)+" is not yet supported");
 							
 						}
-						outList.add(new Tuple2<D3int,Object>(outPos,outValue));
+						outList.add(new Tuple2<D3int,Number>(outPos,outValue));
 					}
 				}
 			}
@@ -498,8 +498,8 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	/**
 	 * Transform the DTImg into a KVImg
 	 */
-	public KVImg<Object> asKV() {
-		JavaPairRDD<D3int,Object> kvBase = baseImg.flatMapToPair(new SliceToPoints<T>(getImageType()));
+	public KVImg<Number> asKV() {
+		JavaPairRDD<D3int,Number> kvBase = baseImg.flatMapToPair(new SliceToPoints<T>(getImageType()));
 		return new KVImg(getDim(), getPos(), getElSize(), getImageType(), kvBase);
 		
 	}
