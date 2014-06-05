@@ -36,7 +36,7 @@ public class AnalyzePhase extends BaseTIPLBlock {
 			final ITIPLPluginIO vorn = getGrowingPlugin(labeledImage, maskImage);
 			vorn.execute();
 			final TImg growOut = vorn.ExportImages(labeledImage)[0];
-			final TImgRO cImg = (useGrownLabel) ? (labeledImage) : (growOut);
+			final TImgRO cImg = (useGrownLabel) ? (growOut) : (labeledImage);
 			GrayAnalysis.StartLacunaAnalysis(cImg, phName + "_1.csv", "Mask",
 					writeShapeTensor);
 			GrayAnalysis.AddDensityColumn(growOut, phName + "_1.csv", phName

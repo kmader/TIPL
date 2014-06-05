@@ -35,7 +35,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	public String getPluginName() {
 		return "GrayAnalysis";
 	}
-	
+
 	public static final String kVer = "03-06-14 v 104";
 	public static boolean doPreload = false;
 
@@ -165,37 +165,37 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		boolean justHistogram = p.getOptionBoolean("histogram", false, "Just make a histogram from the data");
 		if(justHistogram) {
 			GrayAnalysis junk = new GrayAnalysis();
-			
+
 			String infile=p.getOptionPath("file", "gfilt.tif", "Name of the file to run a histogram on");
 			String outFile=p.getOptionPath("csv","gfilt.csv","Name of the output file");
 			boolean usefloat = p.getOptionBoolean("usefloat",false,"use scaled float values for bins");
 			boolean removeBlanks = p.getOptionBoolean("removeblanks",false,"remove blank fields");
-			
+
 			junk.fmin=p.getOptionDouble("fmin", junk.fmin, "minimum value for float datasets (make bins)");
 			junk.fmax=p.getOptionDouble("fmax", junk.fmax, "maximum value for float datasets (make bins)");
 			junk.fbins=p.getOptionInt("fsteps", junk.fbins, "bins (32767) for float datasets (make bins)");
-			
-			
-			
+
+
+
 			if (p.hasOption("?")) {
 				System.out.println(p.getHelp());
 				return;
 			}
-			
+
 			final TImgRO gfilt=TImgTools.ReadTImg(infile);
 			if(usefloat) 
 				StartHistogram(gfilt,outFile,junk.fmin,junk.fmax,junk.fbins,removeBlanks);
 			else 
 				StartHistogram(gfilt,outFile,removeBlanks);
 			return;
-		
+
 		}
 		if (p.hasOption("?")) {
 			System.out.println(p.getHelp());
 			showHelp();
 			return;
 		}
-		
+
 		final GrayAnalysis myGrayAnalysis = new GrayAnalysis(p);
 		myGrayAnalysis.execute();
 
@@ -206,17 +206,17 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	public static void showHelp() {
 		System.out.println(" Gray Analysis Help");
 		System.out
-				.println(" Analyzes Labeled Gray values inside of Int Labeled Regions");
+		.println(" Analyzes Labeled Gray values inside of Int Labeled Regions");
 		System.out.println(" Arguments::");
 		System.out.println("  Map Parameters::");
 		System.out.println("	-map = Map aim with labels");
 		System.out.println("	-usefloat = use scaled float values for bins");
 		System.out
-				.println("	-fmin = minimum value (0) for float datasets (make bins)");
+		.println("	-fmin = minimum value (0) for float datasets (make bins)");
 		System.out
-				.println("	-fmax = max value (32766) for float datasets (make bins)");
+		.println("	-fmax = max value (32766) for float datasets (make bins)");
 		System.out
-				.println("	-fsteps = bins (32767) for float datasets (make bins)");
+		.println("	-fsteps = bins (32767) for float datasets (make bins)");
 		System.out.println("  GrayValue Parameters::");
 		System.out.println("	-gfilt = Gray Value Image");
 		System.out.println("	-useshort = use short values instead of scaled");
@@ -224,7 +224,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		System.out.println("	-thresh = set threshold (default 0)");
 		System.out.println("	-nothresh = do not use threshold");
 		System.out
-				.println("	-boxroidist = instead of gfilt calculate distance from box edge");
+		.println("	-boxroidist = instead of gfilt calculate distance from box edge");
 		System.out.println("  CSV Parameters::");
 		System.out.println("	-csv = CSV out filename");
 		System.out.println("	-noblank = suppress printing blank lines");
@@ -232,14 +232,14 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		System.out.println("	-debug = debug mode enable");
 		System.out.println("  -lacun  = write output in _LACUN.CSV format");
 		System.out
-				.println("--------------------------------------------------");
+		.println("--------------------------------------------------");
 		System.out
-				.println("-- Embedding Output in LACUN output file ---------");
+		.println("-- Embedding Output in LACUN output file ---------");
 		System.out.println("	-insert = insert results from existing csv file");
 		System.out
-				.println("	-meancol (def:on) = don't write mean column in file");
+		.println("	-meancol (def:on) = don't write mean column in file");
 		System.out
-				.println("	-stdcol (def:on) = don't write std column in file");
+		.println("	-stdcol (def:on) = don't write std column in file");
 		System.out.println("	-maxcol = write max as additional column");
 		System.out.println("	-mincol = write min as additional column");
 		System.out.println("	-cntcol = write bin count as additional column");
@@ -247,7 +247,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		System.out.println("	-comcol = write CoM as additional columns");
 		System.out.println("	-sovcol = write CoV.Std as additional columns");
 		System.out
-				.println("	-pcacols= write PCA vectors of inertial matrix as additional columns");
+		.println("	-pcacols= write PCA vectors of inertial matrix as additional columns");
 		System.out.println("	-gradcol = write gradient as additional columns");
 		System.out.println("	-angcol = write angles as additional columns");
 		System.out.println("	-analysis = name for analysis");
@@ -419,7 +419,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	public static void StartHistogram(final TImgRO inGfilt,
 			final String outFile, final double minVal, final double maxVal,
 			final int steps) {
-		 StartHistogram(inGfilt, outFile, minVal, maxVal, steps, false);
+		StartHistogram(inGfilt, outFile, minVal, maxVal, steps, false);
 	}
 
 	/**
@@ -659,11 +659,11 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	protected double mapScaleFactor = 1.0;
 	protected TImgRO gfiltA;
 	protected int maxGroup = 0;
-	
+
 	static protected double totVox = 0;
 	static protected double totSum = 0;
 	static protected double totSqSum = 0;
-	
+
 	protected double fmin = 0;
 	protected double fmax = 32765;
 	static final int MAXARRVAL = 500000; // Integer.MAX_VALUE;
@@ -762,7 +762,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	/** Plain old initializer */
 	protected GrayAnalysis() {
 	}
-	
+
 	@Override
 	public ArgumentParser setParameter(ArgumentParser inArgs,final String prefix) {
 		useComma = inArgs.getOptionBoolean(prefix+"usecsv",useComma,"Use commas in output");
@@ -786,7 +786,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		// CSV file)
 		lacunaMode = inArgs.getOptionBoolean(prefix+"lacuna",lacunaMode,"use lacuna mode");
 		noBlank = inArgs.getOptionBoolean(prefix+"noblank",noBlank,"remove blank lines where count is zero");
-		
+
 		boxDist = inArgs.getOptionBoolean(prefix+"boxroidist",boxDist,"calculated distance based on a box of the region of interest (box edge distance)");
 		includeShapeTensor = inArgs.getOptionBoolean(prefix+"shapetensor",includeShapeTensor,"add columns for shape tensor");
 		invertGFILT = inArgs.getOptionBoolean(prefix+"invert",invertGFILT,"invert the values in the value image (gfilt)");
@@ -795,35 +795,35 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		fmin=inArgs.getOptionDouble(prefix+"fmin",fmin,"Min value for float binning of value image");
 		fmax=inArgs.getOptionDouble(prefix+"fmax",fmax,"Max value for float binning of value image");
 		fbins=inArgs.getOptionInt(prefix+"fmin",fbins,"Number of bines for float binning of value image");
-		
+
 		analysisName = inArgs.getOptionString(prefix+"analysis",analysisName,"Name of analysis");
 		insName = inArgs.getOptionString(prefix+"insert",insName,"insert results into an existing csv");
 
-		
+
 		if (useComma)
 			dlmChar = ", ";
 		else
 			dlmChar="\t";
-		
-		
+
+
 		return inArgs;
 	}
 	@Deprecated
 	public GrayAnalysis(final ArgumentParser p) {
 
 
-		
+
 
 		final String mapName = p.getOptionAsString("map"); // Map is a needed
-															// parameter
+		// parameter
 
 		if (useGFILT)
 			gfiltName = p.getOptionAsString("gfilt"); // gfilt is a given
-														// parameter
+		// parameter
 		csvName = p.getOptionAsString("csv"); // CSV file is a needed parameter
 
-			
-		
+
+
 
 		System.out.println("Map Aim: " + mapName);
 		if (useGFILT)
@@ -847,12 +847,12 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		if (useGFILT) {
 			gfiltA = TImgTools.ReadTImg(gfiltName);
 
-			
+
 			if (TImgTools.CheckSizes2(mapA, gfiltA)) {
 				System.out.println("Sizes Match..");
 			} else {
 				System.out
-						.println("ERROR : Aim Dimensions DO NOT MATCH, PROCEED WITH CAUTION");
+				.println("ERROR : Aim Dimensions DO NOT MATCH, PROCEED WITH CAUTION");
 			}
 		}
 
@@ -1052,7 +1052,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
 		}
 
-		
+
 
 		int[] gfiltSlice = new int[1];
 		float[] fgfiltSlice = new float[1];
@@ -1072,7 +1072,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 				break;
 			case 10:
 				final boolean[] bgfiltSlice = fullGfiltA
-						.getBoolArray(sliceNumber);
+				.getBoolArray(sliceNumber);
 				gfiltSlice = new int[bgfiltSlice.length];
 				for (int cIndex = 0; cIndex < bgfiltSlice.length; cIndex++)
 					if (bgfiltSlice[cIndex])
@@ -1084,7 +1084,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 			}
 		}
 		double cVal;
-		
+
 		for (int cIndex = 0; cIndex < mapSlice.length; cIndex++) {
 			final int cMapVal = mapSlice[cIndex];
 
@@ -1114,7 +1114,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
 						final Double[] cPos = TImgTools.getXYZVecFromVec(mapA,
 								cIndex, sliceNumber);
-						
+
 						if (operationMode == 0) {
 							gvArray[cMapVal].addVox(cPos[0].floatValue(),
 									cPos[1].floatValue(), cPos[2].floatValue(),
@@ -1166,8 +1166,8 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 					if (i == 0) {
 						if (meancol)
 							headerStr += ", " + analysisName + ":(" + 1.0
-									/ gfiltA.getShortScaleFactor() + ")"
-									+ ":" + gfiltA.getPath();
+							/ gfiltA.getShortScaleFactor() + ")"
+							+ ":" + gfiltA.getPath();
 						else if (cntcol)
 							headerStr += ", " + analysisName + ":"
 									+ mapA.getPath();
@@ -1311,29 +1311,30 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		long start = System.currentTimeMillis();
 		System.out.println("Reading Slices... " + mapA.getDim().z);
 
-			for (int cSlice = 0; cSlice < mapA.getDim().z; cSlice++) {
-				if (TIPLGlobal.getDebug())
-					System.out.println("Reading Slices " + cSlice + "/"
-							+ mapA.getDim().z);
-				maxGroup=AnalyzeSlice(mapA, gfiltA,gvArray,cSlice, 
-						noThresh,0, fmin, fmax, fbins, invertGFILT, 
-						maxGroup, threshVal, useGFILT);
-					
-			System.out.println("Rescanning Slices for COV Matrix... "
-					+ mapA.getDim().z);
+		for (int cSlice = 0; cSlice < mapA.getDim().z; cSlice++) {
+			if (TIPLGlobal.getDebug())
+				System.out.println("Reading Slices " + cSlice + "/"
+						+ mapA.getDim().z);
+			maxGroup=AnalyzeSlice(mapA, gfiltA,gvArray,cSlice, 
+					noThresh,0, fmin, fmax, fbins, invertGFILT, 
+					maxGroup, threshVal, useGFILT);
+
 			
-			for ( cSlice = 0; cSlice < mapA.getDim().z; cSlice++) {
-				if (TIPLGlobal.getDebug())
-					System.out.println("Reading Slices " + cSlice + "/"
-							+ mapA.getDim().z);
-				maxGroup=AnalyzeSlice(mapA, gfiltA,gvArray,cSlice, 
-						noThresh,1, fmin, fmax, fbins, invertGFILT, 
-						maxGroup, threshVal, useGFILT);
-			}
 		} 
 		System.out.println("Done Reading..."
 				+ (System.currentTimeMillis() - start) / (60 * 1000F)
 				+ "mins, Objects:" + maxGroup + "; Voxels:" + totVox);
+		System.out.println("Rescanning Slices for COV Matrix... "
+				+ mapA.getDim().z);
+
+		for (int cSlice = 0; cSlice < mapA.getDim().z; cSlice++) {
+			if (TIPLGlobal.getDebug())
+				System.out.println("Reading Slices " + cSlice + "/"
+						+ mapA.getDim().z);
+			maxGroup=AnalyzeSlice(mapA, gfiltA,gvArray,cSlice, 
+					noThresh,1, fmin, fmax, fbins, invertGFILT, 
+					maxGroup, threshVal, useGFILT);
+		}
 		long restart = System.currentTimeMillis();
 		if ((lacunaMode) || (angcol)) {
 			System.out.println("Generating Diagonalization...");
@@ -1368,30 +1369,30 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 			for (int cGroup = 1; cGroup < maxGroup; cGroup++)
 				gvArray[cGroup].calculateBoxDist(mapA.getPos().x,
 						mapA.getPos().y, mapA.getPos().z, mapA.getDim().x
-								+ mapA.getPos().x,
+						+ mapA.getPos().x,
 						mapA.getDim().y + mapA.getPos().y, mapA.getDim().z
-								+ mapA.getPos().z);
+						+ mapA.getPos().z);
 		}
-		
+
 		if(TIPLGlobal.getDebug())  
 			for(GrayVoxels curVox : gvArray) 
 				if (curVox.count()>0) System.out.println(curVox.getLabel()+", "+curVox.toString()+"="+curVox.count());
-		
-		
+
+
 		return gvArray;
 	}
 	protected void writeOutputToCSV(GrayVoxels[] gvArray,boolean useInsert) {
 		try {
-			
+
 			final FileWriter out = new FileWriter(csvName, true);
 			if (useInsert) {
-				
+
 				final CSVFile insFile = CSVFile.FromPath(insName, 2);
 				// Insert values as last two columns
 				while (!insFile.fileDone) {
 					final Hashtable<String,String> cLine = insFile.lineAsDictionary();
 					if (cLine.containsKey("lacuna_number")) {
-						
+
 						// the default values for the line
 						double valMean = 0;
 						double valStd = -1;
@@ -1417,17 +1418,17 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
 						double angT = 0;
 						String gtStr = "";
-						
+
 						String outString = insFile.readLine().getLine();
-						
+
 						final int curRow = (new Integer(
 								cLine.get("lacuna_number")))
 								.intValue();
-						
+
 						if (TIPLGlobal.getDebug()) 
 							System.out.println("Processing Line:#"+curRow);
-						
-						
+
+
 						if ((curRow > 0) & (curRow <= maxGroup)) {
 							valMean = gvArray[curRow].mean();
 							valStd = gvArray[curRow].std();
@@ -1456,10 +1457,10 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
 						} else {
 							System.out
-									.println("ERROR: Index NOT IN MAP!!!...Index:"
-											+ curRow
-											+ " Objects:"
-											+ maxGroup);
+							.println("ERROR: Index NOT IN MAP!!!...Index:"
+									+ curRow
+									+ " Objects:"
+									+ maxGroup);
 						}
 						if (meancol)
 							outString += ", " + valMean;
@@ -1507,7 +1508,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 					} else {
 						if (!insFile.fileDone)
 							System.out
-									.println("ERROR: Line missing LACUNA_NUMBER column...");
+							.println("ERROR: Line missing LACUNA_NUMBER column...");
 
 					}
 				}
@@ -1538,11 +1539,11 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 						for (int cpca = 0; cpca < 3; cpca++) {
 							lacString += ","
 									+ gvArray[cGroup].getComp(cpca)[0]
-									+ ","
-									+ gvArray[cGroup].getComp(cpca)[1]
-									+ ","
-									+ gvArray[cGroup].getComp(cpca)[2]
-									+ "," + gvArray[cGroup].getScore(cpca);
+											+ ","
+											+ gvArray[cGroup].getComp(cpca)[1]
+													+ ","
+													+ gvArray[cGroup].getComp(cpca)[2]
+															+ "," + gvArray[cGroup].getScore(cpca);
 						}
 						lacString += "," + gvArray[cGroup].rangep1() + ","
 								+ gvArray[cGroup].rangep2() + ","
@@ -1556,7 +1557,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 								+ ","
 								+ (gvArray[cGroup].rangep1()
 										* gvArray[cGroup].rangep2() * gvArray[cGroup]
-											.rangep3());
+												.rangep3());
 						if (useGFILT | boxDist) {
 							// Grad X,y,z, angle
 							lacString += ", " + gvArray[cGroup].gradx()
@@ -1579,20 +1580,20 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 				headerStr += "Total Number of voxels 	:" + totVox;
 				if (useGFILT)
 					headerStr += "	Scaled By = " + 1.0
-							/ gfiltA.getShortScaleFactor();
+					/ gfiltA.getShortScaleFactor();
 				headerStr += "\n Mean =	"
 						+ totSum
 						/ totVox
 						+ "	sd =	"
 						+ Math.sqrt(totSqSum / totVox
 								- Math.pow(totSum / totVox, 2))
-						+ " 	Threshold =	" + threshVal + "\n";
+								+ " 	Threshold =	" + threshVal + "\n";
 				headerStr += "Mean_unit   =	" + totSum / totVox
 						+ " 	[short intensity]\n";
 				headerStr += "SD_unit     =	"
 						+ Math.sqrt(totSqSum / totVox
 								- Math.pow(totSum / totVox, 2))
-						+ "	[short intensity]\n";
+								+ "	[short intensity]\n";
 				headerStr += "Median_unit =	0 	[short intensity]\n";
 				headerStr += "---------------------------------------------------\n";
 				headerStr += maxGroup + "	Bins with Size	      "
@@ -1605,8 +1606,8 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
 				if (useGFILT)
 					headerStr += dlmChar + "Gray-Mean" + dlmChar
-							+ "Gray-Std" + dlmChar + "Gray-Min" + dlmChar
-							+ "Gray-Max";
+					+ "Gray-Std" + dlmChar + "Gray-Min" + dlmChar
+					+ "Gray-Max";
 				// CoV
 				if (covcol)
 					headerStr += dlmChar + "COV-X" + dlmChar + "COV-Y"
@@ -1656,42 +1657,42 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 						String extraColString = "";
 						if (useGFILT | boxDist)
 							extraColString += dlmChar
-									+ gvArray[cGroup].mean() + dlmChar
-									+ gvArray[cGroup].std() + dlmChar
-									+ gvArray[cGroup].min() + dlmChar
-									+ gvArray[cGroup].max();
+							+ gvArray[cGroup].mean() + dlmChar
+							+ gvArray[cGroup].std() + dlmChar
+							+ gvArray[cGroup].min() + dlmChar
+							+ gvArray[cGroup].max();
 						// CoV
 						if (covcol)
 							extraColString += dlmChar
-									+ gvArray[cGroup].meanx() + dlmChar
-									+ gvArray[cGroup].meany() + dlmChar
-									+ gvArray[cGroup].meanz();
+							+ gvArray[cGroup].meanx() + dlmChar
+							+ gvArray[cGroup].meany() + dlmChar
+							+ gvArray[cGroup].meanz();
 
 						// SoV
 						if (sovcol)
 							extraColString += dlmChar
-									+ gvArray[cGroup].stdx() + dlmChar
-									+ gvArray[cGroup].stdy() + dlmChar
-									+ gvArray[cGroup].stdz();
+							+ gvArray[cGroup].stdx() + dlmChar
+							+ gvArray[cGroup].stdy() + dlmChar
+							+ gvArray[cGroup].stdz();
 
 						// CoM
 						if (comcol)
 							extraColString += dlmChar
-									+ gvArray[cGroup].wmeanx() + dlmChar
-									+ gvArray[cGroup].wmeany() + dlmChar
-									+ gvArray[cGroup].wmeanz();
+							+ gvArray[cGroup].wmeanx() + dlmChar
+							+ gvArray[cGroup].wmeany() + dlmChar
+							+ gvArray[cGroup].wmeanz();
 
 						// GRAD
 						if (gradcol)
 							extraColString += dlmChar
-									+ gvArray[cGroup].gradx() + dlmChar
-									+ gvArray[cGroup].grady() + dlmChar
-									+ gvArray[cGroup].gradz();
+							+ gvArray[cGroup].gradx() + dlmChar
+							+ gvArray[cGroup].grady() + dlmChar
+							+ gvArray[cGroup].gradz();
 
 						// Angle
 						if (gradcol)
 							extraColString += dlmChar
-									+ gvArray[cGroup].angVec(0);
+							+ gvArray[cGroup].angVec(0);
 
 						// PCA Cols
 						if (pcacols) {
@@ -1699,10 +1700,10 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 							for (int cpca = 0; cpca < 3; cpca++) {
 								extraColString += dlmChar
 										+ gvArray[cGroup].getComp(cpca)[0]
-										+ dlmChar
-										+ gvArray[cGroup].getComp(cpca)[1]
-										+ dlmChar
-										+ gvArray[cGroup].getComp(cpca)[2];
+												+ dlmChar
+												+ gvArray[cGroup].getComp(cpca)[1]
+														+ dlmChar
+														+ gvArray[cGroup].getComp(cpca)[2];
 							}
 						}
 						if (includeShapeTensor)
@@ -1733,19 +1734,19 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		if(niceRequest.equalsIgnoreCase("bins")) return intGvArray;
 		if(niceRequest.equalsIgnoreCase("groups")) return new Long(maxGroup);
 		if(niceRequest.contains("average")) {
-			
+
 			String[] fullRequest= niceRequest.split(",");
 			Method callMethod=null;
 			try {
 				callMethod=GrayVoxels.class.getDeclaredMethod(fullRequest[1], null);
-			
+
 				int grpCount=0;
 				double valSum=0;
 				for(GrayVoxels curVox: intGvArray) 
-				
-				if(curVox.count()>0) {
-					grpCount++;
-					valSum+=((Double) callMethod.invoke(curVox, null)).doubleValue();
+
+					if(curVox.count()>0) {
+						grpCount++;
+						valSum+=((Double) callMethod.invoke(curVox, null)).doubleValue();
 					}
 				return new Double(valSum*1.0/grpCount);
 			} catch (Exception e) {
@@ -1760,10 +1761,10 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 				if(curVox.count()>0) {
 					grpCount++;
 					voxCount+=curVox.count();
-					}
+				}
 			return new Double(voxCount*1.0/grpCount);
 		}
-		
+
 		return super.getInfo(request);
 	}
 	/**
@@ -1787,11 +1788,11 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 			writeHeader(useInsert);
 			// Restart running time
 
-			
+
 			intGvArray=runAllSlices();
 
 			TIPLGlobal.runGC();
-			
+
 			writeOutputToCSV(intGvArray,useInsert);
 		} else {
 			throw new IllegalArgumentException("Files Not Present");
@@ -1802,7 +1803,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		outString += "Groups " + (maxGroup) + ", Groups/Second="
 				+ ((maxGroup) / (eTime * 60.0)) + "\n";
 		outString += "Run Finished in " + eTime + " mins @ " + new Date()
-				+ "\n";
+		+ "\n";
 		System.out.println(outString);
 		return true;
 	}
@@ -1837,7 +1838,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 			gfiltA=inImages[1];
 			useGFILT=true;
 		}
-		
+
 	}
 
 }
