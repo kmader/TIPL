@@ -125,7 +125,8 @@ public class TIPLPluginManager {
 				System.out.println(bName + " loaded as: " + dBlock);
 				pluginList.put(bName, dBlock);
 			} catch (InstantiationException e) {
-				System.err.println("Plugin: "+bName.pluginType()+" "+bName.desc()+" could not be loaded or instantiated by plugin manager!");
+				System.err.println("Plugin: "+bName.pluginType()+" "+bName.desc()+" could not be loaded or instantiated by plugin manager!\t"+e);
+				if (TIPLGlobal.getDebug()) e.printStackTrace();
 			}
 		}
 		
@@ -255,5 +256,13 @@ public class TIPLPluginManager {
 		};
 	}
 	
+	public static void main(String[] args) {
+		
+		String outPlugName = "Installed Plugins are: ";
+		
+		for (PluginInfo cPlug : getAllPlugins()) outPlugName+="\nType:"+cPlug.pluginType()+"\t"+cPlug.toString();
+		System.out.println(TIPLPluginManager.class.getName()+" showing all plugins available");
+		System.out.println(outPlugName);
+	}
 
 }

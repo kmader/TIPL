@@ -498,7 +498,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 	/**
 	 * Transform the DTImg into a KVImg
 	 */
-	public KVImg<Number> asKV() {
+	public KVImg asKV() {
 		JavaPairRDD<D3int,Number> kvBase = baseImg.flatMapToPair(new SliceToPoints<T>(getImageType()));
 		return new KVImg(getDim(), getPos(), getElSize(), getImageType(), kvBase);
 		

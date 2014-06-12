@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
 
@@ -41,6 +42,25 @@ public class KVImg<T extends Number> implements TImgRO,Serializable {
 		imageType=iimageType;
 		baseImg=ibImg;
 	}
+	/**
+	 * Force the KVImg to be a long no matter what it is now (used for shape analysis and other applications)
+	 */
+	@SuppressWarnings("serial")
+	public KVImg<Long> toKVLong() {
+		if (imageType==TImgTools.IMAGETYPE_LONG) return (KVImg<Long>) this;
+		return new KVImg<Long>(dim,pos,elSize,TImgTools.IMAGETYPE_LONG,
+				baseImg.mapValues(new Function<T,Long>() {
+			@Override
+			public Long call(T arg0) throws Exception {
+				return arg0.longValue();
+			}
+		}));
+	}
+	
+	static public KVImg ConvertTImg(JavaSparkContext jsc,TImgRO inImage,int imageType) {
+		return DTImg.ConvertTImg(jsc, inImage, imageType).asKV();
+	}
+	
 	
 	/* (non-Javadoc)
 	 * @see tipl.util.TImgTools.HasDimensions#getDim()
