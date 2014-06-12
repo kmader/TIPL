@@ -12,6 +12,8 @@ import tipl.util.D3int
 import tipl.tools.GrayVoxels
 import tipl.util.TIPLPluginManager
 import tipl.util.ITIPLPlugin
+import tipl.tools.GrayAnalysis
+import tipl.util.ArgumentParser
 
 /**
  * A spark based code to perform shape analysis similarly to the code provided GrayAnalysis
@@ -19,8 +21,8 @@ import tipl.util.ITIPLPlugin
  *
  */
 class ShapeAnalysis extends BaseTIPLPluginIn {
-	@TIPLPluginManager.PluginInfo(pluginType = "GrayAnalysis",
-			desc="Spark-based gray value analysis",
+	@TIPLPluginManager.PluginInfo(pluginType = "ShapeAnalysis",
+			desc="Spark-based shape analysis",
 			sliceBased=false,sparkBased=true)
 	val myFactory: TIPLPluginManager.TIPLPluginFactory = new TIPLPluginManager.TIPLPluginFactory() {
 		override def get():ITIPLPlugin = {
@@ -28,8 +30,14 @@ class ShapeAnalysis extends BaseTIPLPluginIn {
 		}
 	};
   
-  
+	override def setParameter(p: ArgumentParser, prefix: String): ArgumentParser = {
+	  	analysisName = p.getOptionString(prefix+"analysis",analysisName,"Name of analysis")
+		outputName = p.getOptionPath(prefix+"csvname",outputName,"Name of analysis")
+		return p
+	}
 	var labeledImage: KVImg[Long] = null
+	var analysisName = "Shape"
+	var outputName="output.csv"
 	
 	override def getPluginName() = {  "ShapeAnalysis:Spark" }
 	
@@ -52,11 +60,13 @@ class ShapeAnalysis extends BaseTIPLPluginIn {
 	
 	override def execute():Boolean = { 
 	  print("Starting Plugin..."+getPluginName);
-	  val gvList=labeledImage.baseImg.rdd. // get it into the scala format
+	  val gvList=labeledImage.getBaseImg.rdd. // get it into the scala format
 	  filter(_._2>0). // remove zeros
 	  groupBy(_._2). // group by value
-	  map(labelPoints => (labelPoints._1,singleShape(labelPoints._1,labelPoints._2))) // run shape analysis
+	  map(labelPoints => (singleShape(labelPoints._1,labelPoints._2))) // run shape analysis
+	  val singleGV=gvList.collect()
 	  
+	  GrayAnalysis.ScalaLacunAnalysis(singleGV,labeledImage,"analysis.csv","Shape",true);
 
 	  true
 	 }
@@ -65,21 +75,9 @@ class ShapeAnalysis extends BaseTIPLPluginIn {
 	  labeledImage = inImages(0) match {
 	    case m: KVImg[_] => m.toKVLong
 	    case m: DTImg[_] => m.asKV().toKVLong()
-	    case m: TImgRO => KVImg.ConvertTImg(SparkGlobal.getContext(getPluginName()), m, TImgTools.IMAGETYPE_LONG).toKVLong()
+	    case m: TImgRO => KVImg.ConvertTImg(SparkGlobal.getContext(getPluginName()), m, TImgTools.IMAGETYPE_INT).toKVLong()
 	  }
 	}
 	
-	
-	def testFun(): Int = {
-	  return 5;
-	}
-	
 
-}
-
-object ShapeAnalysis extends ShapeAnalysis {
-  	def main(args: Array[String]): Unit = {
-        print("Hello"+testFun+" num of args:"+args.length)
-        execute
-    }
 }

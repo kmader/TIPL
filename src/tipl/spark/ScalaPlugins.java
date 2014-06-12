@@ -11,8 +11,8 @@ import tipl.util.TIPLPluginManager;
  */
 public final class ScalaPlugins {
 	
-	@TIPLPluginManager.PluginInfo(pluginType = "GrayAnalysis",
-			desc="Spark-based gray value analysis",
+	@TIPLPluginManager.PluginInfo(pluginType = "ShapeAnalysis",
+			desc="Spark-based shape analysis",
 			sliceBased=false,sparkBased=true)
 	final static public TIPLPluginManager.TIPLPluginFactory gaFactory  = new TIPLPluginManager.TIPLPluginFactory() {
 		@Override 

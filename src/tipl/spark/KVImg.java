@@ -34,6 +34,8 @@ public class KVImg<T extends Number> implements TImgRO,Serializable {
 	final protected int imageType;
 	protected String procLog="";
 	
+	public JavaPairRDD<D3int, T> getBaseImg() {return baseImg;}
+	
 	public KVImg(D3int idim,D3int ipos, D3float ielSize,final int iimageType,JavaPairRDD<D3int, T> ibImg) {
 		assert(TImgTools.isValidType(iimageType));
 		dim=idim;

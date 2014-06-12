@@ -13,6 +13,7 @@ import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
 import tipl.util.CSVFile;
 import tipl.util.ITIPLPlugin;
+import tipl.util.ITIPLPluginIn;
 import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
@@ -31,12 +32,59 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 			return new GrayAnalysis();
 		}
 	};
+	/**
+	 * A pure shapeanalysis extracted from the grayanalysis code
+	 */
+	@TIPLPluginManager.PluginInfo(pluginType = "ShapeAnalysis",
+			desc="Full memory shape analysis",
+			sliceBased=false)
+	final public static TIPLPluginManager.TIPLPluginFactory shapeFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			final GrayAnalysis gaDummy=new GrayAnalysis();
+			return new BaseTIPLPluginIn() {
+				TImgRO inImage;
+				GrayAnalysis caGAobj = gaDummy;
+				String analysisName="Shape";
+				String outputName="output.csv";
+				@Override
+				public ArgumentParser setParameter(ArgumentParser p,
+						String prefix) {
+					analysisName = p.getOptionString(prefix+"analysis",analysisName,"Name of analysis");
+					outputName = p.getOptionPath(prefix+"csvname",outputName,"Name of analysis");
+					return p;
+				}
+				@Override
+				public void LoadImages(TImgRO[] inImages) { inImage=inImages[0];}
+				@Override
+				public boolean execute() {
+					caGAobj=GrayAnalysis.StartLacunaAnalysis(inImage, outputName, analysisName);
+					return true;
+				}
+
+	
+
+				@Override
+				public String getPluginName() {
+					return "ShapeAnalysis:";//+caGAobj.getPluginName();
+				}
+
+				@Override
+				public String getProcLog() {
+					// TODO Auto-generated method stub
+					return caGAobj.getProcLog();
+				}
+
+				
+			};
+		}
+	};
 	@Override
 	public String getPluginName() {
 		return "GrayAnalysis";
 	}
 
-	public static final String kVer = "03-06-14 v 104";
+	public static final String kVer = "12-06-14 v 105";
 	public static boolean doPreload = false;
 
 	/**
@@ -454,12 +502,12 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		newGray.execute();
 	}
 
-	public static ITIPLPlugin StartLacunaAnalysis(final TImgRO inMap,
+	public static GrayAnalysis StartLacunaAnalysis(final TImgRO inMap,
 			final String outName, final String aName) {
 		return StartLacunaAnalysis(inMap, outName, aName, false);
 	}
 
-	public static ITIPLPlugin StartLacunaAnalysis(final TImgRO inMap,
+	public static GrayAnalysis StartLacunaAnalysis(final TImgRO inMap,
 			final String outName, final String aName,
 			final boolean includeShapeT) {
 		final GrayAnalysis newGray = new GrayAnalysis(inMap, (TImg) null,
@@ -482,9 +530,9 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	 * @param aName
 	 *            name of the analysis in the output file (header column prefix)
 	 */
-	public static void StartLacunaAnalysis(final TImgRO inMap,
+	public static GrayAnalysis StartLacunaAnalysis(final TImgRO inMap,
 			final TImgRO inGfilt, final String outName, final String aName) {
-		StartLacunaAnalysis(inMap, inGfilt, outName, aName, false);
+		return StartLacunaAnalysis(inMap, inGfilt, outName, aName, false);
 	}
 
 	/**
@@ -503,14 +551,41 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	 *            include the entire shape tensor in the output (for paraview
 	 *            visualization and analysis)
 	 */
-	public static void StartLacunaAnalysis(final TImgRO inMap,
+	public static GrayAnalysis StartLacunaAnalysis(final TImgRO inMap,
 			final TImgRO inGfilt, final String outName, final String aName,
 			final boolean includeShapeT) {
 		final GrayAnalysis newGray = new GrayAnalysis(inMap, inGfilt, outName,
 				aName);
 		newGray.includeShapeTensor = includeShapeT;
 		newGray.execute();
+		return newGray;
 	}
+	
+	/**
+	 * A bridge from scala/spark (or other tools which have already calculated all of the grayvoxels) to make the output
+	 * 
+	 * @param inVoxels
+	 * @param inMap
+	 * @param csvName
+	 * @param analysisName
+	 * @param includeShapeT
+	 */
+	public static GrayAnalysis ScalaLacunAnalysis(final GrayVoxels[] inVoxels,final TImgRO inMap, final String csvName, final String analysisName,
+			final boolean includeShapeT) {
+		
+		final GrayAnalysis newGray = new GrayAnalysis();
+		newGray.mapA=inMap;
+		newGray.csvName = csvName;
+		newGray.lacunaMode = true;
+		newGray.analysisName = analysisName;
+		newGray.includeShapeTensor = includeShapeT;
+		newGray.writeHeader(false);
+		newGray.writeOutputToCSV(inVoxels, false);
+		newGray.execute();
+		return newGray;
+	}
+	
+	
 
 	/**
 	 * Standard operation for a histogram with the value plotted against the
@@ -1381,7 +1456,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
 		return gvArray;
 	}
-	protected void writeOutputToCSV(GrayVoxels[] gvArray,boolean useInsert) {
+	public void writeOutputToCSV(GrayVoxels[] gvArray,boolean useInsert) {
 		try {
 
 			final FileWriter out = new FileWriter(csvName, true);
