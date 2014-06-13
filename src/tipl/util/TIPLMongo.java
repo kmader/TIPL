@@ -77,7 +77,9 @@ public class TIPLMongo {
 			try {
 				ServerAddress mongoLab=new ServerAddress(usIp,usPort);
 			} catch (Exception e) {
+				if (TIPLGlobal.isLocalOk()) return TIPLGlobal.isLocalUsage(22515);
 				throw new IllegalArgumentException("TIPL Requires Access to network in order to run and download required packages");
+				
 			}
 			// If it can be resolved but not connected (firewall), then continue in local mode
 			Socket s = new Socket();
@@ -85,8 +87,10 @@ public class TIPLMongo {
 				s.connect(new InetSocketAddress(usIp, usPort), 1000);
 				s.close();
 			} catch (Exception e) {
+				if (TIPLGlobal.isLocalOk()) return TIPLGlobal.isLocalUsage(22515);
 				System.out.println("Operating in local mode...");
-				return TIPLGlobal.isLocalUsage(22515);
+				throw new IllegalArgumentException("TIPL Requires Port-level Access to network in order to run and download required packages");
+				
 			}
 			// Otherwise connect to it (if login fails stop)
 			try {

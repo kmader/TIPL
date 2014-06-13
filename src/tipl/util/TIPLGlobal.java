@@ -26,6 +26,7 @@ public class TIPLGlobal {
 	public static final int DEBUG_BASIC=1;
 	public static final int DEBUG_OFF=0;
 	private static int TIPLDebugLevel=DEBUG_BASIC;
+	
 	/**
 	 * returns the level (see enumeration above for more on the levels
 	 * @return
@@ -349,6 +350,9 @@ public class TIPLGlobal {
 	public static ITIPLUsage getUsage() {
 		if (tuCore==null) tuCore=TIPLUsage.getTIPLUsage();
 		return tuCore;
+	}
+	public static boolean isLocalOk() {
+		return true;
 	}
 	public static ITIPLUsage isLocalUsage(int checkLocalId) {
 		if (checkLocalId==22515) tuCore = new ITIPLUsage() {

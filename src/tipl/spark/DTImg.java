@@ -457,11 +457,14 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 				
 			}
 			ArrayList<Tuple2<D3int, Number>> outList=new ArrayList<Tuple2<D3int, Number>>(sliceLength);
-			int index=0;
+			if (TIPLGlobal.getDebug()) System.out.println("Current Block: dim:"+dim+" @ "+pos);
+			int index;
 			for(int z=0;z<dim.z;z++) {
-				for(int y=0;z<dim.y;y++) {
-					for(int x=0;x<dim.x;x++) {
+				for(int y=0;y<dim.y;y++) {
+					index=(z*dim.y+y)*dim.x;
+					for(int x=0;x<dim.x;x++,index++) {
 						final D3int outPos=new D3int(pos.x+x,pos.y+y,pos.z+z);
+						if(index>=sliceLength) throw new IllegalArgumentException("Current Pos:("+x+","+y+","+z+")/"+pos+ " of ("+dim+") @ "+index+" is outside of:"+sliceLength);
 						Number outValue;
 						switch(imageType) {
 						case TImgTools.IMAGETYPE_BOOL: 

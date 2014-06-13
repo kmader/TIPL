@@ -3,6 +3,8 @@ package tipl.tools;
 //import java.awt.*;
 //import java.awt.image.*;
 //import java.awt.image.ColorModel.*;
+import java.io.Serializable;
+
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
 
@@ -16,7 +18,7 @@ import Jama.Matrix;
  * addCovVox command
  * 
  */
-public class GrayVoxels {
+public class GrayVoxels implements Serializable {
 	int voxelCount;
 	double label;
 	int labelType; // 0-no label, 1-integer, 2-double

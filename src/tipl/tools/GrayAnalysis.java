@@ -32,6 +32,8 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 			return new GrayAnalysis();
 		}
 	};
+	/** absolute minimum number of voxels in a group **/
+	public static final int ABS_MIN_VOX = 3;
 	/**
 	 * A pure shapeanalysis extracted from the grayanalysis code
 	 */
@@ -74,11 +76,32 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 					// TODO Auto-generated method stub
 					return caGAobj.getProcLog();
 				}
+				@Override
+				public Object getInfo(final String request) {
+					return caGAobj.getInfo(request);
+				}
+				
+				
 
 				
 			};
 		}
 	};
+	
+	/**
+	 * getInfo for GrayAnalysis supports the request for 
+	 * <li> bins which returns the GrayVoxels array
+	 * <li> groups which returns the group count as a long
+	 * 
+	 */
+	@Override
+	public Object getInfo(final String request) {
+		Object output=getInfoFromGVArray(intGvArray,maxGroup,request);
+		if (output==null) return super.getInfo(request);
+		else return output;
+	}
+	
+	
 	@Override
 	public String getPluginName() {
 		return "GrayAnalysis";
@@ -404,7 +427,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		newGray.mincol = true;
 		newGray.maxcol = true;
 		newGray.cntcol = true;
-		if (newGray.mapA.getImageType() == 3) {
+		if (newGray.mapA.getImageType() == TImgTools.IMAGETYPE_FLOAT) {
 			final double[] ofloat = profImage.getRange();
 			newGray.fmin = ofloat[0];
 			newGray.fmax = ofloat[1];
@@ -580,8 +603,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		newGray.analysisName = analysisName;
 		newGray.includeShapeTensor = includeShapeT;
 		newGray.writeHeader(false);
-		newGray.writeOutputToCSV(inVoxels, false);
-		newGray.execute();
+		newGray.writeOutputToCSV(inVoxels, false,0,true);
 		return newGray;
 	}
 	
@@ -1414,7 +1436,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		if ((lacunaMode) || (angcol)) {
 			System.out.println("Generating Diagonalization...");
 			for (int cGroup = 1; cGroup <= maxGroup; cGroup++) {
-				if ((gvArray[cGroup].count() > 5)) { // At least 5 voxels
+				if ((gvArray[cGroup].count() > ABS_MIN_VOX)) { // At least 5 voxels
 					gvArray[cGroup].diag();
 				}
 
@@ -1456,7 +1478,14 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
 		return gvArray;
 	}
-	public void writeOutputToCSV(GrayVoxels[] gvArray,boolean useInsert) {
+	/**
+	 * The function to grayvoxel data to a csv file
+	 * @param gvArray the array of grayvoxels
+	 * @param useInsert (insert it into a file)
+	 * @param startingIndex starting index (0 for normal data, 1 for grayanalysis)
+	 * @param useLabel use the label inside the grayvoxel (true) or the index
+	 */
+	public void writeOutputToCSV(GrayVoxels[] gvArray,boolean useInsert,int startingIndex,boolean useLabel) {
 		try {
 
 			final FileWriter out = new FileWriter(csvName, true);
@@ -1591,11 +1620,11 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 			} else if (lacunaMode) {
 
 				// Write Lacuna Style Output File
-				for (int cGroup = 1; cGroup <= maxGroup; cGroup++) {
-					if ((gvArray[cGroup].count() > 5)) { // At least 5
+				for (int cGroup = startingIndex; cGroup <= (useLabel ? (gvArray.length-1) : maxGroup) ; cGroup++) {
+					if ((gvArray[cGroup].count() > ABS_MIN_VOX)) { // At least 3
 						// voxels
 						String lacString = "";
-						lacString = cGroup + ", 0 ," + mapA.getElSize().x
+						lacString = (useLabel ? gvArray[cGroup].getLabel() : cGroup) + ", 0 ," + mapA.getElSize().x
 								+ "," + mapA.getElSize().y + ","
 								+ mapA.getElSize().z;
 						// Position
@@ -1797,18 +1826,24 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		}
 	} 
 	protected GrayVoxels[] intGvArray = new GrayVoxels[0];
+	
 	/**
 	 * getInfo for GrayAnalysis supports the request for 
 	 * <li> bins which returns the GrayVoxels array
 	 * <li> groups which returns the group count as a long
 	 * 
 	 */
-	@Override
-	public Object getInfo(String request) {
+	public static Object getInfoFromGVArray(final GrayVoxels[] gvArray,final int maxGroup,String request) {
 		String niceRequest=request.trim().toLowerCase();
-		if(niceRequest.equalsIgnoreCase("bins")) return intGvArray;
-		if(niceRequest.equalsIgnoreCase("groups")) return new Long(maxGroup);
-		if(niceRequest.contains("average")) {
+		if(niceRequest.equalsIgnoreCase("bins")) return gvArray;
+		if(niceRequest.equalsIgnoreCase("groups")) {
+			int grpCount=0;
+			for(GrayVoxels curVox: gvArray) 
+				if(curVox.count()>=ABS_MIN_VOX) grpCount++;
+			
+			return new Long(grpCount);
+		}
+		if(niceRequest.contains("avg")) {
 
 			String[] fullRequest= niceRequest.split(",");
 			Method callMethod=null;
@@ -1817,9 +1852,9 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
 				int grpCount=0;
 				double valSum=0;
-				for(GrayVoxels curVox: intGvArray) 
+				for(GrayVoxels curVox: gvArray) 
 
-					if(curVox.count()>0) {
+					if(curVox.count()>=ABS_MIN_VOX) {
 						grpCount++;
 						valSum+=((Double) callMethod.invoke(curVox, null)).doubleValue();
 					}
@@ -1832,15 +1867,15 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		if(niceRequest.equalsIgnoreCase("average_volume")) {
 			int grpCount=0;
 			long voxCount=0;
-			for(GrayVoxels curVox: intGvArray) 
-				if(curVox.count()>0) {
+			for(GrayVoxels curVox: gvArray) 
+				if(curVox.count()>=ABS_MIN_VOX) {
 					grpCount++;
 					voxCount+=curVox.count();
 				}
 			return new Double(voxCount*1.0/grpCount);
 		}
 
-		return super.getInfo(request);
+		return null;
 	}
 	/**
 	 * Actually runs the grayanalysis code on the dataset, can be run inside of
@@ -1868,7 +1903,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
 			TIPLGlobal.runGC();
 
-			writeOutputToCSV(intGvArray,useInsert);
+			writeOutputToCSV(intGvArray,useInsert,1,false);
 		} else {
 			throw new IllegalArgumentException("Files Not Present");
 		}

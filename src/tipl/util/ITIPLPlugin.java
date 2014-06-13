@@ -16,7 +16,7 @@ import java.io.Serializable;
  * @author mader
  * 
  */
-public interface ITIPLPlugin extends ArgumentParser.IsetParameter, Serializable{
+public interface ITIPLPlugin extends ArgumentParser.IsetParameter, Serializable {
 	/**
 	 * forces the execution of the plugin otherwise lazy evaluation might be
 	 * used

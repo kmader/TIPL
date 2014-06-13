@@ -18,6 +18,7 @@ public final class ScalaPlugins {
 		@Override 
 		public ITIPLPlugin get() {
 			return new ShapeAnalysis();
+			
 		}
 	};
   
