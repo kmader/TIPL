@@ -36,7 +36,7 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
 					outputName = p.getOptionPath(prefix+"csvname",outputName,"Name of analysis")
 					return p
 	}
-	var labeledImage: KVImg[Long] = null
+	
 			var analysisName = "Shape"
 			var outputName="output.csv"
 
@@ -75,12 +75,14 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
 							groupBy(gbFun). // group by value
 							map(singleShape) // run shape analysis
 							singleGV=gvList.collect()
-
+							singleGV.foreach(x => print("Value "+x.getLabel + ", "+x.count))
+							
 							GrayAnalysis.ScalaLacunAnalysis(singleGV,labeledImage,outputName,analysisName,true);
 
 					true
 			}
-
+			
+			var labeledImage: KVImg[Long] = null
 			override def LoadImages(inImages: Array[TImgRO]) = {
 				labeledImage = inImages(0) match {
 				case m: KVImg[_] => m.toKVLong

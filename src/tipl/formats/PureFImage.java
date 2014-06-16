@@ -21,7 +21,7 @@ public class PureFImage implements TImgRO,TImgTools.ChangesDimensions {
 		int x, y;
 		double minr = 0, maxr = 4000;
 
-		public CylR(final TImgRO dummyDataset) {
+		public CylR(final TImgTools.HasDimensions dummyDataset) {
 			final Double[] sPos = TImgTools
 					.getXYZVecFromVec(dummyDataset, 0, 0);
 			final Double[] fPos = TImgTools.getXYZVecFromVec(dummyDataset,
@@ -56,7 +56,7 @@ public class PureFImage implements TImgRO,TImgTools.ChangesDimensions {
 	public static class CylTheta implements PureFImage.PositionFunction {
 		int x, y;
 
-		public CylTheta(final TImgRO dummyDataset) {
+		public CylTheta(final TImgTools.HasDimensions dummyDataset) {
 			final Double[] sPos = TImgTools
 					.getXYZVecFromVec(dummyDataset, 0, 0);
 			final Double[] fPos = TImgTools.getXYZVecFromVec(dummyDataset,
@@ -83,13 +83,41 @@ public class PureFImage implements TImgRO,TImgTools.ChangesDimensions {
 			return "CylTheta-Image:(" + x + "," + y + ")";
 		}
 	}
+	
+	
+	/**
+	 * Returns a constant value
+	 */
+	public static class ConstantValue implements PureFImage.PositionFunction {
+		double retValue;
+
+		public ConstantValue(double retValue) {
+			this.retValue=retValue;
+		}
+
+		@Override
+		public double get(final Double[] ipos) {
+			return retValue;
+		}
+
+		@Override
+		public double[] getRange() {
+			return new double[] { retValue,retValue };
+		}
+
+		@Override
+		public String name() {
+			return "Constant-Value:"+retValue;
+		}
+	}
+	
 
 	public static class PhiImageSph extends PureFImage {
-		protected TImgRO templateData;
+		protected TImgTools.HasDimensions templateData;
 		protected int imageType;
 
 		/** ThetaImageCyl simply returns the theta position in the current slice */
-		public PhiImageSph(final TImgRO dummyDataset, final int iimageType) {
+		public PhiImageSph(final TImgTools.HasDimensions dummyDataset, final int iimageType) {
 			super(dummyDataset, iimageType, new SphPhi(dummyDataset));
 		}
 	}
@@ -111,21 +139,21 @@ public class PureFImage implements TImgRO,TImgTools.ChangesDimensions {
 	 * distance
 	 */
 	public static class RImage extends PureFImage {
-		protected TImgRO templateData;
+		protected TImgTools.HasDimensions templateData;
 		protected int imageType;
 
 		/**
 		 * Rimage simply returns the r position based on the estimated center of
 		 * volume
 		 */
-		public RImage(final TImgRO dummyDataset, final int iimageType) {
+		public RImage(final TImgTools.HasDimensions dummyDataset, final int iimageType) {
 			// templateData=dummyDataset;
 			// imageType=iimageType;
 			super(dummyDataset, iimageType, new SphR(dummyDataset));
 		}
 
 		/** use a fixed center of volume **/
-		public RImage(final TImgRO dummyDataset, final int iimageType,
+		public RImage(final TImgTools.HasDimensions dummyDataset, final int iimageType,
 				final int x, final int y, final int z) {
 			// templateData=dummyDataset;
 			// imageType=iimageType;
@@ -134,11 +162,11 @@ public class PureFImage implements TImgRO,TImgTools.ChangesDimensions {
 	}
 
 	public static class RImageCyl extends PureFImage {
-		protected TImgRO templateData;
+		protected TImgTools.HasDimensions templateData;
 		protected int imageType;
 
 		/** Rimage simply returns the r position in the current slice */
-		public RImageCyl(final TImgRO dummyDataset, final int iimageType) {
+		public RImageCyl(final TImgTools.HasDimensions dummyDataset, final int iimageType) {
 			super(dummyDataset, iimageType, new CylR(dummyDataset));
 		}
 	}
@@ -150,7 +178,7 @@ public class PureFImage implements TImgRO,TImgTools.ChangesDimensions {
 	public static class SphPhi implements PureFImage.PositionFunction {
 		int x, y, z;
 
-		public SphPhi(final TImgRO dummyDataset) {
+		public SphPhi(final TImgTools.HasDimensions dummyDataset) {
 			final Double[] sPos = TImgTools
 					.getXYZVecFromVec(dummyDataset, 0, 0);
 			final Double[] fPos = TImgTools.getXYZVecFromVec(dummyDataset,
@@ -198,11 +226,11 @@ public class PureFImage implements TImgRO,TImgTools.ChangesDimensions {
 		}
 
 		/** estimate the center of volume based on the dimensions of the dataset **/
-		public SphR(final TImgRO dummyDataset) {
+		public SphR(final TImgTools.HasDimensions dummyDataset) {
 			estCOV(dummyDataset);
 		}
 
-		protected void estCOV(final TImgRO dummyDataset) {
+		protected void estCOV(final TImgTools.HasDimensions dummyDataset) {
 			final Double[] sPos = TImgTools
 					.getXYZVecFromVec(dummyDataset, 0, 0);
 			final Double[] fPos = TImgTools.getXYZVecFromVec(dummyDataset,
@@ -235,11 +263,11 @@ public class PureFImage implements TImgRO,TImgTools.ChangesDimensions {
 	}
 
 	public static class ThetaImageCyl extends PureFImage {
-		protected TImgRO templateData;
+		protected TImgTools.HasDimensions templateData;
 		protected int imageType;
 
 		/** ThetaImageCyl simply returns the theta position in the current slice */
-		public ThetaImageCyl(final TImgRO dummyDataset, final int iimageType) {
+		public ThetaImageCyl(final TImgTools.HasDimensions dummyDataset, final int iimageType) {
 			super(dummyDataset, iimageType, new CylTheta(dummyDataset));
 		}
 	}
@@ -248,7 +276,7 @@ public class PureFImage implements TImgRO,TImgTools.ChangesDimensions {
 	public static class ZFunc implements PureFImage.PositionFunction {
 		Double[] sPos, fPos;
 
-		public ZFunc(final TImgRO dummyDataset) {
+		public ZFunc(final TImgTools.HasDimensions dummyDataset) {
 			sPos = TImgTools.getXYZVecFromVec(dummyDataset, 0, 0);
 			fPos = TImgTools.getXYZVecFromVec(dummyDataset,
 					dummyDataset.getDim().x * dummyDataset.getDim().y - 1,
@@ -274,14 +302,14 @@ public class PureFImage implements TImgRO,TImgTools.ChangesDimensions {
 
 	/** ZImage is simply an image where the intensity values = the slice number */
 	public static class ZImage extends PureFImage {
-		protected TImgRO templateData;
+		protected TImgTools.HasDimensions templateData;
 		protected int imageType;
 
 		/**
 		 * Zimage simply returns data from the template file whenever any
 		 * resource except slice data is requested
 		 */
-		public ZImage(final TImgRO dummyDataset, final int iimageType) {
+		public ZImage(final TImgTools.HasDimensions dummyDataset, final int iimageType) {
 			// templateData=dummyDataset;
 			// imageType=iimageType;
 			super(dummyDataset, iimageType, new ZFunc(dummyDataset));
@@ -379,7 +407,7 @@ public class PureFImage implements TImgRO,TImgTools.ChangesDimensions {
 		return false;
 	}
 
-	public boolean CheckSizes(final TImgRO otherTImg) {
+	public boolean CheckSizes(final TImgTools.HasDimensions otherTImg) {
 		return TImgTools.CheckSizes2(otherTImg, this);
 	}
 

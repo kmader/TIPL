@@ -18,7 +18,16 @@ public final class ScalaPlugins {
 		@Override 
 		public ITIPLPlugin get() {
 			return new ShapeAnalysis();
-			
+		}
+	};
+	
+	@TIPLPluginManager.PluginInfo(pluginType = "kVoronoi",
+			desc="Spark-based surface voronoi tesselation",
+			sliceBased=false,sparkBased=true)
+	final static public TIPLPluginManager.TIPLPluginFactory kvFactory  = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override 
+		public ITIPLPlugin get() {
+			return new SKVoronoi();
 		}
 	};
   

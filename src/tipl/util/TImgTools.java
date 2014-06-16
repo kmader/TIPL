@@ -166,18 +166,18 @@ public class TImgTools {
 	 * The general function for comparing the dimensions of two TImg class
 	 * images
 	 **/
-	public static boolean CheckSizes2(final TImgRO inVA, final TImgRO otherVA) {
+	public static boolean CheckSizes2(final HasDimensions otherTImg, final HasDimensions otherVA) {
 
 		boolean isMatch = true;
-		isMatch = isMatch & (inVA.getDim().x == otherVA.getDim().x);
-		isMatch = isMatch & (inVA.getDim().y == otherVA.getDim().y);
-		isMatch = isMatch & (inVA.getDim().z == otherVA.getDim().z);
-		isMatch = isMatch & (inVA.getPos().x == otherVA.getPos().x);
-		isMatch = isMatch & (inVA.getPos().y == otherVA.getPos().y);
-		isMatch = isMatch & (inVA.getPos().z == otherVA.getPos().z);
-		isMatch = isMatch & (inVA.getOffset().x == otherVA.getOffset().x);
-		isMatch = isMatch & (inVA.getOffset().y == otherVA.getOffset().y);
-		isMatch = isMatch & (inVA.getOffset().z == otherVA.getOffset().z);
+		isMatch = isMatch & (otherTImg.getDim().x == otherVA.getDim().x);
+		isMatch = isMatch & (otherTImg.getDim().y == otherVA.getDim().y);
+		isMatch = isMatch & (otherTImg.getDim().z == otherVA.getDim().z);
+		isMatch = isMatch & (otherTImg.getPos().x == otherVA.getPos().x);
+		isMatch = isMatch & (otherTImg.getPos().y == otherVA.getPos().y);
+		isMatch = isMatch & (otherTImg.getPos().z == otherVA.getPos().z);
+		isMatch = isMatch & (otherTImg.getOffset().x == otherVA.getOffset().x);
+		isMatch = isMatch & (otherTImg.getOffset().y == otherVA.getOffset().y);
+		isMatch = isMatch & (otherTImg.getOffset().z == otherVA.getOffset().z);
 		return isMatch;
 	}
 	/**
@@ -685,7 +685,7 @@ public class TImgTools {
 	 * Get a double array of the x,y,z position given a current slice index and
 	 * current slice
 	 **/
-	public static Double[] getXYZVecFromVec(final TImgRO inImg,
+	public static Double[] getXYZVecFromVec(final HasDimensions inImg,
 			final int cIndex, final int cSlice) {
 		return getXYZVecFromVec(inImg.getPos(), inImg.getDim(), cIndex, cSlice);
 	}

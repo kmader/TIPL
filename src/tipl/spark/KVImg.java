@@ -7,11 +7,15 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
 
 import scala.Tuple2;
+import scala.math.Numeric;
+import tipl.formats.PureFImage;
+import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.D3float;
 import tipl.util.D3int;
@@ -25,12 +29,12 @@ import tipl.util.TImgTools;
  * @author mader
  *
  */
-public class KVImg<T extends Number> implements TImgRO,Serializable {
+public class KVImg<T extends Number> implements TImg,Serializable {
 	final protected JavaPairRDD<D3int, T> baseImg;
 	final protected D3int dim;
-	final protected D3int pos;
-	final protected D3float elSize;
-	final protected D3int offset=new D3int(0);
+	protected D3int pos;
+	protected D3float elSize;
+	protected D3int offset=new D3int(0);
 	final protected int imageType;
 	protected String procLog="";
 	
@@ -45,6 +49,20 @@ public class KVImg<T extends Number> implements TImgRO,Serializable {
 		baseImg=ibImg;
 	}
 	/**
+	 * 
+	 * a function to make passing images from scala / spark easier
+	 * @param inImg
+	 * @param imageType
+	 * @param baseImg
+	 * @return
+	 */
+	public static <R extends Number> KVImg<R> FromRDD(TImgTools.HasDimensions inImg,final int imageType,JavaRDD<Tuple2<D3int,Double>> baseImg) {
+		return 
+				new KVImg<R>(inImg.getDim(),inImg.getPos(),inImg.getElSize(),imageType,
+						baseImg.mapToPair(new pairDoubleConversion<R>(imageType)));
+	}
+
+	/**
 	 * Force the KVImg to be a long no matter what it is now (used for shape analysis and other applications)
 	 */
 	@SuppressWarnings("serial")
@@ -55,6 +73,21 @@ public class KVImg<T extends Number> implements TImgRO,Serializable {
 			@Override
 			public Long call(T arg0) throws Exception {
 				return arg0.longValue();
+			}
+		}));
+	}
+	
+	/**
+	 * Force the KVImg to be a long no matter what it is now (used for shape analysis and other applications)
+	 */
+	@SuppressWarnings("serial")
+	public KVImg<Float> toKVFloat() {
+		if (imageType==TImgTools.IMAGETYPE_FLOAT) return (KVImg<Float>) this;
+		return new KVImg<Float>(dim,pos,elSize,TImgTools.IMAGETYPE_FLOAT,
+				baseImg.mapValues(new Function<T,Float>() {
+			@Override
+			public Float call(T arg0) throws Exception {
+				return arg0.floatValue();
 			}
 		}));
 	}
@@ -136,6 +169,54 @@ public class KVImg<T extends Number> implements TImgRO,Serializable {
 	public String getPath() {
 		// TODO Auto-generated method stub
 		return "";
+	}
+	/**
+	 * a class to convert the double output of many functions (FImage, PureFImage, etc) to the proper type
+	 * @author mader
+	 *
+	 * @param <U>
+	 */
+	static public class pairDoubleConversion<U extends Number> implements PairFunction<Tuple2<D3int,Double>,D3int,U> {
+		/**
+		 * the output image type (always from double)
+		 */
+		final int imageType;
+		public pairDoubleConversion(int iit) {
+			assert(TImgTools.isValidType(iit));
+			imageType=iit;
+		}
+		@Override
+		public Tuple2<D3int, U> call(Tuple2<D3int, Double> arg0) throws Exception {
+			double cVal = (arg0._2).doubleValue();
+			Object outVal;
+			switch(imageType) {
+			case TImgTools.IMAGETYPE_BOOL: 
+				outVal=cVal>0;
+				break;
+			case TImgTools.IMAGETYPE_CHAR: 
+				outVal=(char) cVal;
+				break;
+			case TImgTools.IMAGETYPE_SHORT: 
+				outVal=(short) cVal;
+				break;
+			case TImgTools.IMAGETYPE_FLOAT: 
+				outVal=(float) cVal;
+				break;
+			case TImgTools.IMAGETYPE_INT: 
+				outVal=(int) cVal;
+				break;
+			case TImgTools.IMAGETYPE_LONG: 
+				outVal=(long) cVal;
+				break;
+			case TImgTools.IMAGETYPE_DOUBLE: 
+				outVal=cVal;
+				break;
+			default: throw new IllegalArgumentException("Type not officially supported:"+imageType+" = "+TImgTools.getImageTypeName(imageType));
+			}
+			
+			return new Tuple2<D3int,U>(arg0._1,(U) outVal);	
+		}
+		
 	}
 	/**
 	 * Turns a KV image listed by position (as D3int) to one listed by index
@@ -273,6 +354,96 @@ public class KVImg<T extends Number> implements TImgRO,Serializable {
 	@Override
 	public boolean isGood() {
 		return true;
+	}
+
+	@Override
+	public TImg inheritedAim(boolean[] imgArray, D3int dim, D3int offset) {
+		throw new IllegalArgumentException("This annoys me, please do not use this function");
+		
+	}
+
+	@Override
+	public TImg inheritedAim(char[] imgArray, D3int dim, D3int offset) {
+		throw new IllegalArgumentException("This annoys me, please do not use this function");
+		
+	}
+
+	@Override
+	public TImg inheritedAim(float[] imgArray, D3int dim, D3int offset) {
+		throw new IllegalArgumentException("This annoys me, please do not use this function");
+		
+	}
+
+	@Override
+	public TImg inheritedAim(int[] imgArray, D3int dim, D3int offset) {
+		throw new IllegalArgumentException("This annoys me, please do not use this function");
+		
+	}
+
+	@Override
+	public TImg inheritedAim(short[] imgArray, D3int dim, D3int offset) {
+		throw new IllegalArgumentException("This annoys me, please do not use this function");
+		
+	}
+
+	@Override
+	public TImg inheritedAim(TImgRO inAim) {
+		TImg outImage=ConvertTImg(SparkGlobal.getContext(""+this),inAim,inAim.getImageType());
+		outImage.appendProcLog("Merged with:"+getSampleName()+":"+this+"\n"+getProcLog());
+		return outImage;
+	}
+
+	@Override
+	public void setDim(D3int inData) {
+		throw new IllegalArgumentException("This annoys me, please do not use this function");
+	}
+
+	@Override
+	public void setElSize(D3float inData) {
+		elSize=inData;
+	}
+
+	@Override
+	public void setOffset(D3int inData) {
+		offset=inData;
+	}
+
+	@Override
+	public void setPos(D3int inData) {
+		pos=inData;
+	}
+
+	@Override
+	public boolean InitializeImage(D3int dPos, D3int cDim, D3int dOffset,
+			D3float elSize, int imageType) {
+		throw new IllegalArgumentException("This annoys me, please do not use this function");
+		
+	}
+
+	@Override
+	public void setCompression(boolean inData) {
+		// TODO Auto-generated method stub
+		throw new IllegalArgumentException("This annoys me, please do not use this function");
+		
+	}
+
+	@Override
+	public void setImageType(int inData) {
+		// TODO Auto-generated method stub
+		throw new IllegalArgumentException("This annoys me, please do not use this function");
+		
+	}
+
+	@Override
+	public void setShortScaleFactor(float ssf) {
+		throw new IllegalArgumentException("This annoys me, please do not use this function");
+		
+	}
+
+	@Override
+	public void setSigned(boolean inData) {
+		throw new IllegalArgumentException("This annoys me, please do not use this function");
+		
 	}
 
 }

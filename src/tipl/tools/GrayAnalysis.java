@@ -1189,7 +1189,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 				if (cMapVal > maxGroup)
 					maxGroup = cMapVal;
 				if (useGFILT) {
-					if (gfiltA.getImageType() == 3) {
+					if (gfiltA.getImageType() == TImgTools.IMAGETYPE_FLOAT) {
 						cVal = fgfiltSlice[cIndex];
 					} else {
 						cVal = gfiltSlice[cIndex];

@@ -23,7 +23,7 @@ import tipl.util.TImgTools;
 import tipl.util.TIPLPluginManager.PluginInfo;
 
 /**
- * Test the shape analysis on a synthetically created label image
+ * Test the shape analysis on a synthetic label image
  * 
  * @author mader
  * 
@@ -39,7 +39,12 @@ public class ShapeAnalysisTest {
 	@Before
 	public void setUp() {
 		SparkGlobal.getContext(this.getClass().getName());
-		TIPLGlobal.setDebug(TIPLGlobal.DEBUG_BASIC);
+		TIPLGlobal.setDebug(TIPLGlobal.DEBUG_ALL);
+		if (TIPLGlobal.getDebug()) {
+			TImgTools.WriteTImg(layeredImage, "layered.tif");
+			TImgTools.WriteTImg(diagonalPlane, "diagonal.tif");
+		}
+		
 	}
 	
 	protected static ITIPLPluginIn makeSA(PluginInfo plugName,final TImgRO sImg) {
