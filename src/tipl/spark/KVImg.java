@@ -427,12 +427,6 @@ public class KVImg<T extends Number> implements TImg,Serializable {
 		
 	}
 
-	@Override
-	public void setImageType(int inData) {
-		// TODO Auto-generated method stub
-		throw new IllegalArgumentException("This annoys me, please do not use this function");
-		
-	}
 
 	@Override
 	public void setShortScaleFactor(float ssf) {

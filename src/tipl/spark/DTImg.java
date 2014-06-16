@@ -857,11 +857,6 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
 		elsize = inData;
 	}
 
-	@Override
-	public void setImageType(int inData) {
-		// TODO Auto-generated method stub
-		throw new IllegalArgumentException("Cannot set Imagetype");
-	}
 
 	@Override
 	public void setOffset(D3int inData) {

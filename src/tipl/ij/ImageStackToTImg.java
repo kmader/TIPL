@@ -182,14 +182,6 @@ public class ImageStackToTImg implements TImg {
 		throw new IllegalArgumentException(this+"Image Compression cannot be changed!");
 	}
 
-	/* (non-Javadoc)
-	 * @see tipl.formats.TImg#setImageType(int)
-	 */
-	@Override
-	public void setImageType(int inData) {
-		// TODO Auto-generated method stub
-		throw new IllegalArgumentException(this+"Image Type cannot be changed!");
-	}
 
 	/* (non-Javadoc)
 	 * @see tipl.formats.TImg#setShortScaleFactor(float)

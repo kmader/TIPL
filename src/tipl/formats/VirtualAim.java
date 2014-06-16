@@ -2463,14 +2463,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 		elSize = inData;
 	}
 
-	/**
-	 * The aim type of the image (0=char, 1=short, 2=int, 3=float, 10=bool, -1
-	 * same as input)
-	 */
-	@Override
-	public void setImageType(final int inData) {
-		imageType = inData;
-	}
 
 	/**
 	 * The size of the border around the image which does not contain valid

@@ -452,15 +452,6 @@ public class TiffDirectory implements TImg {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see tipl.formats.TImg#setImageType(int)
-	 */
-	@Override
-	public void setImageType(final int inData) {
-		imageType = inData;
-	}
 
 	/*
 	 * (non-Javadoc)

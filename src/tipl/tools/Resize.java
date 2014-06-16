@@ -213,9 +213,11 @@ public class Resize extends BaseTIPLPluginMult {
 		if (inputAim instanceof TImgRO.FullReadable)
 			LoadedAim(TImgTools.makeTImgFullReadable(inputAim), isMask);
 		else {
+			int asType=-1;
 			if (isMask)
-				inputAim.setImageType(10);
-			LoadImages(new TImgRO[] { inputAim });
+				asType=TImgTools.IMAGETYPE_BOOL;
+			
+			LoadImages(new TImgRO[] { inputAim },asType);
 		}
 		pos = inputAim.getPos();
 	}
@@ -225,18 +227,6 @@ public class Resize extends BaseTIPLPluginMult {
 	 * program will load one slice at a time allowing the user to take ROIs from
 	 * much bigger aims
 	 */
-
-	// public Resize(VirtualAim inAim) {
-	// if (inAim.fullAimLoaded) {
-	// LoadedAim(inAim,false);
-	// pos=inAim.getPos();
-	// }
-	// else {
-	// LoadImages(new TImgRO[] {inAim});
-	// }
-	//
-	//
-	// }
 	public Resize(final TImgRO inAim) {
 		LoadImages(new TImgRO[] { inAim });
 	}
@@ -757,14 +747,27 @@ public class Resize extends BaseTIPLPluginMult {
 		pos = inAim.getPos();
 		InitLabels(inAim.getDim(), inAim.getDim());
 	}
-
 	@Override
 	public void LoadImages(final TImgRO[] inImages) {
+		LoadImages(inImages,-1);
+	}
+	/**
+	 * To read in the images
+	 * @param inImages
+	 * @param asType to set the type of the images being opened
+	 */
+	
+	public void LoadImages(final TImgRO[] inImages,final int asType) {
 		if (inImages.length < 1)
 			throw new IllegalArgumentException("Too few input images given!");
 		final TImgRO inAim = inImages[0];
 		_inputAim = inAim;
-		imageType = inAim.getImageType();
+		if(asType>=0) {
+			TImgTools.isValidType(asType);
+			imageType=asType;
+		} else {
+			imageType = inAim.getImageType();
+		}
 		fullLoaded = false;
 		makeToMask = false;
 		InitLabels(inAim.getDim(), inAim.getOffset());

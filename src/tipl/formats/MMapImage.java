@@ -602,19 +602,6 @@ public class MMapImage implements TImg, TReader, TWriter {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see tipl.formats.TImg#setImageType(int)
-	 */
-	@Override
-	public void setImageType(final int inData) {
-		// TODO Auto-generated method stub
-		throw new IllegalArgumentException(
-				"Cannot set image type of a mmap after creation");
-
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
 	 * @see tipl.formats.TImg#setOffset(tipl.util.D3int)
 	 */
 	@Override

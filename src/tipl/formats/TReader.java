@@ -289,15 +289,6 @@ public interface TReader extends Serializable {
 		public void setElSize(final D3float inData) {
 		}
 
-		/**
-		 * The aim type of the image (0=char, 1=short, 2=int, 3=float, 10=bool,
-		 * -1 same as input)
-		 */
-		@Override
-		public void setImageType(final int inData) {
-			System.out
-					.println(" Input type setting is not permitted for reader types...");
-		}
 
 		/**
 		 * The size of the border around the image which does not contain valid
