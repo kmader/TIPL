@@ -3,6 +3,12 @@ package tipl.formats;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+
+import scala.Tuple2;
+import tipl.spark.KVImg.TupleToPair;
+import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
 
@@ -11,6 +17,141 @@ import tipl.util.TImgTools;
  * concurrent tasks where writing should be impossible
  */
 public interface TImgRO extends TImgTools.HasDimensions,Serializable {	
+	/** an abstract class with all of the standard TImgRO functions but getPoly
+	 * 
+	 * @author mader
+	 *
+	 */
+	public abstract class ATImgRO implements TImgRO {
+		private static final long serialVersionUID = -8883859233940303695L;
+		final protected D3int dim;
+		protected D3int pos;
+		protected D3float elSize;
+		protected D3int offset=new D3int(0);
+		final protected int imageType;
+		protected String procLog="";
+		public ATImgRO(TImgTools.HasDimensions tempImg,final int iimageType) {
+			assert(TImgTools.isValidType(iimageType));
+			dim=tempImg.getDim();
+			pos=tempImg.getPos();
+			elSize=tempImg.getElSize();
+			procLog=tempImg.getProcLog();
+			
+			imageType=iimageType;
+		}
+		public ATImgRO(D3int idim,D3int ipos, D3float ielSize,final int iimageType) {
+			assert(TImgTools.isValidType(iimageType));
+			dim=idim;
+			pos=ipos;
+			elSize=ielSize;
+			imageType=iimageType;
+		}
+		/* (non-Javadoc)
+		 * @see tipl.util.TImgTools.HasDimensions#getDim()
+		 */
+		@Override
+		public D3int getDim() {
+			return dim;
+		}
+
+		/* (non-Javadoc)
+		 * @see tipl.util.TImgTools.HasDimensions#getElSize()
+		 */
+		@Override
+		public D3float getElSize() {
+			return elSize;
+		}
+
+		/* (non-Javadoc)
+		 * @see tipl.util.TImgTools.HasDimensions#getOffset()
+		 */
+		@Override
+		public D3int getOffset() {
+			return offset;
+		}
+
+		/* (non-Javadoc)
+		 * @see tipl.util.TImgTools.HasDimensions#getPos()
+		 */
+		@Override
+		public D3int getPos() {
+			return pos;
+		}
+
+		/* (non-Javadoc)
+		 * @see tipl.util.TImgTools.HasDimensions#getProcLog()
+		 */
+		@Override
+		public String getProcLog() {
+			return procLog;
+		}
+
+		/* (non-Javadoc)
+		 * @see tipl.formats.TImgRO#appendProcLog(java.lang.String)
+		 */
+		@Override
+		public String appendProcLog(String inData) {
+			procLog+=inData;
+			return procLog;
+		}
+
+		/* (non-Javadoc)
+		 * @see tipl.formats.TImgRO#getCompression()
+		 */
+		@Override
+		public boolean getCompression() {
+			return false;
+		}
+
+		/* (non-Javadoc)
+		 * @see tipl.formats.TImgRO#getImageType()
+		 */
+		@Override
+		public int getImageType() {
+			return imageType;
+		}
+
+		/* (non-Javadoc)
+		 * @see tipl.formats.TImgRO#getPath()
+		 */
+		@Override
+		public String getPath() {
+			// TODO Auto-generated method stub
+			return "";
+		}
+		/* (non-Javadoc)
+		 * @see tipl.formats.TImgRO#getShortScaleFactor()
+		 */
+		@Override
+		public float getShortScaleFactor() {
+			// TODO Auto-generated method stub
+			return 1;
+		}
+
+		/* (non-Javadoc)
+		 * @see tipl.formats.TImgRO#getSigned()
+		 */
+		@Override
+		public boolean getSigned() {
+			return false;
+		}
+
+		/* (non-Javadoc)
+		 * @see tipl.formats.TImgRO#isFast()
+		 */
+		@Override
+		public int isFast() {
+			return TImgTools.SPEED_DISK_AND_MEM;
+		}
+
+		/* (non-Javadoc)
+		 * @see tipl.formats.TImgRO#isGood()
+		 */
+		@Override
+		public boolean isGood() {
+			return true;
+		}
+	}
 	/**
 	 * CanExport means the TImg is capable of imparting itself on other images.
 	 * 

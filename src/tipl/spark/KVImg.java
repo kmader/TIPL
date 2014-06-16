@@ -29,23 +29,17 @@ import tipl.util.TImgTools;
  * @author mader
  *
  */
-public class KVImg<T extends Number> implements TImg,Serializable {
+public class KVImg<T extends Number> extends TImg.ATImg implements TImg,Serializable {
 	final protected JavaPairRDD<D3int, T> baseImg;
-	final protected D3int dim;
-	protected D3int pos;
-	protected D3float elSize;
-	protected D3int offset=new D3int(0);
-	final protected int imageType;
-	protected String procLog="";
 	
 	public JavaPairRDD<D3int, T> getBaseImg() {return baseImg;}
 	
+	public KVImg(TImgTools.HasDimensions tempImg,final int iimageType,JavaRDD<Tuple2<D3int, T>> ibImg) {
+		super(tempImg,iimageType);
+		baseImg=ibImg.mapToPair(new TupleToPair());	
+	}
 	public KVImg(D3int idim,D3int ipos, D3float ielSize,final int iimageType,JavaPairRDD<D3int, T> ibImg) {
-		assert(TImgTools.isValidType(iimageType));
-		dim=idim;
-		pos=ipos;
-		elSize=ielSize;
-		imageType=iimageType;
+		super(idim,ipos,ielSize,iimageType);
 		baseImg=ibImg;
 	}
 	/**
@@ -97,78 +91,15 @@ public class KVImg<T extends Number> implements TImg,Serializable {
 	}
 	
 	
-	/* (non-Javadoc)
-	 * @see tipl.util.TImgTools.HasDimensions#getDim()
-	 */
-	@Override
-	public D3int getDim() {
-		return dim;
-	}
+	
+	
+	static public class TupleToPair<T extends Number> implements PairFunction<Tuple2<D3int,T>,D3int,T> {
 
-	/* (non-Javadoc)
-	 * @see tipl.util.TImgTools.HasDimensions#getElSize()
-	 */
-	@Override
-	public D3float getElSize() {
-		return elSize;
-	}
-
-	/* (non-Javadoc)
-	 * @see tipl.util.TImgTools.HasDimensions#getOffset()
-	 */
-	@Override
-	public D3int getOffset() {
-		return offset;
-	}
-
-	/* (non-Javadoc)
-	 * @see tipl.util.TImgTools.HasDimensions#getPos()
-	 */
-	@Override
-	public D3int getPos() {
-		return pos;
-	}
-
-	/* (non-Javadoc)
-	 * @see tipl.util.TImgTools.HasDimensions#getProcLog()
-	 */
-	@Override
-	public String getProcLog() {
-		return procLog;
-	}
-
-	/* (non-Javadoc)
-	 * @see tipl.formats.TImgRO#appendProcLog(java.lang.String)
-	 */
-	@Override
-	public String appendProcLog(String inData) {
-		procLog+=inData;
-		return procLog;
-	}
-
-	/* (non-Javadoc)
-	 * @see tipl.formats.TImgRO#getCompression()
-	 */
-	@Override
-	public boolean getCompression() {
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see tipl.formats.TImgRO#getImageType()
-	 */
-	@Override
-	public int getImageType() {
-		return imageType;
-	}
-
-	/* (non-Javadoc)
-	 * @see tipl.formats.TImgRO#getPath()
-	 */
-	@Override
-	public String getPath() {
-		// TODO Auto-generated method stub
-		return "";
+		@Override
+		public Tuple2<D3int, T> call(Tuple2<D3int, T> arg0) throws Exception {
+			return arg0;
+			}
+		
 	}
 	/**
 	 * a class to convert the double output of many functions (FImage, PureFImage, etc) to the proper type
@@ -323,69 +254,6 @@ public class KVImg<T extends Number> implements TImg,Serializable {
 		return baseImg.name();
 	}
 
-	/* (non-Javadoc)
-	 * @see tipl.formats.TImgRO#getShortScaleFactor()
-	 */
-	@Override
-	public float getShortScaleFactor() {
-		// TODO Auto-generated method stub
-		return 1;
-	}
-
-	/* (non-Javadoc)
-	 * @see tipl.formats.TImgRO#getSigned()
-	 */
-	@Override
-	public boolean getSigned() {
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see tipl.formats.TImgRO#isFast()
-	 */
-	@Override
-	public int isFast() {
-		return TImgTools.SPEED_DISK_AND_MEM;
-	}
-
-	/* (non-Javadoc)
-	 * @see tipl.formats.TImgRO#isGood()
-	 */
-	@Override
-	public boolean isGood() {
-		return true;
-	}
-
-	@Override
-	public TImg inheritedAim(boolean[] imgArray, D3int dim, D3int offset) {
-		throw new IllegalArgumentException("This annoys me, please do not use this function");
-		
-	}
-
-	@Override
-	public TImg inheritedAim(char[] imgArray, D3int dim, D3int offset) {
-		throw new IllegalArgumentException("This annoys me, please do not use this function");
-		
-	}
-
-	@Override
-	public TImg inheritedAim(float[] imgArray, D3int dim, D3int offset) {
-		throw new IllegalArgumentException("This annoys me, please do not use this function");
-		
-	}
-
-	@Override
-	public TImg inheritedAim(int[] imgArray, D3int dim, D3int offset) {
-		throw new IllegalArgumentException("This annoys me, please do not use this function");
-		
-	}
-
-	@Override
-	public TImg inheritedAim(short[] imgArray, D3int dim, D3int offset) {
-		throw new IllegalArgumentException("This annoys me, please do not use this function");
-		
-	}
-
 	@Override
 	public TImg inheritedAim(TImgRO inAim) {
 		TImg outImage=ConvertTImg(SparkGlobal.getContext(""+this),inAim,inAim.getImageType());
@@ -393,51 +261,6 @@ public class KVImg<T extends Number> implements TImg,Serializable {
 		return outImage;
 	}
 
-	@Override
-	public void setDim(D3int inData) {
-		throw new IllegalArgumentException("This annoys me, please do not use this function");
-	}
-
-	@Override
-	public void setElSize(D3float inData) {
-		elSize=inData;
-	}
-
-	@Override
-	public void setOffset(D3int inData) {
-		offset=inData;
-	}
-
-	@Override
-	public void setPos(D3int inData) {
-		pos=inData;
-	}
-
-	@Override
-	public boolean InitializeImage(D3int dPos, D3int cDim, D3int dOffset,
-			D3float elSize, int imageType) {
-		throw new IllegalArgumentException("This annoys me, please do not use this function");
-		
-	}
-
-	@Override
-	public void setCompression(boolean inData) {
-		// TODO Auto-generated method stub
-		throw new IllegalArgumentException("This annoys me, please do not use this function");
-		
-	}
-
-
-	@Override
-	public void setShortScaleFactor(float ssf) {
-		throw new IllegalArgumentException("This annoys me, please do not use this function");
-		
-	}
-
-	@Override
-	public void setSigned(boolean inData) {
-		throw new IllegalArgumentException("This annoys me, please do not use this function");
-		
-	}
+	
 
 }

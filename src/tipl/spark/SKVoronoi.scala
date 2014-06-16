@@ -17,6 +17,8 @@ import tipl.util.ArgumentParser
 import tipl.tests.TestPosFunctions
 import tipl.tools.BaseTIPLPluginIO
 import tipl.util.TIPLGlobal
+import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext._
 
 /**
  * A spark based code to perform shape analysis similarly to the code provided GrayAnalysis
@@ -48,34 +50,9 @@ class SKVoronoi extends BaseTIPLPluginIO {
 
 			override def getPluginName() = {  "kVoronoi:Spark" }
 
-			/**
-			 * The following is the (static) function that turns a list of points into an analyzed shape
-			 */
-			val singleShape = (cPoint: (Long,Iterable[(D3int,Long)])) => {
-				val label = cPoint._1
-						val pointList = cPoint._2
-						val cLabel = label.toInt
-						val cVoxel=new GrayVoxels(cLabel)
-				for(cpt <- pointList) {
-					cVoxel.addVox(cpt._1.x, cpt._1.y, cpt._1.z, cLabel)
-				}
-				cVoxel.mean
-				for(cpt <- pointList) {
-					cVoxel.addCovVox(cpt._1.x, cpt._1.y, cpt._1.z, cLabel)
-				}
-				cVoxel.calcCOV
-				cVoxel.diag
-				for(cpt <- pointList) {
-					cVoxel.setExtentsVoxel(cpt._1.x, cpt._1.y, cpt._1.z)
-				}
-				cVoxel
-			}
 			
 			override def execute():Boolean = { 
 					print("Starting Plugin..."+getPluginName);
-					val filterFun = (ival: (D3int,Long)) => ival._2>0
-					val gbFun = (ival: (D3int,Long)) => ival._2
-					val gvList=labeledImage.getBaseImg.rdd
 					true
 			}
 			
@@ -84,29 +61,48 @@ class SKVoronoi extends BaseTIPLPluginIO {
 			 
 			  KVImgTools.createFromPureFun[java.lang.Float](SparkGlobal.getContext(getPluginName()), tempObj, defFloat , TImgTools.IMAGETYPE_FLOAT)
 			}
-			var labeledImage: KVImg[Long] = null
-			var distanceImage: KVImg[java.lang.Float] = null
+			var labeledImage: RDD[(D3int,Long)] = null
+			var distanceImage: RDD[(D3int,Float)] = null
 			/**
 			 * The first image is the 
 			 */
 			override def LoadImages(inImages: Array[TImgRO]) = {
 			  var labelImage=inImages(0)
 			  var maskImage=if(inImages.length>1) inImages(1) else null
-				labeledImage = labelImage match {
+			  
+				labeledImage = (labelImage match {
 					case m: KVImg[_] => m.toKVLong
 					case m: DTImg[_] => m.asKV().toKVLong()
 					case m: TImgRO => KVImg.ConvertTImg(SparkGlobal.getContext(getPluginName()), m, TImgTools.IMAGETYPE_INT).toKVLong()
-				}
-			  
-				distanceImage = maskImage match {
+				}).getBaseImg.rdd
+				
+				// any image filled with all negative distances
+			  val initialDistances = fillImage(labelImage,-1).getBaseImg.rdd
+			  val inMask = (ival: (D3int,java.lang.Float)) => ival._2>0
+			  val toBoolean = (ival: java.lang.Float) => true
+			  val maskedImage = (maskImage match {
 					case m: KVImg[_] => m.toKVFloat
 					case m: DTImg[_] => m.asKV().toKVFloat
 					case m: TImgRO => KVImg.ConvertTImg(SparkGlobal.getContext(getPluginName()), m, TImgTools.IMAGETYPE_INT).toKVFloat()
-					case _ => fillImage(labeledImage,-1)
+					case _ => fillImage(labelImage,1)
+				}).getBaseImg.rdd.filter(inMask).mapValues(toBoolean)
+				
+				// combine the images to create the starting distance map
+				val maskPlusDist = (inVal: (java.lang.Float,Option[Boolean])) => {
+				  inVal._2.map(inBool => 0f).getOrElse(inVal._1.floatValue)
 				}
+				val mergedImage=initialDistances.
+				leftOuterJoin(maskedImage).mapValues(maskPlusDist)
+				
 			}
+				
 			override def ExportImages(templateImage: TImgRO):Array[TImg] = {
-			  return Array(labeledImage,distanceImage)
+			 /** return Array(new KVImg(templateImage,TImgTools.IMAGETYPE_LONG,labeledImage.toJavaRDD),
+			      new KVImg(templateImage,TImgTools.IMAGETYPE_FLOAT,distanceImage.toJavaRDD))
+			
+			* 
+			*/
+			  return null;
 			}
 
 
