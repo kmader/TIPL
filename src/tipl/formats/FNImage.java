@@ -1,5 +1,7 @@
 package tipl.formats;
 
+import java.io.Serializable;
+
 import tipl.util.TImgTools;
 
 /**
@@ -154,7 +156,7 @@ public class FNImage extends FImage {
 	 * @author mader
 	 *
 	 */
-	public static interface VFNGenerator {
+	public static interface VFNGenerator extends Serializable  {
 		public VoxelFunctionN get();
 	}
 
@@ -162,7 +164,7 @@ public class FNImage extends FImage {
 	 * An interface for making function to combining N images into a single
 	 * image
 	 **/
-	public static interface VoxelFunctionN {
+	public static interface VoxelFunctionN extends Serializable {
 		/** add a voxel at position ipos[] with value v **/
 		public void add(Double[] ipos, double v);
 

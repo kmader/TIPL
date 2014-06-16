@@ -1,5 +1,7 @@
 package tipl.formats;
 
+import java.io.Serializable;
+
 import tipl.util.TImgTools;
 
 /**
@@ -72,7 +74,7 @@ public class FImage extends FuncImage {
 	}
 
 	/** An interface for making function to apply to voxels in an image **/
-	public static interface VoxelFunction {
+	public static interface VoxelFunction extends Serializable {
 		/** gray value to return for a voxel at position ipos[] with value v **/
 		public double get(Double[] ipos, double v);
 

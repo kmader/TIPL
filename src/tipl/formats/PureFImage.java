@@ -1,5 +1,7 @@
 package tipl.formats;
 
+import java.io.Serializable;
+
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
@@ -123,7 +125,7 @@ public class PureFImage implements TImgRO,TImgTools.ChangesDimensions {
 	}
 
 	/** An interface for making function to apply to voxels in an image **/
-	public static interface PositionFunction {
+	public static interface PositionFunction extends Serializable {
 		/** gray value to return for a voxel at position ipos[] with value v **/
 		public double get(Double[] ipos);
 
