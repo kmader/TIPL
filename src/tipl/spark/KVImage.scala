@@ -20,17 +20,15 @@ import tipl.util.TImgTools
  * @author mader
  *
  */
-abstract class KVImage[T <: Number] extends TImg.ATImg with TImg {
-  var procLog: String
-  
-  val baseImg: RDD[(D3int, T)]
-  
-  def this(tHD: HasDimensions,bImg: RDD[(D3int, T)],itype:Integer) = {
-    this(tHD,itype)
-    baseImg=bImg
-  }
+abstract class KVImage[T <: Number](idim: D3int,ipos: D3int=new D3int(0,0,0),ioffset: D3int= new D3int(0,0,0),ielSize: D3float=new D3float(1f,1f,1f),baseImg: RDD[(D3int, T)],iimageType: Integer) 
+extends TImg.ATImg(idim,ipos,ioffset,ielSize,iimageType) {
   
   
+  def this(tHD: HasDimensions,bImg: RDD[(D3int, T)],itype:Integer) = 
+    this(tHD.getDim,tHD.getPos,tHD.getElSize,bImg,itype)
+}
+
+object junk {
   val isCurSlice = ((arg0: (D3int,_)) => (arg0..1.z==sliceNumber))
   val slicePosToIndex = (arg0: (D3int,_)) => ((arg0._1.z*cDim.y+arg0._1.y)*cDim.x+arg0._1.x,arg0._2)
   
