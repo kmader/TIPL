@@ -1,6 +1,9 @@
 package tipl.util;
 
 import ij.ImageJ;
+import tipl.formats.VirtualAim;
+import tipl.util.TIPLMongo.ITIPLUsage;
+import tipl.util.TIPLMongo.TIPLUsage;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,366 +16,405 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import tipl.formats.VirtualAim;
-import tipl.tools.BaseTIPLPluginIn;
-import tipl.util.TIPLMongo.ITIPLUsage;
-import tipl.util.TIPLMongo.TIPLUsage;
-
 public class TIPLGlobal {
-	public static final int DEBUG_ALL=5;
-	public static final int DEBUG_GC=4;
-	public static final int DEBUG_MSGS=3;
-	public static final int DEBUG_STATUS=2;
-	public static final int DEBUG_BASIC=1;
-	public static final int DEBUG_OFF=0;
-	private static int TIPLDebugLevel=DEBUG_BASIC;
-	
-	/**
-	 * returns the level (see enumeration above for more on the levels
-	 * @return
-	 */
-	public static int getDebugLevel() { return TIPLDebugLevel;}
-	/**
-	 * returns of the debug level is above DEBUG_OFF
-	 * @return
-	 */
-	public static boolean getDebug() {return TIPLDebugLevel>=DEBUG_MSGS;}
-	public static void setDebug(int debugVal) {
-		assert(debugVal>=0);
-		assert(debugVal<=5);
-		TIPLDebugLevel=debugVal;
-	}
-	/**
-	 * Run (encourage to run) the garbage collector and provide more feedback on the current memory status (makes debugging easier)
-	 */
-	public static void runGC() {
-		long memBefore=getFreeMB();
-		System.gc();
-		try {Thread.sleep(10);}
-		catch (Exception e){ 
-			e.printStackTrace();
-			System.out.println("Sleep during GC was aborted");
-		}
-		long memAfter=getFreeMB();
-		if (TIPLDebugLevel>=DEBUG_GC) System.out.println("GC Run: "+(memAfter-memBefore)+" MB freed, "+memAfter+"MB avail of "+getTotalMB()+"MB");
-	}
-	public static long getFreeMB() {
-		return curRuntime.freeMemory()/(1024*1024);
-	}
-	public static long getTotalMB() {
-		return curRuntime.totalMemory()/(1024*1024);
-	}
-	public static long getUsedMB() {
-		return getTotalMB()-getFreeMB();
-	}
+    public static final int DEBUG_ALL = 5;
+    public static final int DEBUG_GC = 4;
+    public static final int DEBUG_MSGS = 3;
+    public static final int DEBUG_STATUS = 2;
+    public static final int DEBUG_BASIC = 1;
+    private static int TIPLDebugLevel = DEBUG_BASIC;
+    public static final int DEBUG_OFF = 0;
+    /**
+     * so the threads do not need to manually be shutdown
+     */
+    public static final ThreadFactory daemonFactory = new ThreadFactory() {
+        @Override
+        public Thread newThread(final Runnable runnable) {
+            final Thread thread = Executors.defaultThreadFactory().newThread(
+                    runnable);
+            thread.setDaemon(true);
+            return thread;
+        }
+    };
+    final static boolean useApacheForCopy = true;
+    /**
+     * the current runtime being used (whatever that is)
+     */
+    public static Runtime curRuntime = Runtime.getRuntime();
+    /**
+     * number of cores available for processing tasks
+     */
+    public static int availableCores = curRuntime.availableProcessors();
+    public static int IJmode = ImageJ.NO_SHOW;
+    /**
+     * the maximum number of cores allowed to be reading files simultaneously
+     */
+    static protected int maximumParallelReaders = 1;
+    /**
+     * The number of readers available on the given node
+     */
+    static protected AtomicInteger availableReaders = null;
+    // ImageJ portion of the code
+    protected static ImageJ IJcore = null;
+    // Usage portion of the code
+    protected static ITIPLUsage tuCore = null;
 
-	/**
-	 * simple method to get an executor service, eventually allows this to be changed to another / distributed option
-	 * @param numOfCores
-	 * @return
-	 */
-	public static ExecutorService requestSimpleES(int numOfCores) {
-		return Executors.newFixedThreadPool(Math.min(TIPLGlobal.availableCores,numOfCores),TIPLGlobal.daemonFactory);
-	}
-	public static ExecutorService requestSimpleES() { return requestSimpleES(TIPLGlobal.availableCores);}
-	public static ExecutorService getIOExecutor() {
-		return requestSimpleES(requestAvailableReaderCount());
-	}
-	public static ArgumentParser activeParser(String[] args) {return activeParser(new ArgumentParser(args,true));}
-	/**
-	 * parser which actively changes local, maxcores, maxiothread and other TIPL wide parameters
-	 * @param sp input argumentparser
-	 * @return
-	 */
-	public static ArgumentParser activeParser(ArgumentParser sp) {
-		VirtualAim.scratchDirectory = sp.getOptionString("@localdir",
-				VirtualAim.scratchDirectory, "Directory to save local data to");
-		VirtualAim.scratchLoading=sp.getOptionBoolean("@local", VirtualAim.scratchLoading,"Load image data from local filesystems");
-		TIPLGlobal.availableCores = sp.getOptionInt("@maxcores",
-				TIPLGlobal.availableCores,
-				"Number of cores/threads to use for processing");
+    /**
+     * returns the level (see enumeration above for more on the levels
+     *
+     * @return
+     */
+    public static int getDebugLevel() {
+        return TIPLDebugLevel;
+    }
 
-		TIPLGlobal.maximumParallelReaders = sp.getOptionInt("@maxiothread",
-				TIPLGlobal.maximumParallelReaders,
-				"Number of cores/threads to use for read/write operations");
-		TIPLGlobal.setDebug( sp.getOptionInt("@debug",
-				TIPLGlobal.getDebugLevel(),
-				"Debug level from "+DEBUG_OFF+" to "+DEBUG_ALL));
-		boolean curHeadlessValue=Boolean.parseBoolean(System.getProperty("java.awt.headless"));
-		
-		System.setProperty("java.awt.headless", ""+sp.getOptionBoolean("@headless",curHeadlessValue,"Run TIPL in headless mode"));
-		
-		//if (sp.hasOption("?")) System.out.println(sp.getHelp());		
-		return sp;//.subArguments("@");
-	}
-	
-	
-	/**
-	 * shutdown an executor service and wait for everything to finish.
-	 * @param inPool
-	 */
-	public static void waitForever(ExecutorService inPool) {
-		inPool.shutdown();
-		try {
-			inPool.awaitTermination(100, TimeUnit.DAYS);
-		} catch(Exception e) {
-			e.printStackTrace();
-			throw new IllegalArgumentException(inPool+" executorservice crashed:"+e.getMessage());
-		}
-	}
-	/**
-	 * the current runtime being used (whatever that is)
-	 */
-	public static Runtime curRuntime = Runtime.getRuntime();
-	/** number of cores available for processing tasks */
-	public static int availableCores = curRuntime.availableProcessors();
+    /**
+     * returns of the debug level is above DEBUG_OFF
+     *
+     * @return
+     */
+    public static boolean getDebug() {
+        return TIPLDebugLevel >= DEBUG_MSGS;
+    }
 
-	/**
-	 * the maximum number of cores allowed to be reading files simultaneously
-	 */
-	static protected int maximumParallelReaders=1;
-	
-	static public int getMaximumReaders() { return maximumParallelReaders;}
-	static public void setMaximumReaders(int newMax) {
-		assert(newMax>0);
-		maximumParallelReaders=newMax;
-	}
-	
-	/**
-	 * The number of readers available on the given node
-	 */
-	static protected AtomicInteger availableReaders=null;
-	static public boolean requestReader() {
-		if(availableReaders==null) {
-				availableReaders=new AtomicInteger(maximumParallelReaders);
-		}
-		int coreCount=availableReaders.decrementAndGet();
-		if (coreCount<0) {
-			returnReader();
-			return false;
-		}
-		return true;
-	}
-	static public int requestAllReaders() {
-		if(availableReaders==null) {
-			availableReaders=new AtomicInteger(maximumParallelReaders);
-		}
-		return availableReaders.getAndSet(0);
-	}
-	static public int requestAvailableReaderCount() {
-		int rCount=requestAllReaders();
-		// 
-		for(int i=0;i<rCount;i++) returnReader();
-		return rCount;
-	}
-	/**
-	 * try and get a reader and repeat until it is gotten
-	 * @return whether or not it was successful
-	 */
-	static public boolean waitForReader() {
-		while(!requestReader()) {
-			if(TIPLGlobal.getDebug()) System.out.println("Requesting Reader:"+availableReaders.get());
-			try {
-				Thread.sleep(500);
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.out.println("Interrupted while waiting for reader!");
-				return false;
-			}
-		}
-		return true;
-	}
-	static public void returnReader() {
-		availableReaders.incrementAndGet();
-	}
-	/**
-	 * so the threads do not need to manually be shutdown
-	 * 
-	 */
-	public static final ThreadFactory daemonFactory = new ThreadFactory() {
-		@Override
-		public Thread newThread(final Runnable runnable) {
-			final Thread thread = Executors.defaultThreadFactory().newThread(
-					runnable);
-			thread.setDaemon(true);
-			return thread;
-		}
-	};
-	final static boolean useApacheForCopy=true;
-	/** a simple file copy function for managing outputs */
-	public static void copyFile(final File sourceFile, final File destFile)
-			throws IOException {
+    public static void setDebug(int debugVal) {
+        assert (debugVal >= 0);
+        assert (debugVal <= 5);
+        TIPLDebugLevel = debugVal;
+    }
 
-		if (!destFile.exists()) {
-			destFile.createNewFile();
-		}
-		if (useApacheForCopy) {
-			org.apache.commons.io.FileUtils.copyFile(sourceFile, destFile); // since standard java 1.6 does not support 2g+ files
-			return;
-		} else {
-			FileChannel source = null;
-			FileChannel destination = null;
-			try {
-				source = new FileInputStream(sourceFile).getChannel();
-				destination = new FileOutputStream(destFile).getChannel();
-				destination.transferFrom(source, 0, source.size());
-			} finally {
-				if (source != null) {
-					source.close();
-				}
-				if (destination != null) {
-					destination.close();
-				}
-			}
-		}
+    /**
+     * Run (encourage to run) the garbage collector and provide more feedback on the current memory status (makes debugging easier)
+     */
+    public static void runGC() {
+        long memBefore = getFreeMB();
+        System.gc();
+        try {
+            Thread.sleep(10);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Sleep during GC was aborted");
+        }
+        long memAfter = getFreeMB();
+        if (TIPLDebugLevel >= DEBUG_GC)
+            System.out.println("GC Run: " + (memAfter - memBefore) + " MB freed, " + memAfter + "MB avail of " + getTotalMB() + "MB");
+    }
 
-	}
+    public static long getFreeMB() {
+        return curRuntime.freeMemory() / (1024 * 1024);
+    }
 
+    public static long getTotalMB() {
+        return curRuntime.totalMemory() / (1024 * 1024);
+    }
 
-	public static void copyFile(final String sourceFile, final String destFile) {
-		try {
-			copyFile(new File(sourceFile), new File(destFile));
-		} catch (final Exception e) {
-			e.printStackTrace();
-			System.out.println("Copy file failed (disk full?) " + sourceFile
-					+ ", " + destFile);
-			TIPLGlobal.runGC();
-		}
-	}
+    public static long getUsedMB() {
+        return getTotalMB() - getFreeMB();
+    }
 
-	public static boolean DeleteFile(final String file) {
-		return DeleteFile(file, "Unk");
-	}
+    /**
+     * simple method to get an executor service, eventually allows this to be changed to another / distributed option
+     *
+     * @param numOfCores
+     * @return
+     */
+    public static ExecutorService requestSimpleES(int numOfCores) {
+        return Executors.newFixedThreadPool(Math.min(TIPLGlobal.availableCores, numOfCores), TIPLGlobal.daemonFactory);
+    }
 
-	/** Delete files */
-	public static boolean DeleteFile(final String file, final String whoDel) {
-		final File f1 = new File(file);
-		final boolean success = f1.delete();
-		if (!success) {
-			System.out.println(whoDel + "\t" + "ERROR:" + file
-					+ " could not be deleted.");
-			return false;
-		} else {
-			System.out.println(whoDel + "\t" + file + " successfully deleted.");
-			return true;
-		}
-	}
+    public static ExecutorService requestSimpleES() {
+        return requestSimpleES(TIPLGlobal.availableCores);
+    }
 
-	/** Utility Function Section */
-	/**
-	 * A function to register the current filename as a temporary file that
-	 * should be delated when the runtime finishes
-	 **/
-	public static void DeleteTempAtFinish(final String delName) {
-		curRuntime.addShutdownHook(new Thread() {
-			public boolean MyDeleteFile(final String file, final String whoDel) {
-				final File f1 = new File(file);
-				final boolean success = f1.delete();
-				if (!success) {
-					System.out.println(whoDel + "\t" + "ERROR:" + file
-							+ " could not be deleted.");
-					return false;
-				} else {
-					System.out.println(whoDel + "\t" + file
-							+ " successfully deleted.");
-					return true;
-				}
-			}
+    public static ExecutorService getIOExecutor() {
+        return requestSimpleES(requestAvailableReaderCount());
+    }
 
-			@Override
-			public void run() {
-				System.out
-				.println("SHUTHOOK\tChecking to ensure that all temp-files have been deleted");
-				MyDeleteFile(delName, "SHUTHOOK");
-			}
-		});
-	}
+    public static ArgumentParser activeParser(String[] args) {
+        return activeParser(new ArgumentParser(args, true));
+    }
 
+    /**
+     * parser which actively changes local, maxcores, maxiothread and other TIPL wide parameters
+     *
+     * @param sp input argumentparser
+     * @return
+     */
+    public static ArgumentParser activeParser(ArgumentParser sp) {
+        VirtualAim.scratchDirectory = sp.getOptionString("@localdir",
+                VirtualAim.scratchDirectory, "Directory to save local data to");
+        VirtualAim.scratchLoading = sp.getOptionBoolean("@local", VirtualAim.scratchLoading, "Load image data from local filesystems");
+        TIPLGlobal.availableCores = sp.getOptionInt("@maxcores",
+                TIPLGlobal.availableCores,
+                "Number of cores/threads to use for processing");
 
-	/** get executor service for tasks */
-	public static ExecutorService getTaskExecutor() {
-		return Executors.newFixedThreadPool(availableCores, daemonFactory);
-	}
+        TIPLGlobal.maximumParallelReaders = sp.getOptionInt("@maxiothread",
+                TIPLGlobal.maximumParallelReaders,
+                "Number of cores/threads to use for read/write operations");
+        TIPLGlobal.setDebug(sp.getOptionInt("@debug",
+                TIPLGlobal.getDebugLevel(),
+                "Debug level from " + DEBUG_OFF + " to " + DEBUG_ALL));
+        boolean curHeadlessValue = Boolean.parseBoolean(System.getProperty("java.awt.headless"));
 
+        System.setProperty("java.awt.headless", "" + sp.getOptionBoolean("@headless", curHeadlessValue, "Run TIPL in headless mode"));
 
-	/**
-	 * reserve cores for an operation that other threads can then no longer user
-	 */
-	public static synchronized int reserveCores(final int desiredCores) {
-		final int givenCores = (availableCores > desiredCores) ? desiredCores
-				: availableCores;
-		availableCores -= givenCores;
-		return givenCores;
-	}
+        //if (sp.hasOption("?")) System.out.println(sp.getHelp());
+        return sp;//.subArguments("@");
+    }
 
-	/** return the cores when a computation is complete */
-	public static synchronized void returnCores(final int finishedCores) {
-		availableCores += finishedCores;
-	}
+    /**
+     * shutdown an executor service and wait for everything to finish.
+     *
+     * @param inPool
+     */
+    public static void waitForever(ExecutorService inPool) {
+        inPool.shutdown();
+        try {
+            inPool.awaitTermination(100, TimeUnit.DAYS);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException(inPool + " executorservice crashed:" + e.getMessage());
+        }
+    }
 
-	/** Function to try and open an aim file, return true if it is successful */
-	public static boolean tryOpen(final String filename) {
+    static public int getMaximumReaders() {
+        return maximumParallelReaders;
+    }
 
-		VirtualAim tempAim = null;
-		if (filename.length() > 0) {
-			System.out.println("Trying to open ... " + filename);
-		} else {
-			System.out
-			.println("Filename is empty, assuming that it is not essential and proceeding carefully!! ... ");
-			return true;
-		}
+    static public void setMaximumReaders(int newMax) {
+        assert (newMax > 0);
+        maximumParallelReaders = newMax;
+    }
 
-		try {
-			tempAim = new VirtualAim(filename);
-			return (tempAim.ischGuet);
-		} catch (final Exception e) {
-			tempAim = null;
-			TIPLGlobal.runGC();
-			return false;
-		}
+    static public boolean requestReader() {
+        if (availableReaders == null) {
+            availableReaders = new AtomicInteger(maximumParallelReaders);
+        }
+        int coreCount = availableReaders.decrementAndGet();
+        if (coreCount < 0) {
+            returnReader();
+            return false;
+        }
+        return true;
+    }
 
-	}
-	
-	// ImageJ portion of the code
-	protected static ImageJ IJcore = null;
-	public static int IJmode=ImageJ.NO_SHOW;
-	public static ImageJ getIJInstance() {
-		if (Boolean.parseBoolean(System.getProperty("java.awt.headless"))) {
-			System.err.println("JVM is running in headless mode, IJcore will be returned as null, careful");
-			return null;
-		}
-		if (IJcore==null) IJcore=new ImageJ(IJmode);
-		return IJcore;
-	}
-	
-	// Usage portion of the code
-	protected static ITIPLUsage tuCore=null;
-	public static ITIPLUsage getUsage() {
-		if (tuCore==null) tuCore=TIPLUsage.getTIPLUsage();
-		return tuCore;
-	}
-	public static boolean isLocalOk() {
-		return true;
-	}
-	public static ITIPLUsage isLocalUsage(int checkLocalId) {
-		if (checkLocalId==22515) tuCore = new ITIPLUsage() {
+    static public int requestAllReaders() {
+        if (availableReaders == null) {
+            availableReaders = new AtomicInteger(maximumParallelReaders);
+        }
+        return availableReaders.getAndSet(0);
+    }
 
-			@Override
-			public void registerPlugin(String pluginName, String args) {
-				System.out.println("USAGE_PLUGIN:"+pluginName+","+args);
-				
-			}
+    static public int requestAvailableReaderCount() {
+        int rCount = requestAllReaders();
+        //
+        for (int i = 0; i < rCount; i++) returnReader();
+        return rCount;
+    }
 
-			@Override
-			public void registerImage(String imageName, String dim, String info) {
-				System.out.println("USAGE_IMAGE:"+imageName+","+dim+","+info);
-				
-			}
-			
-		};
-		return tuCore;
-	}
-	
-	
+    /**
+     * try and get a reader and repeat until it is gotten
+     *
+     * @return whether or not it was successful
+     */
+    static public boolean waitForReader() {
+        while (!requestReader()) {
+            if (TIPLGlobal.getDebug()) System.out.println("Requesting Reader:" + availableReaders.get());
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Interrupted while waiting for reader!");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static public void returnReader() {
+        availableReaders.incrementAndGet();
+    }
+
+    /**
+     * a simple file copy function for managing outputs
+     */
+    public static void copyFile(final File sourceFile, final File destFile)
+            throws IOException {
+
+        if (!destFile.exists()) {
+            destFile.createNewFile();
+        }
+        if (useApacheForCopy) {
+            org.apache.commons.io.FileUtils.copyFile(sourceFile, destFile); // since standard java 1.6 does not support 2g+ files
+            return;
+        } else {
+            FileChannel source = null;
+            FileChannel destination = null;
+            try {
+                source = new FileInputStream(sourceFile).getChannel();
+                destination = new FileOutputStream(destFile).getChannel();
+                destination.transferFrom(source, 0, source.size());
+            } finally {
+                if (source != null) {
+                    source.close();
+                }
+                if (destination != null) {
+                    destination.close();
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Utility Function Section
+     */
+
+    public static void copyFile(final String sourceFile, final String destFile) {
+        try {
+            copyFile(new File(sourceFile), new File(destFile));
+        } catch (final Exception e) {
+            e.printStackTrace();
+            System.out.println("Copy file failed (disk full?) " + sourceFile
+                    + ", " + destFile);
+            TIPLGlobal.runGC();
+        }
+    }
+
+    public static boolean DeleteFile(final String file) {
+        return DeleteFile(file, "Unk");
+    }
+
+    /**
+     * Delete files
+     */
+    public static boolean DeleteFile(final String file, final String whoDel) {
+        final File f1 = new File(file);
+        final boolean success = f1.delete();
+        if (!success) {
+            System.out.println(whoDel + "\t" + "ERROR:" + file
+                    + " could not be deleted.");
+            return false;
+        } else {
+            System.out.println(whoDel + "\t" + file + " successfully deleted.");
+            return true;
+        }
+    }
+
+    /**
+     * A function to register the current filename as a temporary file that
+     * should be delated when the runtime finishes
+     */
+    public static void DeleteTempAtFinish(final String delName) {
+        curRuntime.addShutdownHook(new Thread() {
+            public boolean MyDeleteFile(final String file, final String whoDel) {
+                final File f1 = new File(file);
+                final boolean success = f1.delete();
+                if (!success) {
+                    System.out.println(whoDel + "\t" + "ERROR:" + file
+                            + " could not be deleted.");
+                    return false;
+                } else {
+                    System.out.println(whoDel + "\t" + file
+                            + " successfully deleted.");
+                    return true;
+                }
+            }
+
+            @Override
+            public void run() {
+                System.out
+                        .println("SHUTHOOK\tChecking to ensure that all temp-files have been deleted");
+                MyDeleteFile(delName, "SHUTHOOK");
+            }
+        });
+    }
+
+    /**
+     * get executor service for tasks
+     */
+    public static ExecutorService getTaskExecutor() {
+        return Executors.newFixedThreadPool(availableCores, daemonFactory);
+    }
+
+    /**
+     * reserve cores for an operation that other threads can then no longer user
+     */
+    public static synchronized int reserveCores(final int desiredCores) {
+        final int givenCores = (availableCores > desiredCores) ? desiredCores
+                : availableCores;
+        availableCores -= givenCores;
+        return givenCores;
+    }
+
+    /**
+     * return the cores when a computation is complete
+     */
+    public static synchronized void returnCores(final int finishedCores) {
+        availableCores += finishedCores;
+    }
+
+    /**
+     * Function to try and open an aim file, return true if it is successful
+     */
+    public static boolean tryOpen(final String filename) {
+
+        VirtualAim tempAim = null;
+        if (filename.length() > 0) {
+            System.out.println("Trying to open ... " + filename);
+        } else {
+            System.out
+                    .println("Filename is empty, assuming that it is not essential and proceeding carefully!! ... ");
+            return true;
+        }
+
+        try {
+            tempAim = new VirtualAim(filename);
+            return (tempAim.ischGuet);
+        } catch (final Exception e) {
+            tempAim = null;
+            TIPLGlobal.runGC();
+            return false;
+        }
+
+    }
+
+    public static ImageJ getIJInstance() {
+        if (Boolean.parseBoolean(System.getProperty("java.awt.headless"))) {
+            System.err.println("JVM is running in headless mode, IJcore will be returned as null, careful");
+            return null;
+        }
+        if (IJcore == null) IJcore = new ImageJ(IJmode);
+        return IJcore;
+    }
+
+    public static ITIPLUsage getUsage() {
+        if (tuCore == null) tuCore = TIPLUsage.getTIPLUsage();
+        return tuCore;
+    }
+
+    public static boolean isLocalOk() {
+        return true;
+    }
+
+    public static ITIPLUsage isLocalUsage(int checkLocalId) {
+        if (checkLocalId == 22515) tuCore = new ITIPLUsage() {
+
+            @Override
+            public void registerPlugin(String pluginName, String args) {
+                System.out.println("USAGE_PLUGIN:" + pluginName + "," + args);
+
+            }
+
+            @Override
+            public void registerImage(String imageName, String dim, String info) {
+                System.out.println("USAGE_IMAGE:" + imageName + "," + dim + "," + info);
+
+            }
+
+        };
+        return tuCore;
+    }
+
 
 }
