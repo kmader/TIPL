@@ -1,7 +1,9 @@
 package spark.images
+
+import tipl.spark._
 import tipl.tests._
 import tipl.util.TImgTools
-import tipl.spark._
+
 import tipl.formats.TImgRO
 
 import java.io.Serializable
@@ -27,19 +29,15 @@ object SimpleTests {
   val x: Long = java.lang.Long.valueOf(1)         //> x  : Long = 1
   val testImg = TestPosFunctions.wrapItAs(10,
 				new TestPosFunctions.DiagonalPlaneAndDotsFunction(),TImgTools.IMAGETYPE_INT);
-                                                  //> testImg  : tipl.formats.TImgRO = tipl.formats.PureFImage@3630f72
+                                                  //> testImg  : tipl.formats.TImgRO = tipl.formats.PureFImage@78d377df
 	val testF = Float.MaxValue                //> testF  : Float = 3.4028235E38
 	var testR = testF+1                       //> testR  : Float = 3.4028235E38
 	
   //val jsc = SparkGlobal.getContext("FunnyTests")
   
 	//val dtestImg = DTImg.ConvertTImg(jsc,testImg,TImgTools.IMAGETYPE_INT)
-  
-		
-		
-		
 		
 	//val kvCount = kvImg.getBaseImg().count
 
-	//val kvOut = kvImg.getBaseImg().first
+  //val kvOut = kvImg.getBaseImg().first
 }
