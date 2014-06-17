@@ -18,7 +18,7 @@ public class kVoronoiShrink extends kVoronoi {
 	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
 		@Override
 		public ITIPLPlugin get() {
-			return new kVoronoi();
+			return new kVoronoiShrink();
 		}
 	};
 	public static void main(final String[] args) {
