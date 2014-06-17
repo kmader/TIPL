@@ -194,7 +194,7 @@ class SKVoronoi extends BaseTIPLPluginIO {
 
 object SKTest extends SKVoronoi {
 	def main(args: Array[String]):Unit = {
-			val testImg = TestPosFunctions.wrapItAs(10,
+			val testImg = TestPosFunctions.wrapItAs(500,
 					new TestPosFunctions.DotsFunction(),TImgTools.IMAGETYPE_INT);
 
 

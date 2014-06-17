@@ -108,7 +108,20 @@ mergedata<-function(goldData,matchData,prefix="M_",as.diff=F) {
 }
 as.diff.data<-function(mergedData,m.prefix="M_",d.prefix="D_",sample.col.name="sample") {
   all.cols<-names(mergedData)
-  original.cols<-names(mergedData)[which(laply(all.cols,function(x) length(grep(m.prefix,x))<1))]
+  keep.original<-which(laply(all.cols,
+                         function(x) {
+                           length(grep(m.prefix,x))<1
+                           }
+                         )
+                   )
+  original.cols<-all.cols[keep.original]
+  keep.numeric<-which(laply(original.cols,
+                         function(x) {
+                          is.numeric(mergedData[,x])
+                         }
+  )
+  )
+  numeric.cols<-all.cols[keep.numeric]
   out.data<-mergedData[,(names(mergedData) %in% original.cols)]
   # normalize the fields by their velocity (D_sample)
   if (sample.col.name %in% original.cols) {
@@ -116,7 +129,7 @@ as.diff.data<-function(mergedData,m.prefix="M_",d.prefix="D_",sample.col.name="s
   } else {
     dsample.vec<-1
   }
-  for(c.col in original.cols) {
+  for(c.col in numeric.cols) {
     # add differential column
     new.name<-switch(c.col,
                      POS_X={"DIR_X"},
