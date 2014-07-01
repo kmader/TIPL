@@ -82,7 +82,8 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
     pvec._2.map(_._3).reduce(_ || _)
   }
   val compare_point_distance = (a: ((Long, Float), Boolean), b: ((Long, Float), Boolean, Boolean))
-  => if (a._1._2>b._1._2) 1 else if(a._1._2==b._1._2) 0 else -1
+  => a._1._2 compare b._1._2
+
 
   val collect_voxels =
     (pvec: Iterable[((Long, Float), Boolean, Boolean)]) => {
@@ -207,6 +208,7 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
 
 }
 
+
 object SKTest extends SKVoronoi {
 	def main(args: Array[String]):Unit = {
 	val p = SparkGlobal.activeParser(args)
@@ -214,10 +216,13 @@ object SKTest extends SKVoronoi {
       "Size of the image to run the test with");
 			val testImg = TestPosFunctions.wrapItAs(imSize,
 					new TestPosFunctions.DotsFunction(),TImgTools.IMAGETYPE_INT);
-    LoadImages(Array(testImg))
+
+			
+			
+			LoadImages(Array(testImg))
    
     setParameter(p, "")
-    
+   
     p.checkForInvalid()
     execute();
 

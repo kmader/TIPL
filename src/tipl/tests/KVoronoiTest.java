@@ -21,12 +21,13 @@ import java.util.List;
 @RunWith(value = Parameterized.class)
 public class KVoronoiTest {
     final protected PluginInfo pluginId;
+    final int imageSize=10;//50;
     final TestPosFunctions bgLayers = new TestPosFunctions.LayeredImage(1, 2, 25, 0, 0);
     final TestPosFunctions densePart = new TestPosFunctions.EllipsoidFunction(75, 75, 75,
             10, 10, 10);
     final TImgRO layeredImage = TestPosFunctions
-            .wrapIt(150, new TestPosFunctions.BGPlusPhase(bgLayers, densePart, 3));
-    final TImgRO diagonalPlane = TestPosFunctions.wrapItAs(50,
+            .wrapIt(3*imageSize, new TestPosFunctions.BGPlusPhase(bgLayers, densePart, 3));
+    final TImgRO diagonalPlane = TestPosFunctions.wrapItAs(imageSize,
             new TestPosFunctions.DiagonalPlaneAndDotsFunction(), TImgTools.IMAGETYPE_INT);
 
     public KVoronoiTest(final PluginInfo pluginToUse) {
