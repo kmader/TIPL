@@ -26,15 +26,17 @@ import java.util.List;
  */
 public class KVImg<T extends Number> extends TImg.ATImg implements TImg, Serializable {
     final protected JavaPairRDD<D3int, T> baseImg;
-
+    final int partitionCount;
     public KVImg(TImgTools.HasDimensions tempImg, final int iimageType, JavaRDD<Tuple2<D3int, T>> ibImg) {
         super(tempImg, iimageType);
-        baseImg = ibImg.mapToPair(new TupleToPair());
+        partitionCount = SparkGlobal.calculatePartitions(tempImg.getDim().z);
+        baseImg = ibImg.mapToPair(new TupleToPair()).repartition(partitionCount);
     }
 
     public KVImg(D3int idim, D3int ipos, D3float ielSize, final int iimageType, JavaPairRDD<D3int, T> ibImg) {
         super(idim, ipos, ielSize, iimageType);
-        baseImg = ibImg;
+        partitionCount = SparkGlobal.calculatePartitions(idim.z);
+        baseImg = ibImg.repartition(partitionCount);
     }
 
     /**
@@ -64,6 +66,16 @@ public class KVImg<T extends Number> extends TImg.ATImg implements TImg, Seriali
      */
     @SuppressWarnings("serial")
     public KVImg<Long> toKVLong() {
+        if (imageType == TImgTools.IMAGETYPE_LONG) return (KVImg<Long>) this;
+        return new KVImg<Long>(dim, pos, elSize, TImgTools.IMAGETYPE_LONG,
+                baseImg.mapValues(new Function<T, Long>() {
+                    @Override
+                    public Long call(T arg0) throws Exception {
+                        return arg0.longValue();
+                    }
+                }));
+    }
+    public KVImg<Long> toKVSLong() {
         if (imageType == TImgTools.IMAGETYPE_LONG) return (KVImg<Long>) this;
         return new KVImg<Long>(dim, pos, elSize, TImgTools.IMAGETYPE_LONG,
                 baseImg.mapValues(new Function<T, Long>() {

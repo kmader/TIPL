@@ -19,6 +19,7 @@ public class kVoronoiShrink extends kVoronoi {
 		@Override
 		public ITIPLPlugin get() {
 			return new kVoronoiShrink();
+			
 		}
 	};
 	public static void main(final String[] args) {

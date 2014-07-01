@@ -10,7 +10,7 @@ import tipl.util.TImgTools;
  * Abstract class for performing voronoi like transformations from labeled
  * objects into masks
  */
-public abstract class VoronoiTransform extends BaseTIPLPluginIO {
+public abstract class VoronoiTransform extends BaseTIPLPluginIO implements IVoronoiTransform {
 	/** The labeled input objects */
 	protected int[] labels;
 	/** The labeled volumes (output) */
@@ -80,7 +80,10 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 	}
 
 
-	/** Code for exporting the voronoi distances to an Aim class */
+	/* (non-Javadoc)
+	 * @see tipl.tools.IVoronoiTransform#ExportDistanceAim(tipl.formats.TImgRO.CanExport)
+	 */
+	@Override
 	public TImg ExportDistanceAim(final TImgRO.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
@@ -113,7 +116,10 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 		return new TImg[] { ExportVolumesAim(cImg), ExportDistanceAim(cImg) };
 	}
 
-	/** Code for exporting the voronoi volumes to an Aim class */
+	/* (non-Javadoc)
+	 * @see tipl.tools.IVoronoiTransform#ExportVolumesAim(tipl.formats.TImgRO.CanExport)
+	 */
+	@Override
 	public TImg ExportVolumesAim(final TImgRO.CanExport templateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
@@ -246,14 +252,20 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO {
 		
 	}
 
-	/** Code for writing the voronoi distances to an Aim file */
-	public void WriteDistanceAim(final TImg templateAim, final String outname) {
+	/* (non-Javadoc)
+	 * @see tipl.tools.IVoronoiTransform#WriteDistanceAim(tipl.formats.TImg, java.lang.String)
+	 */
+	@Override
+	public void WriteDistanceAim(final TImgRO.CanExport templateAim, final String outname) {
 		final TImg newAim = ExportDistanceAim(templateAim);
 		newAim.appendProcLog(procLog);
 		TImgTools.WriteTImg(newAim,outname, 1, (float) distScalar, false,false);
 	}
 
-	/** Code for writing the voronoi volumes to an Aim file */
+	/* (non-Javadoc)
+	 * @see tipl.tools.IVoronoiTransform#WriteVolumesAim(tipl.formats.TImgRO.CanExport, java.lang.String)
+	 */
+	@Override
 	public void WriteVolumesAim(final TImgRO.CanExport templateAim,
 			final String outname) {
 		final TImg newAim = ExportVolumesAim(templateAim);
