@@ -19,32 +19,58 @@ import org.apache.spark.graphx._
 import org.apache.spark.graphx.Graph
 import org.apache.spark.graphx.Edge
 import org.apache.spark.graphx.impl.GraphImpl
+import tipl.util.D3float
+import tipl.util.D3int
 
 /** A collection of graph generating functions. */
 object FEMDemo {
   /**
    * A class for storing the image vertex information to prevent excessive tuple-dependence
    */
-  @serializable case class ImageVertex(index: Int,pos: (Int,Int) = (0,0),value: Int = 0,original: Boolean = false)
+  @serializable case class ImageVertex(index: Int,pos: D3int = new D3int(0),value: Int = 0,original: Boolean = false)
+  /**
+   * Edges connecting images, the orientation is the unit vector between the two points
+   * 
+   * */
+  @serializable case class ImageEdge(dist: Double, orientation: D3float, restLength: Double = 1.0)
+  @serializable case class MovingEdge(ie: ImageEdge, vel: D3float)
+  /**
+   * A subtractable version of imagevertex (a vertex minus a vertex is an edge
+   */
+  @serializable implicit class ED3float(ip: D3float) {
+	 def -(ip2: D3float) = {
+	   new D3float(ip.x-ip2.x,ip.y-ip2.y,ip.z-ip2.z)
+	 }
+	 def +(ip2: D3float) = {
+	   new D3float(ip.x+ip2.x,ip.y+ip2.y,ip.z+ip2.z)
+	 }
+	 def *(iv: Double) = {
+	   new D3float(ip.x*iv,ip.y*iv,ip.z*iv)
+	 }
+  }
+  @serializable implicit class ieSub(iv: ImageVertex) {
+    def -(iv2: ImageVertex):ImageEdge = {
+       val xd = iv.pos.x-iv2.pos.x
+       val yd = iv.pos.y-iv2.pos.y
+       val zd = iv.pos.z-iv2.pos.z
+       val bDist = Math.sqrt(Math.pow(xd,2)+Math.pow(yd,2)+Math.pow(zd,2))
+     new ImageEdge(bDist,new D3float(xd/bDist,yd/bDist,zd/bDist),1)
+    }
+  }
   val extractPoint = (idx: Int, inArr: Array[Array[Int]],xwidth: Int,ywidth: Int) => {
       val i=Math.floor(idx*1f/xwidth).toInt
       val j=idx%xwidth
-      new ImageVertex(idx,(i,j),inArr(i)(j))
-  }
-  def pointDist(a: ImageVertex,b: ImageVertex) = {
-    Math.sqrt(
-        (a.pos._1-b.pos._1)^2+(a.pos._2-b.pos._2)^2
-        )
-    
+      new ImageVertex(idx,new D3int(i,j,0),inArr(i)(j),true)
   }
   def spreadVertices(pvec: ImageVertex, windSize: Int = 1) = {
-    val wind=(-windSize to windSize)
+    val wind=(0 to windSize)
     val pos=pvec.pos
+    val z = 0
     for(x<-wind; y<-wind) 
-      yield new ImageVertex(pvec.index,(pos._1+x,pos._2+y),pvec.value,(x==0) & (y==0))
+      yield new ImageVertex(pvec.index,new D3int(pos.x+x,pos.y+y,pos.z+z),pvec.value,(x==0) & (y==0) & (z==0))
     }
   
-  def twoDArrayToGraph(sc: SparkContext, inArr: Array[Array[Int]]): Graph[ImageVertex, Double] = {
+  def twoDArrayToGraph(sc: SparkContext, inArr: Array[Array[Int]]): Graph[ImageVertex, ImageEdge] = {
     val ywidth=inArr.length
     val xwidth=inArr(0).length
     val vertices = sc.parallelize(0 until xwidth*ywidth).map{
@@ -60,21 +86,63 @@ object FEMDemo {
       combPoint => {
         val pointList=combPoint._2
         val centralPoint = pointList.filter(_.original).head
-        val neighborPoints = pointList.filter(!_.original)
-        for(nDex<-neighborPoints) yield Edge[Double](centralPoint.index,nDex.index,pointDist(centralPoint,nDex))
+        val neighborPoints = pointList.filter(pvec => !pvec.original)
+        for(cNeighbor<-neighborPoints) 
+          yield Edge[Unit](centralPoint.index,cNeighbor.index)
       }
+      
     }
     
-    Graph[ImageVertex, Double](fvertices,edges)
-    
+    Graph[ImageVertex, Unit](fvertices,edges).
+    mapTriplets(triplet => triplet.srcAttr-triplet.dstAttr)
   }
+  
+  def calcMoving(inGraph: Graph[ImageVertex, ImageEdge]): Graph[ImageVertex, MovingEdge] = {
+    inGraph.mapTriplets(pvec => {
+	  val edge = pvec.attr
+	  val timeStep=0.1
+	  var mass:Double  = pvec.srcAttr.value+pvec.dstAttr.value
+	  if (mass<1e-3) mass=1e-3
+	  val force = 0.01*(edge.dist-edge.restLength)
+	  val forceStep = force/(mass)*timeStep
+	  new MovingEdge(edge,edge.orientation*forceStep)
+	})
+  }
+  def updateGraph(mGraph: Graph[ImageVertex, MovingEdge]) = {
+    mGraph.mapReduceTriplets[D3float](
+        // map function
+        triplet => {
+           Iterator((triplet.srcId, triplet.attr.vel),
+        		   	(triplet.dstId, triplet.attr.vel*(-1))
+               )
+        },
+        // reduce function
+        (vel1: D3float,vel2: D3float) => vel1+vel2
+    ).join(mGraph.vertices)
+  }
+  
   def main(args: Array[String]):Unit = {
 	val p = SparkGlobal.activeParser(args)
 	val imSize = p.getOptionInt("size", 50,
       "Size of the image to run the test with");
 	val easyRow = Array(0,1,1,0)
 	val testImg = Array(easyRow,easyRow,easyRow);
-	twoDArrayToGraph(SparkGlobal.getContext(),testImg)
+	val sc = SparkGlobal.getContext()
+	 val myGraph = twoDArrayToGraph(sc,testImg)
+	myGraph.triplets.
+	map(triplet => triplet.srcAttr + " is the " + triplet.attr + " of " + triplet.dstAttr).
+	collect.foreach(println(_))
+	 
+	val out = calcMoving(myGraph)
+	
+	
+	out.triplets.
+	map(triplet => triplet.srcAttr + " is the " + triplet.attr + " of " + triplet.dstAttr).
+	collect.foreach(println(_))
+	
+	updateGraph(out).
+	foreach(println(_))
+	 
 
   }
   
