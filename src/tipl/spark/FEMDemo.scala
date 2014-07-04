@@ -33,7 +33,7 @@ object FEMDemo {
    * 
    * */
   @serializable case class ImageEdge(dist: Double, orientation: D3float, restLength: Double = 1.0)
-  @serializable case class MovingEdge(ie: ImageEdge, vel: D3float)
+  @serializable case class ForceEdge(ie: ImageEdge, force: D3float)
   /**
    * A subtractable version of imagevertex (a vertex minus a vertex is an edge
    */
@@ -97,27 +97,25 @@ object FEMDemo {
     mapTriplets(triplet => triplet.srcAttr-triplet.dstAttr)
   }
   
-  def calcMoving(inGraph: Graph[ImageVertex, ImageEdge]): Graph[ImageVertex, MovingEdge] = {
-    inGraph.mapTriplets(pvec => {
-	  val edge = pvec.attr
-	  val timeStep=0.1
-	  var mass:Double  = pvec.srcAttr.value+pvec.dstAttr.value
-	  if (mass<1e-3) mass=1e-3
-	  val force = 0.01*(edge.dist-edge.restLength)
-	  val forceStep = force/(mass)*timeStep
-	  new MovingEdge(edge,edge.orientation*forceStep)
+  def calcForces(inGraph: Graph[ImageVertex, ImageEdge]) = {
+    inGraph.mapEdges(
+     rawEdge => {
+      val edge: ImageEdge = rawEdge.attr
+	  val k = 0.01
+	  val force = (edge.restLength-edge.dist)
+	  new ForceEdge(edge,edge.orientation*force)
 	})
   }
-  def updateGraph(mGraph: Graph[ImageVertex, MovingEdge]) = {
+  def sumForces(mGraph: Graph[ImageVertex, ForceEdge]) = {
     mGraph.mapReduceTriplets[D3float](
         // map function
         triplet => {
-           Iterator((triplet.srcId, triplet.attr.vel),
-        		   	(triplet.dstId, triplet.attr.vel*(-1))
+           Iterator((triplet.srcId, triplet.attr.force),
+        		   	(triplet.dstId, triplet.attr.force*(-1))
                )
         },
         // reduce function
-        (vel1: D3float,vel2: D3float) => vel1+vel2
+        (force1: D3float,force2: D3float) => force1+force2
     ).join(mGraph.vertices)
   }
   
@@ -130,18 +128,18 @@ object FEMDemo {
 	val sc = SparkGlobal.getContext()
 	 val myGraph = twoDArrayToGraph(sc,testImg)
 	myGraph.triplets.
-	map(triplet => triplet.srcAttr + " is the " + triplet.attr + " of " + triplet.dstAttr).
+	map(triplet => triplet.srcAttr + " is connected to  " + triplet.dstAttr + " via "+ triplet.attr).
 	collect.foreach(println(_))
 	 
-	val out = calcMoving(myGraph)
+	val out = calcForces(myGraph)
 	
 	
 	out.triplets.
 	map(triplet => triplet.srcAttr + " is the " + triplet.attr + " of " + triplet.dstAttr).
 	collect.foreach(println(_))
 	
-	updateGraph(out).
-	foreach(println(_))
+	sumForces(out).
+	foreach(cpt => println(cpt._2._2.pos+": "+cpt._2._1))
 	 
 
   }
