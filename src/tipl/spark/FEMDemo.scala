@@ -21,6 +21,7 @@ import org.apache.spark.graphx.Edge
 import org.apache.spark.graphx.impl.GraphImpl
 import tipl.util.D3float
 import tipl.util.D3int
+import tipl.util.TIPLOps._
 
 /** A collection of graph generating functions. */
 object FEMDemo {
@@ -34,20 +35,7 @@ object FEMDemo {
    * */
   @serializable case class ImageEdge(dist: Double, orientation: D3float, restLength: Double = 1.0)
   @serializable case class ForceEdge(ie: ImageEdge, force: D3float)
-  /**
-   * A subtractable version of imagevertex (a vertex minus a vertex is an edge
-   */
-  @serializable implicit class ED3float(ip: D3float) {
-	 def -(ip2: D3float) = {
-	   new D3float(ip.x-ip2.x,ip.y-ip2.y,ip.z-ip2.z)
-	 }
-	 def +(ip2: D3float) = {
-	   new D3float(ip.x+ip2.x,ip.y+ip2.y,ip.z+ip2.z)
-	 }
-	 def *(iv: Double) = {
-	   new D3float(ip.x*iv,ip.y*iv,ip.z*iv)
-	 }
-  }
+
   @serializable implicit class ieSub(iv: ImageVertex) {
     def -(iv2: ImageVertex):ImageEdge = {
        val xd = iv.pos.x-iv2.pos.x
@@ -123,8 +111,8 @@ object FEMDemo {
 	val p = SparkGlobal.activeParser(args)
 	val imSize = p.getOptionInt("size", 50,
       "Size of the image to run the test with");
-	val easyRow = Array(0,1,1,0)
-	val testImg = Array(easyRow,easyRow,easyRow);
+	val easyRow = Array(0,1,1,0,1,4,2,1,3,1,2,3,3,4,3,2,1,2,3)
+	val testImg = Array(easyRow,easyRow,easyRow,easyRow,easyRow,easyRow,easyRow,easyRow);
 	val sc = SparkGlobal.getContext()
 	 val myGraph = twoDArrayToGraph(sc,testImg)
 	myGraph.triplets.
@@ -139,7 +127,7 @@ object FEMDemo {
 	collect.foreach(println(_))
 	
 	sumForces(out).
-	foreach(cpt => println(cpt._2._2.pos+": "+cpt._2._1))
+	foreach(cpt => println(cpt._2._2.pos.toString+": "+cpt._2._1))
 	 
 
   }

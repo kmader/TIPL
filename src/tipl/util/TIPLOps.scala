@@ -1,16 +1,49 @@
-package tipl.spark
+package tipl.util
 
 import tipl.formats.TImgRO
 import tipl.formats.TImg
-import tipl.tools.BaseTIPLPluginIn
 import tipl.tools.BaseTIPLPluginIn._
 import tipl.tools.VFilterScale
 import tipl.util.D3int
+import tipl.util.D3float
 import tipl.tools.FilterScale.filterGenerator
+import tipl.spark.SKVoronoi
+import tipl.spark.ShapeAnalysis
 /**
  * An extension of TImgRO to make the available filters show up
 */
-object ETImg {
+object TIPLOps {
+    /**
+   * A subtractable version of D3float
+   */
+  @serializable implicit class RichD3float(ip: D3float) {
+	 def -(ip2: D3float) = {
+	   new D3float(ip.x-ip2.x,ip.y-ip2.y,ip.z-ip2.z)
+	 }
+	 def +(ip2: D3float) = {
+	   new D3float(ip.x+ip2.x,ip.y+ip2.y,ip.z+ip2.z)
+	 }
+	 def *(iv: Double) = {
+	   new D3float(ip.x*iv,ip.y*iv,ip.z*iv)
+	 }
+  }
+      /**
+   * A subtractable version of D3int
+   */
+  @serializable implicit class RichD3int(ip: D3int) {
+	 def -(ip2: D3int) = {
+	   new D3int(ip.x-ip2.x,ip.y-ip2.y,ip.z-ip2.z)
+	 }
+	 def +(ip2: D3int) = {
+	   new D3int(ip.x+ip2.x,ip.y+ip2.y,ip.z+ip2.z)
+	 }
+	 def *(iv: Int) = {
+	   new D3int(ip.x*iv,ip.y*iv,ip.z*iv)
+	 }
+	 def *(iv: Float) = {
+	   new D3float(ip.x*iv,ip.y*iv,ip.z*iv)
+	 }
+  }
   /**
    * The extended implicit class
    */
