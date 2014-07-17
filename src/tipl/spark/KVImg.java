@@ -25,7 +25,11 @@ import java.util.List;
  * @author mader
  */
 public class KVImg<T extends Number> extends TImg.ATImg implements TImg, Serializable {
-    final protected JavaPairRDD<D3int, T> baseImg;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 3843680604174023268L;
+	final protected JavaPairRDD<D3int, T> baseImg;
     final int partitionCount;
     public KVImg(TImgTools.HasDimensions tempImg, final int iimageType, JavaRDD<Tuple2<D3int, T>> ibImg) {
         super(tempImg, iimageType);

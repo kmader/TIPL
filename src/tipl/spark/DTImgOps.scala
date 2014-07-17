@@ -9,6 +9,7 @@ import tipl.util.TImgBlock
 import tipl.util.TIPLOps._
 import org.apache.spark.rdd.PairRDDFunctions._
 import scala.collection.mutable.ArrayBuffer
+import org.apache.spark.rdd.RDD
 
 /**
  * A collectiono of useful functions for DTImg classes to allow more complicated analyses
@@ -16,19 +17,14 @@ import scala.collection.mutable.ArrayBuffer
  *
  */
 @serializable object DTImgOps {
-  
-  @serializable implicit class RichDTImg[A<: Cloneable](ip: DTImg[A]) {
+  @serializable implicit class RichDtRDD[A<: Cloneable](srd: RDD[(D3int,TImgBlock[A])]) {
     val blockShift = (offset: D3int) =>{
     (p: (D3int,TImgBlock[A])) => {
       val nPos = p._1+offset
       (nPos,new TImgBlock[A](p._2.getClone(),nPos,offset))
     }
   }
-    val srd = ip.baseImg.rdd
-    /** a much simpler version of spreadSlices taking advantage of Scala's language features
-     *  
-     */
-	def spreadSlices(windSize: Int,offSlices: Int=1) = {
+  def spreadSlices(windSize: Int,offSlices: Int=1) = {
 	  var curOut = srd.mapValues(p => List(p))
 
 	  for(curOffset <- 1 to offSlices ) {
@@ -43,6 +39,25 @@ import scala.collection.mutable.ArrayBuffer
 	  curOut
        
 	} 
+    
+  }
+  /**
+   * A class of a spread RDD image (after a flatMap/spread operation)
+   */
+  @serializable implicit class SpreadRDD[A<: Cloneable](srd: RDD[(D3int,List[TImgBlock[A]])]) {
+    def collectSlices(coFun: (List[TImgBlock[A]] => TImgBlock[A])) = {
+      srd.mapValues(coFun)
+    }
+  }
+  @serializable implicit class RichDTImg[A<: Cloneable](ip: DTImg[A]) {
+    
+    val srd = ip.baseImg.rdd
+    /** a much simpler version of spreadSlices taking advantage of Scala's language features
+     *  
+     */
+    def spreadSlices(windSize: Int,offSlices: Int=1) = {
+      srd.spreadSlices(windSize,offSlices)
+    }
   }
 }
 

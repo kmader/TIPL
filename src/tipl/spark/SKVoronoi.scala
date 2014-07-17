@@ -137,7 +137,7 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
   val fillImage = (tempObj: TImgTools.HasDimensions, defValue: java.lang.Double) => {
     val defFloat = new PureFImage.ConstantValue(defValue)
 
-    KVImgTools.createFromPureFun[JFloat](SparkGlobal.getContext(getPluginName()), tempObj, defFloat, TImgTools.IMAGETYPE_FLOAT)
+    KVImgOps.createFromPureFun[JFloat](SparkGlobal.getContext(getPluginName()), tempObj, defFloat, TImgTools.IMAGETYPE_FLOAT)
   }
   val longLong = (x: JLong) => {x.longValue}
   var labeledDistanceMap: RDD[(D3int, ((Long, Float), Boolean))] = null

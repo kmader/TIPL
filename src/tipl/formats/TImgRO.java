@@ -278,7 +278,7 @@ public interface TImgRO extends TImgTools.HasDimensions, Serializable {
             return true;
         }
     }
-
+    
     public static class TImgFull implements TImgOld {
         protected final TImgRO myImg;
 

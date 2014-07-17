@@ -13,7 +13,7 @@ import tipl.spark.ShapeAnalysis
  * An extension of TImgRO to make the available filters show up
 */
 object TIPLOps {
-    /**
+  /**
    * A subtractable version of D3float
    */
   @serializable implicit class RichD3float(ip: D3float) {
@@ -45,9 +45,24 @@ object TIPLOps {
 	 }
   }
   /**
-   * The extended implicit class
+   * A TImg class supporting both filters and IO
    */
-  implicit class RichTImg(val inputImage: TImgRO) {
+  implicit class RichTImg(val inputImage: TImgRO) extends TImgRO.TImgOld {
+    /**
+     * The old reading functions
+     */
+    val fullTImg = new TImgRO.TImgFull(inputImage)
+    @Override def getBoolArray(sliceNumber: Int) = {fullTImg.getBoolArray(sliceNumber)}
+    @Override def getByteArray(sliceNumber: Int) = {fullTImg.getByteArray(sliceNumber)}
+    @Override def getShortArray(sliceNumber: Int) = {fullTImg.getShortArray(sliceNumber)}
+    @Override def getIntArray(sliceNumber: Int) = {fullTImg.getIntArray(sliceNumber)}
+    @Override def getFloatArray(sliceNumber: Int) = {fullTImg.getFloatArray(sliceNumber)}
+    /** Basic IO 
+     *  
+     */
+    def write(path: String) = {
+      TImgTools.WriteTImg(inputImage,path)
+    }
     /**
      * The kVoronoi operation
      */
