@@ -9,10 +9,15 @@ import tipl.util.D3float
 import tipl.tools.FilterScale.filterGenerator
 import tipl.spark.SKVoronoi
 import tipl.spark.ShapeAnalysis
+import org.apache.spark.rdd.RDD
+import tipl.tools.BaseTIPLPluginIn
 /**
  * An extension of TImgRO to make the available filters show up
 */
 object TIPLOps {
+  trait NeighborhoodOperation[T,U] {
+    def blockOperation(windSize: D3int,kernel: Option[BaseTIPLPluginIn.morphKernel],mapFun: (Iterable[T] => U)): RDD[(D3int,U)]
+  }
   /**
    * A subtractable version of D3float
    */

@@ -11,6 +11,7 @@ import tipl.util.{D3int, TImgTools}
 import org.apache.spark.rdd.RDD
 import tipl.spark.KVImg
 import tipl.tools.BaseTIPLPluginIn
+import tipl.util.TIPLOps.NeighborhoodOperation
 
 /**
  * Some tools for the Key-value pair image to make working with them easier, writing code in java is just too much of a pain in the ass
@@ -42,11 +43,9 @@ import tipl.tools.BaseTIPLPluginIn
     }
   }
   
-  @serializable implicit class RichKvRDD[A<: Number](srd: RDD[(D3int,A)]) {
-  
-  val spread_voxels_sl = (windSize: Int) => { 
-    spread_voxels(new D3int(windSize,windSize,windSize),None)
-  }
+  @serializable implicit class RichKvRDD[A<: Number](srd: RDD[(D3int,A)]) extends
+  NeighborhoodOperation[(A,Boolean),A] {
+
     /**
    * A generic voxel spread function for a given window size and kernel
    * 
@@ -65,16 +64,20 @@ import tipl.tools.BaseTIPLPluginIn
     } 
   }
   
-  def spreadSlices(windSize: Int,offSlices: Int=1): RDD[(D3int,Iterable[(A,Boolean)])] = {
-	srd.flatMap(spread_voxels_sl(windSize)).groupByKey
-	} 
+  def spreadPoints(windSize: D3int,kernel: Option[BaseTIPLPluginIn.morphKernel]): RDD[(D3int,Iterable[(A,Boolean)])] = {
+		  srd.flatMap(spread_voxels(windSize,kernel)).groupByKey
+  } 
+  def blockOperation(windSize: D3int,kernel: Option[BaseTIPLPluginIn.morphKernel],mapFun: (Iterable[(A,Boolean)] => A)): RDD[(D3int,A)] = {
+    val spread = srd.spreadPoints(windSize,kernel).collectPoints(mapFun)
+    spread
+  }
     
   }
   /**
    * A class of a spread RDD image (after a flatMap/spread operation)
    */
   @serializable implicit class SpreadRDD[A<: Number](srd: RDD[(D3int,Iterable[(A,Boolean)])]) {
-    def collectSlices(coFun: (Iterable[(A,Boolean)] => A)) = {
+    def collectPoints(coFun: (Iterable[(A,Boolean)] => A)) = {
       srd.mapValues(coFun)
     }
   }
