@@ -5,6 +5,7 @@ package tipl.spark;
 
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.rdd.RDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
@@ -24,7 +25,7 @@ import java.util.List;
  *
  * @author mader
  */
-public class KVImg<T extends Number> extends TImg.ATImg implements TImg, Serializable {
+public class KVImg<T extends Number> extends TImg.ATImg implements TImg, Serializable{
     /**
 	 * 
 	 */

@@ -71,6 +71,46 @@ import tipl.util.TIPLOps.NeighborhoodOperation
     val spread = srd.spreadPoints(windSize,kernel).collectPoints(mapFun)
     spread
   }
+  // pixel level operations
+  def >(threshVal: Double): RDD[(D3int,Boolean)] = {
+    srd.map{pvec: (D3int,A) => (pvec._1,pvec._2.doubleValue>threshVal)}
+  }
+  def +(threshVal: Double): RDD[(D3int,Double)] = {
+    srd.map{pvec: (D3int,A) => (pvec._1,pvec._2.doubleValue+threshVal)}
+  }
+  def *(threshVal: Double): RDD[(D3int,Double)] = {
+    srd.map{pvec: (D3int,A) => (pvec._1,pvec._2.doubleValue*threshVal)}
+  }
+  
+  def <(threshVal: Double): RDD[(D3int,Boolean)] = {
+    srd.map{pvec: (D3int,A) => (pvec._1,pvec._2.doubleValue<threshVal)}
+  }
+  def ==(threshVal: Long): RDD[(D3int,Boolean)] = {
+    srd.map{pvec: (D3int,A) => (pvec._1,pvec._2.longValue>threshVal)}
+  }
+  // image level operations
+  /**
+   * Convert two images to doubles and then perform a left outer join on them
+   */
+  def combineAsDouble[B <: Number](imgB: RDD[(D3int,B)]): RDD[(D3int,Iterable[Double])] = {
+    val imgAdouble = srd.map{pvec: (D3int,A) => (pvec._1,pvec._2.doubleValue)}
+    val imgBdouble = imgB.map{pvec: (D3int,B) => (pvec._1,pvec._2.doubleValue)}
+    imgAdouble.union(imgBdouble).groupByKey
+  }
+  /**
+   * Performs a reduce step on multiple images collapsed into position, list of point format
+   */
+  def collapseAsDouble[B <: Number](imgB: RDD[(D3int,B)],redFun: (Double, Double) => Double): RDD[(D3int,Double)] = {
+    combineAsDouble(imgB).mapValues{pvec: Iterable[Double] => pvec.reduce(redFun)}
+  }
+  def +[B <: Number](imgB: RDD[(D3int,B)]): RDD[(D3int,Double)] = {
+    collapseAsDouble(imgB,_+_)
+  }
+  def *[B <: Number](imgB: RDD[(D3int,B)]): RDD[(D3int,Double)] = {
+    collapseAsDouble(imgB,_*_)
+  }
+
+  
     
   }
   /**

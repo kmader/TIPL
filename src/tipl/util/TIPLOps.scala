@@ -19,7 +19,7 @@ object TIPLOps {
     def blockOperation(windSize: D3int,kernel: Option[BaseTIPLPluginIn.morphKernel],mapFun: (Iterable[T] => U)): RDD[(D3int,U)]
   }
   /**
-   * A subtractable version of D3float
+   * A version of D3float which can perform simple arithmatic
    */
   @serializable implicit class RichD3float(ip: D3float) {
 	 def -(ip2: D3float) = {
@@ -32,8 +32,8 @@ object TIPLOps {
 	   new D3float(ip.x*iv,ip.y*iv,ip.z*iv)
 	 }
   }
-      /**
-   * A subtractable version of D3int
+/**
+   * A version of D3int which can perform simple arithmatic
    */
   @serializable implicit class RichD3int(ip: D3int) {
 	 def -(ip2: D3int) = {
