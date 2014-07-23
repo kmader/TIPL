@@ -13,8 +13,10 @@ import org.apache.spark.rdd.RDD
 import tipl.tools.BaseTIPLPluginIn
 import org.apache.spark.SparkContext
 import tipl.spark.DTImg
-import org.apache.spark.input.WholeTiffSliceRecordReader
-import org.apache.spark.input.WholeTiffFileInputFormat
+
+import tipl.spark.hadoop.NewWholeTiffFileInputFormat
+import tipl.spark.hadoop.WholeTiffFileInputFormat
+import tipl.spark.hadoop.WholeByteInputFormat
 import tipl.formats.TReader.TSliceReader
 
 /**
@@ -30,11 +32,19 @@ object TIPLOps {
   implicit class ImageFriendlySparkContext(sc: SparkContext) {
     val defMinPart = sc.defaultMinPartitions
     def tiffFolder(path: String)  = { // DTImg[U]
-    		val rawImg = sc.newAPIHadoopFile(path, classOf[WholeTiffFileInputFormat], classOf[String], classOf[TSliceReader])
+    		val rawImg = sc.newAPIHadoopFile(path, classOf[NewWholeTiffFileInputFormat], classOf[String], classOf[TSliceReader])
     		rawImg
     			//	.map(pair => pair._2.toString).setName(path)
     }
+    def oldTiffFolder(path: String) = {
+      val rawImg = sc.hadoopFile(path,classOf[WholeTiffFileInputFormat], classOf[String], classOf[TSliceReader])
+      rawImg
+    }
+    def byteFolder(path: String) = {
+      sc.newAPIHadoopFile(path, classOf[WholeByteInputFormat], classOf[String], classOf[Array[Byte]])
+    }
   }
+  
   
   /**
    * A version of D3float which can perform simple arithmatic
