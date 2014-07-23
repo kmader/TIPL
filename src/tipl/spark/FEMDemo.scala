@@ -121,7 +121,6 @@ object FEMDemo {
 	 
 	val out = calcForces(myGraph)
 	
-	
 	out.triplets.
 	map(triplet => triplet.srcAttr + " is the " + triplet.attr + " of " + triplet.dstAttr).
 	collect.foreach(println(_))

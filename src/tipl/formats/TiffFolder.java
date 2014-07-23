@@ -39,6 +39,10 @@ public class TiffFolder extends DirectoryReader {
 			return new TIFSliceReader(infile);
 		}
 	}
+	public static double[] ReadByteStreamAsDouble(final byte[] buffer)  throws IOException {
+		TIFSliceReader outReader = new TIFSliceReader(buffer);
+		return (double[]) outReader.polyReadImage(TImgTools.IMAGETYPE_DOUBLE);
+	}
 
 	public static class TIFSliceReader extends SliceReader {
 		public Raster activeRaster;
@@ -49,16 +53,11 @@ public class TiffFolder extends DirectoryReader {
 			final ByteBuffer buffer = ByteBuffer.allocate((int) channel.size());
 			channel.read(buffer);
 			in.close();
-			final SeekableStream stream = new ByteArraySeekableStream(
-					buffer.array());
-			final String[] names = ImageCodec.getDecoderNames(stream);
-			final ImageDecoder dec = ImageCodec.createImageDecoder(names[0],
-					stream, null);
-			final RenderedImage im = dec.decodeAsRenderedImage();
-			
-			SetupFromRenderImage(im);
+			SetupFromBuffer(buffer.array());
 		}
-
+		public TIFSliceReader(final byte[] buffer)  throws IOException {
+			SetupFromBuffer(buffer);
+		}
 		public TIFSliceReader(final RenderedImage im) throws IOException {
 			SetupFromRenderImage(im);
 		}
@@ -98,6 +97,16 @@ public class TiffFolder extends DirectoryReader {
 		 */
 		protected boolean useSignedConversion=false;
 		protected boolean readAsByte=false;
+		
+		private void SetupFromBuffer(final byte[] buffer)  throws IOException {
+			final SeekableStream stream = new ByteArraySeekableStream(buffer);
+			final String[] names = ImageCodec.getDecoderNames(stream);
+			final ImageDecoder dec = ImageCodec.createImageDecoder(names[0],
+					stream, null);
+			final RenderedImage im = dec.decodeAsRenderedImage();
+			
+			SetupFromRenderImage(im);
+		}
 		private void SetupFromRenderImage(final RenderedImage im)
 				throws IOException {
 			readAsByte=false;

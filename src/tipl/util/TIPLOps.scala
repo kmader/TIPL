@@ -11,6 +11,12 @@ import tipl.spark.SKVoronoi
 import tipl.spark.ShapeAnalysis
 import org.apache.spark.rdd.RDD
 import tipl.tools.BaseTIPLPluginIn
+import org.apache.spark.SparkContext
+import tipl.spark.DTImg
+import org.apache.spark.input.WholeTiffSliceRecordReader
+import org.apache.spark.input.WholeTiffFileInputFormat
+import tipl.formats.TReader.TSliceReader
+
 /**
  * An extension of TImgRO to make the available filters show up
 */
@@ -18,6 +24,18 @@ object TIPLOps {
   trait NeighborhoodOperation[T,U] {
     def blockOperation(windSize: D3int,kernel: Option[BaseTIPLPluginIn.morphKernel],mapFun: (Iterable[T] => U)): RDD[(D3int,U)]
   }
+  /**
+   * Add the appropriate image types to the SparkContext
+   */
+  implicit class ImageFriendlySparkContext(sc: SparkContext) {
+    val defMinPart = sc.defaultMinPartitions
+    def tiffFolder(path: String)  = { // DTImg[U]
+    		val rawImg = sc.newAPIHadoopFile(path, classOf[WholeTiffFileInputFormat], classOf[String], classOf[TSliceReader])
+    		rawImg
+    			//	.map(pair => pair._2.toString).setName(path)
+    }
+  }
+  
   /**
    * A version of D3float which can perform simple arithmatic
    */

@@ -122,7 +122,15 @@ import tipl.util.TIPLOps.NeighborhoodOperation
     }
   }
   @serializable implicit class RichKVImg[A<: Number](ip: KVImg[A]) {
+    import java.lang.{Double => JDouble}
     val srd = ip.getBaseImg().rdd
+      def +[B <: Number](imgB: KVImg[B]): KVImg[JDouble] = {
+    	
+    	val outImg=srd + imgB.getBaseImg().rdd
+    	val javaImg = outImg.mapValues{new JDouble(_)}
+    	KVImg.FromRDD[JDouble](ip, TImgTools.IMAGETYPE_DOUBLE, javaImg)
+      }
+
     def getInterface() = {
     	
     }
