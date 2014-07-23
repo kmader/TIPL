@@ -16,7 +16,7 @@ import scala.reflect.ClassTag
 
 
 /**
- *  The new (Hadoop 2.0) InputFormat for tiff files (not be to be confused with the recordreader itself)
+ *  The new (Hadoop 2.0) InputFormat for while binary files (not be to be confused with the recordreader itself)
  */
 @serializable abstract class WholeFileInputFormat[T]
  extends CombineFileInputFormat[String,T]  {
@@ -84,7 +84,6 @@ import scala.reflect.ClassTag
 
 /**
  * This is not very efficient, but I am not comfortable enough with types and classtags to make in better
- * 
  */
 
 @serializable class WholeByteInputFormat extends WholeFileInputFormat[Array[Byte]] {

@@ -3,6 +3,7 @@
  */
 package tipl.tests;
 
+
 import static org.junit.Assert.assertEquals;
 
 import org.junit.After;
