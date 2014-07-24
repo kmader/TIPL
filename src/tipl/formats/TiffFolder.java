@@ -44,7 +44,7 @@ public class TiffFolder extends DirectoryReader {
 		return (double[]) outReader.polyReadImage(TImgTools.IMAGETYPE_DOUBLE);
 	}
 
-	public static class TIFSliceReader extends SliceReader {
+	public static class TIFSliceReader extends SliceReader implements TSliceReader {
 		
 		
 

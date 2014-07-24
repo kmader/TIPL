@@ -40,18 +40,4 @@ import tipl.formats.TiffFolder.TIFSliceReader
     def parseByteArray(inArray: Array[Byte]) = new TiffFolder.TIFSliceReader(inArray)
 }
 
-/** 
- *  Now the spark heavy classes linking Byte readers to Tiff Files
- */
 
-import org.apache.spark.SparkContext._
-import org.apache.spark.rdd.PairRDDFunctions._
-
-
-class UnreadTiffRDD(srd: RDD[(String,Array[Byte])]) {
-  def toTiffSlices() = {
-    val tSlice = srd.first
-    val decoders = TIFSliceReader.IdentifyDecoderNames(tSlice._2)
-    srd.mapValues{new TIFSliceReader(_,decoders(0))}
-  }
-}

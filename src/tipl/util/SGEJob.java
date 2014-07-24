@@ -41,7 +41,7 @@ public class SGEJob {
     protected String queueName = "all.q";
     protected String qsubPath = "/gpfs/home/gridengine/sge6.2u5p2/bin/lx26-amd64/qsub";
     protected String tiplPath = "/afs/psi.ch/project/tipl/jar/";
-    protected String sparkJarPath = "/afs/psi.ch/project/tipl/spark/jars/spark-assembly-1.0.0-SNAPSHOT-hadoop1.0.4.jar";
+    protected String sparkJarPath = "/afs/psi.ch/project/tipl/spark/lib/spark-assembly-1.0.1-hadoop2.2.0.jar";
     protected String tiplPathBeta = "/afs/psi.ch/project/tipl/jar/TIPL_beta.jar";
     protected String javaCmdPath = "/afs/psi.ch/project/tipl/jvm/bin/java";
     protected String jobToRun = "ls -R *";

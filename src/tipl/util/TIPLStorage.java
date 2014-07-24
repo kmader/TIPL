@@ -73,7 +73,7 @@ public class TIPLStorage implements ITIPLStorage {
 		return true;
 	}
 	
-
+	@Override
 	public TImg readTImg(final String path) {return readTImg(path,true,true);}
 	
 	public TImg readTImg(final String path, final boolean readFromCache,

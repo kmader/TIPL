@@ -124,7 +124,7 @@ public class TImgTools {
 				inType, outType, isSigned,
 				shortScaleFactor, 127);
 	}
-
+	
 	/**
 	 * Generic function for converting array types
 	 *
@@ -687,6 +687,7 @@ public class TImgTools {
 		 throw new IllegalArgumentException("Type of object:" + iData
 				 + " cannot be determined!! Proceed with extreme caution");
 	 }
+	 
 
 	 /**
 	  * Calculate the type of object it is from the type name
@@ -712,9 +713,15 @@ public class TImgTools {
 		 case IMAGETYPE_DOUBLE:
 			 return "64bit-double";
 		 default:
-			 throw new IllegalArgumentException("Type of object:" + inType
-					 + " cannot be determined!! Proceed with extreme caution");
+			 return throwImageTypeError(inType);
 		 }
+	 }
+	 /**
+	  * A standard error for typing problems
+	  * @param inType
+	  */
+	 public static String throwImageTypeError(int inType) {
+		 throw new IllegalArgumentException("Type of object:" + inType+ " is not known, program cannot continue"); 
 	 }
 
 	 /**

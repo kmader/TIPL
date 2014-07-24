@@ -2,8 +2,8 @@
 <project default="scala" name="Create Runnable Jar for Project TIPL">
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
-    <target name="simple">
-    	<jar destfile="../build/TIPL_simple.jar" filesetmanifest="mergewithoutmain">
+    <target name="basic">
+    	<jar destfile="../build/TIPL_basic.jar" filesetmanifest="mergewithoutmain">
             <fileset dir="../bin">
             	<include name="tipl/**/*.class"/>
             	<include name="META-INF/**/*.*"/>
@@ -15,16 +15,7 @@
         </jar>
     </target>
     
-    <target name="basic" depends="simple">
-        <java
-           jar="../tipl-libraries/proguard.jar"
-           fork="true"
-           failonerror="true"
-           maxmemory="512m"
-           >
-         <arg value="@secure_tipl.pro"/>
-       </java>
-    </target>
+
     
     <target name="core" depends="basic">
     	<jar destfile="../build/TIPL_core.jar" filesetmanifest="mergewithoutmain">

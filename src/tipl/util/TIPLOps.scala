@@ -17,7 +17,6 @@ import tipl.spark.DTImg
 import tipl.spark.hadoop.WholeTiffFileInputFormat
 import tipl.spark.hadoop.WholeByteInputFormat
 import tipl.formats.TReader.TSliceReader
-import tipl.spark.hadoop.UnreadTiffRDD
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -32,87 +31,7 @@ object TIPLOps {
   trait NeighborhoodOperation[T,U] {
     def blockOperation(windSize: D3int,kernel: Option[BaseTIPLPluginIn.morphKernel],mapFun: (Iterable[T] => U)): RDD[(D3int,U)]
   }
-  /**
-   * Add the appropriate image types to the SparkContext
-   */
-  implicit class ImageFriendlySparkContext(sc: SparkContext) {
-    val defMinPart = sc.defaultMinPartitions
-    def tiffFolder(path: String)  = { // DTImg[U]
-    		val rawImg = sc.newAPIHadoopFile(path, classOf[WholeTiffFileInputFormat], classOf[String], classOf[TSliceReader])
-    		rawImg
-    			//	.map(pair => pair._2.toString).setName(path)
-    }
-    def byteFolder(path: String) = {
-      sc.newAPIHadoopFile(path, classOf[WholeByteInputFormat], classOf[String], classOf[Array[Byte]])
-    }
-  }
-  implicit def rddToUnReadRDD(srd: RDD[(String,Array[Byte])]) = new UnreadTiffRDD(srd)
-  implicit class TypedReader[T<: TImgRO](cImg: TImgRO) {
-    def readSlice(sliceNumber: Int, asType: Int) = {
-      TImgTools.isValidType(asType)
-    	cImg.getPolyImage(asType,sliceNumber) match {
-          case a: Array[Int] => a
-          case a: Array[Boolean] => a
-          case a: Array[Double] => a
-          case a: Array[Byte] => a
-          case a: Array[Char] => a
-          case a: Array[Float] => a
-          case a: Array[Short] => a
-          case a: Array[Long] => a
-          case _ => throw new IllegalArgumentException("Type Not Found:"+asType) 
-        }
-    }
-  }
-  def castAsImageFormat(obj: Any, asType: Int) = {
-    TImgTools.isValidType(asType)
-    asType match {
-      case TImgTools.IMAGETYPE_BOOL => obj.asInstanceOf[Array[Boolean]]
-      case TImgTools.IMAGETYPE_CHAR => obj.asInstanceOf[Array[Char]]
-      case TImgTools.IMAGETYPE_SHORT => obj.asInstanceOf[Array[Short]]
-      case TImgTools.IMAGETYPE_INT => obj.asInstanceOf[Array[Int]]
-      case TImgTools.IMAGETYPE_LONG => obj.asInstanceOf[Array[Long]]
-      case TImgTools.IMAGETYPE_FLOAT => obj.asInstanceOf[Array[Float]]
-      case TImgTools.IMAGETYPE_DOUBLE => obj.asInstanceOf[Array[Double]]
-      case _ => throw new IllegalArgumentException("Type Not Found:"+asType+" "+TImgTools.getImageTypeName(asType)) 
-    }
-  }
-  implicit class SlicesToTImg[T<: TSliceReader](srd: RDD[(String,T)])(implicit lm: ClassTag[T])  {
 
-    def loadAsBinary() = {
-      processSlices[Array[Boolean]](TImgTools.IMAGETYPE_BOOL,inObj => inObj.asInstanceOf[Array[Boolean]])
-    }
-    def loadAsLabels() = {
-      processSlices[Array[Long]](TImgTools.IMAGETYPE_LONG,inObj => inObj.asInstanceOf[Array[Long]])
-    }
-    def loadAsValues() = {
-      processSlices[Array[Double]](TImgTools.IMAGETYPE_DOUBLE,inObj => inObj.asInstanceOf[Array[Double]])
-    }
-    private[TIPLOps] def processSlices[A](asType: Int,transFcn: (Any => A)) = {
-      TImgTools.isValidType(asType)
-      // sort by file name and then remove the filename
-      val srdSorted = srd.sortByKey(true, srd.count.toInt).map(_._2)
-      // keep the first element for reference
-      val fst = srdSorted.first
-      val pos = fst.getPos
-      val dim = fst.getDim
-      val timgDim = new D3int(dim.x,dim.y,srdSorted.count.toInt)
-      val srdArr = srdSorted.
-      map(cval => cval.polyReadImage(asType))
-      val tbkCls = srdArr.first.getClass
-      val srdMixed = srdArr.zipWithIndex.map{
-            cBnd => 
-              val cPos = new D3int(pos.x,pos.y,pos.z+cBnd._2.toInt)
-              (cPos,(cBnd._1,pos,dim))
-          }
-      
-      val outRdd = srdMixed.mapValues{
-        cBnd =>
-          new TImgBlock[A](transFcn(cBnd._1),cBnd._2,cBnd._3)
-      }
-      
-      DTImg.WrapRDD[A](fst,JavaPairRDD.fromRDD(outRdd),asType)
-      }
-    }
   
   /**
    * A version of D3float which can perform simple arithmatic
