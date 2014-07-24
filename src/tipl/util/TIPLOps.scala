@@ -1,5 +1,5 @@
 package tipl.util
-
+import scala.reflect.ClassTag
 import tipl.formats.TImgRO
 import tipl.formats.TImg
 import tipl.tools.BaseTIPLPluginIn._
@@ -11,13 +11,17 @@ import tipl.spark.SKVoronoi
 import tipl.spark.ShapeAnalysis
 import org.apache.spark.rdd.RDD
 import tipl.tools.BaseTIPLPluginIn
-import org.apache.spark.SparkContext
-import tipl.spark.DTImg
 
-import tipl.spark.hadoop.NewWholeTiffFileInputFormat
+import tipl.spark.DTImg
 import tipl.spark.hadoop.WholeTiffFileInputFormat
 import tipl.spark.hadoop.WholeByteInputFormat
 import tipl.formats.TReader.TSliceReader
+import tipl.spark.hadoop.UnreadTiffRDD
+
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.PairRDDFunctions._
+import org.apache.spark.api.java.JavaPairRDD
 
 /**
  * An extension of TImgRO to make the available filters show up
@@ -32,19 +36,52 @@ object TIPLOps {
   implicit class ImageFriendlySparkContext(sc: SparkContext) {
     val defMinPart = sc.defaultMinPartitions
     def tiffFolder(path: String)  = { // DTImg[U]
-    		val rawImg = sc.newAPIHadoopFile(path, classOf[NewWholeTiffFileInputFormat], classOf[String], classOf[TSliceReader])
+    		val rawImg = sc.newAPIHadoopFile(path, classOf[WholeTiffFileInputFormat], classOf[String], classOf[TSliceReader])
     		rawImg
     			//	.map(pair => pair._2.toString).setName(path)
-    }
-    def oldTiffFolder(path: String) = {
-      val rawImg = sc.hadoopFile(path,classOf[WholeTiffFileInputFormat], classOf[String], classOf[TSliceReader])
-      rawImg
     }
     def byteFolder(path: String) = {
       sc.newAPIHadoopFile(path, classOf[WholeByteInputFormat], classOf[String], classOf[Array[Byte]])
     }
   }
+  implicit def rddToUnReadRDD(srd: RDD[(String,Array[Byte])]) = new UnreadTiffRDD(srd)
   
+  implicit class SlicesToTImg[T<: TSliceReader](srd: RDD[(String,T)])(implicit lm: ClassTag[T])  {
+    def loadSlices(asType: Int) = {
+      TImgTools.isValidType(asType)
+      // sort by file name and then remove the filename
+      val srdSorted = srd.sortByKey(true, srd.count.toInt).map(_._2)
+      // keep the first element for reference
+      val fst = srdSorted.first
+      val pos = fst.getPos
+      val dim = fst.getDim
+      val timgDim = new D3int(dim.x,dim.y,srdSorted.count.toInt)
+      val srdArr = srdSorted.
+      map(
+          cval => cval.polyReadImage(asType) match {
+          case a: Array[Int] => a
+          case b: Array[Boolean] => b
+          case c: Array[Double] => c
+          case d: Array[Byte] => d
+          case f: Array[Short] => f
+          case g: Array[Long] => g
+          case _ => null
+        })
+      val tbkCls = srdArr.first.getClass
+      val srdFinal = srdArr.zipWithIndex.map{
+            cBnd => 
+              val cPos = new D3int(pos.x,pos.y,pos.z+cBnd._2.toInt)
+              val imgObj = new TImgBlock(cBnd._1,pos,dim)
+              (cPos,imgObj)
+          }
+      
+      //val jpr = JavaPairRDD.fromRDD(srdFinal) //,classOf[D3int],classOf[TImgBlock])
+      //srdFinal.toJavaRDD.mapToPair(inPt => inPt)
+      srdFinal
+      //DTImg.WrapRDD(fst,srdFinal,asType)
+        
+      }
+    }
   
   /**
    * A version of D3float which can perform simple arithmatic

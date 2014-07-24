@@ -45,7 +45,8 @@ public class TiffFolder extends DirectoryReader {
 	}
 
 	public static class TIFSliceReader extends SliceReader {
-		public Raster activeRaster;
+		
+		
 
 		public TIFSliceReader(final File infile) throws IOException {
 			final FileInputStream in = new FileInputStream(infile);
@@ -53,15 +54,20 @@ public class TiffFolder extends DirectoryReader {
 			final ByteBuffer buffer = ByteBuffer.allocate((int) channel.size());
 			channel.read(buffer);
 			in.close();
-			SetupFromBuffer(buffer.array());
+			final byte[] bufferArr = buffer.array();
+			SetupFromBuffer(bufferArr,IdentifyDecoderNames(bufferArr)[0]);
+		}
+		public TIFSliceReader(final byte[] buffer,String decName)  throws IOException {
+			SetupFromBuffer(buffer,decName);
 		}
 		public TIFSliceReader(final byte[] buffer)  throws IOException {
-			SetupFromBuffer(buffer);
+			SetupFromBuffer(buffer,IdentifyDecoderNames(buffer)[0]);
 		}
 		public TIFSliceReader(final RenderedImage im) throws IOException {
 			SetupFromRenderImage(im);
 		}
-
+		protected int[] gi;
+		protected float[] gf;
 		@Override
 		public Object polyReadImage(final int asType) throws IOException {
 			
@@ -69,24 +75,8 @@ public class TiffFolder extends DirectoryReader {
 			case TImgTools.IMAGETYPE_CHAR: // Char use the interface for short with a different max val
 			case TImgTools.IMAGETYPE_INT: // Int
 			case TImgTools.IMAGETYPE_BOOL: // binary also uses the same reader
-				
-				int[]  gi =  new int[sliceSize];
-				if (readAsByte) {
-					// how to handle a 24 bit color image, just take the red channel
-					byte[] gb=( (DataBufferByte) activeRaster.getDataBuffer()).getData();
-					for(int i=0;i<sliceSize;i++) gi[i]=gb[3*i];
-				} else {
-					gi = activeRaster.getPixels(0, 0, activeRaster.getWidth(),
-						activeRaster.getHeight(), gi);
-				}
-				
-				// System.out.println("Getting pixels:"+dataType+", converting to:"+asType+", status:"+gi);
 				return TImgTools.convertIntArray(gi, asType, useSignedConversion, 1, maxVal);
 			case TImgTools.IMAGETYPE_FLOAT: // Float
-				float[] gf = new float[sliceSize];
-				gf = activeRaster.getPixels(0, 0, activeRaster.getWidth(),
-						activeRaster.getHeight(), gf);
-				// System.out.println("Getting pixels:"+dataType+", converting to:"+asType+", status:"+gf);
 				return TImgTools.convertFloatArray(gf, asType, useSignedConversion, 1);
 			default:
 				throw new IOException("Input file format is not known!!!!");
@@ -97,16 +87,18 @@ public class TiffFolder extends DirectoryReader {
 		 */
 		protected boolean useSignedConversion=false;
 		protected boolean readAsByte=false;
-		
-		private void SetupFromBuffer(final byte[] buffer)  throws IOException {
+		public static String[] IdentifyDecoderNames(final byte[] buffer) throws IOException {
 			final SeekableStream stream = new ByteArraySeekableStream(buffer);
-			final String[] names = ImageCodec.getDecoderNames(stream);
-			final ImageDecoder dec = ImageCodec.createImageDecoder(names[0],
-					stream, null);
-			final RenderedImage im = dec.decodeAsRenderedImage();
-			
-			SetupFromRenderImage(im);
+			return ImageCodec.getDecoderNames(stream);
 		}
+		
+		private void SetupFromBuffer(final byte[] buffer,String decName)  throws IOException {
+			final SeekableStream stream = new ByteArraySeekableStream(buffer);
+			final ImageDecoder dec = ImageCodec.createImageDecoder(decName,
+					stream, null);
+			SetupFromRenderImage(dec.decodeAsRenderedImage());
+		}
+		
 		private void SetupFromRenderImage(final RenderedImage im)
 				throws IOException {
 			readAsByte=false;
@@ -141,12 +133,38 @@ public class TiffFolder extends DirectoryReader {
 			final BufferedImage bim = PlanarImage.wrapRenderedImage(im)
 					.getAsBufferedImage();
 
-			activeRaster = bim.getData();
+			Raster activeRaster = bim.getData();
 			dim = new D3int(activeRaster.getWidth(), activeRaster.getHeight(),
 					1);
 
 			// number of pixels in a slice
 			sliceSize = activeRaster.getWidth() * activeRaster.getHeight();
+			
+			switch (imageType) {
+			case TImgTools.IMAGETYPE_CHAR: // Char use the interface for short with a different max val
+			case TImgTools.IMAGETYPE_INT: // Int
+			case TImgTools.IMAGETYPE_BOOL: // binary also uses the same reader
+				
+				gi =  new int[sliceSize];
+				if (readAsByte) {
+					// how to handle a 24 bit color image, just take the red channel
+					byte[] gb=( (DataBufferByte) activeRaster.getDataBuffer()).getData();
+					for(int i=0;i<sliceSize;i++) gi[i]=gb[3*i];
+				} else {
+					gi = activeRaster.getPixels(0, 0, activeRaster.getWidth(),
+						activeRaster.getHeight(), gi);
+				}
+				break;
+
+			case TImgTools.IMAGETYPE_FLOAT: // Float
+				gf = new float[sliceSize];
+				gf = activeRaster.getPixels(0, 0, activeRaster.getWidth(),
+						activeRaster.getHeight(), gf);
+				break;
+			default:
+				throw new IOException("Input file format is not known!!!!"+imageType+" because:"+TImgTools.getImageTypeName(imageType));
+			}
+			
 		}
 
 	}
