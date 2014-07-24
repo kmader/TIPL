@@ -1,5 +1,6 @@
 package tipl.util
 import scala.reflect.ClassTag
+import scala.collection.JavaConversions._
 import tipl.formats.TImgRO
 import tipl.formats.TImg
 import tipl.tools.BaseTIPLPluginIn._
@@ -21,6 +22,7 @@ import tipl.spark.hadoop.UnreadTiffRDD
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.PairRDDFunctions._
+
 import org.apache.spark.api.java.JavaPairRDD
 
 /**
@@ -45,9 +47,63 @@ object TIPLOps {
     }
   }
   implicit def rddToUnReadRDD(srd: RDD[(String,Array[Byte])]) = new UnreadTiffRDD(srd)
-  
+  implicit class TypedReader[T<: TImgRO](cImg: TImgRO) {
+    def readSlice(sliceNumber: Int, asType: Int) = {
+      TImgTools.isValidType(asType)
+    	cImg.getPolyImage(asType,sliceNumber) match {
+          case a: Array[Int] => a
+          case a: Array[Boolean] => a
+          case a: Array[Double] => a
+          case a: Array[Byte] => a
+          case a: Array[Char] => a
+          case a: Array[Float] => a
+          case a: Array[Short] => a
+          case a: Array[Long] => a
+          case _ => throw new IllegalArgumentException("Type Not Found:"+asType) 
+        }
+    }
+  }
+  def castAsImageFormat(obj: Any, asType: Int) = {
+    TImgTools.isValidType(asType)
+    asType match {
+      case TImgTools.IMAGETYPE_BOOL => obj.asInstanceOf[Array[Boolean]]
+      case TImgTools.IMAGETYPE_CHAR => obj.asInstanceOf[Array[Char]]
+      case TImgTools.IMAGETYPE_SHORT => obj.asInstanceOf[Array[Short]]
+      case TImgTools.IMAGETYPE_INT => obj.asInstanceOf[Array[Int]]
+      case TImgTools.IMAGETYPE_LONG => obj.asInstanceOf[Array[Long]]
+      case TImgTools.IMAGETYPE_FLOAT => obj.asInstanceOf[Array[Float]]
+      case TImgTools.IMAGETYPE_DOUBLE => obj.asInstanceOf[Array[Double]]
+      case _ => throw new IllegalArgumentException("Type Not Found:"+asType+" "+TImgTools.getImageTypeName(asType)) 
+    }
+  }
   implicit class SlicesToTImg[T<: TSliceReader](srd: RDD[(String,T)])(implicit lm: ClassTag[T])  {
-    def loadSlices(asType: Int) = {
+    def loadAsLabels() = {
+      val (imDim,firstSlice,imRdd) = loadSlices(TImgTools.IMAGETYPE_LONG)
+      imRdd.mapValues{
+        cBnd =>
+          new TImgBlock(cBnd._1.asInstanceOf[Array[Long]],cBnd._2,cBnd._3)
+      }
+    }
+    def loadAsValues() = {
+      val (imDim,firstSlice,imRdd) = loadSlices(TImgTools.IMAGETYPE_DOUBLE)
+      
+      imRdd.mapValues{
+        cBnd =>
+          new TImgBlock(cBnd._1.asInstanceOf[Array[Double]],cBnd._2,cBnd._3)
+      }
+    }
+    def loadAsBinary() = {
+      transformSlices[Array[Boolean]](TImgTools.IMAGETYPE_BOOL,inObj => inObj.asInstanceOf[Array[Boolean]])
+    }
+    private[TIPLOps] def transformSlices[A<: Cloneable](asType: Int,transFcn: (Any => A)) = {
+      val (imDim,firstSlice,imRdd) = loadSlices(asType)
+      val outRdd = imRdd.mapValues{
+        cBnd =>
+          new TImgBlock(transFcn(cBnd._1),cBnd._2,cBnd._3)
+      }
+      DTImg.WrapRDD[A](firstSlice,outRdd,asType)
+    }
+    private[TIPLOps] def loadSlices(asType: Int) = {
       TImgTools.isValidType(asType)
       // sort by file name and then remove the filename
       val srdSorted = srd.sortByKey(true, srd.count.toInt).map(_._2)
@@ -57,29 +113,15 @@ object TIPLOps {
       val dim = fst.getDim
       val timgDim = new D3int(dim.x,dim.y,srdSorted.count.toInt)
       val srdArr = srdSorted.
-      map(
-          cval => cval.polyReadImage(asType) match {
-          case a: Array[Int] => a
-          case b: Array[Boolean] => b
-          case c: Array[Double] => c
-          case d: Array[Byte] => d
-          case f: Array[Short] => f
-          case g: Array[Long] => g
-          case _ => null
-        })
+      map(cval => cval.polyReadImage(asType))
       val tbkCls = srdArr.first.getClass
       val srdFinal = srdArr.zipWithIndex.map{
             cBnd => 
               val cPos = new D3int(pos.x,pos.y,pos.z+cBnd._2.toInt)
-              val imgObj = new TImgBlock(cBnd._1,pos,dim)
-              (cPos,imgObj)
+              (cPos,(cBnd._1,pos,dim))
           }
       
-      //val jpr = JavaPairRDD.fromRDD(srdFinal) //,classOf[D3int],classOf[TImgBlock])
-      //srdFinal.toJavaRDD.mapToPair(inPt => inPt)
-      srdFinal
-      //DTImg.WrapRDD(fst,srdFinal,asType)
-        
+      (timgDim,fst,srdFinal)
       }
     }
   

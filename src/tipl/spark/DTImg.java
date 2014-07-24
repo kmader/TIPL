@@ -190,7 +190,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
      * @param imgType
      * @return
      */
-    static public <Fc extends Cloneable> DTImg<Fc> WrapRDD(TImgRO parent, JavaPairRDD<D3int, TImgBlock<Fc>> newImage,
+    static public <Fc extends Cloneable> DTImg<Fc> WrapRDD(TImgTools.HasDimensions parent, JavaPairRDD<D3int, TImgBlock<Fc>> newImage,
                                                            int imgType) {
         DTImg<Fc> outImage = new DTImg<Fc>(parent, newImage, imgType, "[virtual]");
         return outImage;

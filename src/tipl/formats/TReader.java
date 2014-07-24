@@ -320,7 +320,7 @@ public interface TReader extends Serializable {
 		public TSliceReader ReadFile(File curfile) throws IOException;
 	}
 
-	public static interface TSliceReader extends Serializable {
+	public static interface TSliceReader extends TImgTools.HasDimensions,Serializable {
 		public boolean CheckSizes(String otherPath);
 
 		public void checkSliceDim(D3int globalDim) throws IOException;
