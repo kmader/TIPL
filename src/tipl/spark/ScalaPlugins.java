@@ -22,6 +22,7 @@ public final class ScalaPlugins {
 	};
 	
 	
+	
 	@TIPLPluginManager.PluginInfo(pluginType = "kVoronoi",
 			desc="Spark-based surface voronoi tesselation",
 			sliceBased=false,sparkBased=true)

@@ -95,13 +95,13 @@ object TIPLOps {
     def loadAsBinary() = {
       transformSlices[Array[Boolean]](TImgTools.IMAGETYPE_BOOL,inObj => inObj.asInstanceOf[Array[Boolean]])
     }
-    private[TIPLOps] def transformSlices[A<: Cloneable](asType: Int,transFcn: (Any => A)) = {
+    private[TIPLOps] def transformSlices[A](asType: Int,transFcn: (Any => A)) = {
       val (imDim,firstSlice,imRdd) = loadSlices(asType)
       val outRdd = imRdd.mapValues{
         cBnd =>
-          new TImgBlock(transFcn(cBnd._1),cBnd._2,cBnd._3)
+          new TImgBlock[A](transFcn(cBnd._1),cBnd._2,cBnd._3)
       }
-      DTImg.WrapRDD[A](firstSlice,outRdd,asType)
+      DTImg.WrapRDD[A](firstSlice,JavaPairRDD.fromRDD(outRdd),asType)
     }
     private[TIPLOps] def loadSlices(asType: Int) = {
       TImgTools.isValidType(asType)

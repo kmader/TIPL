@@ -10,7 +10,7 @@ import java.io.Serializable;
  * @param <V> The class of the data inside (typically int[] or boolean[])
  * @author mader
  */
-public class TImgBlock<V extends Cloneable> implements Serializable {
+public class TImgBlock<V> implements Serializable {
     final public static D3int zero = new D3int(0);
     /**
      *
@@ -115,7 +115,7 @@ public class TImgBlock<V extends Cloneable> implements Serializable {
      * @param <Fu>
      * @author mader
      */
-    static abstract public class TImgBlockFuture<Fu extends Cloneable> extends TImgBlock<Fu> {
+    static abstract public class TImgBlockFuture<Fu> extends TImgBlock<Fu> {
         protected static final boolean debug = TIPLGlobal.getDebug();
         private static final long serialVersionUID = 5184302069088589618L;
         protected boolean cacheResult = true;
@@ -153,7 +153,7 @@ public class TImgBlock<V extends Cloneable> implements Serializable {
      * @param <Fu>
      * @author mader
      */
-    static public class TImgBlockFromImage<Fu extends Cloneable> extends TImgBlockFuture<Fu> {
+    static public class TImgBlockFromImage<Fu> extends TImgBlockFuture<Fu> {
         protected final TImgRO inImObj;
         protected final int sliceNumber;
         protected final int imgType;
@@ -195,7 +195,7 @@ public class TImgBlock<V extends Cloneable> implements Serializable {
      * @param <Fu>
      * @author mader
      */
-    static public class TImgBlockFile<Fu extends Cloneable> extends TImgBlockFuture<Fu> {
+    static public class TImgBlockFile<Fu> extends TImgBlockFuture<Fu> {
         protected final String fileName;
         protected final int sliceNumber;
         protected final int imgType;

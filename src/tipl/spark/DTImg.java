@@ -33,7 +33,7 @@ import java.util.List;
  * @author mader
  */
 @SuppressWarnings("serial")
-public class DTImg<T extends Cloneable> implements TImg, Serializable {
+public class DTImg<T> implements TImg, Serializable {
     static protected final boolean futureTImgMigrate = true;
     /**
      *
@@ -91,7 +91,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
      * @param imgType
      * @return
      */
-    protected static <U extends Cloneable> JavaPairRDD<D3int, TImgBlock<U>> ImportImage(
+    protected static <U> JavaPairRDD<D3int, TImgBlock<U>> ImportImage(
             final JavaSparkContext jsc, final String imgName, final int imgType) {
         assert (TImgTools.isValidType(imgType));
         final TImgRO cImg = TImgTools.ReadTImg(imgName, false, true);
@@ -119,7 +119,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
      * @param imgType
      * @return
      */
-    protected static <U extends Cloneable> JavaPairRDD<D3int, TImgBlock<U>> ImportImageSerial(
+    protected static <U> JavaPairRDD<D3int, TImgBlock<U>> ImportImageSerial(
             final JavaSparkContext jsc, final String imgName, final int imgType) {
         assert (TImgTools.isValidType(imgType));
         final TImgRO cImg = TImgTools.ReadTImg(imgName, false, true);
@@ -159,7 +159,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
      * @param imgType
      * @return
      */
-    protected static <U extends Cloneable> JavaPairRDD<D3int, TImgBlock<U>> MigrateImage(
+    protected static <U> JavaPairRDD<D3int, TImgBlock<U>> MigrateImage(
             final JavaSparkContext jsc, TImgRO cImg, final int imgType) {
         assert (TImgTools.isValidType(imgType));
         final D3int imgDim = cImg.getDim();
@@ -190,11 +190,12 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
      * @param imgType
      * @return
      */
-    static public <Fc extends Cloneable> DTImg<Fc> WrapRDD(TImgTools.HasDimensions parent, JavaPairRDD<D3int, TImgBlock<Fc>> newImage,
+    static public <Fc> DTImg<Fc> WrapRDD(TImgTools.HasDimensions parent, JavaPairRDD<D3int, TImgBlock<Fc>> newImage,
                                                            int imgType) {
         DTImg<Fc> outImage = new DTImg<Fc>(parent, newImage, imgType, "[virtual]");
         return outImage;
     }
+    
 
     /**
      * factory create a new image from a javasparkcontext and a path and type
@@ -203,7 +204,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
      * @param imgName
      * @param imgType
      */
-    static public <Fc extends Cloneable> DTImg<Fc> ReadImage(JavaSparkContext jsc, final String imgName, int imgType) {
+    static public <Fc> DTImg<Fc> ReadImage(JavaSparkContext jsc, final String imgName, int imgType) {
         JavaPairRDD<D3int, TImgBlock<Fc>> newImage = ImportImage(jsc, imgName, imgType);
         TImgTools.HasDimensions parent = TImgTools.ReadTImg(imgName);
         DTImg<Fc> outImage = new DTImg<Fc>(parent, newImage, imgType, imgName);
@@ -218,12 +219,12 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
      * @param imgType the type of the image (must match Fc)
      * @return
      */
-    static public <Fc extends Cloneable> DTImg<Fc> ConvertTImg(JavaSparkContext jsc, final TImgRO inImage, int imgType) {
+    static public <Fc> DTImg<Fc> ConvertTImg(JavaSparkContext jsc, final TImgRO inImage, int imgType) {
         JavaPairRDD<D3int, TImgBlock<Fc>> newImage = MigrateImage(jsc, inImage, imgType);
         return new DTImg<Fc>(inImage, newImage, imgType, inImage.getPath());
     }
 
-    static public <Fc extends Cloneable> DTImg<Fc> ReadObjectFile(JavaSparkContext jsc, final String imgName, int imgType) {
+    static public <Fc> DTImg<Fc> ReadObjectFile(JavaSparkContext jsc, final String imgName, int imgType) {
         final JavaRDD<Tuple2<D3int, TImgBlock<Fc>>> newImage = jsc.objectFile(imgName);
         final Tuple2<D3int, TImgBlock<Fc>> cTuple = newImage.first();
         final TImgBlock<Fc> cBlock = cTuple._2();
@@ -542,7 +543,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
      * @param mapFunc
      * @return
      */
-    public <U extends Cloneable> DTImg<U> map(
+    public <U> DTImg<U> map(
             final PairFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<U>> mapFunc,
             final int outType) {
         return DTImg.WrapRDD(this, this.baseImg.mapToPair(mapFunc).partitionBy(SparkGlobal.getPartitioner(getDim())), outType);
@@ -555,7 +556,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
      * @param mapFunc
      * @return
      */
-    public <U extends Cloneable> DTImg<U> mapValues(
+    public <U> DTImg<U> mapValues(
             final Function<TImgBlock<T>, TImgBlock<U>> mapFunc,
             final int outType) {
         return DTImg.WrapRDD(this, this.baseImg.mapValues(mapFunc).partitionBy(SparkGlobal.getPartitioner(getDim())), outType);
@@ -642,7 +643,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
      * @param mapFunc
      * @return
      */
-    public <U extends Cloneable> DTImg<U> spreadMap(
+    public <U> DTImg<U> spreadMap(
             final int spreadWidth,
             final PairFunction<Tuple2<D3int, Iterable<TImgBlock<T>>>, D3int, TImgBlock<U>> mapFunc,
             final int outType) {
@@ -753,7 +754,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
      * @param <W> the type of the image as an array
      * @author mader
      */
-    protected static class ReadSlice<W extends Cloneable> implements
+    protected static class ReadSlice<W> implements
             PairFunction<Integer, D3int, TImgBlock<W>> {
         protected final String imgPath;
         protected final int imgType;
@@ -799,7 +800,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
      * @param <W> the type of the image as an array
      * @author mader
      */
-    protected static class ReadSlicePromise<W extends Cloneable> implements
+    protected static class ReadSlicePromise<W> implements
             PairFunction<Integer, D3int, TImgBlock<W>> {
         protected final String imgPath;
         protected final int imgType;
@@ -840,7 +841,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
      * @param <U>
      * @author mader
      */
-    public static class SliceToPoints<U extends Cloneable> implements PairFlatMapFunction<Tuple2<D3int, TImgBlock<U>>, D3int, Number> {
+    public static class SliceToPoints<U> implements PairFlatMapFunction<Tuple2<D3int, TImgBlock<U>>, D3int, Number> {
         final int imageType;
 
         public SliceToPoints(int inImageType) {
@@ -927,7 +928,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
      * @param <T>
      * @author mader
      */
-    protected static class BlockShifter<T extends Cloneable> implements PairFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<T>> {
+    protected static class BlockShifter<T> implements PairFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<T>> {
         protected final D3int inOffset;
 
         // Since we can't have constructors here (probably should make it into a subclass)
@@ -957,7 +958,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
      * @param <T>
      * @author mader
      */
-    protected static class BlockSpreader<T extends Cloneable> implements PairFlatMapFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<T>> {
+    protected static class BlockSpreader<T> implements PairFlatMapFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<T>> {
 
         protected final D3int[] inOffsetList;
 
@@ -969,7 +970,7 @@ public class DTImg<T extends Cloneable> implements TImg, Serializable {
             this.imgDim = imgDim;
         }
 
-        static public <Fc extends Cloneable> BlockSpreader<Fc> SpreadSlices(final int windowSize, final D3int imgDim) {
+        static public <Fc> BlockSpreader<Fc> SpreadSlices(final int windowSize, final D3int imgDim) {
             final D3int sliceDim = new D3int(imgDim.x, imgDim.y, 1);
             final D3int[] offsetList = new D3int[2 * windowSize + 1];
             for (int i = -windowSize; i <= windowSize; i++) offsetList[i + windowSize] = new D3int(0, 0, i);
