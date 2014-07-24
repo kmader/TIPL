@@ -47,6 +47,7 @@ import tipl.formats.TiffFolder.TIFSliceReader
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.PairRDDFunctions._
 
+
 class UnreadTiffRDD(srd: RDD[(String,Array[Byte])]) {
   def toTiffSlices() = {
     val tSlice = srd.first
