@@ -72,11 +72,11 @@ object TIPLOps {
      * The old reading functions
      */
     val fullTImg = new TImgRO.TImgFull(inputImage)
-    @Override def getBoolArray(sliceNumber: Int) = {fullTImg.getBoolArray(sliceNumber)}
-    @Override def getByteArray(sliceNumber: Int) = {fullTImg.getByteArray(sliceNumber)}
-    @Override def getShortArray(sliceNumber: Int) = {fullTImg.getShortArray(sliceNumber)}
-    @Override def getIntArray(sliceNumber: Int) = {fullTImg.getIntArray(sliceNumber)}
-    @Override def getFloatArray(sliceNumber: Int) = {fullTImg.getFloatArray(sliceNumber)}
+    override def getBoolArray(sliceNumber: Int) = {fullTImg.getBoolArray(sliceNumber)}
+    override def getByteArray(sliceNumber: Int) = {fullTImg.getByteArray(sliceNumber)}
+    override def getShortArray(sliceNumber: Int) = {fullTImg.getShortArray(sliceNumber)}
+    override def getIntArray(sliceNumber: Int) = {fullTImg.getIntArray(sliceNumber)}
+    override def getFloatArray(sliceNumber: Int) = {fullTImg.getFloatArray(sliceNumber)}
     /** Basic IO 
      *  
      */

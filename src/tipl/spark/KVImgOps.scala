@@ -12,6 +12,7 @@ import org.apache.spark.rdd.RDD
 import tipl.spark.KVImg
 import tipl.tools.BaseTIPLPluginIn
 import tipl.util.TIPLOps.NeighborhoodOperation
+import scala.reflect.ClassTag
 
 /**
  * Some tools for the Key-value pair image to make working with them easier, writing code in java is just too much of a pain in the ass
@@ -19,7 +20,7 @@ import tipl.util.TIPLOps.NeighborhoodOperation
  *
  */
  @serializable object KVImgOps {
-  def createFromPureFun[T <: Number](sc: SparkContext,objToMirror: TImgTools.HasDimensions,inpf: PureFImage.PositionFunction,imageType: Integer): KVImg[T] = {
+  def createFromPureFun(sc: SparkContext,objToMirror: TImgTools.HasDimensions,inpf: PureFImage.PositionFunction): KVImg[Double] = {
     val objDim = objToMirror getDim
     val objPos = objToMirror getPos
     val xrng = objPos.x to (objPos.x + objDim.x)
@@ -29,17 +30,17 @@ import tipl.util.TIPLOps.NeighborhoodOperation
       flatMap(z => {
       for (x <- xrng; y <- yrng) // for each slice create each point in the image
       yield (new D3int(x,y,z),
-        new java.lang.Double(inpf.get(Array(x.doubleValue, y.doubleValue, z.doubleValue))))
-    }).toJavaRDD
+        inpf.get(Array(x.doubleValue, y.doubleValue, z.doubleValue)))
+    })
     
-    KVImg.FromRDD[T](objToMirror, imageType, wrappedImage)
+    KVImg.FromRDD[Double](objToMirror, TImgTools.IMAGETYPE_DOUBLE, wrappedImage)
   }
   /**
    * Go directly from a PositionFunction to a KVImg
    */
-  implicit class RichPositionFunction[T<: Number](inpf: PureFImage.PositionFunction) {
-    def asKVImg(sc: SparkContext,objToMirror: TImgTools.HasDimensions,imageType: Integer): KVImg[T] = {
-      createFromPureFun(sc,objToMirror,inpf,imageType)
+  implicit class RichPositionFunction(inpf: PureFImage.PositionFunction) {
+    def asKVImg(sc: SparkContext,objToMirror: TImgTools.HasDimensions): KVImg[Double] = {
+      createFromPureFun(sc,objToMirror,inpf)
     }
   }
   
@@ -122,13 +123,12 @@ import tipl.util.TIPLOps.NeighborhoodOperation
     }
   }
   @serializable implicit class RichKVImg[A<: Number](ip: KVImg[A]) {
-    import java.lang.{Double => JDouble}
-    val srd = ip.getBaseImg().rdd
-      def +[B <: Number](imgB: KVImg[B]): KVImg[JDouble] = {
+    val srd = ip.getBaseImg
+      def +[B <: Number](imgB: KVImg[B]): KVImg[Double] = {
     	
-    	val outImg=srd + imgB.getBaseImg().rdd
-    	val javaImg = outImg.mapValues{new JDouble(_)}
-    	KVImg.FromRDD[JDouble](ip, TImgTools.IMAGETYPE_DOUBLE, javaImg)
+    	val outImg=srd + imgB.getBaseImg()
+    	val javaImg = outImg.mapValues{_.doubleValue}
+    	KVImg.FromRDD[Double](ip, TImgTools.IMAGETYPE_DOUBLE, javaImg)
       }
 
     def getInterface() = {

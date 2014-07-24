@@ -321,14 +321,7 @@ public class DTImg<T> implements TImg, Serializable {
         });
     }
 
-    /**
-     * Transform the DTImg into a KVImg
-     */
-    public KVImg asKV() {
-        JavaPairRDD<D3int, Number> kvBase = baseImg.flatMapToPair(new SliceToPoints<T>(getImageType()));
-        return new KVImg(getDim(), getPos(), getElSize(), getImageType(), kvBase);
 
-    }
 
     /**
      * Save the image into a series of text files without header (format x,y,z,val)

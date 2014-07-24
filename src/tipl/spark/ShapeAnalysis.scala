@@ -67,7 +67,7 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
     print("Starting Plugin..." + getPluginName);
     val filterFun = (ival: (D3int, Long)) => ival._2 > 0
     val gbFun = (ival: (D3int, Long)) => ival._2
-    val gvList = labeledImage.getBaseImg.rdd. // get it into the scala format
+    val gvList = labeledImage.getBaseImg. // get it into the scala format
       filter(filterFun). // remove zeros
       groupBy(gbFun). // group by value
       map(singleShape) // run shape analysis
@@ -84,7 +84,7 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
   override def LoadImages(inImages: Array[TImgRO]) = {
     labeledImage = inImages(0) match {
       case m: KVImg[_] => m.toKVLong
-      case m: DTImg[_] => m.asKV().toKVLong()
+      case m: DTImg[_] => KVImg.fromDTImg(m).toKVLong()
       case m: TImgRO => KVImg.ConvertTImg(SparkGlobal.getContext(getPluginName()), m, TImgTools.IMAGETYPE_INT).toKVLong()
     }
   }

@@ -3,8 +3,7 @@
  */
 package tipl.spark
 
-import java.lang.{Float => JFloat}
-import java.lang.{Long => JLong}
+
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import tipl.formats.{PureFImage, TImg, TImgRO}
@@ -134,12 +133,10 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
     true
   }
 
-  val fillImage = (tempObj: TImgTools.HasDimensions, defValue: java.lang.Double) => {
+  val fillImage = (tempObj: TImgTools.HasDimensions, defValue: Double) => {
     val defFloat = new PureFImage.ConstantValue(defValue)
-
-    KVImgOps.createFromPureFun[JFloat](SparkGlobal.getContext(getPluginName()), tempObj, defFloat, TImgTools.IMAGETYPE_FLOAT)
+    KVImgOps.createFromPureFun(SparkGlobal.getContext(getPluginName()), tempObj, defFloat).toKVFloat
   }
-  val longLong = (x: JLong) => {x.longValue}
   var labeledDistanceMap: RDD[(D3int, ((Long, Float), Boolean))] = null
   var objDim: D3int = null
   lazy val partitioner=SparkGlobal.getPartitioner(objDim);
@@ -153,23 +150,23 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
   
     val labeledImage = (labelImage match {
       case m: KVImg[_] => m.toKVLong
-      case m: DTImg[_] => m.asKV().toKVLong()
+      case m: DTImg[_] => KVImg.fromDTImg(m).toKVLong()
       case m: TImgRO => KVImg.ConvertTImg(SparkGlobal.getContext(getPluginName()), m, TImgTools.IMAGETYPE_INT).toKVLong()
-    }).getBaseImg.rdd.partitionBy(partitioner)
+    }).getBaseImg.partitionBy(partitioner)
 
     // any image filled with all negative distances
-    val initialDistances = fillImage(labelImage, -1).getBaseImg.rdd
-    val inMask = (ival: (D3int, JFloat)) => ival._2 > 0
-    val toBoolean = (ival: JFloat) => true
+    val initialDistances = fillImage(labelImage, -1).getBaseImg
+    val inMask = (ival: (D3int, Float)) => ival._2 > 0
+    val toBoolean = (ival: Float) => true
     val maskedImage = (maskImage match {
       case m: KVImg[_] => m.toKVFloat
-      case m: DTImg[_] => m.asKV().toKVFloat
+      case m: DTImg[_] => KVImg.fromDTImg(m).toKVFloat
       case m: TImgRO => KVImg.ConvertTImg(SparkGlobal.getContext(getPluginName()), m, TImgTools.IMAGETYPE_INT).toKVFloat()
       case _ => fillImage(labelImage, 1)
-    }).getBaseImg.rdd.filter(inMask).mapValues(toBoolean)
+    }).getBaseImg.filter(inMask).mapValues(toBoolean)
     if(TIPLGlobal.getDebug()) println("KSM-MaskedImage:\t" + maskedImage + "\t" + maskedImage.first)
     // combine the images to create the starting distance map
-    val maskPlusDist = (inVal: (JFloat, Option[Boolean])) => {
+    val maskPlusDist = (inVal: (Float, Option[Boolean])) => {
       inVal._2.map(inBool => -1f).getOrElse(inVal._1.floatValue)
     }
     val maskDistance = initialDistances.
@@ -179,18 +176,17 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
       else ((avec._1,java.lang.Float.MAX_VALUE.floatValue),false)
     }
     
-   labeledDistanceMap = labeledImage.mapValues(longLong).join(maskDistance).
+   labeledDistanceMap = labeledImage.join(maskDistance).
    mapValues(fix_dist).partitionBy(partitioner)
    if(TIPLGlobal.getDebug()) println("KSM-LDMap:\t" + labeledDistanceMap + "\t" + labeledDistanceMap.first)
    if(TIPLGlobal.getDebug()) println("KSM-" + labeledDistanceMap.takeSample(true, 10, 50).mkString(", "))
   }
-  
   override def ExportDistanceAim(inObj: CanExport): TImg = {
-    new KVImg[JFloat](inObj,TImgTools.IMAGETYPE_FLOAT,labeledDistanceMap.mapValues(ldvec => new JFloat(ldvec._1._2.floatValue)).toJavaRDD)
+    new KVImg[Float](inObj,TImgTools.IMAGETYPE_FLOAT,labeledDistanceMap.mapValues(_._1._2))
   }
   
   override def ExportVolumesAim(inObj: CanExport): TImg = {
-    new KVImg[JLong](inObj,TImgTools.IMAGETYPE_LONG,labeledDistanceMap.mapValues(ldvec => new JLong(ldvec._1._1.longValue)).toJavaRDD)
+    new KVImg[Long](inObj,TImgTools.IMAGETYPE_LONG,labeledDistanceMap.mapValues(_._1._1))
   }
   override def ExportImages(templateImage: TImgRO): Array[TImg] = {
     val tiEx = TImgTools.makeTImgExportable(templateImage)
