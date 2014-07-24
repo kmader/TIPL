@@ -87,7 +87,7 @@ object IOOps {
       case _ => throw new IllegalArgumentException("Type Not Found:"+asType+" "+TImgTools.getImageTypeName(asType)) 
     }
   }
-  implicit class SlicesToDTImg[+T<: TSliceReader](srd:  RDD[(String,T)])(implicit lm: ClassTag[T])  {
+  implicit class SlicesToDTImg[T <: TSliceReader](srd:  RDD[(String,T)])(implicit lm: ClassTag[T])  {
 
     def loadAsBinary() = {
       processSlices[Array[Boolean]](TImgTools.IMAGETYPE_BOOL,inObj => inObj.asInstanceOf[Array[Boolean]])

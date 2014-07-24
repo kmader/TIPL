@@ -20,19 +20,24 @@ import tipl.formats.TiffFolder.TIFSliceReader
  *
  */
 abstract class SparkStorage extends ITIPLStorage {
-	override def readTImg(path: String, readFromCache: Boolean, saveToCache: Boolean): TImg = {
+	override def readTImg(path: String, readFromCache: Boolean, saveToCache: Boolean): TImgRO = {
 		val sc = SparkGlobal.getContext().sc
 		val bf = sc.byteFolder(path+"/*.tif") // keep it compatible with the older version
 		
 				
 		val tifLoad = bf.toTiffSlices
-		tifLoad.load
-		//val ssd = SlicesToDTImg[TIFSliceReader](tifLoad)
+		//val outImage = tifLoad.load
+		val ssd = SlicesToDTImg(tifLoad)
 		
 		
 		
 		//val realImage = tifLoad.loadAsValues
-		//return ssd.load
-		null
+		return ssd.load
+		//null
 	}
+}
+object SparkStorage {
+  trait DeadTImg extends TImg {
+    
+  }
 }

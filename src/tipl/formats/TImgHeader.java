@@ -10,7 +10,7 @@ import java.io.Serializable;
 
 /**
  * TImgHeader is a unified repository for all of the functions related to reading and writing header information
- * primar
+ * 
  *
  * @author mader
  */
