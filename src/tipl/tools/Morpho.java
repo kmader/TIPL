@@ -56,13 +56,7 @@ public class Morpho extends BaseTIPLPluginBW {
         ImportAim(inputmap, idim, ioffset);
     }
 
-    /**
-     * constructor function using TIPLPluginBW standard classes
-     */
-    @Deprecated
-    public Morpho(final float[] inputmap, final D3int idim, final D3int ioffset) {
-        ImportAim(inputmap, idim, ioffset);
-    }
+
 
     /**
      * constructor function using TIPLPluginBW standard classes

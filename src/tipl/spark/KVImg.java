@@ -18,6 +18,7 @@ import tipl.util.TImgTools;
 
 import java.io.Serializable;
 import java.util.List;
+//import scala.Long;
 
 /**
  * KVImg is a key value pair image consisting of a key (position formatted as D3int) and a value of type T (extension of number)
@@ -93,7 +94,7 @@ public class KVImg<T extends Number> extends TImg.ATImg implements TImg, Seriali
 
     /**
      * Force the KVImg to be a long no matter what it is now (used for shape analysis and other applications)
-     */
+      */
     @SuppressWarnings("serial")
     public KVImg<Float> toKVFloat() {
         if (imageType == TImgTools.IMAGETYPE_FLOAT) return (KVImg<Float>) this;
@@ -101,6 +102,7 @@ public class KVImg<T extends Number> extends TImg.ATImg implements TImg, Seriali
                 baseImg.mapValues(new Function<T, Float>() {
                     @Override
                     public Float call(T arg0) throws Exception {
+                    	
                         return arg0.floatValue();
                     }
                 }));
