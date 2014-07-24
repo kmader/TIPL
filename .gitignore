@@ -1,0 +1,7 @@
+/.apt_generated
+.DS_Store
+build/TIPL_basic.jar
+build/TIPL_core.jar
+build/TIPL_scala.jar
+build/TIPL_simple.jar
+build/TIPL.jar
