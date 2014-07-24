@@ -87,8 +87,7 @@ public class ISQReader implements TReader {
 				}
 				base += pixelsRead;
 			}
-			//System.out.println("Cur Pos:" + in.getFilePointer());
-			return TImgTools.convertShortArray(cSlice, asType, true, 1, maxVal);
+			return TImgTools.convertArrayType(cSlice,TImgTools.IMAGETYPE_SHORT, asType, true, 1, maxVal);
 		}
 
 	}

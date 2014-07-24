@@ -95,7 +95,7 @@ public class DMPFolder extends DirectoryReader {
 				j += 4;
 			}
 			// System.out.println("Getting pixels:"+dataType+", converting to:"+asType+", status:"+gf);
-			return TImgTools.convertFloatArray(gf, asType, true, 1);
+			return TImgTools.convertArrayType(gf,TImgTools.IMAGETYPE_FLOAT, asType, true, 1);
 		}
 
 	}

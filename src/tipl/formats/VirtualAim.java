@@ -3,6 +3,7 @@ package tipl.formats;
 import com.sun.media.jai.codec.*;
 import com.sun.media.jai.codecimpl.util.DataBufferFloat;
 import com.sun.media.jai.codecimpl.util.RasterFactory;
+
 import ij.ImageJ;
 import ij.ImagePlus;
 import ij.gui.HistogramWindow;
@@ -10,6 +11,7 @@ import tipl.ij.TImgToImagePlus;
 import tipl.util.*;
 
 import javax.media.jai.PlanarImage;
+
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
@@ -656,15 +658,13 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
                 int[] gi = new int[sliceSize];
                 gi = activeRaster.getPixels(0, 0, activeRaster.getWidth(),
                         activeRaster.getHeight(), gi);
-                // System.out.println("Getting pixels:"+dataType+", converting to:"+asType+", status:"+gi);
-                return TImgTools.convertIntArray(gi, asType, isSigned,
+                return TImgTools.convertArrayType(gi,TImgTools.IMAGETYPE_INT, asType, isSigned,
                         ShortScaleFactor, maxVal);
             case 3: // Float
                 float[] gf = new float[sliceSize];
                 gf = activeRaster.getPixels(0, 0, activeRaster.getWidth(),
                         activeRaster.getHeight(), gf);
-                // System.out.println("Getting pixels:"+dataType+", converting to:"+asType+", status:"+gf);
-                return TImgTools.convertFloatArray(gf, asType, isSigned,
+                return TImgTools.convertArrayType(gf,TImgTools.IMAGETYPE_FLOAT, asType, isSigned,
                         ShortScaleFactor);
 
         }
@@ -2026,7 +2026,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
             if (imageType == 3) {
                 final float[] gf = new float[sliceSize];
                 System.arraycopy(aimFloat, outPos, gf, outPos - outPos, outPos + dim.x * dim.y - outPos);
-                return TImgTools.convertFloatArray(gf, asType, isSigned,
+                return TImgTools.convertArrayType(gf,TImgTools.IMAGETYPE_FLOAT, asType, isSigned,
                         ShortScaleFactor);
             }
 
@@ -2056,7 +2056,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
                     System.out.println("Not supported!" + imageType);
                     return 0;
             }
-            return TImgTools.convertIntArray(gi, asType, isSigned,
+            return TImgTools.convertArrayType(gi,TImgTools.IMAGETYPE_INT, asType, isSigned,
                     ShortScaleFactor, maxVal);
 
         }

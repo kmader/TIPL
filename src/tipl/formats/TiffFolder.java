@@ -75,9 +75,10 @@ public class TiffFolder extends DirectoryReader {
 			case TImgTools.IMAGETYPE_CHAR: // Char use the interface for short with a different max val
 			case TImgTools.IMAGETYPE_INT: // Int
 			case TImgTools.IMAGETYPE_BOOL: // binary also uses the same reader
-				return TImgTools.convertIntArray(gi, asType, useSignedConversion, 1, maxVal);
+				return TImgTools.convertArrayType(gi,TImgTools.IMAGETYPE_INT, asType, useSignedConversion, 1, maxVal);
+				
 			case TImgTools.IMAGETYPE_FLOAT: // Float
-				return TImgTools.convertFloatArray(gf, asType, useSignedConversion, 1);
+				return TImgTools.convertArrayType(gf,TImgTools.IMAGETYPE_FLOAT, asType, useSignedConversion, 1);
 			default:
 				throw new IOException("Input file format is not known!!!!");
 			}
