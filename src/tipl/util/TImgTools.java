@@ -48,14 +48,18 @@ public class TImgTools {
 	public static int SPEED_MEMORY_CALCULATE = 3;
 	public static int SPEED_MEMORY = 4;
 	protected static ITIPLStorage storageBackend = null;
-
+	public static boolean useSparkStorage = false;
+	
 	/**
 	 * get the current backend for storage / memory management, if none exists create a new one
 	 *
 	 * @return
 	 */
 	public static ITIPLStorage getStorage() {
-		if (storageBackend == null) storageBackend = new TIPLStorage();
+		if (storageBackend == null) {
+			if(!useSparkStorage) storageBackend = new TIPLStorage();
+			
+		}
 		return storageBackend;
 	}
 

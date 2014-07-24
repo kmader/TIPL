@@ -77,33 +77,17 @@ object TIPLOps {
     }
   }
   implicit class SlicesToTImg[T<: TSliceReader](srd: RDD[(String,T)])(implicit lm: ClassTag[T])  {
+
+    def loadAsBinary() = {
+      processSlices[Array[Boolean]](TImgTools.IMAGETYPE_BOOL,inObj => inObj.asInstanceOf[Array[Boolean]])
+    }
     def loadAsLabels() = {
-      val (imDim,firstSlice,imRdd) = loadSlices(TImgTools.IMAGETYPE_LONG)
-      imRdd.mapValues{
-        cBnd =>
-          new TImgBlock(cBnd._1.asInstanceOf[Array[Long]],cBnd._2,cBnd._3)
-      }
+      processSlices[Array[Long]](TImgTools.IMAGETYPE_LONG,inObj => inObj.asInstanceOf[Array[Long]])
     }
     def loadAsValues() = {
-      val (imDim,firstSlice,imRdd) = loadSlices(TImgTools.IMAGETYPE_DOUBLE)
-      
-      imRdd.mapValues{
-        cBnd =>
-          new TImgBlock(cBnd._1.asInstanceOf[Array[Double]],cBnd._2,cBnd._3)
-      }
+      processSlices[Array[Double]](TImgTools.IMAGETYPE_DOUBLE,inObj => inObj.asInstanceOf[Array[Double]])
     }
-    def loadAsBinary() = {
-      transformSlices[Array[Boolean]](TImgTools.IMAGETYPE_BOOL,inObj => inObj.asInstanceOf[Array[Boolean]])
-    }
-    private[TIPLOps] def transformSlices[A](asType: Int,transFcn: (Any => A)) = {
-      val (imDim,firstSlice,imRdd) = loadSlices(asType)
-      val outRdd = imRdd.mapValues{
-        cBnd =>
-          new TImgBlock[A](transFcn(cBnd._1),cBnd._2,cBnd._3)
-      }
-      DTImg.WrapRDD[A](firstSlice,JavaPairRDD.fromRDD(outRdd),asType)
-    }
-    private[TIPLOps] def loadSlices(asType: Int) = {
+    private[TIPLOps] def processSlices[A](asType: Int,transFcn: (Any => A)) = {
       TImgTools.isValidType(asType)
       // sort by file name and then remove the filename
       val srdSorted = srd.sortByKey(true, srd.count.toInt).map(_._2)
@@ -115,13 +99,18 @@ object TIPLOps {
       val srdArr = srdSorted.
       map(cval => cval.polyReadImage(asType))
       val tbkCls = srdArr.first.getClass
-      val srdFinal = srdArr.zipWithIndex.map{
+      val srdMixed = srdArr.zipWithIndex.map{
             cBnd => 
               val cPos = new D3int(pos.x,pos.y,pos.z+cBnd._2.toInt)
               (cPos,(cBnd._1,pos,dim))
           }
       
-      (timgDim,fst,srdFinal)
+      val outRdd = srdMixed.mapValues{
+        cBnd =>
+          new TImgBlock[A](transFcn(cBnd._1),cBnd._2,cBnd._3)
+      }
+      
+      DTImg.WrapRDD[A](fst,JavaPairRDD.fromRDD(outRdd),asType)
       }
     }
   

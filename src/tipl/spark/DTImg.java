@@ -8,6 +8,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.*;
 import org.apache.spark.storage.StorageLevel;
+
 import scala.Tuple2;
 import scala.Tuple3;
 import tipl.formats.FImage;
@@ -65,8 +66,11 @@ public class DTImg<T> implements TImg, Serializable {
         TImgTools.mirrorImage(parent, this);
         this.path = path;
         SparkGlobal.assertPersistance(this);
+        int sliceCount = (int) baseImg.count();
+        if (getDim().z!=sliceCount) dim.z=sliceCount;
 
     }
+    
 
     public static void main(String[] args) {
 
@@ -435,11 +439,20 @@ public class DTImg<T> implements TImg, Serializable {
     public String getPath() {
         return path;
     }
-
+    /**
+     * A fairly simple operation of filtering the RDD for the correct slice and returning that slice
+     */
     @Override
-    public Object getPolyImage(int sliceNumber, int asType) {
-        // TODO Auto-generated method stub
-        throw new IllegalArgumentException("Not implemented yet");
+    public Object getPolyImage(int sliceNumber, final int asType) {
+    	final int zPos = getPos().z+sliceNumber;
+    	
+       T curSlice = this.baseImg.filter(new Function<Tuple2<D3int,TImgBlock<T>>,Boolean>() {
+		@Override
+		public Boolean call(Tuple2<D3int, TImgBlock<T>> arg0) throws Exception {
+			return (arg0._1.z==zPos);
+		}
+       }).first()._2.get();
+       return TImgTools.convertArrayType(curSlice, getImageType(), asType, getSigned(), getShortScaleFactor());
     }
 
     @Override
