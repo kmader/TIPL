@@ -137,16 +137,7 @@ import scala.reflect.ClassTag
     	
     }
   }
-  
-  
-  @serializable implicit class RichTImgRO[T<: TImgRO](cImg: T) {
-    def toKV[V]()(implicit lm: ClassTag[V])= cImg match {
-      case m: KVImg[_] => m
-      case m: DTImg[V] => KVImg.fromDTImg(m)
-      case m: TImgRO => KVImg.ConvertTImg(SparkGlobal.getContext(), m, TImgTools.IMAGETYPE_INT)
-    }
    
-  }
   
     
   

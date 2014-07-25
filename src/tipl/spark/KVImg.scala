@@ -24,6 +24,8 @@ import tipl.formats.TImgRO
   
 	def this(inImg: TImgTools.HasDimensions, imageType: Int, baseImg: RDD[(D3int,T)])(implicit lm: ClassTag[T]) = 
 	  this(inImg.getDim,inImg.getPos,inImg.getElSize,imageType,baseImg)(lm)
+	  
+
   def getBaseImg() = baseImg
       /* The function to collect all the key value pairs and return it as the appropriate array for a given slice
      * @see tipl.formats.TImgRO#getPolyImage(int, int)
@@ -36,7 +38,7 @@ import tipl.formats.TImgRO
           curElement: (D3int,T) =>
             ((curElement._1.y - pos.y) * dim.x + curElement._1.x - pos.x, curElement._2);
         }.sortByKey(true)
-        val tSlice = (0 to sliceSize).zip(new Array[T](sliceSize))
+        val tSlice = (0 until sliceSize).zip(new Array[T](sliceSize))
         // since particularly after thresholds many points are missing, we need to add them back before making a slice out of the data
         val allPoints = baseImg.sparkContext.parallelize(tSlice)
         val missingPoints = allPoints.subtractByKey(sliceAsList)
@@ -53,7 +55,7 @@ import tipl.formats.TImgRO
      override def inheritedAim(inImg: TImgRO): TImg = {
         val outImage = KVImg.ConvertTImg(baseImg.sparkContext, inImg, inImg.getImageType());
         outImage.appendProcLog("Merged with:" + getSampleName() + ":" + this + "\n" + getProcLog());
-        outImage;
+        outImage
     }
     
     
@@ -80,47 +82,38 @@ import tipl.formats.TImgRO
     
 }
 object KVImg {
-  def ConvertTImg[T](sc: SparkContext, inImg: TImgRO, imType: Int)(implicit lm: ClassTag[T]) = {
-    val curImg: DTImg[T] = DTImg.ConvertTImg[T](sc,inImg, imType)
-    fromDTImg(curImg)
+  def ConvertTImg(sc: SparkContext, inImg: TImgRO, imType: Int) = {
+    val curImg = DTImg.ConvertTImg(sc,inImg, imType)
+    new KVImg(inImg,imType,DTImgOps.DTImgToKV(curImg))
   }
   
       /**
      * Transform the DTImg into a KVImg
      */
     def fromDTImg[T,V](inImg: DTImg[T])(implicit lm: ClassTag[T], gm: ClassTag[V]) = {
+
       val kvBase = DTImgOps.DTImgToKVStrict[T,V](inImg)
       new KVImg[V](inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(), kvBase);
 
     }
+    
+    def fromDTImgBlind(inImg: DTImg[_]) = inImg.getImageType() match {
+      	case TImgTools.IMAGETYPE_BOOL =>  new KVImg(inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(),DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Boolean]]]))
+      	case TImgTools.IMAGETYPE_CHAR => new KVImg(inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(),DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Byte]]]))
+      	case TImgTools.IMAGETYPE_SHORT => new KVImg(inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(),DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Short]]]))
+      	case TImgTools.IMAGETYPE_INT => new KVImg(inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(),DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Int]]]))
+      	case TImgTools.IMAGETYPE_LONG => new KVImg(inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(),DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Long]]]))
+      	case TImgTools.IMAGETYPE_FLOAT => new KVImg(inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(),DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Float]]]))
+      	case TImgTools.IMAGETYPE_DOUBLE => new KVImg(inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(),DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Double]]]))
+      	case m: Int => throw new IllegalArgumentException("Unknown type:"+m)
+     }
+      
     def FromRDD[T](objToMirror: TImgTools.HasDimensions, imageType: Int, wrappedImage: RDD[(D3int,T)])(implicit lm: ClassTag[T]) = {
       new KVImg[T](objToMirror,imageType,wrappedImage)
     }
-    /**
-     * converts everything we know about to a double
-     */
-    private[KVImg] def toDouble(inVal: Any,imType: Int): Double = imType match {
-              case TImgTools.IMAGETYPE_BOOL => if (inVal.asInstanceOf[Boolean]) 1.0 else 0.0
-              case TImgTools.IMAGETYPE_CHAR => inVal.asInstanceOf[Byte].doubleValue()
-              case TImgTools.IMAGETYPE_SHORT => inVal.asInstanceOf[Short].doubleValue()
-              case TImgTools.IMAGETYPE_INT => inVal.asInstanceOf[Int].doubleValue()
-              case TImgTools.IMAGETYPE_LONG => inVal.asInstanceOf[Long].doubleValue()
-              case TImgTools.IMAGETYPE_FLOAT => inVal.asInstanceOf[Float].doubleValue()
-              case TImgTools.IMAGETYPE_DOUBLE => inVal.asInstanceOf[Double]
-              case _ => throw new IllegalArgumentException(imType+" is not a known image type")
-    }
-    private[KVImg] def fromDouble(inVal: Double, outType: Int) = outType match {
-              case TImgTools.IMAGETYPE_BOOL => inVal>0
-              case TImgTools.IMAGETYPE_CHAR => inVal.byteValue
-              case TImgTools.IMAGETYPE_SHORT => inVal.shortValue
-              case TImgTools.IMAGETYPE_INT => inVal.intValue
-              case TImgTools.IMAGETYPE_LONG => inVal.longValue
-              case TImgTools.IMAGETYPE_FLOAT => inVal.floatValue
-              case TImgTools.IMAGETYPE_DOUBLE => inVal
-              case _ => throw new IllegalArgumentException(outType+" is not a known image type")
-    }
+
     private[KVImg] def makeConvFunc[T](inType: Int, outType: Int) = {
-      inVal: Any => fromDouble(toDouble(inVal,inType),outType).asInstanceOf[T]
+      inVal: Any => TypeMacros.fromDouble(TypeMacros.castEleToDouble(inVal,inType),outType).asInstanceOf[T]
     }
     
 }

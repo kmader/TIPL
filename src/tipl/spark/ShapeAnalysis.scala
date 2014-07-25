@@ -9,7 +9,7 @@ import tipl.formats.TImgRO
 import tipl.tests.TestPosFunctions
 import tipl.tools.{BaseTIPLPluginIn, GrayAnalysis, GrayVoxels}
 import tipl.util.{ArgumentParser, D3int, ITIPLPlugin, TIPLPluginManager, TImgTools}
-import tipl.spark.KVImgOps._
+import tipl.spark.TypeMacros._
 /**
  * A spark based code to perform shape analysis similarly to the code provided GrayAnalysis
  * @author mader

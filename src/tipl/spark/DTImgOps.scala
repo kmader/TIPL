@@ -13,7 +13,7 @@ import org.apache.spark.rdd.RDD
 import tipl.tools.BaseTIPLPluginIn
 import tipl.util.TImgTools
 import scala.reflect.ClassTag
-
+import org.apache.spark.api.java.JavaPairRDD
 
 /**
  * A collectiono of useful functions for DTImg classes to allow more complicated analyses
@@ -23,24 +23,8 @@ import scala.reflect.ClassTag
 @serializable object DTImgOps {
 
   	
-  	//val ff = fromName(TImgTools.IMAGETYPE_BOOL)
-  
-  
-  def exCT[V](inObj: V)(implicit lm: ClassTag[V]) = lm
-  /**
-   * Converts an imagetype integer into the appropriate classtag for DTImg objects
-   */
-  def asClassTag(imageType: Int) = imageType match {
-    
-        		case TImgTools.IMAGETYPE_BOOL => exCT(new Array[Boolean](0))
-       			case TImgTools.IMAGETYPE_CHAR => exCT(new Array[Char](0))
-       			case TImgTools.IMAGETYPE_SHORT => exCT(new Array[Short](0))
-       			case TImgTools.IMAGETYPE_INT => exCT(new Array[Int](0))
-       			case TImgTools.IMAGETYPE_LONG => exCT(new Array[Long](0))
-       			case TImgTools.IMAGETYPE_FLOAT =>exCT(new Array[Float](0))
-       			case TImgTools.IMAGETYPE_DOUBLE => exCT(new Array[Double](0))
-       			case _ => throw new IllegalArgumentException("Type Not Found:"+imageType+" "+TImgTools.getImageTypeName(imageType)) 
-        }
+
+
   def DTImgToKV(inImg: DTImg[_])  = {
     val imgType = inImg.getImageType
     inImg.getBaseImg.rdd.flatMap{
@@ -48,19 +32,11 @@ import scala.reflect.ClassTag
         val pos = cPoint._1
         val dim = cPoint._2.getDim
         val obj = cPoint._2.get
-        val outArr = imgType match {
-        		case TImgTools.IMAGETYPE_BOOL => obj.asInstanceOf[Array[Boolean]]
-       			case TImgTools.IMAGETYPE_CHAR => obj.asInstanceOf[Array[Char]]
-       			case TImgTools.IMAGETYPE_SHORT => obj.asInstanceOf[Array[Short]]
-       			case TImgTools.IMAGETYPE_INT => obj.asInstanceOf[Array[Int]]
-       			case TImgTools.IMAGETYPE_LONG => obj.asInstanceOf[Array[Long]]
-       			case TImgTools.IMAGETYPE_FLOAT => obj.asInstanceOf[Array[Float]]
-       			case TImgTools.IMAGETYPE_DOUBLE => obj.asInstanceOf[Array[Double]]
-       			case _ => throw new IllegalArgumentException("Type Not Found:"+imgType+" "+TImgTools.getImageTypeName(imgType)) 
-        }
+        val outArr = TypeMacros.castArr(obj,imgType)
         for(z<-0 until dim.z;y<- 0 until dim.y;x<-0 until dim.x) 
           yield (new D3int(pos.x+x,pos.y+y,pos.z+z),outArr((z*dim.y+y)*dim.x+x))
     }
+    //val onImg = TypeMacros.correctlyTypeDTImg(inImg)
   }
   def DTImgToKVStrict[T,V](inImg: DTImg[T]): RDD[(D3int,V)] = {
     DTImgToKV(inImg).mapValues{
@@ -115,6 +91,38 @@ import scala.reflect.ClassTag
     def spreadSlices(windSize: D3int) = {
       srd.spreadSlices(windSize)
     }
+
   }
+       /**
+     * Transform the DTImg into a KVImg
+     */
+  	import scala.util.Sorting.stableSort
+    def fromKVImg[T](inImg: KVImg[T])(implicit T: ClassTag[T]): DTImg[Array[T]] = {
+      val dim = inImg.getDim
+      val pos = inImg.getPos
+      val elSize = inImg.getElSize
+      val sliceSize = dim.x*dim.y
+      var rddObj = inImg.getBaseImg().map{posVal => ((posVal._1.z,(posVal._1.y - pos.y) * dim.x + posVal._1.x - pos.x),posVal._2)}
+      if(inImg.getBaseImg.count.toInt!=dim.prod) {
+        // fill in holes since voxels are missing
+        val allPix = rddObj.sparkContext.parallelize(0 until dim.z).flatMap{
+          cPoint => 
+            val emptySlice = new Array[T](sliceSize)
+            (Array.fill(sliceSize)(cPoint).zip(0 until sliceSize).zip(emptySlice))
+        }
+        val missingPixels = allPix.subtractByKey(rddObj)
+        rddObj = rddObj.union( missingPixels )
+      }
+      	val slices = rddObj.map{posVal => (new D3int(pos.x,pos.y,pos.z+posVal._1._1),(posVal._1._2,posVal._2))}.groupByKey
+      	val sslices = slices.map{
+      	imgVec => 
+      	  val sList = stableSort(imgVec._2.toList, (e1: (Int,T) ,e2: (Int,T)) => e1._1<e2._1).map{_._2}
+      	  (imgVec._1,new TImgBlock[Array[T]](sList,imgVec._1,dim))
+      	  }
+      
+      
+      DTImg.WrapRDD[Array[T]](inImg, JavaPairRDD.fromRDD(sslices),inImg.getImageType());
+
+    }
 }
 

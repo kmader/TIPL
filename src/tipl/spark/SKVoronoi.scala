@@ -12,7 +12,7 @@ import tipl.tools.{BaseTIPLPluginIO, BaseTIPLPluginIn}
 import tipl.util.{ArgumentParser, D3int, TImgTools}
 import scala.math.sqrt
 import tipl.util.TIPLGlobal
-import tipl.spark.KVImgOps._
+import tipl.spark.TypeMacros._
 import tipl.tools.IVoronoiTransform
 import tipl.formats.TImgRO.CanExport
 
