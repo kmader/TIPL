@@ -80,16 +80,15 @@ import tipl.formats.TImgRO
     
 }
 object KVImg {
-  def ConvertTImg(sc: SparkContext, inImg: TImgRO, imType: Int) = {
-    fromDTImg(DTImg.ConvertTImg(sc,inImg, imType))
+  def ConvertTImg[T](sc: SparkContext, inImg: TImgRO, imType: Int)(implicit lm: ClassTag[T]) = {
+    val curImg: DTImg[T] = DTImg.ConvertTImg[T](sc,inImg, imType)
+    fromDTImg(curImg)
   }
   
       /**
      * Transform the DTImg into a KVImg
      */
     def fromDTImg[T,V](inImg: DTImg[T])(implicit lm: ClassTag[T], gm: ClassTag[V]) = {
-      //val stp = new DTImg.SliceToPoints[T](inImg.getImageType())
-      //val kvBase = inImg.getBaseImg().flatMapToPair(stp)
       val kvBase = DTImgOps.DTImgToKVStrict[T,V](inImg)
       new KVImg[V](inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(), kvBase);
 

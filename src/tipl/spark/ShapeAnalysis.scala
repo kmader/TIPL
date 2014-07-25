@@ -9,7 +9,7 @@ import tipl.formats.TImgRO
 import tipl.tests.TestPosFunctions
 import tipl.tools.{BaseTIPLPluginIn, GrayAnalysis, GrayVoxels}
 import tipl.util.{ArgumentParser, D3int, ITIPLPlugin, TIPLPluginManager, TImgTools}
-
+import tipl.spark.KVImgOps._
 /**
  * A spark based code to perform shape analysis similarly to the code provided GrayAnalysis
  * @author mader
@@ -82,11 +82,7 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
   var labeledImage: KVImg[Long] = null
 
   override def LoadImages(inImages: Array[TImgRO]) = {
-    labeledImage = inImages(0) match {
-      case m: KVImg[_] => m.toKVLong
-      case m: DTImg[_] => KVImg.fromDTImg(m).toKVLong()
-      case m: TImgRO => KVImg.ConvertTImg(SparkGlobal.getContext(getPluginName()), m, TImgTools.IMAGETYPE_INT).toKVLong()
-    }
+    labeledImage = inImages(0).toKV.toKVLong
   }
 
   override def getInfo(request: String): Object = {

@@ -7,6 +7,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.PairRDDFunctions._
 import tipl.formats.PureFImage
+import tipl.formats.TImgRO
 import tipl.util.{D3int, TImgTools}
 import org.apache.spark.rdd.RDD
 import tipl.spark.KVImg
@@ -122,6 +123,7 @@ import scala.reflect.ClassTag
       srd.mapValues(coFun)
     }
   }
+  
   @serializable implicit class RichKVImg[A<: Number](ip: KVImg[A]) {
     val srd = ip.getBaseImg
       def +[B <: Number](imgB: KVImg[B]): KVImg[Double] = {
@@ -135,6 +137,17 @@ import scala.reflect.ClassTag
     	
     }
   }
+  
+  
+  @serializable implicit class RichTImgRO[T<: TImgRO](cImg: T) {
+    def toKV[V]()(implicit lm: ClassTag[V])= cImg match {
+      case m: KVImg[_] => m
+      case m: DTImg[V] => KVImg.fromDTImg(m)
+      case m: TImgRO => KVImg.ConvertTImg(SparkGlobal.getContext(), m, TImgTools.IMAGETYPE_INT)
+    }
+   
+  }
+  
     
   
 

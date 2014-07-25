@@ -12,6 +12,7 @@ import tipl.tools.{BaseTIPLPluginIO, BaseTIPLPluginIn}
 import tipl.util.{ArgumentParser, D3int, TImgTools}
 import scala.math.sqrt
 import tipl.util.TIPLGlobal
+import tipl.spark.KVImgOps._
 import tipl.tools.IVoronoiTransform
 import tipl.formats.TImgRO.CanExport
 
@@ -148,20 +149,14 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
     objDim=labelImage.getDim
     var maskImage = if (inImages.length > 1) inImages(1) else null
   
-    val labeledImage = (labelImage match {
-      case m: KVImg[_] => m.toKVLong
-      case m: DTImg[_] => KVImg.fromDTImg(m).toKVLong()
-      case m: TImgRO => KVImg.ConvertTImg(SparkGlobal.getContext(getPluginName()), m, TImgTools.IMAGETYPE_INT).toKVLong()
-    }).getBaseImg.partitionBy(partitioner)
+    val labeledImage = (labelImage.toKV.toKVLong).getBaseImg.partitionBy(partitioner)
 
     // any image filled with all negative distances
     val initialDistances = fillImage(labelImage, -1).getBaseImg
     val inMask = (ival: (D3int, Float)) => ival._2 > 0
     val toBoolean = (ival: Float) => true
     val maskedImage = (maskImage match {
-      case m: KVImg[_] => m.toKVFloat
-      case m: DTImg[_] => KVImg.fromDTImg(m).toKVFloat
-      case m: TImgRO => KVImg.ConvertTImg(SparkGlobal.getContext(getPluginName()), m, TImgTools.IMAGETYPE_INT).toKVFloat()
+      case m: TImgRO => m.toKV().toKV.toKVFloat
       case _ => fillImage(labelImage, 1)
     }).getBaseImg.filter(inMask).mapValues(toBoolean)
     if(TIPLGlobal.getDebug()) println("KSM-MaskedImage:\t" + maskedImage + "\t" + maskedImage.first)

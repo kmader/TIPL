@@ -12,6 +12,8 @@ import scala.collection.mutable.ArrayBuffer
 import org.apache.spark.rdd.RDD
 import tipl.tools.BaseTIPLPluginIn
 import tipl.util.TImgTools
+import scala.reflect.ClassTag
+
 
 /**
  * A collectiono of useful functions for DTImg classes to allow more complicated analyses
@@ -19,7 +21,27 @@ import tipl.util.TImgTools
  *
  */
 @serializable object DTImgOps {
-  def DTImgToKV[T](inImg: DTImg[T])  = {
+
+  	
+  	//val ff = fromName(TImgTools.IMAGETYPE_BOOL)
+  
+  
+  def exCT[V](inObj: V)(implicit lm: ClassTag[V]) = lm
+  /**
+   * Converts an imagetype integer into the appropriate classtag for DTImg objects
+   */
+  def asClassTag(imageType: Int) = imageType match {
+    
+        		case TImgTools.IMAGETYPE_BOOL => exCT(new Array[Boolean](0))
+       			case TImgTools.IMAGETYPE_CHAR => exCT(new Array[Char](0))
+       			case TImgTools.IMAGETYPE_SHORT => exCT(new Array[Short](0))
+       			case TImgTools.IMAGETYPE_INT => exCT(new Array[Int](0))
+       			case TImgTools.IMAGETYPE_LONG => exCT(new Array[Long](0))
+       			case TImgTools.IMAGETYPE_FLOAT =>exCT(new Array[Float](0))
+       			case TImgTools.IMAGETYPE_DOUBLE => exCT(new Array[Double](0))
+       			case _ => throw new IllegalArgumentException("Type Not Found:"+imageType+" "+TImgTools.getImageTypeName(imageType)) 
+        }
+  def DTImgToKV(inImg: DTImg[_])  = {
     val imgType = inImg.getImageType
     inImg.getBaseImg.rdd.flatMap{
       cPoint =>
@@ -36,12 +58,12 @@ import tipl.util.TImgTools
        			case TImgTools.IMAGETYPE_DOUBLE => obj.asInstanceOf[Array[Double]]
        			case _ => throw new IllegalArgumentException("Type Not Found:"+imgType+" "+TImgTools.getImageTypeName(imgType)) 
         }
-        for(z<-0 to dim.z;y<- 0 to dim.y;x<-0 to dim.x) 
+        for(z<-0 until dim.z;y<- 0 until dim.y;x<-0 until dim.x) 
           yield (new D3int(pos.x+x,pos.y+y,pos.z+z),outArr((z*dim.y+y)*dim.x+x))
     }
   }
   def DTImgToKVStrict[T,V](inImg: DTImg[T]): RDD[(D3int,V)] = {
-    DTImgToKV[T](inImg).mapValues{
+    DTImgToKV(inImg).mapValues{
       cValue => cValue.asInstanceOf[V]
     }
   }
