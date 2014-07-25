@@ -5,8 +5,7 @@ import tipl.formats.TImgRO
 import tipl.formats.TImg
 import tipl.tools.BaseTIPLPluginIn._
 import tipl.tools.VFilterScale
-import tipl.util.D3int
-import tipl.util.D3float
+
 import tipl.tools.FilterScale.filterGenerator
 import tipl.spark.SKVoronoi
 import tipl.spark.ShapeAnalysis

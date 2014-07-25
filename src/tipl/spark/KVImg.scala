@@ -83,13 +83,15 @@ object KVImg {
   def ConvertTImg(sc: SparkContext, inImg: TImgRO, imType: Int) = {
     fromDTImg(DTImg.ConvertTImg(sc,inImg, imType))
   }
+  
       /**
      * Transform the DTImg into a KVImg
      */
-    def fromDTImg[T,V](inImg: DTImg[T]) = {
-      val stp = new DTImg.SliceToPoints[T](inImg.getImageType())
-      val kvBase = inImg.getBaseImg().flatMapToPair(stp)
-      new KVImg[Number](inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(), kvBase.rdd);
+    def fromDTImg[T,V](inImg: DTImg[T])(implicit lm: ClassTag[T], gm: ClassTag[V]) = {
+      //val stp = new DTImg.SliceToPoints[T](inImg.getImageType())
+      //val kvBase = inImg.getBaseImg().flatMapToPair(stp)
+      val kvBase = DTImgOps.DTImgToKVStrict[T,V](inImg)
+      new KVImg[V](inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(), kvBase);
 
     }
     def FromRDD[T](objToMirror: TImgTools.HasDimensions, imageType: Int, wrappedImage: RDD[(D3int,T)])(implicit lm: ClassTag[T]) = {
