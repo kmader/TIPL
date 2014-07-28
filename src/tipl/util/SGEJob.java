@@ -122,22 +122,10 @@ public class SGEJob {
      */
     public static SGEJob runAsJob(final String className,
                                   final ArgumentParser p, final String prefix) {
-        // since the core count is needed for running the job
 
-        int coreCount = p.getOptionInt("sge:cores", 2, "Number of Cores to Use");
-        ArgumentParser subP = p.subArguments(prefix);
-        // make a synthetic argument containing the value
-        ArgumentList.TypedArgument<Integer> maxCores = new ArgumentList.TypedArgument<Integer>("@maxcores", "Max Cores is set by the job itself",
-                coreCount);
-        // jobs must also run headless
-        ArgumentList.TypedArgument<Boolean> headless = new ArgumentList.TypedArgument<Boolean>("@headless", "Job must run headless",
-                true);
-        // insert it into the parameter list
-        subP.putArg("@maxcores", maxCores);
-        subP.putArg("@headless", headless);
-
+    	final ArgumentParser subP = prepareSGEArguments(p,prefix);
         final SGEJob test = new SGEJob(p, prefix, "$JCMD&" + className
-                + subP.toString("&"));
+                + prepareSGEArguments(p,prefix).toString("&"));
         return test;
 
     }
@@ -152,9 +140,31 @@ public class SGEJob {
     public static SGEJob runScriptAsJob(final String scriptPath,
                                         final ArgumentParser p, final String prefix) {
         final SGEJob test = new SGEJob(p, prefix, "$TIPLCMD&" + scriptPath
-                + p.subArguments(prefix).toString("&"));
+                + prepareSGEArguments(p,prefix).toString("&"));
         return test;
 
+    }
+    /**
+     * Prepare the arguments for the script to be executed on the sge (moving the correct parameters to the correct place
+     * @param p
+     * @param prefix
+     * @return
+     */
+    private static ArgumentParser prepareSGEArguments(final ArgumentParser p,final String prefix) {
+        // since the core count is needed for running the job
+
+        int coreCount = p.getOptionInt(prefix+"cores", 2, "Number of Cores to Use");
+        ArgumentParser subP = p.subArguments(prefix);
+        // make a synthetic argument containing the value
+        ArgumentList.TypedArgument<Integer> maxCores = new ArgumentList.TypedArgument<Integer>("@maxcores", "Max Cores is set by the job itself",
+                coreCount);
+        // jobs must also run headless
+        ArgumentList.TypedArgument<Boolean> headless = new ArgumentList.TypedArgument<Boolean>("@headless", "Job must run headless",
+                true);
+        // insert it into the parameter list
+        subP.putArg("@maxcores", maxCores);
+        subP.putArg("@headless", headless);
+        return subP;
     }
 
     /**

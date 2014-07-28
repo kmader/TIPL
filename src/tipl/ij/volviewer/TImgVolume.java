@@ -24,6 +24,17 @@ public class TImgVolume extends Volume {
         super(control, vv, iTImg.getDim());
         inTImg = iTImg;
         control.zAspect = (float) (inTImg.getElSize().z / (0.5 * (inTImg.getElSize().x + inTImg.getElSize().y)));
+        if (Double.isNaN(control.zAspect)) {
+        	control.zAspect=1;
+        	System.err.println("Voxel sizes are not valid and causing meaningless aspect ratios in Z: "+inTImg.getElSize());
+        }
+	        
+        if (control.zAspect <=0.01f) {
+        	System.err.println("Voxel sizes are not valid and causing meaningless aspect ratios in Z: "+control.zAspect);
+        	control.zAspect = 0.01f;
+        }
+			
+	    
         // TODO Auto-generated constructor stub
     }
 

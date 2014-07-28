@@ -18,9 +18,9 @@ public final class ScalaPlugins {
 		@Override 
 		public ITIPLPlugin get() {
 			return new ShapeAnalysis();
+			
 		}
 	};
-	
 	
 	@TIPLPluginManager.PluginInfo(pluginType = "kVoronoi",
 			desc="Spark-based surface voronoi tesselation",

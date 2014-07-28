@@ -25,25 +25,38 @@ import tipl.util.TImgTools
 import tipl.util.TImgBlock
 import org.apache.spark.api.java.JavaPairRDD
 
+/** streaming functions
+ *  
+ */
+  import org.apache.spark.streaming.StreamingContext._
+  import org.apache.spark.streaming._
+  import org.apache.spark.streaming.dstream.InputDStream
+  import org.apache.spark.streaming.dstream.DStream
+
+
 /**
  * IOOps is a cover for all the functions related to reading in and writing out Images in Spark
  *  it is closely coupled to SparkStorage which then replaces the standard functions in TIPL with the Spark-version
  */
 object IOOps {
   /**
-   * Add the appropriate image types to the SparkContext
+   * Add the byte reading to the SparkContext
    */
   implicit class ImageFriendlySparkContext(sc: SparkContext) {
     val defMinPart = sc.defaultMinPartitions
     def tiffFolder(path: String)  = { // DTImg[U]
     		val rawImg = sc.newAPIHadoopFile(path, classOf[WholeTiffFileInputFormat], classOf[String], classOf[TSliceReader])
     		rawImg
-    			//	.map(pair => pair._2.toString).setName(path)
     }
     def byteFolder(path: String) = {
       sc.newAPIHadoopFile(path, classOf[WholeByteInputFormat], classOf[String], classOf[Array[Byte]])
     }
   }
+  
+
+
+
+  
   
  /** 
  *  Now the spark heavy classes linking Byte readers to Tiff Files
@@ -99,6 +112,18 @@ object IOOps {
       processSlices[Array[Double]](TImgTools.IMAGETYPE_DOUBLE,inObj => inObj.asInstanceOf[Array[Double]])
     }
     /**
+     * Read slices as a block of 2D objects instead of a 3D stack
+     */
+    def loadAs2D() = {
+      parseSlices[Array[Double]](srd,TImgTools.IMAGETYPE_DOUBLE,inObj => inObj.asInstanceOf[Array[Double]])._1
+    }
+    def loadAs2DLabels() = {
+      parseSlices[Array[Long]](srd,TImgTools.IMAGETYPE_LONG,inObj => inObj.asInstanceOf[Array[Long]])._1
+    }
+    def loadAs2DBinary() = {
+      parseSlices[Array[Boolean]](srd,TImgTools.IMAGETYPE_BOOL,inObj => inObj.asInstanceOf[Array[Boolean]])._1
+    }
+    /**
      * Automatically chooses the type based on the input image (lossless)
      */
     def load() = {
@@ -115,28 +140,99 @@ object IOOps {
       }
     }
     private[IOOps] def processSlices[A](asType: Int,transFcn: (Any => A)) = {
+      val (outRdd,firstImage) = parseSlices[A](srd,asType,transFcn)
+      val timgDim = new D3int(firstImage.getDim.x,firstImage.getDim.y,srd.count.toInt)
+      val efImg = TImgTools.MakeEditable(firstImage);
+      efImg.setDim(timgDim)
+      DTImg.WrapRDD[A](efImg,JavaPairRDD.fromRDD(outRdd),asType)
+    }
+    private[IOOps] def parseSlices[A](srdIn: RDD[(String,T)],asType: Int,transFcn: (Any => A)) = {
       TImgTools.isValidType(asType)
       // sort by file name and then remove the filename
-      val srdSorted = srd.sortByKey(true, srd.count.toInt).map(_._2)
+      val srdSorted = srdIn.sortByKey(true, srd.count.toInt).map(_._2).zipWithIndex
       // keep the first element for reference
-      val fst = srdSorted.first
-      val pos = fst.getPos
+      val fst = srdSorted.first._1
+      val spos = fst.getPos
       val dim = fst.getDim
-      val timgDim = new D3int(dim.x,dim.y,srdSorted.count.toInt)
-      val srdArr = srdSorted.
-      map(cval => cval.polyReadImage(asType))
-      val srdMixed = srdArr.zipWithIndex.map{
+      
+      val srdMixed = srdSorted.
+      map(cval => (cval._2,cval._1.polyReadImage(asType))).   
+      	map{
             cBnd => 
-              val cPos = new D3int(pos.x,pos.y,pos.z+cBnd._2.toInt)
-              (cPos,(cBnd._1,pos,dim))
+              val cPos = new D3int(spos.x,spos.y,spos.z+cBnd._1.toInt)
+              (cPos,(cBnd._2,cPos,dim))
           }
       
-      val outRdd = srdMixed.mapValues{
+      val outArr = srdMixed.mapValues{
+        cBnd =>
+          new TImgBlock[A](transFcn(cBnd._1),cBnd._2,cBnd._3)
+      }
+      (outArr,fst)
+      }
+    
+    }
+  
+  /**
+   * Streaming Code
+   */
+  
+      /**
+   * Add the byte reading and tiff file to the StreamingSparkContext
+   */
+  implicit class ImageFriendlyStreamingContext(ssc: StreamingContext) {
+
+    /**
+   * Create a input stream that monitors a Hadoop-compatible filesystem
+   * for new files and reads them as a byte stream. Files must be written to the
+   * monitored directory by "moving" them from another location within the same
+   * file system. File names starting with . are ignored.
+   * @param directory HDFS directory to monitor for new file
+   */
+	  def byteFolder(directory: String) = 
+	    ssc.fileStream[String, Array[Byte], WholeByteInputFormat](directory)
+	  
+	  def tiffFolder(directory: String) = 
+	    ssc.fileStream[String, TSliceReader, WholeTiffFileInputFormat](directory)
+
+  }
+  
+
+  /**
+   * Convert easily between sparkcontext and a streaming context
+   */
+  implicit class StreamingContextFromSpark(sc: SparkContext) {
+	  def toStreaming(itiming: Duration): StreamingContext = new StreamingContext(sc,itiming)
+	  def toStreaming(isecs: Long): StreamingContext = toStreaming(Seconds(isecs))
+  }
+  
+  
+    implicit class StreamSliceToDTImg[T <: TSliceReader](srd: DStream[(String,T)])(implicit lm: ClassTag[T])  {
+
+    def loadAsBinary() = {
+      processSlices[Array[Boolean]](TImgTools.IMAGETYPE_BOOL,inObj => inObj.asInstanceOf[Array[Boolean]])
+    }
+    def loadAsLabels() = {
+      processSlices[Array[Long]](TImgTools.IMAGETYPE_LONG,inObj => inObj.asInstanceOf[Array[Long]])
+    }
+    def loadAsValues() = {
+      processSlices[Array[Double]](TImgTools.IMAGETYPE_DOUBLE,inObj => inObj.asInstanceOf[Array[Double]])
+    }
+
+    private[IOOps] def processSlices[A](asType: Int,transFcn: (Any => A)) = {
+      TImgTools.isValidType(asType)
+      // keep everything since we do not know how much information is coming
+      srd.
+      mapValues{cval => 
+        (cval.polyReadImage(asType),cval.getPos(),cval.getDim())
+        }.mapValues{
         cBnd =>
           new TImgBlock[A](transFcn(cBnd._1),cBnd._2,cBnd._3)
       }
       
-      DTImg.WrapRDD[A](fst,JavaPairRDD.fromRDD(outRdd),asType)
       }
     }
+
+  
+  
+  
 }

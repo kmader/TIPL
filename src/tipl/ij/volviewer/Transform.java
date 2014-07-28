@@ -400,5 +400,11 @@ class Transform {
 
 	public void setZAspect(double zAspect) {
 		this.zAspect = zAspect;
+		// validate the zAspect
+		if (Double.isNaN(this.zAspect))
+	    	this.zAspect=1;
+		if (this.zAspect <=0.01f)
+			this.zAspect = 0.01f;
+	    
 	};
 }

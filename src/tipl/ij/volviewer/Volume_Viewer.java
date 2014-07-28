@@ -36,6 +36,7 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.ij.TImgToImagePlus;
 import tipl.util.ArgumentParser;
+import tipl.util.D3float;
 import tipl.util.ITIPLPlugin;
 import tipl.util.ITIPLPluginIn;
 import tipl.util.SGEJob;
@@ -292,6 +293,19 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 		assert (inImages.length > 0);
 		assert (inImages.length < 2);
 		internalImage = inImages[0];
+		D3float elSize = internalImage.getElSize();
+		double estXYsize = Math.sqrt(Math.pow(elSize.x,2)+Math.pow(elSize.y, 2))/Math.sqrt(2);
+		double estZsize = elSize.z ;
+		
+	    if (control.zAspect==1) {
+	    	if ((estXYsize>0) && (estZsize>0))
+	    		control.zAspect=1;
+	    	else 
+	    		control.zAspect=estZsize/estXYsize;
+	    }
+	    if (Double.isNaN(control.zAspect))
+	        control.zAspect=1;
+	    
 		load_image();
 	}
 
@@ -721,8 +735,10 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 	void setZAspect() {
 		gui.updateDistSlider();
 		tr.setZAspect(control.zAspect);
-		if (control.zAspect == 0)
+		if (control.zAspect <=0.01f)
 			control.zAspect = 0.01f;
+	    if (Double.isNaN(control.zAspect))
+	        control.zAspect=1;
 
 		cube.setTextPositions(control.scale, control.zAspect);
 	}
@@ -837,6 +853,8 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 				(int) paramVals[3], (int) paramVals[4]);
 		control.lutNr = (int) Math.min(4, Math.max(0, paramVals[5]));
 		control.zAspect = paramVals[6];
+		if (Double.isNaN(control.zAspect))
+	        control.zAspect=1;
 		control.sampling = (paramVals[7] > 0) ? paramVals[7] : 1;
 		control.dist = paramVals[8];
 		control.showAxes = ((int) paramVals[9] == 0) ? false : true;

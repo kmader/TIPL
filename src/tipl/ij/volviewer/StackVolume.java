@@ -53,8 +53,15 @@ public class StackVolume extends Volume {
                 control.zAspect = (double) (cal.pixelDepth / cal.pixelWidth);
         }
 
-        if (control.zAspect == 0)
-            control.zAspect = 1;
+        if (Double.isNaN(control.zAspect)) {
+        	control.zAspect=1;
+        	System.err.println("Voxel sizes are not valid and causing meaningless aspect ratios in Z: "+cal);
+        }
+	        
+        if (control.zAspect <=0.01f) {
+        	System.err.println("Voxel sizes are not valid and causing meaningless aspect ratios in Z: "+cal);
+        	control.zAspect = 0.01f;
+        }
     }
 
     @Override

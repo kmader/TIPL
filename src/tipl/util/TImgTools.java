@@ -1001,7 +1001,7 @@ public class TImgTools {
 	  *
 	  * @author mader
 	  */
-	 public static interface ChangesDimensions {
+	 public static interface ChangesDimensions extends HasDimensions {
 		 /**
 		  * add a line to the procedure log *
 		  */
@@ -1038,7 +1038,60 @@ public class TImgTools {
 		 public void setShortScaleFactor(float ssf);
 
 	 }
+	 /**
+	  * Make an editable dimensions object from a static one
+	  * @param inObj a static hasdimensions object
+	  * @return an editable changedimensions object
+	  */
+	 public static ChangesDimensions MakeEditable(final HasDimensions inObj) {
+		 return new ChangesDimensions() {
+			D3int dim = new D3int(inObj.getDim());
+			D3int pos = new D3int(inObj.getPos());
+			D3int offset = new D3int(inObj.getOffset());
+			D3float elSize = new D3float(inObj.getElSize());
+			String procLog = inObj.getProcLog();
+			
+			@Override
+			public D3int getDim() {return dim;}
 
+			@Override
+			public D3float getElSize() {return elSize;}
+
+			@Override
+			public D3int getOffset() {return offset;}
+
+			@Override
+			public D3int getPos() {return pos;}
+
+			@Override
+			public String getProcLog() {return procLog;}
+			float ssf = inObj.getShortScaleFactor();
+			@Override
+			public float getShortScaleFactor() {return ssf;}
+			
+			@Override
+			public String appendProcLog(String inData) {
+				procLog+="\n"+inData;
+				return procLog;
+			}
+
+			@Override
+			public void setDim(D3int inData) {dim=inData;}
+
+			@Override
+			public void setElSize(D3float inData) {elSize=inData;}
+
+			@Override
+			public void setOffset(D3int inData) {offset=inData;}
+
+			@Override
+			public void setPos(D3int inData) {pos=inData;}
+
+			@Override
+			public void setShortScaleFactor(float ssf) {this.ssf=ssf;}
+			 
+		 };
+	 }
 	 /**
 	  * put just the relevant dimension reading code in a seperate interface
 	  *
