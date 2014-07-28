@@ -18,9 +18,9 @@ public class Pic {
 
     BufferedImage image;
     byte[][][] volData3D = null;
-    float xd;
-    float yd;
-    float zd;
+    double xd;
+    double yd;
+    double zd;
     int xs = 10, ys = 14;
     int xo = xs;
     int yo_xy = 0;
@@ -42,7 +42,7 @@ public class Pic {
     private boolean isRendering = false;
     private int sub;
     private boolean isWaitingForRendering;
-    private float[] light;
+    private double[] light;
     private boolean lastReady;
     private boolean isRGB;
 
@@ -81,10 +81,10 @@ public class Pic {
         int nWidth = width - 2 * xs;
         int nHeight = height - 3 * ys;
 
-        float sy = nHeight / (float) my;
-        float sx = nWidth / (float) mx;
+        double sy = nHeight / (double) my;
+        double sx = nWidth / (double) mx;
 
-        float s = Math.max(sy, sx);
+        double s = Math.max(sy, sx);
         while (s * my > nHeight || s * mx > nWidth) {
             s *= 0.99;
         }
@@ -102,10 +102,10 @@ public class Pic {
         int nWidth = width - 2 * xs;
         int nHeight = height - 3 * ys;
 
-        float sy = nHeight / (float) my;
-        float sx = nWidth / (float) mx;
+        double sy = nHeight / (double) my;
+        double sx = nWidth / (double) mx;
 
-        float s = Math.max(sy, sx);
+        double s = Math.max(sy, sx);
         while (s * my > nHeight || s * mx > nWidth) {
             s *= 0.99;
         }
@@ -114,9 +114,9 @@ public class Pic {
         int Wy = (int) (vv.vol.heightV * s);
         int Wz = (int) (vv.vol.depthV * Math.abs(control.zAspect) * s);
 
-        xd = vv.vol.widthV / (float) Wx;
-        yd = vv.vol.heightV / (float) Wy;
-        zd = vv.vol.depthV / (float) Wz;
+        xd = vv.vol.widthV / (double) Wx;
+        yd = vv.vol.heightV / (double) Wy;
+        zd = vv.vol.depthV / (double) Wz;
 
         Color color = UIManager.getColor("Panel.background");
         int c = color.getRGB();
@@ -246,10 +246,10 @@ public class Pic {
         int nWidth = width - 2 * xs;
         int nHeight = height - 3 * ys;
 
-        float sy = nHeight / (float) my;
-        float sx = nWidth / (float) mx;
+        double sy = nHeight / (double) my;
+        double sx = nWidth / (double) mx;
 
-        float s = Math.max(sy, sx);
+        double s = Math.max(sy, sx);
 
         while (s * my > nHeight || s * mx > nWidth) {
             s *= 0.99;
@@ -258,9 +258,9 @@ public class Pic {
         int Wx = (int) (vv.vol.widthV * s);
         int Wy = (int) (vv.vol.heightV * s);
         int Wz = (int) (vv.vol.depthV * Math.abs(control.zAspect) * s);
-        xd = vv.vol.widthV / (float) Wx;
-        yd = vv.vol.heightV / (float) Wy;
-        zd = vv.vol.depthV / (float) Wz;
+        xd = vv.vol.widthV / (double) Wx;
+        yd = vv.vol.heightV / (double) Wy;
+        zd = vv.vol.depthV / (double) Wz;
         yo_yz = ys + Wy;
         yo_xz = 2 * ys + Wy + Wz;
 
@@ -332,7 +332,7 @@ public class Pic {
         int ySmin = boundsXY[2];
         int ySmax = boundsXY[3];
 
-        float[] vecScreen = new float[3];
+        double[] vecScreen = new double[3];
 
         if (!control.isRGB || control.lutNr != 0) {
             volData3D = vv.vol.data3D[0];
@@ -340,27 +340,27 @@ public class Pic {
             vecScreen[1] = ySmin;
             vecScreen[0] = xSmin;
 
-            float[] vecVolume = vv.trScreen2Volume(vecScreen);
-            float xV00 = vecVolume[0], yV00 = vecVolume[1], zV00 = vecVolume[2];
+            double[] vecVolume = vv.trScreen2Volume(vecScreen);
+            double xV00 = vecVolume[0], yV00 = vecVolume[1], zV00 = vecVolume[2];
 
             vecScreen[0] = xSmin + 1;
             vecVolume = vv.trScreen2Volume(vecScreen);
-            float xV01 = vecVolume[0], yV01 = vecVolume[1], zV01 = vecVolume[2];
+            double xV01 = vecVolume[0], yV01 = vecVolume[1], zV01 = vecVolume[2];
 
             vecScreen[0] = xSmin;
             vecScreen[1] = ySmin + 1;
             vecVolume = vv.trScreen2Volume(vecScreen);
-            float xV10 = vecVolume[0], yV10 = vecVolume[1], zV10 = vecVolume[2];
+            double xV10 = vecVolume[0], yV10 = vecVolume[1], zV10 = vecVolume[2];
 
-            float dxVx = xV01 - xV00, dyVx = yV01 - yV00, dzVx = zV01 - zV00;
-            float dxVy = xV10 - xV00, dyVy = yV10 - yV00, dzVy = zV10 - zV00;
-            float xV_ = xV00, yV_ = yV00, zV_ = zV00;
+            double dxVx = xV01 - xV00, dyVx = yV01 - yV00, dzVx = zV01 - zV00;
+            double dxVy = xV10 - xV00, dyVy = yV10 - yV00, dzVy = zV10 - zV00;
+            double xV_ = xV00, yV_ = yV00, zV_ = zV00;
 
             int[] colors = vv.lookupTable.colors;
             for (int yS = ySmin; yS <= ySmax; yS++) {
-                float xV = xV_;
-                float yV = yV_;
-                float zV = zV_;
+                double xV = xV_;
+                double yV = yV_;
+                double zV = zV_;
                 for (int xS = xSmin; xS <= xSmax; xS++) {
                     if (xV >= 0 && xV < vv.vol.widthV && yV >= 0 && yV < vv.vol.heightV && zV >= 0 && zV < vv.vol.depthV) {
                         int val = interpolation.get(volData3D, zV, yV, xV);
@@ -382,10 +382,10 @@ public class Pic {
                 for (int xS = xSmin; xS <= xSmax; xS++) {
                     vecScreen[0] = xS;
 
-                    float[] xyzV = vv.trScreen2Volume(vecScreen);
-                    float xV = xyzV[0];
-                    float yV = xyzV[1];
-                    float zV = xyzV[2];
+                    double[] xyzV = vv.trScreen2Volume(vecScreen);
+                    double xV = xyzV[0];
+                    double yV = xyzV[1];
+                    double zV = xyzV[2];
 
                     if (xV >= 0 && xV < vv.vol.widthV && yV >= 0 && yV < vv.vol.heightV && zV >= 0 && zV < vv.vol.depthV) {
                         int r = vv.lookupTable.lut[interpolation.get(vv.vol.data3D[1], zV, yV, xV)][0];
@@ -409,7 +409,7 @@ public class Pic {
         int ySmin = boundsXY[2];
         int ySmax = boundsXY[3];
 
-        float[] vS = new float[3];
+        double[] vS = new double[3];
         int widthS = control.windowWidthImageRegion;
 
         if (control.isRGB && control.lutNr == 0) {
@@ -426,22 +426,22 @@ public class Pic {
                         int pos = y * widthS + x;
                         vS[0] = x;
 
-                        float[] xyzV = vv.trScreen2Volume(vS);
-                        float xV = xyzV[0];
-                        float yV = xyzV[1];
-                        float zV = xyzV[2];
+                        double[] xyzV = vv.trScreen2Volume(vS);
+                        double xV = xyzV[0];
+                        double yV = xyzV[1];
+                        double zV = xyzV[2];
 
                         if (xV >= 0 && xV <= vv.vol.widthV && yV >= 0 && yV <= vv.vol.heightV && zV >= 0 && zV <= vv.vol.depthV)
                             pixels[pos] |= 0xFF000000 | (interpolation.get(volData3D, zV, yV, xV) << shift);
                     }
                 }
 
-                float[] boundsXYZ = getXYZRenderingBoundsVolume();
+                double[] boundsXYZ = getXYZRenderingBoundsVolume();
                 xSmin = (int) boundsXYZ[0];
                 xSmax = (int) boundsXYZ[1];
                 ySmin = (int) boundsXYZ[2];
                 ySmax = (int) boundsXYZ[3];
-                float zSmax = boundsXYZ[5];
+                double zSmax = boundsXYZ[5];
 
                 for (int y = ySmin; y < ySmax; y++) {
 
@@ -453,23 +453,23 @@ public class Pic {
                                 vS[1] = y;
                                 vS[2] = control.scaledDist + 1; // z
 
-                                float[] xyzV = vv.trScreen2Volume(vS);
-                                float xV = xyzV[0];
-                                float yV = xyzV[1];
-                                float zV = xyzV[2];
+                                double[] xyzV = vv.trScreen2Volume(vS);
+                                double xV = xyzV[0];
+                                double yV = xyzV[1];
+                                double zV = xyzV[2];
 
                                 vS[2] = zSmax; // z
                                 xyzV = vv.trScreen2Volume(vS);
-                                float xV2 = xyzV[0];
-                                float yV2 = xyzV[1];
-                                float zV2 = xyzV[2];
+                                double xV2 = xyzV[0];
+                                double yV2 = xyzV[1];
+                                double zV2 = xyzV[2];
 
-                                float nd = zSmax - (control.scaledDist + 1);
+                                double nd = zSmax - (control.scaledDist + 1);
 
-                                float nd1 = 1 / nd;
-                                float dx = (xV2 - xV) * nd1;
-                                float dy = (yV2 - yV) * nd1;
-                                float dz = (zV2 - zV) * nd1;
+                                double nd1 = 1 / nd;
+                                double dx = (xV2 - xV) * nd1;
+                                double dy = (yV2 - yV) * nd1;
+                                double dz = (zV2 - zV) * nd1;
 
                                 // check if we need to follow the ray
                                 if ((xV < 0 && dx < 0) || (xV > vv.vol.widthV && dx > 0) || (yV < 0 && dy < 0) ||
@@ -502,10 +502,10 @@ public class Pic {
                     int pos = y * widthS + x;
                     vS[0] = x;
 
-                    float[] xyzV = vv.trScreen2Volume(vS);
-                    float xV = xyzV[0];
-                    float yV = xyzV[1];
-                    float zV = xyzV[2];
+                    double[] xyzV = vv.trScreen2Volume(vS);
+                    double xV = xyzV[0];
+                    double yV = xyzV[1];
+                    double zV = xyzV[2];
 
                     if (xV >= 0 && xV <= vv.vol.widthV && yV >= 0 && yV <= vv.vol.heightV && zV >= 0 && zV <= vv.vol.depthV) {
                         pixels[pos] = vv.lookupTable.colors[interpolation.get(volData3D, zV, yV, xV)];
@@ -513,12 +513,12 @@ public class Pic {
                 }
             }
 
-            float[] boundsXYZ = getXYZRenderingBoundsVolume();
+            double[] boundsXYZ = getXYZRenderingBoundsVolume();
             xSmin = (int) boundsXYZ[0];
             xSmax = (int) boundsXYZ[1];
             ySmin = (int) boundsXYZ[2];
             ySmax = (int) boundsXYZ[3];
-            float zSmax = boundsXYZ[5];
+            double zSmax = boundsXYZ[5];
 
             for (int y = ySmin; y <= ySmax; y++) {
                 vS[1] = y;
@@ -529,19 +529,19 @@ public class Pic {
                             vS[0] = x;
                             vS[2] = control.scaledDist + 1;
 
-                            float[] xyzV = vv.trScreen2Volume(vS);
-                            float xV = xyzV[0];
-                            float yV = xyzV[1];
-                            float zV = xyzV[2];
+                            double[] xyzV = vv.trScreen2Volume(vS);
+                            double xV = xyzV[0];
+                            double yV = xyzV[1];
+                            double zV = xyzV[2];
 
                             vS[2] = zSmax;
                             xyzV = vv.trScreen2Volume(vS);
 
-                            float nd = zSmax - (control.scaledDist + 1);
-                            float nd1 = 1 / nd;
-                            float dx = (xyzV[0] - xV) * nd1;
-                            float dy = (xyzV[1] - yV) * nd1;
-                            float dz = (xyzV[2] - zV) * nd1;
+                            double nd = zSmax - (control.scaledDist + 1);
+                            double nd1 = 1 / nd;
+                            double dx = (xyzV[0] - xV) * nd1;
+                            double dy = (xyzV[1] - yV) * nd1;
+                            double dz = (xyzV[2] - zV) * nd1;
 
                             // check if we need to follow the ray
                             if ((xV < 0 && dx < 0) || (xV > vv.vol.widthV && dx > 0) || (yV < 0 && dy < 0) ||
@@ -586,21 +586,21 @@ public class Pic {
         lightGreen = control.lightGreen;
         lightBlue = control.lightBlue;
 
-        float[] boundsXYZ = getXYZRenderingBoundsVolume();
+        double[] boundsXYZ = getXYZRenderingBoundsVolume();
         int xSmin = (int) boundsXYZ[0];
         int xSmax = (int) boundsXYZ[1];
         int ySmin = (int) boundsXYZ[2];
         int ySmax = (int) boundsXYZ[3];
-        float zSmin = boundsXYZ[4];
-        float zSmax = boundsXYZ[5];
+        double zSmin = boundsXYZ[4];
+        double zSmax = boundsXYZ[5];
 
-        float[] xyzV1 = vv.trScreen2Vol(0, 0, 0);
-        float[] xyzV2 = vv.trScreen2Vol(0, 0, control.scale);
-        float dxV = xyzV2[0] - xyzV1[0];
-        float dyV = xyzV2[1] - xyzV1[1];
-        float dzV = xyzV2[2] - xyzV1[2];
+        double[] xyzV1 = vv.trScreen2Vol(0, 0, 0);
+        double[] xyzV2 = vv.trScreen2Vol(0, 0, control.scale);
+        double dxV = xyzV2[0] - xyzV1[0];
+        double dyV = xyzV2[1] - xyzV1[1];
+        double dzV = xyzV2[2] - xyzV1[2];
 
-        float sample = control.sampling;
+        double sample = control.sampling;
         if (sub == 3)
             sample = 1;
         if (sub > 3)
@@ -614,7 +614,7 @@ public class Pic {
 
         if (control.alphaMode == Control.ALPHA1) {
             for (int i = 0; i < vv.a1_R.length; i++) {
-                float a = (vv.tf_a1.a1[i]) / 255f;
+                double a = (vv.tf_a1.a1[i]) / 255f;
                 if (a < 0) a = 0;
                 a = a * a;
                 vv.a1_R[i] = Math.min(1, a / sample);
@@ -622,7 +622,7 @@ public class Pic {
         } else if (control.alphaMode == Control.ALPHA2) {
             for (int x = 0; x < 256; x++) {
                 for (int y = 0; y < 128; y++) {
-                    float a = (vv.tf_a2.a2[x][y]) / 255f;
+                    double a = (vv.tf_a2.a2[x][y]) / 255f;
                     if (a < 0) a = 0;
                     a = a * a;
                     vv.a2_R[x][y] = Math.min(1, a / sample);
@@ -631,7 +631,7 @@ public class Pic {
         } else if (control.alphaMode == Control.ALPHA3) {
             for (int x = 0; x < 256; x++) {
                 for (int y = 0; y < 128; y++) {
-                    float a = (vv.tf_a3.a3[x][y]) / 255f;
+                    double a = (vv.tf_a3.a3[x][y]) / 255f;
                     if (a < 0) a = 0;
                     a = a * a;
                     vv.a3_R[x][y] = Math.min(1, a / sample);
@@ -673,9 +673,9 @@ public class Pic {
             int y = y_ - height / 2;
             for (int x_ = 0; x_ < width; x_++) {
                 int x = x_ - width / 2;
-                float d = (float) Math.sqrt(x * x + y * y);
+                double d = (double) Math.sqrt(x * x + y * y);
                 if (d <= rad + 1) {
-                    float z = d - rad;
+                    double z = d - rad;
                     int alpha = 255;
                     if (d > rad) {
                         alpha = (int) ((1 - z) * 255);
@@ -683,32 +683,32 @@ public class Pic {
                     int valR = 64, valG = 64, valB = 64;
 
                     if (control.useLight) {
-                        float[] n = new float[3];
+                        double[] n = new double[3];
                         n[0] = x;
                         n[1] = y;
                         n[2] = z;
-                        float lenN = (float) (1 / Math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]));
+                        double lenN = (double) (1 / Math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]));
                         n[0] *= lenN;
                         n[1] *= lenN;
                         n[2] *= lenN;
 
                         // Reflexion 2*(N*L)*N - L
-                        float sp = n[0] * light[0] + n[1] * light[1] + n[2] * light[2];  // scalar product sp = N*L
-                        float[] r = new float[3];
+                        double sp = n[0] * light[0] + n[1] * light[1] + n[2] * light[2];  // scalar product sp = N*L
+                        double[] r = new double[3];
                         r[0] = 2 * sp * n[0] - light[0];
                         r[1] = 2 * sp * n[1] - light[1];
                         r[2] = 2 * sp * n[2] - light[2];
 
-                        float diffuse = n[0] * light[0] + n[1] * light[1] + n[2] * light[2];
+                        double diffuse = n[0] * light[0] + n[1] * light[1] + n[2] * light[2];
 
                         // view
-                        float[] v = new float[3];
+                        double[] v = new double[3];
                         v[2] = -1;
                         // specular
-                        float spec = Math.max(0, r[2] * v[2]);
-                        spec = (float) (Math.pow(spec, control.shineValue) * ((control.shineValue + 2) / (2 * Math.PI)));
+                        double spec = Math.max(0, r[2] * v[2]);
+                        spec = (double) (Math.pow(spec, control.shineValue) * ((control.shineValue + 2) / (2 * Math.PI)));
 
-                        float lightFactor = control.ambientValue + diffuse * control.diffuseValue + spec * control.specularValue;
+                        double lightFactor = control.ambientValue + diffuse * control.diffuseValue + spec * control.specularValue;
                         valR = (int) Math.min(255, Math.max(0, 64 + lightRed * lightFactor));
                         valG = (int) Math.min(255, Math.max(0, 64 + lightGreen * lightFactor));
                         valB = (int) Math.min(255, Math.max(0, 64 + lightBlue * lightFactor));
@@ -728,7 +728,7 @@ public class Pic {
         if (control.LOG) System.out.println("render LED");
 
         // light
-        float[] lightLED = {-0.7f, -0.7f, 0.1f};
+        double[] lightLED = {-0.7f, -0.7f, 0.1f};
         int ledRed = 220;
         int ledGreen = 80;
         int ledBlue = 40;
@@ -743,39 +743,39 @@ public class Pic {
             int y = y_ - height / 2;
             for (int x_ = 0; x_ < width; x_++) {
                 int x = x_ - width / 2;
-                float d = (float) Math.sqrt(x * x + y * y);
+                double d = (double) Math.sqrt(x * x + y * y);
                 if (d <= rad + 1) {
-                    float z = d - rad;
+                    double z = d - rad;
                     int alpha = 255;
                     if (d > rad)
                         alpha = (int) ((1 - z) * 255);
 
-                    float[] n = new float[3];
+                    double[] n = new double[3];
                     n[0] = x;
                     n[1] = y;
                     n[2] = z;
-                    float lenN = (float) (1 / Math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]));
+                    double lenN = (double) (1 / Math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]));
                     n[0] *= lenN;
                     n[1] *= lenN;
                     n[2] *= lenN;
 
                     // Reflexion 2*(N*L)*N - L
-                    float sp = n[0] * lightLED[0] + n[1] * lightLED[1] + n[2] * lightLED[2];  // scalar product sp = N*L
-                    float[] r = new float[3];
+                    double sp = n[0] * lightLED[0] + n[1] * lightLED[1] + n[2] * lightLED[2];  // scalar product sp = N*L
+                    double[] r = new double[3];
                     r[0] = 2 * sp * n[0] - lightLED[0];
                     r[1] = 2 * sp * n[1] - lightLED[1];
                     r[2] = 2 * sp * n[2] - lightLED[2];
 
-                    float diffuse = n[0] * lightLED[0] + n[1] * lightLED[1] + n[2] * lightLED[2];
+                    double diffuse = n[0] * lightLED[0] + n[1] * lightLED[1] + n[2] * lightLED[2];
 
                     // view
-                    float[] v = new float[3];
+                    double[] v = new double[3];
                     v[2] = -1;
                     // specular
-                    float spec = Math.max(0, r[2] * v[2]);
-                    spec = (float) (Math.pow(spec, 6) * ((6 + 2) / (2 * Math.PI)));
+                    double spec = Math.max(0, r[2] * v[2]);
+                    spec = (double) (Math.pow(spec, 6) * ((6 + 2) / (2 * Math.PI)));
 
-                    float lightFactor = 1f + diffuse * 0.5f + 2f * spec;
+                    double lightFactor = 1f + diffuse * 0.5f + 2f * spec;
                     int valR = (int) Math.min(255, Math.max(0, ledRed * lightFactor));
                     int valG = (int) Math.min(255, Math.max(0, ledGreen * lightFactor));
                     int valB = (int) Math.min(255, Math.max(0, ledBlue * lightFactor));
@@ -787,16 +787,16 @@ public class Pic {
         updateImage();
     }
 
-    float[] getXYZRenderingBoundsVolume() {
+    double[] getXYZRenderingBoundsVolume() {
 
         vv.cube.findIntersections(control.scaledDist);
-        float[][] iS = vv.cube.getCorners();
+        double[][] iS = vv.cube.getCorners();
 
-        float[] xyzS = vv.trVolume2Screen(iS[0]);
-        float xi = xyzS[0];
-        float yi = xyzS[1];
-        float zi = xyzS[2];
-        float xMin = xi, xMax = xi, yMin = yi, yMax = yi, zMin = zi, zMax = zi;
+        double[] xyzS = vv.trVolume2Screen(iS[0]);
+        double xi = xyzS[0];
+        double yi = xyzS[1];
+        double zi = xyzS[2];
+        double xMin = xi, xMax = xi, yMin = yi, yMax = yi, zMin = zi, zMax = zi;
 
         for (int i = 1; i < 8; i++) {
             xyzS = vv.trVolume2Screen(iS[i]);
@@ -821,15 +821,15 @@ public class Pic {
         if (control.scaledDist > zMin)
             zMin = control.scaledDist;
 
-        float[] xyBounds = {xMin, xMax, yMin, yMax, zMin, zMax};
+        double[] xyBounds = {xMin, xMax, yMin, yMax, zMin, zMax};
         return xyBounds;
     }
 
     int[] getXYRenderingBoundsSlice() {
 
         vv.cube.findIntersections(control.scaledDist);
-        float[][] iS = vv.cube.getInterSections();
-        float[] xyzS = vv.trVolume2Screen(iS[0]);
+        double[][] iS = vv.cube.getInterSections();
+        double[] xyzS = vv.trVolume2Screen(iS[0]);
 
         int[] x = new int[6];
         int[] y = new int[6];
@@ -928,10 +928,10 @@ public class Pic {
     private class RenderCalculations extends SwingWorker<Void, Void> {
 
         private int sub, nd, xSMin, xSMax, ySMin, ySMax;
-        private float dxV, dyV, dzV, zSMin;
+        private double dxV, dyV, dzV, zSMin;
 
-        public RenderCalculations(int sub, int nd, float dxV, float dyV, float dzV,
-                                  int xSMin, int xSMax, int ySMin, int ySMax, float zSMin) {
+        public RenderCalculations(int sub, int nd, double dxV, double dyV, double dzV,
+                                  int xSMin, int xSMax, int ySMin, int ySMax, double zSMin) {
             this.sub = sub;
             this.nd = nd;
             this.dxV = dxV;
@@ -985,15 +985,15 @@ public class Pic {
             int s_2 = sub / 2;
 
             // Startpunkt xSMin ySMin zSMin (tiefster Punkt) in Screenkoordinaten
-            float[] xyzV = vv.trScreen2Vol(xSMin + s_2, ySMin + s_2, zSMin);
-            float x0V = xyzV[0], y0V = xyzV[1], z0V = xyzV[2];
+            double[] xyzV = vv.trScreen2Vol(xSMin + s_2, ySMin + s_2, zSMin);
+            double x0V = xyzV[0], y0V = xyzV[1], z0V = xyzV[2];
 
             // inkrementelle Aenderung in Volumenkoordinaten
             xyzV = vv.trScreen2Vol(xSMin + s_2 + 1, ySMin + s_2, zSMin);
-            float dxVx = xyzV[0] - x0V, dyVx = xyzV[1] - y0V, dzVx = xyzV[2] - z0V;
+            double dxVx = xyzV[0] - x0V, dyVx = xyzV[1] - y0V, dzVx = xyzV[2] - z0V;
 
             xyzV = vv.trScreen2Vol(xSMin + s_2, ySMin + s_2 + 1, zSMin);
-            float dxVy = xyzV[0] - x0V, dyVy = xyzV[1] - y0V, dzVy = xyzV[2] - z0V;
+            double dxVy = xyzV[0] - x0V, dyVy = xyzV[1] - y0V, dzVy = xyzV[2] - z0V;
 
 
             for (int yS = ySMin; yS < ySMax; yS++) {
@@ -1003,10 +1003,10 @@ public class Pic {
                         if (yS % sub == 0 && xS % sub == 0) {
                             boolean hasBeenInTheVolume = false;
 
-                            float rand = (float) (-Math.random());
-                            float xV = x0V + j * dxVx + rand * dxV;
-                            float yV = y0V + j * dyVx + rand * dyV;
-                            float zV = z0V + j * dzVx + rand * dzV;
+                            double rand = (double) (-Math.random());
+                            double xV = x0V + j * dxVx + rand * dxV;
+                            double yV = y0V + j * dyVx + rand * dyV;
+                            double zV = z0V + j * dzVx + rand * dzV;
 
                             int ns = 0;        // check where to start rendering
                             if (xV < 0)
@@ -1032,7 +1032,7 @@ public class Pic {
                             yV += ns * dyV;
                             zV += ns * dzV;
 
-                            float valR = 0, valG = 0, valB = 0, nx = 0, ny = 0, nz = 0, a, aNext = 1, sumA = 1;
+                            double valR = 0, valG = 0, valB = 0, nx = 0, ny = 0, nz = 0, a, aNext = 1, sumA = 1;
                             int valProj = 0, mean = 0, diff = 0, rMax = 0, gMax = 0, bMax = 0, val;
                             int[] actLut = null;
 
@@ -1083,7 +1083,7 @@ public class Pic {
                                     }
 
                                     if (control.renderMode == Control.VOLUME) {
-                                        float an = a * aNext;
+                                        double an = a * aNext;
                                         valR += an * r;
                                         valG += an * g;
                                         valB += an * b;
@@ -1132,38 +1132,38 @@ public class Pic {
                                 if (alpha > 0) {
                                     if (control.useLight) {
                                         // Oberflaechen Normalen-Vektor
-                                        float[] xyz0 = vv.trVolume2Screen(0, 0, 0);
-                                        float[] xyz = vv.trVolume2Screen(nx / control.scale, ny / control.scale, nz / (control.zAspect * control.scale));
+                                        double[] xyz0 = vv.trVolume2Screen(0, 0, 0);
+                                        double[] xyz = vv.trVolume2Screen(nx / control.scale, ny / control.scale, nz / (control.zAspect * control.scale));
 
-                                        float[] n = new float[3];
+                                        double[] n = new double[3];
                                         n[0] = xyz[0] - xyz0[0];
                                         n[1] = xyz[1] - xyz0[1];
                                         n[2] = xyz[2] - xyz0[2];
 
-                                        float lenN = (n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
+                                        double lenN = (n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
                                         if (lenN > 0) {
-                                            lenN = (float) (1 / Math.sqrt(lenN));
+                                            lenN = (double) (1 / Math.sqrt(lenN));
                                             n[0] *= lenN;
                                             n[1] *= lenN;
                                             n[2] *= lenN;
                                         }
 
-                                        float diffuse = (n[0] * light[0] + n[1] * light[1] + n[2] * light[2]);
+                                        double diffuse = (n[0] * light[0] + n[1] * light[1] + n[2] * light[2]);
 
                                         // specular // Reflexion 2*(N*L)*N - L
-                                        float sp = 2 * (n[0] * light[0] + n[1] * light[1] + n[2] * light[2]);  // scalar product sp = 2*N*L
-                                        //float[] r = new float[3];
+                                        double sp = 2 * (n[0] * light[0] + n[1] * light[1] + n[2] * light[2]);  // scalar product sp = 2*N*L
+                                        //double[] r = new double[3];
                                         //r[0] = sp*n[0] - light[0];
                                         //r[1] = sp*n[1] - light[1];
                                         //r[2] = sp*n[2] - light[2];
 
-                                        //float[] v = new float[3]; // view
+                                        //double[] v = new double[3]; // view
                                         //v[2] = 1;
-                                        //float spec = Math.max(0, r[0]*v[0] + r[1]*v[1] + r[2]*v[2]);
-                                        float spec = Math.max(0, (sp * n[2] - light[2]));
-                                        spec = (float) (Math.pow(spec, control.shineValue) * ((control.shineValue + 2) / (2 * Math.PI)));
+                                        //double spec = Math.max(0, r[0]*v[0] + r[1]*v[1] + r[2]*v[2]);
+                                        double spec = Math.max(0, (sp * n[2] - light[2]));
+                                        spec = (double) (Math.pow(spec, control.shineValue) * ((control.shineValue + 2) / (2 * Math.PI)));
 
-                                        float lightFactor = control.ambientValue + diffuse * control.diffuseValue + spec * control.specularValue;
+                                        double lightFactor = control.ambientValue + diffuse * control.diffuseValue + spec * control.specularValue;
                                         valR = (int) Math.min(255, Math.max(0, control.objectLightValue * valR + lightRed * lightFactor));
                                         valG = (int) Math.min(255, Math.max(0, control.objectLightValue * valG + lightGreen * lightFactor));
                                         valB = (int) Math.min(255, Math.max(0, control.objectLightValue * valB + lightBlue * lightFactor));

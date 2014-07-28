@@ -26,7 +26,7 @@ public class TFalpha1 extends JPanel implements MouseListener, MouseMotionListen
 	private Control control;
 	private Volume vol;
 
-	private final float[] alpha1 = new float[256];
+	private final double[] alpha1 = new double[256];
 	final int[] a1 = new int[256];
 	
 	private int alphaOffset = 0;
@@ -68,30 +68,30 @@ public class TFalpha1 extends JPanel implements MouseListener, MouseMotionListen
 
 	public void setAlphaAuto() {
 
-		float max1 = 0; //, max2 = 0; 
+		double max1 = 0; //, max2 = 0; 
 		for (int i = 0; i < vol.histVal.length; i++) { // find the max / modal value
 			int val = vol.histVal[i];
 			if (val > max1) 
 				max1 = val;
 		}
 
-		float sum = 0;
+		double sum = 0;
 		for (int x = 0; x < 256; x++) { // norm the histogram, store in alpha1D
-			float val = (float) (1 - 1.2*Math.pow(vol.histVal[x]/max1, 0.3));
+			double val = (double) (1 - 1.2*Math.pow(vol.histVal[x]/max1, 0.3));
 
 			if (val > 0)
 				sum += val;
 			alpha1[x] = val;
 		}
 		sum /= 256;	// mean hist height
-		float[] alpha1Dauto = new float[256];
+		double[] alpha1Dauto = new double[256];
 
 		for (int x = 0; x < 256; x++) { // lowpass filter for the histogram
 			int xm2 = x>1 ? x-2 : 0;
 			int xm1 = x>0 ? x-1 : 0;
 			int xp1 = x<255 ? x+1 : 255;	
 			int xp2 = x<254 ? x+2 : 255;	
-			float val = (alpha1[xm2] + alpha1[xm1] + alpha1[x] + alpha1[xp1] + alpha1[xp2]) * 0.2f;
+			double val = (alpha1[xm2] + alpha1[xm1] + alpha1[x] + alpha1[xp1] + alpha1[xp2]) * 0.2f;
 			val += 0.5f - sum;
 			alpha1Dauto[x] = 255*val; // scale alpha1auto by 255, values may be > 255 or < 0  
 		}
@@ -105,7 +105,7 @@ public class TFalpha1 extends JPanel implements MouseListener, MouseMotionListen
 		a1[0]=0;
 		control.alphaWasChanged = true;
 	}
-	public static double percentVisible(float[] alphaMap, int[] histogram) {
+	public static double percentVisible(double[] alphaMap, int[] histogram) {
 		double totSum=0,visSum=0;
 		for(int i=0;i<alphaMap.length;i++) {
 			totSum+=histogram[i];
@@ -114,16 +114,16 @@ public class TFalpha1 extends JPanel implements MouseListener, MouseMotionListen
 		return visSum/totSum;
 	}
 	public void setAlphaAuto2(double pctVisible) {
-		float sumAboveZero=0;
+		double sumAboveZero=0;
 		for (int i = 1; i < vol.histVal.length; i++) { // find the max / modal value
 			sumAboveZero+=vol.histVal[i];
 		}
-		float sumAll=sumAboveZero+vol.histVal[0];
+		double sumAll=sumAboveZero+vol.histVal[0];
 		// Zero is always useless in my images
 		alpha1[0]=0;
 		a1[0]=0;
 		for (int x = 1; x < 256; x++) {
-			alpha1[x] =(float) (255*pctVisible/(sumAboveZero/sumAll)); // copy alpha1Dauto to alpha1
+			alpha1[x] =(double) (255*pctVisible/(sumAboveZero/sumAll)); // copy alpha1Dauto to alpha1
 			a1[x] = (int) Math.min(Math.max(0,alpha1[x]), 255);
 		}
 		
@@ -185,9 +185,9 @@ public class TFalpha1 extends JPanel implements MouseListener, MouseMotionListen
 		int ly = ey - sy;
 		for(int i = sx; i <= ex; i++) {
 			if(lx == 0) lx = 1;
-			float r = (float)(i - sx) / lx;
-			float yi = (sy + r * ly);
-			float v = 255*(height-1 - yi)/(height-1);
+			double r = (double)(i - sx) / lx;
+			double yi = (sy + r * ly);
+			double v = 255*(height-1 - yi)/(height-1);
 			if (v < 0)
 				v = 0;
 			if (v > 255)

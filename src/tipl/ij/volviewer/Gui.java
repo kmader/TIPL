@@ -34,7 +34,7 @@ public class Gui extends JPanel implements
     private JComboBox renderChoice, interpolationChoice, lutChoice;
     private JCheckBox checkPickColor2, checkPickColor3;
     private JSlider scaleSlider, distSlider, positionXSlider, positionYSlider, positionZSlider;
-    private float scaleSliderValue;
+    private double scaleSliderValue;
     private JLabel zAspectLabel;
     private String zAspectString = "z-Aspect:";
     private JTextField tfZaspect;
@@ -253,7 +253,7 @@ public class Gui extends JPanel implements
         tfZaspect.setText("" + control.zAspect);
         tfZaspect.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                control.zAspect = Float.parseFloat(tfZaspect.getText());
+                control.zAspect = Double.parseDouble(tfZaspect.getText());
                 vv.setZAspect();
                 vv.initializeTransformation();
                 vv.buildFrame();
@@ -273,7 +273,7 @@ public class Gui extends JPanel implements
         tfSampling.setText("" + control.sampling);
         tfSampling.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                control.sampling = Float.parseFloat(tfSampling.getText());
+                control.sampling = Double.parseDouble(tfSampling.getText());
                 if (control.sampling <= 0)
                     control.sampling = 1;
                 if (control.sampling > 20)
@@ -1020,13 +1020,13 @@ public class Gui extends JPanel implements
         sliceImageRegion.setText("xz slice  y=" + positionY, 2, xs, wy + 2 * wz + 3 * ys - 3, 0, Color.black, 1);
     }
 
-    private JSpinner makeSpinner(float value) {
+    private JSpinner makeSpinner(double value) {
         JSpinner jSpinner;
         SpinnerNumberModel m_numberSpinnerModel;
-        Float current = value;
-        Float min = (float) -360;
-        Float max = (float) 360;
-        Float step = (float) 1;
+        double current = value;
+        double min = (double) -360;
+        double max = (double) 360;
+        double step = (double) 1;
         m_numberSpinnerModel = new SpinnerNumberModel(current, min, max, step);
         jSpinner = new JSpinner(m_numberSpinnerModel);
         jSpinner.addChangeListener(new SpinnerListener());
@@ -1046,7 +1046,7 @@ public class Gui extends JPanel implements
         if (slider == scaleSlider) {
             scaleSliderValue = scaleSlider.getValue();
             scaleSliderValue -= 20;
-            float s = (float) Math.pow(1.0717734, scaleSliderValue);
+            double s = (double) Math.pow(1.0717734, scaleSliderValue);
             if (s == control.scale) return;
             control.scale = s;
             String scaleString = "" + ((int) (control.scale * 100 + 0.5f)) / 100f;
@@ -1056,15 +1056,15 @@ public class Gui extends JPanel implements
             vv.setZAspect();
             vv.initializeTransformation();
         } else if (slider == distSlider) {
-            float d = (distSlider.getValue() / 2f);
+            double d = (distSlider.getValue() / 2f);
             if (d == control.dist)
                 return;
             control.dist = d;
             control.scaledDist = control.dist * control.scale;
             distLabel1.setText(("" + control.dist));
         } else if (slider == positionXSlider) {
-            control.positionFactorX = positionXSlider.getValue() / (float) maxPositionX;
-            float xV = (vv.vol.widthV - 1) * control.positionFactorX;
+            control.positionFactorX = positionXSlider.getValue() / (double) maxPositionX;
+            double xV = (vv.vol.widthV - 1) * control.positionFactorX;
             positionX = (int) xV;
             if (slider.getValueIsAdjusting())
                 showPositionAndValues();
@@ -1074,8 +1074,8 @@ public class Gui extends JPanel implements
             sliceImageRegion.setImage(picSlice.image);
             sliceImageRegion.repaint();
         } else if (slider == positionYSlider) {
-            control.positionFactorY = positionYSlider.getValue() / (float) maxPositionY;
-            float yV = (vv.vol.heightV - 1) * control.positionFactorY;
+            control.positionFactorY = positionYSlider.getValue() / (double) maxPositionY;
+            double yV = (vv.vol.heightV - 1) * control.positionFactorY;
             positionY = (int) yV;
             if (slider.getValueIsAdjusting())
                 showPositionAndValues();
@@ -1085,8 +1085,8 @@ public class Gui extends JPanel implements
             sliceImageRegion.setImage(picSlice.image);
             sliceImageRegion.repaint();
         } else if (slider == positionZSlider) {
-            control.positionFactorZ = positionZSlider.getValue() / (float) maxPositionZ;
-            float zV = (vv.vol.depthV - 1) * control.positionFactorZ;
+            control.positionFactorZ = positionZSlider.getValue() / (double) maxPositionZ;
+            double zV = (vv.vol.depthV - 1) * control.positionFactorZ;
             positionZ = (int) zV;
             if (slider.getValueIsAdjusting())
                 showPositionAndValues();
@@ -1123,8 +1123,8 @@ public class Gui extends JPanel implements
         } else if (slider == specularSlider) {
             control.specularValue = specularSlider.getValue() / 100f;
         } else if (slider == shineSlider) {
-            float k = 200f;
-            control.shineValue = (float) (Math.pow((shineSlider.getValue() + 20) / k, 3) * 2 * k);
+            double k = 200f;
+            control.shineValue = (double) (Math.pow((shineSlider.getValue() + 20) / k, 3) * 2 * k);
         }
         if (slider == objectLightSlider || slider == ambientSlider || slider == diffuseSlider || slider == specularSlider || slider == shineSlider) {
             picLight.render_sphere();
@@ -1411,10 +1411,10 @@ public class Gui extends JPanel implements
             }
         } else if (source == imageRegion) {
             if (control.renderMode <= Control.SLICE_AND_BORDERS) {
-                float[] xyzV = vv.trScreen2Vol(xS, yS, control.scaledDist);
-                float xV = xyzV[0];
-                float yV = xyzV[1];
-                float zV = xyzV[2];
+                double[] xyzV = vv.trScreen2Vol(xS, yS, control.scaledDist);
+                double xV = xyzV[0];
+                double yV = xyzV[1];
+                double zV = xyzV[2];
                 if (xV >= 0 && xV < vv.vol.widthV && yV >= 0 && yV < vv.vol.heightV && zV >= 0 && zV < vv.vol.depthV) {
                     positionString = String.format("  x=%3d, y=%3d, z=%3d", (int) xV, (int) yV, ((int) zV + 1));
                     if (control.isRGB) {
@@ -1489,9 +1489,9 @@ public class Gui extends JPanel implements
     public void setSpinners() {
         enableSpinnerChangeListener = false;
         if (imageRegion != null && spinnerX != null && spinnerY != null && spinnerZ != null) {
-            spinnerX.setValue((float) (int) Math.round(control.degreeX));
-            spinnerY.setValue((float) (int) Math.round(control.degreeY));
-            spinnerZ.setValue((float) (int) Math.round(control.degreeZ));
+            spinnerX.setValue((double) (int) Math.round(control.degreeX));
+            spinnerY.setValue((double) (int) Math.round(control.degreeY));
+            spinnerZ.setValue((double) (int) Math.round(control.degreeZ));
         }
         enableSpinnerChangeListener = true;
     }
@@ -1505,9 +1505,9 @@ public class Gui extends JPanel implements
             if (enableSpinnerChangeListener) {
                 control.spinnersAreChanging = true;
 
-                control.degreeX = (Float) spinnerX.getValue();
-                control.degreeY = (Float) spinnerY.getValue();
-                control.degreeZ = (Float) spinnerZ.getValue();
+                control.degreeX = (double) spinnerX.getValue();
+                control.degreeY = (double) spinnerY.getValue();
+                control.degreeZ = (double) spinnerZ.getValue();
 
                 vv.setRotation(control.degreeX, control.degreeY, control.degreeZ);
                 control.spinnersAreChanging = false;

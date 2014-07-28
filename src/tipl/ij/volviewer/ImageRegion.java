@@ -87,7 +87,7 @@ class ImageRegion extends JPanel {
         textField[i].setText(text);
     }
 
-    public void setTextPos(int i, float xpos, float ypos, int z) {
+    public void setTextPos(int i, double xpos, double ypos, int z) {
         textField[i].setXpos(xpos);
         textField[i].setYpos(ypos);
         textField[i].setZ(z);
@@ -120,12 +120,12 @@ class ImageRegion extends JPanel {
         this.image = image;
     }
 
-    void findLines(Cube cube, float scaledDist, int depthV) {
+    void findLines(Cube cube, double scaledDist, int depthV) {
 
         //cube.setColor(0xFFFF0000);
         cube.findIntersections(scaledDist);
 
-        float[][] iS = cube.getInterSections();
+        double[][] iS = cube.getInterSections();
         iS[0][0] = iS[1][0] = -1;
 
         Color color = Color.cyan;
@@ -249,7 +249,7 @@ class ImageRegion extends JPanel {
                 if (aTextField != null)
                     if (aTextField.getZ() > 0) {
                         g2.setColor(aTextField.getColor());
-                        g2.drawString(aTextField.getText(), aTextField.getXpos(), aTextField.getYpos());
+                        g2.drawString(aTextField.getText(),(float) aTextField.getXpos(),(float) aTextField.getYpos());
                     }
             }
 
@@ -291,7 +291,7 @@ class ImageRegion extends JPanel {
                             g2.setFont(font1);
 
                         g2.setColor(aTextField.getColor());
-                        g2.drawString(aTextField.getText(), aTextField.getXpos(), aTextField.getYpos());
+                        g2.drawString(aTextField.getText(),(float) aTextField.getXpos(), (float) aTextField.getYpos());
                     }
             }
     }

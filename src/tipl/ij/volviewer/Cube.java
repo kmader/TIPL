@@ -17,17 +17,17 @@ class Cube {
 
 	private int numIntersections; // number of the intersection
 	private int cornerT[][]; 
-	private float corners[][]; 
-	private float cornersXY[][]; 
-	private float cornersYZ[][]; 
-	private float cornersXZ[][]; 
+	private double corners[][]; 
+	private double cornersXY[][]; 
+	private double cornersYZ[][]; 
+	private double cornersXZ[][]; 
 	private int cornersXYT[][]; 
 	private int cornersYZT[][]; 
 	private int cornersXZT[][]; 
 
-	private float interSections[][]; // intersections
+	private double interSections[][]; // intersections
 
-	private float [][] textPos;
+	private double [][] textPos;
 
 	private Color backColor;
 	private Color frontColor;
@@ -58,14 +58,14 @@ class Cube {
 
 	void transformCorners(Transform tr) {
 		for (int i=0; i<8; i++) {
-			float[] xyzS = tr.trVol2Screen(corners[i]);
+			double[] xyzS = tr.trVol2Screen(corners[i]);
 			cornerT[i][0] = (int)xyzS[0]; 
 			cornerT[i][1] = (int)xyzS[1];
 			cornerT[i][2] = (int)xyzS[2]; 
 		}
 
 		for (int i=0; i<4; i++) {
-			float[] xyzS = tr.trVol2Screen(cornersXY[i]);
+			double[] xyzS = tr.trVol2Screen(cornersXY[i]);
 			cornersXYT[i][0] = (int) xyzS[0]; 
 			cornersXYT[i][1] = (int) xyzS[1];
 			cornersXYT[i][2] = (int) xyzS[2]; 
@@ -87,11 +87,11 @@ class Cube {
 		if (imageRegion == null)
 			return;
 		for (int i=0; i<textPos.length; i++) {
-			float[] xyzS = tr.trVol2Screen(textPos[i]);
+			double[] xyzS = tr.trVol2Screen(textPos[i]);
 			imageRegion.setTextPos(i, (int)xyzS[0], (int)xyzS[1], (int)xyzS[2]);
 		}
 
-		float zMax = -10000000;
+		double zMax = -10000000;
 		int iHidden = -1;
 		for (int i = 0; i < 8; i++) {
 			if (cornerT[i][2] > zMax) {
@@ -159,25 +159,25 @@ class Cube {
 	}
 
 	private boolean inside(int[] p, int[] p1, int[] p2, int[] p3) {
-		float x  = p[0];
-		float y  = p[1];
-		float x1 = p1[0];
-		float y1 = p1[1];
-		float x2 = p2[0];
-		float y2 = p2[1];
-		float x3 = p3[0];
-		float y3 = p3[1];
+		double x  = p[0];
+		double y  = p[1];
+		double x1 = p1[0];
+		double y1 = p1[1];
+		double x2 = p2[0];
+		double y2 = p2[1];
+		double x3 = p3[0];
+		double y3 = p3[1];
 
-		float a = (x2 - x1) * (y - y1) - (y2 - y1) * (x - x1);
-		float b = (x3 - x2) * (y - y2) - (y3 - y2) * (x - x2);
-		float c = (x1 - x3) * (y - y3) - (y1 - y3) * (x - x3);
+		double a = (x2 - x1) * (y - y1) - (y2 - y1) * (x - x1);
+		double b = (x3 - x2) * (y - y2) - (y3 - y2) * (x - x2);
+		double c = (x1 - x3) * (y - y3) - (y1 - y3) * (x - x3);
 
 		if ((a >= 0 && b >= 0 && c >= 0) || (a <= 0 && b <= 0 && c <= 0))
 			return true;
 		return false; 
 	}
 
-	void findIntersections(float d) {
+	void findIntersections(double d) {
 		numIntersections = 0;
 		
 		for (int i = 0; i < 4; i++) {
@@ -195,7 +195,7 @@ class Cube {
 		}
 	}
 
-	void findSliceIntersectionsXY(float d) {
+	void findSliceIntersectionsXY(double d) {
 		numIntersections = 0;
 		findIntersection(cornersXY[0], cornersXY[1], d);
 		findIntersection(cornersXY[1], cornersXY[2], d);
@@ -203,7 +203,7 @@ class Cube {
 		findIntersection(cornersXY[3], cornersXY[0], d);
 	}
 
-	void findSliceIntersectionsYZ(float d) {
+	void findSliceIntersectionsYZ(double d) {
 		numIntersections = 0;
 		findIntersection(cornersYZ[0], cornersYZ[1], d);
 		findIntersection(cornersYZ[1], cornersYZ[2], d);
@@ -211,7 +211,7 @@ class Cube {
 		findIntersection(cornersYZ[3], cornersYZ[0], d);
 	}
 
-	void findIntersections_xz(float d) {
+	void findIntersections_xz(double d) {
 		numIntersections = 0;
 		findIntersection(cornersXZ[0], cornersXZ[1], d);
 		findIntersection(cornersXZ[1], cornersXZ[2], d);
@@ -223,27 +223,27 @@ class Cube {
 	 * @param p0 Point 0
 	 * @param p1 Point 1
 	 */
-	private void findIntersection(float[]p0, float[]p1, float d) {
+	private void findIntersection(double[]p0, double[]p1, double d) {
 
-		float[] xyzS = tr.trVol2Screen(p0);
-		float z0 = xyzS[2]; 
+		double[] xyzS = tr.trVol2Screen(p0);
+		double z0 = xyzS[2]; 
 		xyzS = tr.trVol2Screen(p1);
-		float z1 = xyzS[2]; 
+		double z1 = xyzS[2]; 
 
 		if ((z0 - z1) != 0) {
-			float t = (z0 - d) / ( z0 - z1);
+			double t = (z0 - d) / ( z0 - z1);
 
 			if (t >= 0 && t <= 1) {
-				float x0 = p0[0];
-				float y0 = p0[1];
+				double x0 = p0[0];
+				double y0 = p0[1];
 				z0 = p0[2];
-				float x1 = p1[0];
-				float y1 = p1[1];
+				double x1 = p1[0];
+				double y1 = p1[1];
 				z1 = p1[2];
 
-				float xs = x0 + t*(x1-x0);
-				float ys = y0 + t*(y1-y0);
-				float zs = z0 + t*(z1-z0);
+				double xs = x0 + t*(x1-x0);
+				double ys = y0 + t*(y1-y0);
+				double zs = z0 + t*(z1-z0);
 				xyzS = tr.trVol2Screen(xs, ys, zs);
 
 				boolean newIntersection = true;
@@ -268,28 +268,28 @@ class Cube {
 		this.heightV = heightV;
 		this.depthV = depthV;
 		
-		corners = new float[8][3];
+		corners = new double[8][3];
 		cornerT = new int[8][3]; 			// 8 x X, Y, Z
-		setInterSections(new float[6][3]); 	// 6 x X, Y, Z
-		cornersXY = new float[4][3];
-		cornersYZ = new float[4][3];
-		cornersXZ = new float[4][3];
+		setInterSections(new double[6][3]); 	// 6 x X, Y, Z
+		cornersXY = new double[4][3];
+		cornersYZ = new double[4][3];
+		cornersXZ = new double[4][3];
 		cornersXYT = new int[4][3];
 		cornersYZT = new int[4][3];
 		cornersXZT = new int[4][3];
-		textPos = new float[4][3];
+		textPos = new double[4][3];
 	}
 
 
-	public float[][] getInterSections() {
+	public double[][] getInterSections() {
 		return interSections;
 	}
 
-	public void setInterSections(float interSections[][]) {
+	public void setInterSections(double interSections[][]) {
 		this.interSections = interSections;
 	}
 
-	public void setTextPositions(float scale, float zAspect) {
+	public void setTextPositions(double scale, double zAspect) {
 		
 		// 0
 		textPos[0][0] = -Cube.dm/scale; 
@@ -312,22 +312,22 @@ class Cube {
 		textPos[3][2] =  depthV + Cube.dp/(scale*zAspect); 	
 	}
 
-	public void setCornersYZ(float xV) {
+	public void setCornersYZ(double xV) {
 		cornersYZ[0][0] = cornersYZ[1][0] = cornersYZ[2][0] = cornersYZ[3][0] = xV + 0.5f;
 		transformCorners(tr);
 	}
 
-	public void setCornersXZ(float yV) {
+	public void setCornersXZ(double yV) {
 		cornersXZ[0][1] = cornersXZ[1][1] = cornersXZ[2][1] = cornersXZ[3][1] = yV + 0.5f; 	
 		transformCorners(tr);
 	}
 
-	public void setCornersXY(float zV) {
+	public void setCornersXY(double zV) {
 		cornersXY[0][2] = cornersXY[1][2] = cornersXY[2][2] = cornersXY[3][2] = zV + 0.5f;
 		transformCorners(tr);
 	}
 
-	public void setSlicePositions(float positionFactorX, float positionFactorY, float positionFactorZ, float zAspect) {
+	public void setSlicePositions(double positionFactorX, double positionFactorY, double positionFactorZ, double zAspect) {
 		corners[1][1] =  heightV;     
 		corners[1][2] =  depthV;     
 		corners[2][0] =  widthV;     
@@ -402,7 +402,7 @@ class Cube {
 		textPos[3][2] =   depthV + Cube.dp/zAspect; 	
 	}
 
-	public float[][] getCorners() {
+	public double[][] getCorners() {
 		return corners;
 	}
 

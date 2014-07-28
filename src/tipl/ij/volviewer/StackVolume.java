@@ -50,7 +50,7 @@ public class StackVolume extends Volume {
                 }
             }
             if (control.zAspect == 1)
-                control.zAspect = (float) (cal.pixelDepth / cal.pixelWidth);
+                control.zAspect = (double) (cal.pixelDepth / cal.pixelWidth);
         }
 
         if (control.zAspect == 0)
@@ -63,7 +63,7 @@ public class StackVolume extends Volume {
         int bitDepth = imp.getBitDepth();
 
         if (bitDepth == 8 || bitDepth == 16 || bitDepth == 32) {
-            float scale = (float) (255f / (max - min));
+            double scale = (double) (255f / (max - min));
 
             for (int z = 1; z <= depthV; z++) {
                 IJ.showStatus("Reading stack, slice: " + z + "/" + depthV);
@@ -71,14 +71,14 @@ public class StackVolume extends Volume {
 
                 byte[] bytePixels = null;
                 short[] shortPixels = null;
-                float[] floatPixels = null;
+                double[] doublePixels = null;
 
                 if (bitDepth == 8)
                     bytePixels = (byte[]) stack.getPixels(z);
                 else if (bitDepth == 16)
                     shortPixels = (short[]) stack.getPixels(z);
                 else if (bitDepth == 32)
-                    floatPixels = (float[]) stack.getPixels(z);
+                    doublePixels = (double[]) stack.getPixels(z);
 
                 int pos = 0;
                 for (int y = 2; y < heightV + 2; y++) {
@@ -86,7 +86,7 @@ public class StackVolume extends Volume {
                         int val;
 
                         if (bitDepth == 32) {
-                            float value = (float) (floatPixels[pos++] - min);
+                            double value = (double) (doublePixels[pos++] - min);
                             val = (int) (value * scale);
                         } else if (bitDepth == 16) {
                             val = (int) ((0xFFFF & shortPixels[pos++]) * b + a - min);

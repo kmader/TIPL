@@ -95,7 +95,7 @@ public class TFalpha3 extends JPanel implements MouseListener, MouseMotionListen
     public void setAlphaAuto() {
 
         // find 2D maximum
-        float max1 = 0;
+        double max1 = 0;
         for (int y = 0; y < height; y++)  // find maximum
             for (int x = 0; x < 256; x++) {
                 int val = vol.histMeanDiff[x][y];

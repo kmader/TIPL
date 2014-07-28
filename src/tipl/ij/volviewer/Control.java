@@ -67,16 +67,16 @@ public class Control {
 	int interpolationMode = TRICUBIC_POLYNOMIAL;
 	Color backgroundColor = Color.black;
 	int lutNr = GRAY;
-	float zAspect = 1;
-	float sampling = 1;
-	float dist = 0;
+	double zAspect = 1;
+	double sampling = 1;
+	double dist = 0;
 	boolean showAxes = true;
 	boolean showSlices = false;
 	boolean showClipLines = false;
-	float scale = 1;
-	float degreeX = 115; 
-	float degreeY = 41; 
-	float degreeZ = 17;
+	double scale = 1;
+	double degreeX = 115; 
+	double degreeY = 41; 
+	double degreeZ = 17;
 	int alphaMode = ALPHA1;
 	int windowMinHeight = 660;
 	int windowHeight = windowMinHeight;
@@ -85,11 +85,11 @@ public class Control {
 	
 	// illumination
 	boolean useLight = false;
-	float ambientValue = 0.5f;
-	float diffuseValue = 0.5f;
-	float specularValue = 0.5f;
-	float shineValue = 17.15f;
-	float objectLightValue = 0.5f;
+	double ambientValue = 0.5f;
+	double diffuseValue = 0.5f;
+	double specularValue = 0.5f;
+	double shineValue = 17.15f;
+	double objectLightValue = 0.5f;
 	int lightRed = 255;
 	int lightGreen = 128;
 	int lightBlue = 0;
@@ -103,7 +103,7 @@ public class Control {
 	boolean spinnersAreChanging;
 
 	int maxDist;
-	float scaledDist;
+	double scaledDist;
 
 	boolean isRGB = false;
 	int lumTolerance = 32, gradTolerance = 64;
@@ -118,9 +118,9 @@ public class Control {
 	int windowWidthSliderRegion = 55; 
 	int windowWidthSlices = 200; 
 
-	float positionFactorX = 0.5f; // indicates the shown position of the xslice
-	float positionFactorY = 0.5f; // indicates the shown position of the yslice
-	float positionFactorZ = 0.5f; // indicates the shown position of the zslice
+	double positionFactorX = 0.5f; // indicates the shown position of the xslice
+	double positionFactorY = 0.5f; // indicates the shown position of the yslice
+	double positionFactorZ = 0.5f; // indicates the shown position of the zslice
 	
 	private Volume_Viewer vv;
 
@@ -143,7 +143,7 @@ public class Control {
 		lutNr = ORIG;
 		zAspect = 1;
 		sampling = 1;
-		//float dist = 0;
+		//double dist = 0;
 		showAxes = true;
 		showSlices = false;
 		showClipLines = false;

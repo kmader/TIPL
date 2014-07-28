@@ -9,60 +9,60 @@ package tipl.ij.volviewer;
 class Transform {
 	private Control control;
 
-	private float mP[][];
+	private double mP[][];
 
-	private float xRot, yRot, zRot;		// rotation vector
-	private float rotAngle=0;			// rotation angle
+	private double xRot, yRot, zRot;		// rotation vector
+	private double rotAngle=0;			// rotation angle
 
-	private float xSOff; 	  	// screen center
-	private float ySOff; 
-	private float xOff; 	  	// screen center
-	private float yOff; 
+	private double xSOff; 	  	// screen center
+	private double ySOff; 
+	private double xOff; 	  	// screen center
+	private double yOff; 
 
-	private float xvOff;		// volume center		
-	private float yvOff;
-	private float zvOff;
+	private double xvOff;		// volume center		
+	private double yvOff;
+	private double zvOff;
 
-	private float scale = 1;
-	private float zAspect = 1;
+	private double scale = 1;
+	private double zAspect = 1;
 
-	private float a00,  a01,  a02,  a03;  // coefficients of the tramsformation
-	private float a10,  a11,  a12,  a13;
-	private float a20,  a21,  a22,  a23;
-	private float ai00, ai01, ai02, ai03;  // coefficients of the inverse tramsformation
-	private float ai10, ai11, ai12, ai13;
-	private float ai20, ai21, ai22, ai23;
+	private double a00,  a01,  a02,  a03;  // coefficients of the tramsformation
+	private double a10,  a11,  a12,  a13;
+	private double a20,  a21,  a22,  a23;
+	private double ai00, ai01, ai02, ai03;  // coefficients of the inverse tramsformation
+	private double ai10, ai11, ai12, ai13;
+	private double ai20, ai21, ai22, ai23;
 
-	private float degreeX;
-	private float degreeY;
-	private float degreeZ;
+	private double degreeX;
+	private double degreeY;
+	private double degreeZ;
 
 	void initializeTransformation() {
 
 		if (control.LOG) System.out.println("initializeTransformation");
 
-		float m[][] = new float[4][4];
+		double m[][] = new double[4][4];
 
 		// translation & scale
-		float s = scale;
+		double s = scale;
 		m[0][0] = s; 	m[0][1] = 0; 	m[0][2] = 0;				m[0][3] = -s*xvOff;
 		m[1][0] = 0;	m[1][1] = s;	m[1][2] = 0;				m[1][3] = -s*yvOff; 
 		m[2][0] = 0;	m[2][1] = 0;	m[2][2] = s*zAspect; 		m[2][3] = -s*zAspect*zvOff;
 		m[3][0] = 0;	m[3][1] = 0;	m[3][2] = 0; 				m[3][3] = 1;
 
-		float mR[][] = new float[4][4];
+		double mR[][] = new double[4][4];
 
 		// rotation from mouse drag
-		float u = xRot;
-		float v = yRot;
-		float w = zRot;
+		double u = xRot;
+		double v = yRot;
+		double w = zRot;
 
-		float u2=u*u;
-		float v2=v*v;
-		float w2=w*w;
+		double u2=u*u;
+		double v2=v*v;
+		double w2=w*w;
 
-		float cos = (float)Math.cos(rotAngle);
-		float sin = (float)Math.sin(rotAngle);
+		double cos = (double)Math.cos(rotAngle);
+		double sin = (double)Math.sin(rotAngle);
 		rotAngle = 0;
 
 		mR[0][0] = u2 + (1-u2)*cos;	
@@ -76,7 +76,7 @@ class Transform {
 		mR[2][2] = w2 + (1-w2)*cos;			
 		mR[3][3] = 1;
 
-		float m_RP[][] = new float[4][4];
+		double m_RP[][] = new double[4][4];
 		matProd(m_RP, mR, mP);
 		matCopy4(mP, m_RP);	// remember the previous rotation
 
@@ -99,11 +99,11 @@ class Transform {
 			}
 		}
 
-		degreeX = (float) Math.toDegrees(ar);
-		degreeY = (float) Math.toDegrees(br);
-		degreeZ = (float) Math.toDegrees(gr);
+		degreeX = (double) Math.toDegrees(ar);
+		degreeY = (double) Math.toDegrees(br);
+		degreeZ = (double) Math.toDegrees(gr);
 
-		float mat[][] = new float[4][4];
+		double mat[][] = new double[4][4];
 		matProd(mat, mP, m); 
 
 		a00 =  mat[0][0];
@@ -121,7 +121,7 @@ class Transform {
 		a22 =  mat[2][2];
 		a23 =  mat[2][3];
 
-		float matInv[][] = new float[4][4];
+		double matInv[][] = new double[4][4];
 		matInv4(matInv, mat);
 
 		ai00 = matInv[0][0];
@@ -140,19 +140,19 @@ class Transform {
 		ai23 = matInv[2][3];
 	}
 
-	public float getDegreeX() {
+	public double getDegreeX() {
 		return degreeX;
 	}
 
-	public float getDegreeY() {
+	public double getDegreeY() {
 		return degreeY;
 	}
 
-	public float getDegreeZ() {
+	public double getDegreeZ() {
 		return degreeZ;
 	}
 
-	void matProd(float z[][], float u[][], float v[][]) {
+	void matProd(double z[][], double u[][], double v[][]) {
 		int i, j, k;
 		for (i=0; i<4; i++) 
 			for (j=0; j<4; j++) {
@@ -164,35 +164,35 @@ class Transform {
 
 	public void setView(double angleX, double angleY, double angleZ) {
 		// calculate new cos and sins 
-		float cosX = (float)Math.cos(angleX); 
-		float sinX = (float)Math.sin(angleX);
-		float cosY = (float)Math.cos(angleY); 
-		float sinY = (float)Math.sin(angleY);
-		float cosZ = (float)Math.cos(angleZ);
-		float sinZ = (float)Math.sin(angleZ);			
+		double cosX = (double)Math.cos(angleX); 
+		double sinX = (double)Math.sin(angleX);
+		double cosY = (double)Math.cos(angleY); 
+		double sinY = (double)Math.sin(angleY);
+		double cosZ = (double)Math.cos(angleZ);
+		double sinZ = (double)Math.sin(angleZ);			
 
 		// x rotation
-		float mX[][] = new float[4][4];
+		double mX[][] = new double[4][4];
 		mX[0][0] =  1;   	mX[0][1] =  0;		mX[0][2] =  0;			mX[0][3] =  0;
 		mX[1][0] =  0;		mX[1][1] =  cosX;	mX[1][2] = -sinX;		mX[1][3] =  0; 
 		mX[2][0] =  0;		mX[2][1] =  sinX;	mX[2][2] =  cosX;		mX[2][3] =  0;
 		mX[3][0] =  0;		mX[3][1] =  0;		mX[3][2] =  0;			mX[3][3] =  1;
 
 		// y rotation
-		float mY[][] = new float[4][4];
+		double mY[][] = new double[4][4];
 		mY[0][0] =  cosY;   mY[0][1] =  0; 		mY[0][2] =  sinY;		mY[0][3] =  0;
 		mY[1][0] =  0;		mY[1][1] =  1;		mY[1][2] =  0;			mY[1][3] =  0; 
 		mY[2][0] = -sinY;	mY[2][1] =  0;		mY[2][2] =  cosY;		mY[2][3] =  0;
 		mY[3][0] =  0;		mY[3][1] =  0;		mY[3][2] =  0;			mY[3][3] =  1;
 
 		// z rotation
-		float mZ[][] = new float[4][4];
+		double mZ[][] = new double[4][4];
 		mZ[0][0] =  cosZ;	mZ[0][1] = -sinZ;	mZ[0][2] =  0;			mZ[0][3] =  0;
 		mZ[1][0] =  sinZ;	mZ[1][1] =  cosZ;	mZ[1][2] =  0;			mZ[1][3] =  0; 
 		mZ[2][0] =  0;	    mZ[2][1] =  0;		mZ[2][2] =  1;			mZ[2][3] =  0;
 		mZ[3][0] =  0;		mZ[3][1] =  0;		mZ[3][2] =  0;			mZ[3][3] =  1;
 
-		float m_XY[][] = new float[4][4];
+		double m_XY[][] = new double[4][4];
 		matProd(m_XY,  mY, mX);
 		matProd(mP, mZ, m_XY);
 
@@ -200,10 +200,10 @@ class Transform {
 	}
 
 	/* 4x4 matrix inverse */
-	void matInv4(float z[][], float u[][]) {
+	void matInv4(double z[][], double u[][]) {
 		int    i, j, n, ii[] = new int[4];
-		float f;
-		float w[][] = new float[4][4];
+		double f;
+		double w[][] = new double[4][4];
 		n=4;
 		matCopy4(w,u);
 		matUnit4(z);
@@ -226,8 +226,8 @@ class Transform {
 	}
 
 	/* greatest element in the nth column of 4x4 matrix */
-	int matge4(float p[][], int n) {
-		float g, h; 
+	int matge4(double p[][], int n) {
+		double g, h; 
 		int m;
 		m=n;
 		g=p[n][n];
@@ -242,7 +242,7 @@ class Transform {
 	}
 
 	/* copy 4x4 matrix */
-	void matCopy4(float z[][], float x[][]) {
+	void matCopy4(double z[][], double x[][]) {
 		int i, j;
 		for (i=0; i<4; i++) 
 			for (j=0; j<4; j++) 
@@ -250,7 +250,7 @@ class Transform {
 	}
 
 	/* 4x4 unit matrix */
-	void matUnit4(float z[][]) {
+	void matUnit4(double z[][]) {
 		for (int i=0; i<4; i++) {
 			for (int j=0; j<4; j++) 
 				z[i][j]=0.0f;
@@ -259,8 +259,8 @@ class Transform {
 	}
 
 	/* exchange ith and jth columns of a 4x4 matrix */
-	void matXc4(float z[][], int i, int j) {
-		float t;
+	void matXc4(double z[][], int i, int j) {
+		double t;
 		if (i==j) 
 			return;
 		for (int k=0; k<4; k++) {
@@ -270,8 +270,8 @@ class Transform {
 	}
 
 	/* exchange ith and jth rows of a 4x4 matrix */
-	void matXr4(float z[][], int i, int j) {
-		float t;
+	void matXr4(double z[][], int i, int j) {
+		double t;
 		if (i==j) 
 			return;
 		for (int k=0; k<4; k++) {
@@ -282,97 +282,97 @@ class Transform {
 	}
 
 	/* augment column of a 4x4 matrix */
-	void matAc4(float z[][], int i, int j, float f, int k) {
+	void matAc4(double z[][], int i, int j, double f, int k) {
 		int l;
 		for (l=0; l<4; l++) 
 			z[l][i] = z[l][j] + f*z[l][k];
 	}
 
 	/* multiply ith column of 4x4 matrix by a factor */
-	void matMc4(float z[][], float f, int i) {
+	void matMc4(double z[][], double f, int i) {
 		int j;
 		for (j=0; j<4; j++) 
 			z[j][i]*=f;
 	}
 
-	final float[] trVol2Screen(float[] xyzV) {
-		float xV = xyzV[0];
-		float yV = xyzV[1];
-		float zV = xyzV[2];
-		float[] xyzS = new float[3];
+	final double[] trVol2Screen(double[] xyzV) {
+		double xV = xyzV[0];
+		double yV = xyzV[1];
+		double zV = xyzV[2];
+		double[] xyzS = new double[3];
 		xyzS[0] = a00*xV + a01*yV + a02*zV + a03;
 		xyzS[1] = a10*xV + a11*yV + a12*zV + a13;
 		xyzS[2] = a20*xV + a21*yV + a22*zV + a23;
 		return xyzS;
 	}
 
-	final float[]  trVol2Screen(float xV, float yV, float zV) {
-		float[] xyzS = new float[3];
+	final double[]  trVol2Screen(double xV, double yV, double zV) {
+		double[] xyzS = new double[3];
 		xyzS[0] = a00*xV + a01*yV + a02*zV + a03;
 		xyzS[1] = a10*xV + a11*yV + a12*zV + a13;
 		xyzS[2] = a20*xV + a21*yV + a22*zV + a23;
 		return xyzS;
 	}
 
-	final float[] trScreen2Vol(float xS, float yS, float zS) {
+	final double[] trScreen2Vol(double xS, double yS, double zS) {
 		xS -= xSOff + xOff*scale;
 		yS -= ySOff + yOff*scale;
-		float[] xyzV = new float[3];
+		double[] xyzV = new double[3];
 		xyzV[0] = ai00*xS + ai01*yS + ai02*zS + ai03;
 		xyzV[1] = ai10*xS + ai11*yS + ai12*zS + ai13;
 		xyzV[2] = ai20*xS + ai21*yS + ai22*zS + ai23;
 		return xyzV;
 	}
 
-	final float[] screen2Volume(float[] xyzS) {
-		float xS = xyzS[0] - xSOff - xOff*scale;
-		float yS = xyzS[1] - ySOff - yOff*scale;
-		float zS = xyzS[2];
-		float[] xyzV = new float[3];
+	final double[] screen2Volume(double[] xyzS) {
+		double xS = xyzS[0] - xSOff - xOff*scale;
+		double yS = xyzS[1] - ySOff - yOff*scale;
+		double zS = xyzS[2];
+		double[] xyzV = new double[3];
 		xyzV[0] = ai00*xS + ai01*yS + ai02*zS + ai03;
 		xyzV[1] = ai10*xS + ai11*yS + ai12*zS + ai13;
 		xyzV[2] = ai20*xS + ai21*yS + ai22*zS + ai23;
 		return xyzV;
 	}
 
-	public void setScale(float scale) {
+	public void setScale(double scale) {
 		this.scale = scale;		
 		initializeTransformation();
 	}
 
 	// virtual trackball
-	public void setMouseMovement(int xAct, int yAct, int xStart, int yStart, float width) {
+	public void setMouseMovement(int xAct, int yAct, int xStart, int yStart, double width) {
 		//if (control.LOG) System.out.println("setMouseMovement");
 
-		float size = 2*width;
+		double size = 2*width;
 
-		float x1 = (xStart - width/2f)/size;
-		float y1 = (yStart - width/2f)/size;
-		float z1 = 1-x1*x1-y1*y1;
-		z1 = (z1 > 0) ? (float) Math.sqrt(z1) : 0;
+		double x1 = (xStart - width/2f)/size;
+		double y1 = (yStart - width/2f)/size;
+		double z1 = 1-x1*x1-y1*y1;
+		z1 = (z1 > 0) ? (double) Math.sqrt(z1) : 0;
 
-		float x2 = (xAct - width/2f)/size;
-		float y2 = (yAct - width/2f)/size;
-		float z2 = 1-x2*x2-y2*y2;
-		z2 = (z2>0) ? (float) Math.sqrt(z2) : 0;
+		double x2 = (xAct - width/2f)/size;
+		double y2 = (yAct - width/2f)/size;
+		double z2 = 1-x2*x2-y2*y2;
+		z2 = (z2>0) ? (double) Math.sqrt(z2) : 0;
 
 		// Cross product
 		xRot = y1 * z2 - z1 * y2;
 		yRot = z1 * x2 - x1 * z2;
 		zRot = -x1 * y2 + y1 * x2;
-		float len = xRot*xRot+yRot*yRot+zRot*zRot;
+		double len = xRot*xRot+yRot*yRot+zRot*zRot;
 		if (len <= 0)
 			return;
 
-		float len_ = (float) (1./Math.sqrt(xRot*xRot+yRot*yRot+zRot*zRot));
+		double len_ = (double) (1./Math.sqrt(xRot*xRot+yRot*yRot+zRot*zRot));
 		xRot *= len_;
 		yRot *= len_;
 		zRot *= len_;
 
-		float dot = x1*x2+y1*y2+z1*z2;
+		double dot = x1*x2+y1*y2+z1*z2;
 		if (dot > 1) dot = 1;
 		else if (dot < -1) dot = -1;
-		rotAngle = (float) Math.acos(dot)*10;
+		rotAngle = (double) Math.acos(dot)*10;
 		//System.out.println("xRot " + xRot + " yRot " + yRot + " zRot " + zRot + " rotAngle " + rotAngle);
 
 		initializeTransformation();	
@@ -385,20 +385,20 @@ class Transform {
 		initializeTransformation();
 	}
 
-	Transform(Control control, float width, float height, float xOffa, float yOffa, float zOffa) {
+	Transform(Control control, double width, double height, double xOffa, double yOffa, double zOffa) {
 		this.control = control;
-		xSOff = (float)(width/2.  + 0.5);
-		ySOff = (float)(height/2. + 0.5);
+		xSOff = (double)(width/2.  + 0.5);
+		ySOff = (double)(height/2. + 0.5);
 
 		xvOff = xOffa;
 		yvOff = yOffa;
 		zvOff = zOffa;
 
-		mP = new float[4][4];
+		mP = new double[4][4];
 		mP[0][0] = mP[1][1] = mP[2][2] = mP[3][3] = 1;
 	}
 
-	public void setZAspect(float zAspect) {
+	public void setZAspect(double zAspect) {
 		this.zAspect = zAspect;
 	};
 }

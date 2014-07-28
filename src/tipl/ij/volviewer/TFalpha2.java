@@ -19,7 +19,7 @@ public class TFalpha2 extends JPanel implements MouseListener, MouseMotionListen
     private static final long serialVersionUID = 1L;
     final int[][] a2 = new int[256][128];
     private final int[][] alpha2back = new int[256][128];
-    private final float[][] alpha2 = new float[256][128];
+    private final double[][] alpha2 = new double[256][128];
     int xLast = -1, yLast = -1;
     int count = 0;
     private int height = 128, width = 256;
@@ -90,7 +90,7 @@ public class TFalpha2 extends JPanel implements MouseListener, MouseMotionListen
     public void setAlphaAuto() {
 
         // 2D find maximum
-        float max1 = 0;
+        double max1 = 0;
         for (int y = 0; y < vol.histValGrad[0].length; y++)
             for (int x = 0; x < vol.histValGrad.length; x++) {
                 int val = vol.histValGrad[x][y];
@@ -106,22 +106,22 @@ public class TFalpha2 extends JPanel implements MouseListener, MouseMotionListen
                 alpha2back[x][y] = 255 - val;  // 0 = max
             }
 
-        float[] alpha1D = new float[256];
-        float sum = 0;
+        double[] alpha1D = new double[256];
+        double sum = 0;
         for (int x = 0; x < 256; x++) { // norm the histogram, store in alpha1D
-            float val = (float) (1 - Math.pow(vol.histVal[x] / max1, 0.1)); // 0.3
+            double val = (double) (1 - Math.pow(vol.histVal[x] / max1, 0.1)); // 0.3
             sum += val;
             alpha1D[x] = val;
         }
         sum /= 256;    // mean hist height
 
-        float[] alpha1Dauto = new float[256];
+        double[] alpha1Dauto = new double[256];
         for (int x = 0; x < 256; x++) { // lowpass filter for the 1D histogram
             int xm2 = x > 1 ? x - 2 : 0;
             int xm1 = x > 0 ? x - 1 : 0;
             int xp1 = x < 255 ? x + 1 : 255;
             int xp2 = x < 254 ? x + 2 : 255;
-            float val = (alpha1D[xm2] + alpha1D[xm1] + alpha1D[x] + alpha1D[xp1] + alpha1D[xp2]) * 0.2f;
+            double val = (alpha1D[xm2] + alpha1D[xm1] + alpha1D[x] + alpha1D[xp1] + alpha1D[xp2]) * 0.2f;
             val += 0.5f - sum;
             alpha1Dauto[x] = Math.max(0, val);
         }
@@ -134,10 +134,10 @@ public class TFalpha2 extends JPanel implements MouseListener, MouseMotionListen
                 if (val > max1) max1 = val;
             }
 
-        float[][] alpha2Dauto = new float[256][128];
+        double[][] alpha2Dauto = new double[256][128];
         for (int x = 0; x < 256; x++)
             for (int y = 0; y < 128; y++) {
-                float val = (float) (1 - 3 * Math.pow(vol.histValGrad[x][y] / max1, 0.22)); // 2
+                double val = (double) (1 - 3 * Math.pow(vol.histValGrad[x][y] / max1, 0.22)); // 2
                 sum += val;
                 alpha2[x][y] = val;
             }
@@ -150,14 +150,14 @@ public class TFalpha2 extends JPanel implements MouseListener, MouseMotionListen
             int yp1 = y < height - 1 ? y + 1 : height - 1;
             int yp2 = y < height - 2 ? y + 2 : height - 1;
             for (int x = 0; x < 256; x++) {
-                float val = (alpha2[x][ym2] + alpha2[x][ym1] + alpha2[x][y] + alpha2[x][yp1] + alpha2[x][yp2]) * 0.2f;
+                double val = (alpha2[x][ym2] + alpha2[x][ym1] + alpha2[x][y] + alpha2[x][yp1] + alpha2[x][yp2]) * 0.2f;
                 alpha2Dauto[x][y] = val;
             }
         }
 
         for (int x = 0; x < 256; x++) {
             for (int y = 0; y < 128; y++) {
-                float val = alpha2Dauto[x][y] * alpha1Dauto[x];
+                double val = alpha2Dauto[x][y] * alpha1Dauto[x];
                 val = 255 * (val + 0.8f - sum);
                 alpha2[x][y] = val; // scale alpha1auto by 255, values may be > 255 or < 0
                 a2[x][y] = (int) Math.min(Math.max(0, val), 255);

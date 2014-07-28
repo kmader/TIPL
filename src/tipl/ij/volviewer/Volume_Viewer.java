@@ -61,9 +61,9 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 	private Control control;
 	private JFrame frame;
 
-	final float[] a1_R = new float[256];
-	final float[][] a2_R = new float[256][128];
-	final float[][] a3_R = new float[256][128];
+	final double[] a1_R = new double[256];
+	final double[][] a2_R = new double[256][128];
+	final double[][] a3_R = new double[256][128];
 
 	Volume vol = null;
 	Cube cube = null;
@@ -210,30 +210,30 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 				"Background Color"));
 		control.lutNr = p.getOptionInt(prefix + "lutNr", control.lutNr,
 				"look up table number: " + join(Control.lutName));
-		control.zAspect = p.getOptionFloat(prefix + "zAspect", control.zAspect,
+		control.zAspect = p.getOptionDouble(prefix + "zaspect", control.zAspect,
 				"z aspect ratio");
-		control.sampling = p.getOptionFloat(prefix + "sampling",
+		control.sampling = p.getOptionDouble(prefix + "sampling",
 				control.sampling, "sampling of image");
 		
-		control.dist = p.getOptionFloat(prefix + "dist", control.dist,
+		control.dist = p.getOptionDouble(prefix + "dist", control.dist,
 				"distance to slice through the sample");
 		control.distWasSet = p.getOptionBoolean(prefix + "forcedist", control.distWasSet ,
 				"force the distance value given (otherwise it is automatically set)");
-		control.showAxes = p.getOptionBoolean(prefix + "showAxes",
+		control.showAxes = p.getOptionBoolean(prefix + "showaxes",
 				control.showAxes, "Show the axes");
-		control.showSlices = p.getOptionBoolean(prefix + "showSlices",
+		control.showSlices = p.getOptionBoolean(prefix + "showslices",
 				control.showSlices, "Show the slices");
 		control.showClipLines = p.getOptionBoolean(prefix + "showClipLines",
 				control.showClipLines, "show the clip lines");
-		control.scale = p.getOptionFloat(prefix + "scale", control.scale,
+		control.scale = p.getOptionDouble(prefix + "scale", control.scale,
 				"how much to scale the image");
-		control.degreeX = p.getOptionFloat(prefix + "degreeX", control.degreeX,
+		control.degreeX = p.getOptionDouble(prefix + "degreex", control.degreeX,
 				"degree of rotation in x");
-		control.degreeY = p.getOptionFloat(prefix + "degreeY", control.degreeY,
+		control.degreeY = p.getOptionDouble(prefix + "degreey", control.degreeY,
 				"degree of rotation in y");
-		control.degreeZ = p.getOptionFloat(prefix + "degreeZ", control.degreeZ,
+		control.degreeZ = p.getOptionDouble(prefix + "degreez", control.degreeZ,
 				"degree of rotation in z");
-		control.alphaMode = p.getOptionInt(prefix + "alphaMode",
+		control.alphaMode = p.getOptionInt(prefix + "alphamode",
 				control.alphaMode, "alpha mode to use");
 		control.windowWidthImageRegion = p.getOptionInt(prefix
 				+ "windowWidthImageRegion", control.windowWidthImageRegion,
@@ -241,25 +241,25 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 		control.windowWidthSlices = p.getOptionInt(
 				prefix + "windowWidthSlices", control.windowWidthSlices,
 				"width of slices region");
-		control.windowHeight = p.getOptionInt(prefix + "windowHeight",
+		control.windowHeight = p.getOptionInt(prefix + "windowheight",
 				control.windowHeight, "window height");
 		control.useLight = p.getOptionBoolean(prefix + "useLight",
 				control.useLight, "use light (solid/surface rendering");
-		control.ambientValue = p.getOptionFloat(prefix + "ambientValue",
+		control.ambientValue = p.getOptionDouble(prefix + "ambientvalue",
 				control.ambientValue, "");
-		control.diffuseValue = p.getOptionFloat(prefix + "diffuseValue",
+		control.diffuseValue = p.getOptionDouble(prefix + "diffusevalue",
 				control.diffuseValue, "diffuse value");
-		control.specularValue = p.getOptionFloat(prefix + "specularValue",
+		control.specularValue = p.getOptionDouble(prefix + "specularvalue",
 				control.specularValue, "specular value");
-		control.shineValue = p.getOptionFloat(prefix + "shineValue",
+		control.shineValue = p.getOptionDouble(prefix + "shinevalue",
 				control.shineValue, "");
-		control.objectLightValue = p.getOptionFloat(
+		control.objectLightValue = p.getOptionDouble(
 				prefix + "objectLightValue", control.objectLightValue, "");
-		control.lightRed = p.getOptionInt(prefix + "lightRed",
+		control.lightRed = p.getOptionInt(prefix + "lightred",
 				control.lightRed, "");
-		control.lightGreen = p.getOptionInt(prefix + "lightGreen",
+		control.lightGreen = p.getOptionInt(prefix + "lightgreen",
 				control.lightGreen, "");
-		control.lightBlue = p.getOptionInt(prefix + "lightBlue",
+		control.lightBlue = p.getOptionInt(prefix + "lightblue",
 				control.lightBlue, "");
 		control.snapshot = p.getOptionBoolean(prefix + "snapshot",
 				control.snapshot, "Take a snapshot");
@@ -611,22 +611,22 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 				"VolumeViewer.backgroundColor",
 				control.backgroundColor.getRGB()));
 		control.lutNr = (int) Prefs.get("VolumeViewer.lutNr", control.lutNr);
-		// control.zAspect = (float) Prefs.get("VolumeViewer.zAspect",
+		// control.zAspect = (double) Prefs.get("VolumeViewer.zAspect",
 		// control.zAspect);
-		control.sampling = (float) Prefs.get("VolumeViewer.sampling",
+		control.sampling = (double) Prefs.get("VolumeViewer.sampling",
 				control.sampling);
-		control.dist = (float) Prefs.get("VolumeViewer.dist", control.dist);
+		control.dist = (double) Prefs.get("VolumeViewer.dist", control.dist);
 		control.showAxes = Prefs.get("VolumeViewer.showAxes", control.showAxes);
 		control.showSlices = Prefs.get("VolumeViewer.showSlices",
 				control.showSlices);
 		control.showClipLines = Prefs.get("VolumeViewer.showClipLines",
 				control.showClipLines);
-		control.scale = (float) Prefs.get("VolumeViewer.scale", control.scale);
-		control.degreeX = (float) Prefs.get("VolumeViewer.degreeX",
+		control.scale = (double) Prefs.get("VolumeViewer.scale", control.scale);
+		control.degreeX = (double) Prefs.get("VolumeViewer.degreeX",
 				control.degreeX);
-		control.degreeY = (float) Prefs.get("VolumeViewer.degreeY",
+		control.degreeY = (double) Prefs.get("VolumeViewer.degreeY",
 				control.degreeY);
-		control.degreeZ = (float) Prefs.get("VolumeViewer.degreeZ",
+		control.degreeZ = (double) Prefs.get("VolumeViewer.degreeZ",
 				control.degreeZ);
 		control.alphaMode = (int) Prefs.get("VolumeViewer.alphaMode",
 				control.alphaMode);
@@ -638,15 +638,15 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 		control.windowHeight = (int) Prefs.get("VolumeViewer.windowHeight",
 				control.windowHeight);
 		control.useLight = Prefs.get("VolumeViewer.useLight", control.useLight);
-		control.ambientValue = (float) Prefs.get("VolumeViewer.ambientValue",
+		control.ambientValue = (double) Prefs.get("VolumeViewer.ambientValue",
 				control.ambientValue);
-		control.diffuseValue = (float) Prefs.get("VolumeViewer.diffuseValue",
+		control.diffuseValue = (double) Prefs.get("VolumeViewer.diffuseValue",
 				control.diffuseValue);
-		control.specularValue = (float) Prefs.get("VolumeViewer.specularValue",
+		control.specularValue = (double) Prefs.get("VolumeViewer.specularValue",
 				control.specularValue);
-		control.shineValue = (float) Prefs.get("VolumeViewer.shineValue",
+		control.shineValue = (double) Prefs.get("VolumeViewer.shineValue",
 				control.shineValue);
-		control.objectLightValue = (float) Prefs.get(
+		control.objectLightValue = (double) Prefs.get(
 				"VolumeViewer.objectLightValue", control.objectLightValue);
 		control.lightRed = (int) Prefs.get("VolumeViewer.lightRed",
 				control.lightRed);
@@ -692,7 +692,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 		Prefs.set("VolumeViewer.lightBlue", control.lightBlue);
 	}
 
-	void setRotation(float degreeX, float degreeY, float degreeZ) {
+	void setRotation(double degreeX, double degreeY, double degreeZ) {
 		tr.setView(Math.toRadians(degreeX), Math.toRadians(degreeY),
 				Math.toRadians(degreeZ));
 		updateGuiSpinners();
@@ -753,7 +753,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 				"specularValue=", "shineValue=", "objectLightValue=",
 				"lightRed=", "lightGreen=", "lightBlue=", "snapshot=" };
 
-		float[] paramVals = { control.renderMode, control.interpolationMode,
+		double[] paramVals = { control.renderMode, control.interpolationMode,
 				control.backgroundColor.getRed(),
 				control.backgroundColor.getGreen(),
 				control.backgroundColor.getBlue(), control.lutNr,
@@ -783,7 +783,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 						if (str.lastIndexOf(pattern) > -1) {
 							int pos = str.lastIndexOf(pattern)
 									+ pattern.length();
-							paramVals[j] = Float.parseFloat(str.substring(pos));
+							paramVals[j] = Double.parseDouble(str.substring(pos));
 							valid = true;
 							if (j == 8)
 								distWasSet = true;
@@ -800,23 +800,23 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 								+ "interpolation=1	int (0 .. 3)\n"
 								+ "bg_r=0  bg_g=52  bg_b=101	int int (0 .. 255)\n"
 								+ "lut=0				int (0 .. 4)\n"
-								+ "z-aspect=1 	float  (!= 0)\n"
-								+ "sampling=1		float ( > 0) \n"
-								+ "dist=0			float\n"
+								+ "z-aspect=1 	double  (!= 0)\n"
+								+ "sampling=1		double ( > 0) \n"
+								+ "dist=0			double\n"
 								+ "axes=1			int (0,1)\n"
 								+ "slices=0		int (0,1)\n"
 								+ "clipping=0		int (0,1)\n"
-								+ "scale=1		float (> 0.25, < 128) \n"
-								+ "angle_x=115  angle_y=41  angle_z=17 	float (0 .. 360)\n"
+								+ "scale=1		double (> 0.25, < 128) \n"
+								+ "angle_x=115  angle_y=41  angle_z=17 	double (0 .. 360)\n"
 								+ "alphamode=0	int (0 .. 3)\n"
 								+ "width=500		int (>= 500)\n"
 								+ "height=660		int (>= 630)\n"
 								+ "useLight=0		int (0,1)\n"
-								+ "ambientValue=0.5	float (0 .. 1)\n"
-								+ "diffuseValue=0.5	float (0 .. 1)\n"
-								+ "specularValue=0.5	float (0 .. 1)\n"
-								+ "shineValue=17		float (0 .. 200)\n"
-								+ "objectLightValue=0.5	float (0 .. 2)\n"
+								+ "ambientValue=0.5	double (0 .. 1)\n"
+								+ "diffuseValue=0.5	double (0 .. 1)\n"
+								+ "specularValue=0.5	double (0 .. 1)\n"
+								+ "shineValue=17		double (0 .. 200)\n"
+								+ "objectLightValue=0.5	double (0 .. 2)\n"
 								+ "lightRed=255  lightGreen=128  lightBlue=0	int (0 .. 255)\n"
 								+ "snapshot=0		int (0,1)");
 						return false;
@@ -867,27 +867,27 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 		return true;
 	}
 
-	public float[] trScreen2Vol(float xS, float yS, float zS) {
+	public double[] trScreen2Vol(double xS, double yS, double zS) {
 		return tr.trScreen2Vol(xS, yS, zS);
 	}
 
-	public float[] trScreen2Volume(float[] xyzS) {
+	public double[] trScreen2Volume(double[] xyzS) {
 		return tr.trScreen2Vol(xyzS[0], xyzS[1], xyzS[2]);
 	}
 
-	public float[] trVolume2Screen(float[] xyzV) {
+	public double[] trVolume2Screen(double[] xyzV) {
 		return tr.trVol2Screen(xyzV[0], xyzV[1], xyzV[2]);
 	}
 
-	public float[] trVolume2Screen(float xV, float yV, float zV) {
+	public double[] trVolume2Screen(double xV, double yV, double zV) {
 		return tr.trVol2Screen(xV, yV, zV);
 	}
 
-	public float[] trLightScreen2Vol(float xS, float yS, float zS) {
+	public double[] trLightScreen2Vol(double xS, double yS, double zS) {
 		return trLight.trScreen2Vol(xS, yS, zS);
 	}
 
-	public float[] trLightVolume2Screen(float xV, float yV, float zV) {
+	public double[] trLightVolume2Screen(double xV, double yV, double zV) {
 		return trLight.trVol2Screen(xV, yV, zV);
 	}
 

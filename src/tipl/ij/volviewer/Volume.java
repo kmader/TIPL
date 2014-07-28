@@ -33,9 +33,9 @@ public abstract class Volume {
     int widthV;        // size of the volume
     int heightV;
     int depthV;
-    float xOffa;    // center of the volume
-    float yOffa;
-    float zOffa;
+    double xOffa;    // center of the volume
+    double yOffa;
+    double zOffa;
     boolean firstTime = true;
     int[][] histValGrad = new int[256][128]; // lum, grad
     int[][] histMeanDiff = new int[256][128];
