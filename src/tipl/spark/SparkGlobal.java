@@ -34,6 +34,8 @@ abstract public class SparkGlobal {
     static public boolean useCompression = true;
     static public double memFraction = 0.3;
     static public int retainedStages = 10;
+    static public int defaultPartitions = 25;
+    
     /**
      * how long to remember in seconds stage and task information (default 12 hours)
      */
@@ -103,7 +105,7 @@ abstract public class SparkGlobal {
             System.setProperty("spark.rdd.compress", "" + useCompression);
             //
             System.setProperty("spark.akka.frameSize", "" + maxMBforReduce);
-
+            System.setProperty("spark.hadoop.validateOutputSpecs", "false");
 
             System.setProperty("spark.storage.memoryFraction", "" + memFraction); // there is a fair amount of overhead in my scripts
             System.setProperty("spark.shuffle.consolidateFiles", "true"); // consolidates intermediate files
@@ -113,6 +115,7 @@ abstract public class SparkGlobal {
             System.setProperty("spark.cleaner.ttl", "" + metaDataMemoryTime); // time to remember metadata
 
             currentContext = new JavaSparkContext(getMasterName(), jobName, System.getenv("SPARK_HOME"), JavaSparkContext.jarOfClass(SparkGlobal.class));
+            
             StopSparkeAtFinish(currentContext);
         }
         return currentContext;

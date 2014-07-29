@@ -24,6 +24,7 @@ import tipl.formats.TiffFolder.TIFSliceReader
 import tipl.util.TImgTools
 import tipl.util.TImgBlock
 import org.apache.spark.api.java.JavaPairRDD
+import tipl.spark.SparkGlobal
 
 /** streaming functions
  *  
@@ -45,11 +46,11 @@ object IOOps {
   implicit class ImageFriendlySparkContext(sc: SparkContext) {
     val defMinPart = sc.defaultMinPartitions
     def tiffFolder(path: String)  = { // DTImg[U]
-    		val rawImg = sc.newAPIHadoopFile(path, classOf[WholeTiffFileInputFormat], classOf[String], classOf[TSliceReader])
+    		val rawImg = sc.newAPIHadoopFile(path, classOf[WholeTiffFileInputFormat], classOf[String], classOf[TSliceReader]).repartition(sc.getExecutorMemoryStatus.size*3)
     		rawImg
     }
     def byteFolder(path: String) = {
-      sc.newAPIHadoopFile(path, classOf[WholeByteInputFormat], classOf[String], classOf[Array[Byte]])
+      sc.newAPIHadoopFile(path, classOf[WholeByteInputFormat], classOf[String], classOf[Array[Byte]]).repartition(sc.getExecutorMemoryStatus.size*3)
     }
   }
   
@@ -114,14 +115,14 @@ object IOOps {
     /**
      * Read slices as a block of 2D objects instead of a 3D stack
      */
-    def loadAs2D() = {
-      parseSlices[Array[Double]](srd,TImgTools.IMAGETYPE_DOUBLE,inObj => inObj.asInstanceOf[Array[Double]])._1
+    def loadAs2D(sorted: Boolean = true) = {
+      parseSlices[Array[Double]](srd,TImgTools.IMAGETYPE_DOUBLE,inObj => inObj.asInstanceOf[Array[Double]],sorted)._1
     }
-    def loadAs2DLabels() = {
-      parseSlices[Array[Long]](srd,TImgTools.IMAGETYPE_LONG,inObj => inObj.asInstanceOf[Array[Long]])._1
+    def loadAs2DLabels(sorted: Boolean = true) = {
+      parseSlices[Array[Long]](srd,TImgTools.IMAGETYPE_LONG,inObj => inObj.asInstanceOf[Array[Long]],sorted)._1
     }
-    def loadAs2DBinary() = {
-      parseSlices[Array[Boolean]](srd,TImgTools.IMAGETYPE_BOOL,inObj => inObj.asInstanceOf[Array[Boolean]])._1
+    def loadAs2DBinary(sorted: Boolean = true) = {
+      parseSlices[Array[Boolean]](srd,TImgTools.IMAGETYPE_BOOL,inObj => inObj.asInstanceOf[Array[Boolean]],sorted)._1
     }
     /**
      * Automatically chooses the type based on the input image (lossless)
@@ -140,16 +141,18 @@ object IOOps {
       }
     }
     private[IOOps] def processSlices[A](asType: Int,transFcn: (Any => A)) = {
-      val (outRdd,firstImage) = parseSlices[A](srd,asType,transFcn)
+      val (outRdd,firstImage) = parseSlices[A](srd,asType,transFcn,true,srd.count.toInt)
       val timgDim = new D3int(firstImage.getDim.x,firstImage.getDim.y,srd.count.toInt)
       val efImg = TImgTools.MakeEditable(firstImage);
       efImg.setDim(timgDim)
       DTImg.WrapRDD[A](efImg,JavaPairRDD.fromRDD(outRdd),asType)
     }
-    private[IOOps] def parseSlices[A](srdIn: RDD[(String,T)],asType: Int,transFcn: (Any => A)) = {
+    private[IOOps] def parseSlices[A](srdIn: RDD[(String,T)],asType: Int,transFcn: (Any => A),sorted: Boolean, partitions: Int = 20) = {
       TImgTools.isValidType(asType)
       // sort by file name and then remove the filename
-      val srdSorted = srdIn.sortByKey(true, srd.count.toInt).map(_._2).zipWithIndex
+      val srdSorted = (if(sorted) srdIn.sortByKey(true, partitions) else srdIn).
+      	map(_._2).zipWithIndex 
+      					
       // keep the first element for reference
       val fst = srdSorted.first._1
       val spos = fst.getPos
