@@ -66,6 +66,7 @@ object Sinograms  {
 	// read the values as arrays of doubles
 	val doubleSlices = tiffSlices.loadAs2D(false)
 	
+	
 	// structure for statSlices is (filename,(imstats,imArray))
 	val statSlices = doubleSlices.mapValues{
 		cArr =>
@@ -99,28 +100,25 @@ object Sinograms  {
 	val objSize = doubleSlices.first()._2.getDim()
 	val projCount = projs.map(_._1.z).max
 	// sort projects by filename and replace with an index
-	val idProjs = projs.repartition(projCount).
+	val idProjs = projs.
 		map(inval => (inval._2,inval._1.z)).
-		map{inProj => (inProj._2,new DenseMatrix(objSize.x,objSize.y,inProj._1.toArray))}
+		map{inProj => (inProj._2,new DenseMatrix(objSize.x,objSize.y,inProj._1.toArray))}.
+		repartition(3*sc.getExecutorStorageStatus.length)
 	// calculate the projCount (largest dimension of the output array
 
-    // flatten out into a list of rows
-	val idRows = idProjs.flatMap{ inProj => 
-         val projId = inProj._1
-         val projData = inProj._2
-         for(c<-0 until projData.cols if c<settings.maxSino) yield (c,(projId,projData(::,c)))
-         }
-	
-    // generate sinograms from idrows
-    val idSino = idRows.groupByKey.mapValues{
-           inRows =>
-             val startMat = DenseMatrix.zeros[Double](objSize.x,projCount+1)
-             // combine rows into a single output array using fold
-             inRows.foldLeft(startMat)(
-                 (accMat,newLine) => {accMat(::,newLine._1) := newLine._2
-                   accMat
-                   })
-         }
+	// convert into rows
+	val idSino = idProjs.mapPartitions{
+	  inPart => 
+	    val firstProj = inPart.next
+	    var outSino = (0 until scala.math.min(firstProj._2.cols,settings.maxSino)).
+	        map{c => (c,DenseMatrix.zeros[Double](objSize.x,projCount+1))}
+
+	    for(curProj <-  inPart  ++ Seq(firstProj)) {
+	    	for(c <- 0 until outSino.length) outSino(c)._2(::,curProj._1) := curProj._2(::,c)
+	    }
+	    outSino.iterator
+	}.reduceByKey(_ + _)
+   
     // write the sinograms to disk as csv files
     idSino.foreach{ csino => csvwrite(new java.io.File(settings.savePath+"sino"+csino._1+".csv"),csino._2)}
     sc.stop

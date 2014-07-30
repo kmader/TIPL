@@ -44,13 +44,6 @@ object IOOps {
    */
   implicit class ImageFriendlySparkContext(sc: SparkContext) {
     val defMinPart = sc.defaultMinPartitions
-    def oldtiffFolder(path: String)  = { // DTImg[U]
-    		val rawImg = sc.newAPIHadoopFile(path, classOf[TiffFileInputFormat], classOf[String], classOf[TIFSliceReader])//.repartition(sc.getExecutorMemoryStatus.size*3)
-    		
-    		
-    		
-    		rawImg
-    }
     
     
     def tiffFolder(path: String, minPartitions: Int = sc.defaultMinPartitions): RDD[(String, TIFSliceReader)] = {
@@ -65,10 +58,6 @@ object IOOps {
     			updateConf,
     			minPartitions).setName(path)
   }
-    
-    def oldbyteFolder(path: String) = {
-      sc.newAPIHadoopFile(path, classOf[ByteInputFormat], classOf[String], classOf[Array[Byte]])//.repartition(sc.getExecutorMemoryStatus.size*3)
-    }
     def byteFolder(path: String, minPartitions: Int = sc.defaultMinPartitions): RDD[(String, Array[Byte])] = {
     	val job = new NewHadoopJob(sc.hadoopConfiguration)
     	NewFileInputFormat.addInputPath(job, new Path(path))
@@ -80,7 +69,7 @@ object IOOps {
     			classOf[Array[Byte]],
     			updateConf,
     			minPartitions).setName(path)
-  }
+    }
   }
   
 

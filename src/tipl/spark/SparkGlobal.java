@@ -223,6 +223,7 @@ abstract public class SparkGlobal {
         return partCount;
     }
 
+
     static public int calculatePartitions(int slices) {
         return calculatePartitions(slices, getSlicesPerCore());
     }
