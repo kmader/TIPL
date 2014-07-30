@@ -14,7 +14,7 @@ import tipl.tools.BaseTIPLPluginIn
 
 import tipl.spark.DTImg
 import tipl.spark.hadoop.TiffFileInputFormat
-import tipl.spark.hadoop.ByteInputFormat
+import org.apache.spark.input.ByteInputFormat
 import tipl.formats.TReader.TSliceReader
 
 import org.apache.spark.SparkContext

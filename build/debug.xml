@@ -7,6 +7,7 @@
             <fileset dir="../bin">
             	<include name="tipl/**/*.class"/>
             	<include name="spark/**/*.class"/>
+            	<include name="org/**/*.class"/>
             	<include name="META-INF/**/*.*"/>
             </fileset>
             

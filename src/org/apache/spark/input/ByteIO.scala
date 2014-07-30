@@ -1,4 +1,4 @@
-package tipl.spark.hadoop
+package org.apache.spark.input
 
 import scala.collection.JavaConversions._
 import com.google.common.io.{ByteStreams, Closeables}

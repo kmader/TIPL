@@ -7,6 +7,8 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext
 import tipl.formats.TiffFolder
 import org.apache.hadoop.mapreduce.lib.input.CombineFileRecordReader
 import tipl.formats.TiffFolder.TIFSliceReader
+import org.apache.spark.input.BinaryRecordReader
+import org.apache.spark.input.BinaryFileInputFormat
 
 
 /**
