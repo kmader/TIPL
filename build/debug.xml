@@ -6,6 +6,7 @@
     	<jar destfile="../build/TIPL_basic.jar" filesetmanifest="mergewithoutmain">
             <fileset dir="../bin">
             	<include name="tipl/**/*.class"/>
+            	<include name="spark/**/*.class"/>
             	<include name="META-INF/**/*.*"/>
             </fileset>
             
@@ -69,14 +70,14 @@
                 <attribute name="Main-Class" value="scala.tools.nsc.MainGenericRunner"/>
             </manifest>
 	    	<zipfileset excludes="META-INF/MANIFEST.MF" src="TIPL_core.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scala-library.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scala-swing.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scala-compiler.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/jline.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scalap.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scalacheck.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scala-partest.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala-2.9.3/lib/scala-dbc.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala/lib/scala-library.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala/lib/scala-swing.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala/lib/scala-compiler.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala/lib/jline.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala/lib/scalap.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala/lib/scala-xml.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala/lib/scala-partest.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="../../Informatics/scala/lib/scala-reflect.jar"/>
         </jar>
     </target>
 </project>
