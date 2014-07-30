@@ -14,8 +14,8 @@ import tipl.spark.ShapeAnalysis
 import org.apache.spark.rdd.RDD
 import tipl.tools.BaseTIPLPluginIn
 import tipl.spark.DTImg
-import tipl.spark.hadoop.WholeTiffFileInputFormat
-import tipl.spark.hadoop.WholeByteInputFormat
+import tipl.spark.hadoop.TiffFileInputFormat
+import tipl.spark.hadoop.ByteInputFormat
 import tipl.formats.TReader.TSliceReader
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -25,15 +25,13 @@ import tipl.util.TImgTools
 import tipl.util.TImgBlock
 import org.apache.spark.api.java.JavaPairRDD
 import tipl.spark.SparkGlobal
-
-/** streaming functions
- *  
- */
-  import org.apache.spark.streaming.StreamingContext._
-  import org.apache.spark.streaming._
-  import org.apache.spark.streaming.dstream.InputDStream
-  import org.apache.spark.streaming.dstream.DStream
-
+import org.apache.spark.streaming.StreamingContext._
+import org.apache.spark.streaming._
+import org.apache.spark.streaming.dstream.InputDStream
+import org.apache.spark.streaming.dstream.DStream
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.mapreduce.{InputFormat => NewInputFormat, Job => NewHadoopJob}
+import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat => NewFileInputFormat}
 
 /**
  * IOOps is a cover for all the functions related to reading in and writing out Images in Spark
@@ -45,24 +43,108 @@ object IOOps {
    */
   implicit class ImageFriendlySparkContext(sc: SparkContext) {
     val defMinPart = sc.defaultMinPartitions
-    def tiffFolder(path: String)  = { // DTImg[U]
-    		val rawImg = sc.newAPIHadoopFile(path, classOf[WholeTiffFileInputFormat], classOf[String], classOf[TSliceReader]).repartition(sc.getExecutorMemoryStatus.size*3)
+    def oldtiffFolder(path: String)  = { // DTImg[U]
+    		val rawImg = sc.newAPIHadoopFile(path, classOf[TiffFileInputFormat], classOf[String], classOf[TIFSliceReader])//.repartition(sc.getExecutorMemoryStatus.size*3)
+    		
+    		
+    		
     		rawImg
     }
-    def byteFolder(path: String) = {
-      sc.newAPIHadoopFile(path, classOf[WholeByteInputFormat], classOf[String], classOf[Array[Byte]]).repartition(sc.getExecutorMemoryStatus.size*3)
+    
+    
+    def tiffFolder(path: String, minPartitions: Int = sc.defaultMinPartitions): RDD[(String, TIFSliceReader)] = {
+    	val job = new NewHadoopJob(sc.hadoopConfiguration)
+    	NewFileInputFormat.addInputPath(job, new Path(path))
+    	val updateConf = job.getConfiguration
+    	new BinaryFileRDD(
+    			sc,
+    			classOf[TiffFileInputFormat],
+    			classOf[String],
+    			classOf[TIFSliceReader],
+    			updateConf,
+    			minPartitions).setName(path)
+  }
+    
+    def oldbyteFolder(path: String) = {
+      sc.newAPIHadoopFile(path, classOf[ByteInputFormat], classOf[String], classOf[Array[Byte]])//.repartition(sc.getExecutorMemoryStatus.size*3)
     }
+    def byteFolder(path: String, minPartitions: Int = sc.defaultMinPartitions): RDD[(String, Array[Byte])] = {
+    	val job = new NewHadoopJob(sc.hadoopConfiguration)
+    	NewFileInputFormat.addInputPath(job, new Path(path))
+    	val updateConf = job.getConfiguration
+    	new BinaryFileRDD(
+    			sc,
+    			classOf[ByteInputFormat],
+    			classOf[String],
+    			classOf[Array[Byte]],
+    			updateConf,
+    			minPartitions).setName(path)
+  }
   }
   
+ /** Allows better control of the partitioning
+  *  
+  */ 
+import java.text.SimpleDateFormat
+import java.util.Date
+
+import org.apache.hadoop.conf.{Configurable, Configuration}
+import org.apache.hadoop.io.Writable
+import org.apache.hadoop.mapreduce._
+
+import org.apache.spark.annotation.DeveloperApi
+import tipl.spark.hadoop.BinaryFileInputFormat
+import org.apache.spark.InterruptibleIterator
+import org.apache.spark.Logging
+import org.apache.spark.Partition
+import org.apache.spark.SerializableWritable
+import org.apache.spark.{SparkContext, TaskContext}
+
+import org.apache.spark.rdd.NewHadoopRDD
+import tipl.spark.hadoop.BinaryFileInputFormat
+
+private[spark] class BinaryFileRDD[T](
+    sc : SparkContext,
+    inputFormatClass: Class[_ <: BinaryFileInputFormat[T]],
+    keyClass: Class[String],
+    valueClass: Class[T],
+    @transient conf: Configuration,
+    minPartitions: Int)
+  extends NewHadoopRDD[String, T](sc, inputFormatClass, keyClass, valueClass, conf) {
+
+  override def getPartitions: Array[Partition] = {
+    val inputFormat = inputFormatClass.newInstance
+    inputFormat match {
+      case configurable: Configurable =>
+        configurable.setConf(conf)
+      case _ =>
+    }
+    val jobContext = newJobContext(conf, jobId)
+    inputFormat.setMaxSplitSize(jobContext, minPartitions)
+    val rawSplits = inputFormat.getSplits(jobContext).toArray
+    val result = new Array[Partition](rawSplits.size)
+    for (i <- 0 until rawSplits.size) {
+      result(i) = new NewHadoopPartition(id, i, rawSplits(i).asInstanceOf[InputSplit with Writable])
+    }
+    result
+  }
+}
 
 
+  private[spark] class NewHadoopPartition(
+    rddId: Int,
+    val index: Int,
+    @transient rawSplit: InputSplit with Writable)
+  extends Partition {
 
-  
+  val serializableHadoopSplit = new SerializableWritable(rawSplit)
+
+  override def hashCode(): Int = 41 * (41 + rddId) + index
+}
   
  /** 
  *  Now the spark heavy classes linking Byte readers to Tiff Files
  */
-
  implicit class UnreadTiffRDD[T<: RDD[(String,Array[Byte])]](srd: T) {
   def toTiffSlices() = {
     val tSlice = srd.first
@@ -192,10 +274,10 @@ object IOOps {
    * @param directory HDFS directory to monitor for new file
    */
 	  def byteFolder(directory: String) = 
-	    ssc.fileStream[String, Array[Byte], WholeByteInputFormat](directory)
+	    ssc.fileStream[String, Array[Byte], ByteInputFormat](directory)
 	  
 	  def tiffFolder(directory: String) = 
-	    ssc.fileStream[String, TSliceReader, WholeTiffFileInputFormat](directory)
+	    ssc.fileStream[String, TIFSliceReader, TiffFileInputFormat](directory)
 
   }
   

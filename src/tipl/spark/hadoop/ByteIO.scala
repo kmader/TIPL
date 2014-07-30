@@ -1,24 +1,21 @@
-package tipl.spark.hadoop 
+package tipl.spark.hadoop
+
 import scala.collection.JavaConversions._
 import com.google.common.io.{ByteStreams, Closeables}
 import org.apache.hadoop.mapreduce.InputSplit
 import org.apache.hadoop.mapreduce.lib.input.CombineFileSplit
 import org.apache.hadoop.mapreduce.RecordReader
 import org.apache.hadoop.mapreduce.TaskAttemptContext
-import tipl.formats.TiffFolder
-import tipl.formats.TReader.TSliceReader
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat
 import org.apache.hadoop.mapreduce.JobContext
 import org.apache.hadoop.mapreduce.lib.input.CombineFileRecordReader
-import scala.reflect.ClassTag
 
 
 /**
  *  The new (Hadoop 2.0) InputFormat for while binary files (not be to be confused with the recordreader itself)
  */
-@serializable abstract class WholeFileInputFormat[T]
+@serializable abstract class BinaryFileInputFormat[T]
  extends CombineFileInputFormat[String,T]  {
   override protected def isSplitable(context: JobContext, file: Path): Boolean = false
   /**
@@ -29,8 +26,10 @@ import scala.reflect.ClassTag
     val totalLen = files.map { file =>
       if (file.isDir) 0L else file.getLen
     }.sum
-    val maxSplitSize = Math.ceil(totalLen * 1.0 /
-      (if (minPartitions == 0) 1 else minPartitions)).toLong
+    
+    /** val maxSplitSize = Math.ceil(totalLen * 1.0 /
+      (if (minPartitions == 0) 1 else minPartitions)).toLong **/
+    val maxSplitSize = Math.ceil(totalLen*1.0/files.length).toLong
     super.setMaxSplitSize(maxSplitSize)
   }
 
@@ -43,7 +42,7 @@ import scala.reflect.ClassTag
  * out in a key-value pair, where the key is the file path and the value is the entire content of
  * the file as a TSliceReader (to keep the size information
  */
-@serializable abstract class WholeRecordReader[T](
+@serializable abstract class BinaryRecordReader[T](
     split: CombineFileSplit,
     context: TaskAttemptContext,
     index: Integer)
@@ -83,21 +82,21 @@ import scala.reflect.ClassTag
 }
 
 /**
- * This is not very efficient, but I am not comfortable enough with types and classtags to make in better
+ * A demo class for extracting just the byte array itself
  */
 
-@serializable class WholeByteInputFormat extends WholeFileInputFormat[Array[Byte]] {
+@serializable class ByteInputFormat extends BinaryFileInputFormat[Array[Byte]] {
  override def createRecordReader(split: InputSplit, taContext: TaskAttemptContext)= 
   {
-    new CombineFileRecordReader[String,Array[Byte]](split.asInstanceOf[CombineFileSplit],taContext,classOf[WholeByteRecordReader])
+    new CombineFileRecordReader[String,Array[Byte]](split.asInstanceOf[CombineFileSplit],taContext,classOf[ByteRecordReader])
   }
 }
 
-@serializable class WholeByteRecordReader(
+@serializable class ByteRecordReader(
     split: CombineFileSplit,
     context: TaskAttemptContext,
     index: Integer)
-     extends WholeRecordReader[Array[Byte]](split,context,index) {
+     extends BinaryRecordReader[Array[Byte]](split,context,index) {
   
     def parseByteArray(inArray: Array[Byte]) = inArray
 }
