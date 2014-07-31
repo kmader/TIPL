@@ -309,39 +309,10 @@ public class FNImage extends FImage {
 	public Object getPolyImage(final int isliceNumber, final int asType) {
 		final VoxelFunctionN[] cvf = VFNSpawn();
 		VFNIterate(cvf, isliceNumber);
-		switch (asType) {
-		case TImgTools.IMAGETYPE_BOOL:
-			final boolean[] maskSlice = new boolean[sliceSize];
-			for (int i = 0; i < sliceSize; i++)
-				maskSlice[i] = cvf[i].get() > 0.5;
-
-				return maskSlice;
-
-		case TImgTools.IMAGETYPE_CHAR:
-			final char[] byteSlice = new char[sliceSize];
-			for (int i = 0; i < sliceSize; i++)
-				byteSlice[i] = (char) cvf[i].get();
-			return byteSlice;
-		case TImgTools.IMAGETYPE_SHORT:
-			final short[] sSlice = new short[sliceSize];
-			for (int i = 0; i < sliceSize; i++)
-				sSlice[i] = (short) cvf[i].get();
-			return sSlice;
-		case TImgTools.IMAGETYPE_INT:
-			final int[] intSlice = new int[sliceSize];
-			for (int i = 0; i < sliceSize; i++)
-				intSlice[i] = (int) cvf[i].get();
-			return intSlice;
-		case TImgTools.IMAGETYPE_FLOAT:
-			final float[] floatSlice = new float[sliceSize];
-			for (int i = 0; i < sliceSize; i++)
-				floatSlice[i] = (float) cvf[i].get();
-			return floatSlice;
-		default:
-			throw new IllegalArgumentException("Type must be valid :"
-					+ asType);
-
-		}
+		double[] outImage= new double[sliceSize];
+		for (int i = 0; i < sliceSize; i++) outImage[i]=cvf[i].get();
+		return TImgTools.convertArrayType(outImage, TImgTools.IMAGETYPE_DOUBLE, asType, this.getSigned(), this.getShortScaleFactor());
+		
 	} 
 
 

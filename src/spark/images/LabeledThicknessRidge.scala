@@ -27,6 +27,7 @@ object LabeledThicknessRidge {
   }
 	def main(args: Array[String]) {
 	  val (ridgeFile,thickFile,savePath,p) = getParameters(args)
+	  p.checkForInvalid()
 	  val ridgeImg = TImgTools.ReadTImg(ridgeFile)
 	  val thickImg = TImgTools.ReadTImg(thickFile)
 	  val combinedImg = mergeRidgeThick(ridgeImg,thickImg)

@@ -124,93 +124,21 @@ public abstract class FuncImage implements TImgRO {
 		if (useFloat) {
 			final float[] fSlice = (float[]) templateData.getPolyImage(
 					isliceNumber, 3);
-			switch (asType) {
-			case 10:
-				for (int i = 0; i < maskSlice.length; i++) {
-					if (!useMask || maskSlice[i])
-						maskSlice[i] = getVFvalue(i, isliceNumber, fSlice[i]) > 0.5f;
-				}
-				return maskSlice;
-			case 0:
-				final char[] cSlice = new char[fSlice.length];
-				for (int i = 0; i < maskSlice.length; i++) {
-					if (!useMask || maskSlice[i])
-						cSlice[i] = (char) getVFvalue(i, isliceNumber,
-								fSlice[i]);
-				}
-				return cSlice;
-			case 1:
-				final short[] sSlice = new short[fSlice.length];
-				for (int i = 0; i < maskSlice.length; i++) {
-					if (!useMask || maskSlice[i])
-						sSlice[i] = (short) getVFvalue(i, isliceNumber,
-								fSlice[i]);
-				}
-				return sSlice;
-			case 2:
-				final int[] tSlice = new int[fSlice.length];
-				for (int i = 0; i < maskSlice.length; i++) {
-					if (!useMask || maskSlice[i])
-						tSlice[i] = (int) getVFvalue(i, isliceNumber, fSlice[i]);
-				}
-				return tSlice;
-			case 3:
-				for (int i = 0; i < maskSlice.length; i++) {
-					if (!useMask || maskSlice[i])
-						fSlice[i] = (float) getVFvalue(i, isliceNumber,
-								fSlice[i]);
-				}
-				return fSlice;
-			default:
-				throw new IllegalArgumentException("Type must be valid :"
-						+ asType);
-
-			}
+			
+			final double[] dSlice = new double[fSlice.length];
+			for (int i = 0; i < fSlice.length; i++) dSlice[i]=getVFvalue(i, isliceNumber, fSlice[i]);
+			
+			return TImgTools.convertArrayType(dSlice, TImgTools.IMAGETYPE_DOUBLE, asType, this.getSigned(), this.getShortScaleFactor());
+			
+			
 		} else {
 			final int[] tSlice = (int[]) templateData.getPolyImage(
 					isliceNumber, 2);
-			switch (asType) {
-			case 10:
-				for (int i = 0; i < maskSlice.length; i++) {
-					if (!useMask || maskSlice[i])
-						maskSlice[i] = getVFvalue(i, isliceNumber, tSlice[i]) > 0.5f;
-				}
-				return maskSlice;
-			case 0:
-				final char[] cSlice = new char[tSlice.length];
-				for (int i = 0; i < maskSlice.length; i++) {
-					if (!useMask || maskSlice[i])
-						cSlice[i] = (char) getVFvalue(i, isliceNumber,
-								tSlice[i]);
-				}
-				return cSlice;
-			case 1:
-				final short[] sSlice = new short[tSlice.length];
-				for (int i = 0; i < maskSlice.length; i++) {
-					if (!useMask || maskSlice[i])
-						sSlice[i] = (short) getVFvalue(i, isliceNumber,
-								tSlice[i]);
-				}
-				return sSlice;
-			case 2:
-				for (int i = 0; i < maskSlice.length; i++) {
-					if (!useMask || maskSlice[i])
-						tSlice[i] = (int) getVFvalue(i, isliceNumber, tSlice[i]);
-				}
-				return tSlice;
-			case 3:
-				final float[] fSlice = new float[tSlice.length];
-				for (int i = 0; i < maskSlice.length; i++) {
-					if (!useMask || maskSlice[i])
-						fSlice[i] = (float) getVFvalue(i, isliceNumber,
-								tSlice[i]);
-				}
-				return fSlice;
-			default:
-				throw new IllegalArgumentException("Type must be valid :"
-						+ asType);
-
-			}
+			
+			final double[] dSlice = new double[tSlice.length];
+			for (int i = 0; i < tSlice.length; i++) dSlice[i]=getVFvalue(i, isliceNumber, tSlice[i]);
+			
+			return TImgTools.convertArrayType(dSlice, TImgTools.IMAGETYPE_DOUBLE, asType, this.getSigned(), this.getShortScaleFactor());
 
 		}
 
