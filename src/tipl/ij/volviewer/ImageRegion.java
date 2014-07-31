@@ -188,7 +188,7 @@ class ImageRegion extends JPanel {
         else
             g2d.setColor(Color.white);
 
-        g2d.drawString("Volume Viewer", width - 100, height - 10);
+        g2d.drawString("TIPL Volume Viewer", width - 100, height - 10);
         g2d.dispose();
 
         String s = "Volume_Viewer_" + plotNumber;

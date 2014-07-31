@@ -101,7 +101,66 @@ public class FNImage extends FImage {
 			};
 		}
 	}
+	/** Class to use the first image as a mask (black or white) and the others as data **/
+	public static class MaskImage implements VFNGenerator {
+		final int keepMode;
+		final double startVal;
+		/**
+		 * Create the mask image
+		 * @param keepMode how to deal with >2 images (0 is last image, 1 is add, 2 is multiply)
+		 */
+		public MaskImage(int keepMode) {
+			this.keepMode=keepMode;
+			if(keepMode==2) startVal=1.0;
+			else startVal=0.0;
+		}
+		
+		@Override
+		public VoxelFunctionN get() {
+			return new VoxelFunctionN() {
+				int imgCount = 0;
+				boolean keepImage = false;
+				double outVal = startVal; 
+				
+				@Override
+				public void add(final Double[] ipos, final double v) {
+					if(imgCount==0) keepImage=v>0;
+					else {
+						if(keepImage) {
+							switch(keepMode) {
+							case 0:
+								outVal=v;
+								break;
+							case 1:
+								outVal+=v;
+								break;
+							case 2:
+								outVal*=v;
+								break;
+							}
+						}
+					}
+				    imgCount++;
+				}
 
+				@Override
+				public double get() {
+					return outVal;
+				}
+
+				@Override
+				public double[] getRange() {
+					return floatRange;
+				}
+
+				@Override
+				public String name() {
+					String oString = "MaskImage";
+					return oString;
+				}
+			};
+		}
+	}
 	/** Class for the generator to turn binary images into colored phase images **/
 	public static class PhaseImage implements VFNGenerator {
 		protected final double[] phaseVals;

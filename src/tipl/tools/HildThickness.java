@@ -51,7 +51,7 @@ public class HildThickness extends Thickness {
 	}
 
 	/** date and version number of the script **/
-	public static final String kVer = "08-08-2013 v02";
+	public static final String kVer = "31-07-2014 v03";
 
 	/**
 	 * Similar to DTObjection function in XIPL, takes a black and white input
@@ -142,7 +142,8 @@ public class HildThickness extends Thickness {
 		KV.execute();
 		final TImg distAim = KV.ExportImages(bwObject)[1];
 		KV = null;
-		final Thickness KT = new HildThickness(distAim);
+		final ITIPLPluginIO KT = TIPLPluginManager.createBestPluginIO("HildThickness", new TImg[] { distAim });
+        KT.LoadImages(new TImg[] { distAim });
 		KT.execute();
 		return new TImg[] { distAim, KT.ExportImages(distAim)[0] };
 	}
@@ -196,12 +197,8 @@ public class HildThickness extends Thickness {
 	int totalVoxels = aimLength;
 	public int bubbleCount = 0;
 
-	public HildThickness() {
+	private HildThickness() {
 
-	}
-
-	public HildThickness(final TImg distmapAim) {
-		LoadImages(new TImg[] { distmapAim });
 	}
 
 	/**
@@ -246,6 +243,14 @@ public class HildThickness extends Thickness {
 		} else
 			return false;
 
+	}
+	/** add the ridge file to the exported aim
+	 * 
+	 */
+	@Override
+	public TImg[] ExportImages(final TImgRO templateImage) {
+		final TImg cImg = TImgTools.WrapTImgRO(templateImage);
+		return new TImg[] { CreateOutputImage(cImg), ExportRidgeAim(cImg) };
 	}
 
 	/** export the bubble seeds if anyone actually wants them */

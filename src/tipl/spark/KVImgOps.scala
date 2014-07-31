@@ -137,6 +137,23 @@ import scala.reflect.ClassTag
     	
     }
   }
+  
+  
+  /** create a KVImage with only points above a certain value **/
+  def TImgROToKVThresh(sc: SparkContext,inImg: TImgRO,threshold: Double)  = {
+    val imgDim = inImg.getDim
+    val imgPos = inImg.getPos
+    val kvRdd = sc.parallelize(0 until imgDim.z).flatMap{
+      cSlice =>
+        val cSliceArr = inImg.getPolyImage(cSlice,TImgTools.IMAGETYPE_DOUBLE).asInstanceOf[Array[Double]]
+        for{y<- 0 until imgDim.y;
+            x<-0 until imgDim.x;
+            oVal = cSliceArr(y*imgDim.x+x);
+            if oVal>threshold
+        } yield (new D3int(imgPos.x+x,imgPos.y+y,imgPos.z+cSlice),oVal)
+    }
+    new KVImg(inImg,TImgTools.IMAGETYPE_DOUBLE,kvRdd)
+  }	
    
   
     

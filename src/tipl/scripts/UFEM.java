@@ -1273,7 +1273,8 @@ public class UFEM implements Runnable {
                 if (canalDistAim == null)
                     canalDistAim = TImgTools.ReadTImg(canalDistAimFile);
 
-                final Thickness KT = new HildThickness(canalDistAim);
+                final ITIPLPluginIO KT = TIPLPluginManager.createBestPluginIO("HildThickness", new TImg[] { canalDistAim });
+                KT.LoadImages(new TImg[] { canalDistAim });
                 KT.execute();
                 cdtbAim = KT.ExportImages(canalDistAim)[0];
                 canalDistAim = null;
@@ -1285,7 +1286,9 @@ public class UFEM implements Runnable {
                 System.out.println("Basic Mask Thickness Analysis ...");
                 if (maskdistAim == null)
                     maskdistAim = TImgTools.ReadTImg(maskdistAimFile);
-                final Thickness MKT = new HildThickness(maskdistAim);
+                
+                final ITIPLPluginIO MKT = TIPLPluginManager.createBestPluginIO("HildThickness", new TImg[] { maskdistAim });
+                MKT.LoadImages(new TImg[] { maskdistAim });
                 MKT.execute();
                 mdtoAim = MKT.ExportImages(maskdistAim)[0];
                 maskdistAim = null;

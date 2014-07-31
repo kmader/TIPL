@@ -4,7 +4,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel.MEMORY_AND_DISK_SER
 
-object imageTools extends Serializable {
+object imageBasics extends Serializable {
   def main(args: Array[String]) {
 
     System.setProperty("spark.executor.memory", "40G")

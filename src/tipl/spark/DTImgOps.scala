@@ -22,8 +22,6 @@ import org.apache.spark.api.java.JavaPairRDD
  */
 @serializable object DTImgOps {
 
-  	
-
 
   def DTImgToKV(inImg: DTImg[_])  = {
     val imgType = inImg.getImageType
@@ -33,7 +31,10 @@ import org.apache.spark.api.java.JavaPairRDD
         val dim = cPoint._2.getDim
         val obj = cPoint._2.get
         val outArr = TypeMacros.castArr(obj,imgType)
-        for(z<-0 until dim.z;y<- 0 until dim.y;x<-0 until dim.x) 
+        for{z<-0 until dim.z;
+            y<- 0 until dim.y;
+            x<-0 until dim.x
+        }
           yield (new D3int(pos.x+x,pos.y+y,pos.z+z),outArr((z*dim.y+y)*dim.x+x))
     }
     //val onImg = TypeMacros.correctlyTypeDTImg(inImg)

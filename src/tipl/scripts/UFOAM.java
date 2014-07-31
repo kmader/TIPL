@@ -914,17 +914,17 @@ public class UFOAM {
     }
 
     public void runThickness() {
-        HildThickness KT = new HildThickness(distmapAim);
+        final ITIPLPluginIO KT = TIPLPluginManager.createBestPluginIO("HildThickness", new TImg[] { distmapAim });
+        KT.LoadImages(new TImg[] { distmapAim });
         if (ridgeAimFile.length() > 0)
-            TImgTools.WriteTImg(KT.ExportRidgeAim(distmapAim), ridgeAimFile);
+            TImgTools.WriteTImg(((HildThickness) KT).ExportRidgeAim(distmapAim), ridgeAimFile);
         KT.execute();
         thickmapAim = KT.ExportImages(distmapAim)[0];
-        KT = null;
     }
 
     public void runThreshold() {
         // Threshold the data
-        short[] inImg = TImgTools.makeTImgFullReadable(floatAim).getShortAim();
+        final short[] inImg = TImgTools.makeTImgFullReadable(floatAim).getShortAim();
         boolean[] scdat = new boolean[inImg.length];
         for (int i = 0; i < inImg.length; i++)
             scdat[i] = inImg[i] > threshVal;
@@ -934,7 +934,6 @@ public class UFOAM {
         threshoutAim.appendProcLog("CMD:Threshold, Value:" + threshVal);
 
         // Clear out old variables
-        inImg = null;
         scdat = null;
 
     }
