@@ -9,50 +9,80 @@ import scala.math
  *  A series of tools that are useful for image data
  */
 object ImageTools {
-  
-	def spread_voxels[T](pvec: (D3int, T), windSize: D3int = new D3int(1,1,1)) = {
+	/** 
+	 *  spread voxels out (S instead of T since S includes for component labeling the long as well (Long,T)
+	 */
+	def spread_voxels[S](pvec: (D3int, S), windSize: D3int = new D3int(1,1,1)) = {
       val pos = pvec._1
       val label = pvec._2
       for (x <- 0 to windSize.x; y <- 0 to windSize.y; z <- 0 to windSize.z) 
         yield (new D3int(pos.x + x, pos.y + y, pos.z + z), (label, (x == 0 & y == 0 & z == 0)))
     }
+	def cl_merge_voxels[T](a: ((Long,T),Boolean), b: ((Long,T), Boolean)): ((Long,T), Boolean) = {
+	  (
+	      (
+	      math.min(a._1._1, b._1._1), // lowest label
+	      if(a._2) a._1._2 else b._1._2
+	      )
+	      , // if a is original then keep it otherwise keep b
+	      a._2 | b._2 // does it exist in the original
+	      ) 
+	}
+	
   /** a very general component labeling routine **/
-	def compLabeling[T](inImg: RDD[(D3int,T)],windSize: D3int = new D3int(1,1,1)) = {
+  def compLabeling[T](inImg: RDD[(D3int,T)],windSize: D3int = new D3int(1,1,1)) = {
+	 compLabelingCore(inImg,(inPoints: 
+	     RDD[(D3int,(Long,T))]) => 
+	       inPoints.
+	       flatMap(spread_voxels(_,windSize)))
+  }
+	
+ /** a very general component labeling routine using partitions to increase efficiency and minimize the amount of over the wire traffic **/
+ def compLabelingWithPartitions[T](inImg: RDD[(D3int,T)],windSize: D3int = new D3int(1,1,1)) = {
+	val partitionSpreadFunction = (inPoints: RDD[(D3int,(Long,T))]) => {  
+      inPoints.mapPartitions{
+        cPart => 
+          val outVox = cPart.flatMap(spread_voxels[(Long,T)](_,windSize)).toList
+          val grpSpreadPixels = outVox.groupBy(_._1)
+          grpSpreadPixels.
+          mapValues(inGroup => inGroup.map(_._2).reduce(cl_merge_voxels[T])).
+          toIterator
+      }
+	}
+	compLabelingCore(inImg,partitionSpreadFunction)
+
+  }
+ /**
+  * Core routines for component labeling independent of implementation which is given by the pointSpreadFunctionc command
+  */
+ private[spark] def compLabelingCore[T](inImg: RDD[(D3int,T)],
+     pointSpreadFunction: RDD[(D3int,(Long,T))] => RDD[(D3int,((Long,T),Boolean))]) = {
     // perform a threshold and relabel points
     var labelImg = inImg.zipWithUniqueId.map(inval => (inval._1._1,(inval._2,inval._1._2)))
-    		
-
+    
     var groupList = Array((0L, 0))
     var running = true
     var iterations = 0
     while (running) {
-      val newLabels = labelImg.
-        flatMap(spread_voxels(_,windSize))
-       val nextStep = newLabels.
-        reduceByKey{
-            (a, b) => 
-              (
-                  (
-                      math.min(a._1._1, b._1._1), // lowest label
-                      if(a._2) a._1._2 else b._1._2
-                  )
-                  , // if a is original then keep it otherwise keep b
-                  a._2 | b._2 // does it exist in the original
-                  ) 
-      }.
+      val spreadList = pointSpreadFunction(labelImg)
+      val newLabels = spreadList.reduceByKey(cl_merge_voxels).
         filter(_._2._2). // keep only voxels which contain original pixels
         map(pvec => (pvec._1, pvec._2._1))
       // make a list of each label and how many voxels are in it
-      val curGroupList = newLabels.map(pvec => (pvec._2._1._1, 1)).
+      val curGroupList = newLabels.map(pvec => (pvec._2._1, 1)).
         reduceByKey(_ + _).sortByKey(true).collect
       // if the list isn't the same as before, continue running since we need to wait for swaps to stop
       running = (curGroupList.deep != groupList.deep)
       groupList = curGroupList
-      labelImg = newLabels.map(pvec => (pvec._1,pvec._2._1))
+      labelImg = newLabels
       iterations += 1
-      print("Iter #" + iterations + ":" + groupList.mkString(","))
+      val ngroup = groupList.map(_._2)
+      println("****")
+      println("Iter #" + iterations + ": Groups:" + groupList.length+", mean size:"+ngroup.sum*1.0/ngroup.length+", max size:"+ngroup.max)
+      println("****")
     }
     labelImg
 
   }
+ 
 }

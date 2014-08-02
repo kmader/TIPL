@@ -22,19 +22,20 @@ object LabeledThicknessRidge {
       val p = SparkGlobal.activeParser(args)
       val ridgeFile = p.getOptionPath("ridge", "ridge.tif", "The ridge map")
       val thickFile = p.getOptionPath("thickness", "thickmap.tif", "The thickness map")
+      val neighbors = p.getOptionD3int("neighbors", new D3int(1,1,1), "The neighborhood for connecting ridge points")
       val savePath = p.getOptionPath("save", ridgeFile+"_cl", "Directory for output")
-      (ridgeFile,thickFile,savePath,p)
+      (ridgeFile,thickFile,neighbors,savePath,p)
   }
 	def main(args: Array[String]) {
-	  val (ridgeFile,thickFile,savePath,p) = getParameters(args)
+	  val (ridgeFile,thickFile,neighbors,savePath,p) = getParameters(args)
 	  p.checkForInvalid()
 	  val ridgeImg = TImgTools.ReadTImg(ridgeFile)
 	  val thickImg = TImgTools.ReadTImg(thickFile)
 	  val combinedImg = mergeRidgeThick(ridgeImg,thickImg)
 	  val sc = SparkGlobal.getContext("LabeledThicknessRidge").sc
 	  val justRidge = KVImgOps.TImgROToKVThresh(sc, combinedImg, 0).getBaseImg
-	  val compLabeledRidge = ImageTools.compLabeling(justRidge)
-	  compLabeledRidge.map{pvec => (pvec._1.x,pvec._1.y,pvec._1.z,pvec._2._1,pvec._2._2)}.saveAsTextFile(savePath)
+	  val compLabeledRidge = ImageTools.compLabelingWithPartitions(justRidge,neighbors)
+	  compLabeledRidge.map{pvec => pvec._1.x+","+pvec._1.y+","+pvec._1.z+","+pvec._2._1+","+pvec._2._2}.saveAsTextFile(savePath)
 	  
 	  
 	}
