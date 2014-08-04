@@ -38,28 +38,7 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
     "ShapeAnalysis:Spark"
   }
 
-  /**
-   * The following is the (static) function that turns a list of points into an analyzed shape
-   */
-  val singleShape = (cPoint: (Long, Iterable[(D3int, Long)])) => {
-    val label = cPoint._1
-    val pointList = cPoint._2
-    val cLabel = label.toInt
-    val cVoxel = new GrayVoxels(cLabel)
-    for (cpt <- pointList) {
-      cVoxel.addVox(cpt._1.x, cpt._1.y, cpt._1.z, cLabel)
-    }
-    cVoxel.mean
-    for (cpt <- pointList) {
-      cVoxel.addCovVox(cpt._1.x, cpt._1.y, cpt._1.z, cLabel)
-    }
-    cVoxel.calcCOV
-    cVoxel.diag
-    for (cpt <- pointList) {
-      cVoxel.setExtentsVoxel(cpt._1.x, cpt._1.y, cpt._1.z)
-    }
-    cVoxel
-  }
+
 
   var singleGV: Array[GrayVoxels] = Array();
 
@@ -70,7 +49,7 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
     val gvList = labeledImage.getBaseImg. // get it into the scala format
       filter(filterFun). // remove zeros
       groupBy(gbFun). // group by value
-      map(singleShape) // run shape analysis
+      map(ShapeAnalysis.singleShape) // run shape analysis
     singleGV = gvList.collect()
     singleGV.foreach(x => print("Value " + x.getLabel + ", " + x.count))
 
@@ -93,6 +72,31 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
   }
 
 
+}
+
+object ShapeAnalysis {
+    /**
+   * The following is the (static) function that turns a list of points into an analyzed shape
+   */
+  def singleShape(cPoint: (Long, Iterable[(D3int, Long)])) = {
+    val label = cPoint._1
+    val pointList = cPoint._2
+    val cLabel = label.toInt
+    val cVoxel = new GrayVoxels(cLabel)
+    for (cpt <- pointList) {
+      cVoxel.addVox(cpt._1.x, cpt._1.y, cpt._1.z, cLabel)
+    }
+    cVoxel.mean
+    for (cpt <- pointList) {
+      cVoxel.addCovVox(cpt._1.x, cpt._1.y, cpt._1.z, cLabel)
+    }
+    cVoxel.calcCOV
+    cVoxel.diag
+    for (cpt <- pointList) {
+      cVoxel.setExtentsVoxel(cpt._1.x, cpt._1.y, cpt._1.z)
+    }
+    cVoxel
+  }
 }
 
 object SATest extends ShapeAnalysis {
