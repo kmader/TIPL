@@ -5,6 +5,7 @@ package tipl.tools;
 //import java.awt.image.ColorModel.*;
 import java.io.Serializable;
 
+import tipl.util.D3float;
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
 
@@ -604,6 +605,83 @@ public class GrayVoxels implements Serializable {
 				return Math.sqrt(cz2 / voxelCount);// -Math.pow(meanz(),2));
 		} else
 			return -5;
+	}
+	public static String getHeaderString(String analysisName,boolean addDist,boolean includeShapeTensor) {
+		String headerStr = "//LACUNA_NUMBER, TRIANGLES, SCALE_X, SCALE_Y, SCALE_Z, POS_X, POS_Y, POS_Z , STD_X, STD_Y, STD_Z,"+
+				"PROJ_X, PROJ_Y, PROJ_Z, PCA1_X, PCA1_Y, PCA1_Z, PCA1_S, PCA2_X, PCA2_Y, PCA2_Z, PCA2_S, PCA3_X, PCA3_Y, PCA3_Z, PCA3_S,"+
+				"PROJ_PCA1, PROJ_PCA2, PROJ_PCA3,"+
+				"OBJ_RADIUS, OBJ_RADIUS_STD, VOLUME, VOLUME_BOX";
+		if (addDist) {
+            headerStr += ", " + analysisName + "_Grad_X,"
+                    + analysisName + "_Grad_Y," + analysisName
+                    + "_Grad_Z," + analysisName + "_Angle";
+            headerStr += ", " + analysisName
+                    + "_Distance_Mean," + analysisName
+                    + "_Distance_COV, " + analysisName
+                    + "_Distance_STD";
+        }
+        if (includeShapeTensor) {
+            for (final char cX : "XYZ".toCharArray()) {
+                for (final char cY : "XYZ".toCharArray()) {
+                    headerStr += ", SHAPET_" + cX + "" + cY;
+                }
+            }
+        }
+        return headerStr;
+	}
+	public String mkString(final D3float elSize,boolean addDist,boolean includeShapeTensor) {
+		
+		// voxels
+        String lacString = "";
+        lacString = getLabel() + ", 0 ," + elSize.x
+                + "," + elSize.y + ","
+                + elSize.z;
+        // Position
+        lacString += "," + meanx() + ","
+                + meany() + ","
+                + meanz();
+        // STD
+        lacString += "," + stdx() + ","
+                + stdy() + ","
+                + stdz();
+        // Projection XYZ
+        lacString += "," + rangex() + ","
+                + rangey() + ","
+                + rangez();
+        // PCA Components
+        for (int cpca = 0; cpca < 3; cpca++) {
+            lacString += ","
+                    + getComp(cpca)[0]
+                    + ","
+                    + getComp(cpca)[1]
+                    + ","
+                    + getComp(cpca)[2]
+                    + "," + getScore(cpca);
+        }
+        lacString += "," + rangep1() + ","
+                + rangep2() + ","
+                + rangep3();
+        // Radius
+        lacString += "," + radius() + ","
+                + stdr();
+        // Volume
+        lacString += ","
+                + count()
+                + ","
+                + (rangep1() * rangep2() * rangep3());
+        if (addDist) {
+            // Grad X,y,z, angle
+            lacString += ", " + gradx()
+                    + ", " + grady() + ","
+                    + gradz() + ","
+                    + angVec(0);
+            // Distance mean, cov, std
+            lacString += ", " +mean()
+                    + "," + mean() + ","
+                    + std();
+        }
+        if (includeShapeTensor) lacString += getTensorString();
+        return lacString;
 	}
 
 	@Override

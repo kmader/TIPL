@@ -96,34 +96,42 @@ case class D2int(x: Int, y: Int)
 object ImageTools2D {
   /** create a Key-value Image with only points above a certain value **/
   def BlockImageToKVImage[T](sc: SparkContext,inImg: RDD[(D3int,TImgBlock[Array[T]])],threshold: T)(implicit num: Numeric[T])  = {
-    inImg.flatMap{
+    inImg.mapValues{
       cSlice =>
-        val cSliceArr = cSlice._2.get
-        val imgDim = cSlice._2.getDim
-        val imgPos = cSlice._1
+        val cSliceArr = cSlice.get
+        val imgDim = cSlice.getDim
+        val imgPos = cSlice.getPos
         for{y<- 0 until imgDim.y;
             x<-0 until imgDim.x;
             oVal = cSliceArr(y*imgDim.x+x);
             if num.gt(oVal,threshold)
-        } yield (new D3int(cSlice._1.x+x,cSlice._1.y+y,cSlice._1.z),oVal)
+        } yield (new D3int(imgPos.x+x,imgPos.y+y,imgPos.z),oVal)
     }
   }
  
   /** a very general component labeling routine using partitions to increase efficiency and minimize the amount of over the wire traffic **/
-  def compLabelingBySlice[T](inImg: RDD[(D3int,T)],windSize: D3int = new D3int(1,1,0)) = {
-	  inImg.mapPartitions{inSlice => sliceCompLabel[T](inSlice,windSize)}
+  def compLabelingBySlice[T](inImg: RDD[(D3int,T)],windSize: D3int = new D3int(1,1,0),maxIters: Int = Integer.MAX_VALUE) = {
+	  inImg.mapPartitions(inSlice => sliceCompLabel[T](inSlice,windSize,maxIters=maxIters),true)
+  }
+  
+   /** a very general component labeling routine using partitions to increase efficiency and minimize the amount of over the wire traffic **/
+  def compLabelingBySlicePart[T](inImg: RDD[(D3int,Iterator[(D3int,T)])],windSize: D3int = new D3int(1,1,0),maxIters: Int = Integer.MAX_VALUE) = {
+	  inImg.mapPartitions(
+	    inPart => 
+	      inPart.map{inSlice => (inSlice._1,sliceCompLabel[T](inSlice._2,windSize))}
+	    ,true)
   }
   
    /**
   * perform component labeling for slices separately 
   */
- private[ImageTools2D] def sliceCompLabel[T](inImg: Iterator[(D3int,T)],windSize: D3int)  = {
+ private[ImageTools2D] def sliceCompLabel[T](inImg: Iterator[(D3int,T)],windSize: D3int,maxIters: Int = Integer.MAX_VALUE)  = {
     // perform a threshold and relabel points
     var labelImg = inImg.toList.zipWithIndex.map{inval => (inval._1._1,(inval._2.toLong,inval._1._2))}
     var groupList = Map(0L -> 0)
     var running = true
     var iterations = 0
-    while (running) {
+    while (running & iterations<maxIters) {
       val spreadList = labelImg.flatMap{inVox => ImageTools.spread_voxels(inVox,windSize)}
       val newLabels = spreadList.groupBy(_._1).mapValues{
         voxList =>
@@ -134,13 +142,11 @@ object ImageTools2D {
       val curGroupList = newLabels.map(pvec => (pvec._2._1, 1)).groupBy(_._1).
       	mapValues{ voxList => voxList.map{_._2}.reduce(_ + _)}
       
-       // reduceByKey(_ + _).sortByKey(true).collect
       // if the list isn't the same as before, continue running since we need to wait for swaps to stop
       running = !(curGroupList == groupList)
       groupList = curGroupList
       labelImg = newLabels
       iterations += 1
-      val ngroup = groupList.map(_._2)
     }
     labelImg.toIterator
   } 

@@ -10,6 +10,7 @@ import tipl.util.TImgTools
 import tipl.spark.SparkGlobal
 import breeze.linalg._
 import tipl.util.D3int
+import tipl.util.D3float
 import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.linalg.{Matrix, Matrices}
@@ -18,11 +19,12 @@ import tipl.spark.KVImg
 import tipl.spark.ShapeAnalysis
 import java.io.BufferedWriter
 import java.io.FileWriter
+import tipl.tools.GrayVoxels
 // ~/Dropbox/Informatics/spark/bin/spark-submit --class spark.images.CellTracking --executor-memory 4G --driver-memory 4G /Users/mader/Dropbox/tipl/build/TIPL_core.jar -tif=/Volumes/MacDisk/AeroFS/VardanData/ForKevin_VA/3D/Spheroid2/GFP 
 /**
  * Class to hold the basic settings
  */
-@serializable case class CellTrackingSettings(imgPath: String,savePath: String, checkpointResults: Boolean, threshValue: Double)
+@serializable case class CellTrackingSettings(imgPath: String,savePath: String, checkpointResults: Boolean,cacheInput: Boolean, forcePartitions: Int,maxIters: Int, threshValue: Double)
 	// format for storing image statistics
 @serializable case class cellImstats(min: Double, mean: Double, max: Double)
 /**
@@ -36,11 +38,13 @@ object CellTrackingCommon  {
 	
 	val savePath = p.getOptionPath("save", imgPath, "Directory for output")
 	val checkpointResults = p.getOptionBoolean("checkpoint", false, "Write intermediate results as output")
+	val cacheInput = p.getOptionBoolean("cache", false, "Cache Input")
 	val threshValue = p.getOptionDouble("threshvalue", 500, "Threshold value for cells")
-
+	val forcePartitions = p.getOptionInt("forcepart",-1, "Force partition count")
+    val maxIters =  p.getOptionInt("maxiters",Integer.MAX_VALUE, "Maximum number of iterations for component labeling")
 	val smallestObjSize =  p.getOptionInt("smallestobj",0, "Smallest objects to keep")
 	
-	(CellTrackingSettings(imgPath+"/*"+imgSuffix,savePath,checkpointResults,threshValue),p)
+	(CellTrackingSettings(imgPath+"/*"+imgSuffix,savePath,checkpointResults,cacheInput,forcePartitions,maxIters,threshValue),p)
   }
   // calculate statistics for an array
   def arrStats(inArr: Array[Double]) = cellImstats(inArr.min,inArr.sum/(1.0*inArr.length),inArr.max)
@@ -49,6 +53,7 @@ object CellTrackingCommon  {
 }
 
 object CellTracking  {
+
   def main(args: Array[String]) {
 	 val (settings,p) = CellTrackingCommon.getParameters(args)
 	p.checkForInvalid()
@@ -66,13 +71,23 @@ object CellTracking  {
 	    	case None=> 0L
 	    }
 	}
-	
 	// read the values as arrays of doubles
 	val doubleSlices = tiffSlices.loadAs2D(sorted=false,nameToValue=Some(getFileNumber))
 	
-	val bwImage = ImageTools2D.BlockImageToKVImage(sc, doubleSlices, settings.threshValue)
-	val clImage = ImageTools2D.compLabelingBySlice(bwImage)
-	val sliceCLimage = clImage.map{inVal => (inVal._1,inVal._2._1)}.groupBy(_._1.z)
+	var loadedSlices = if(settings.forcePartitions>0) doubleSlices.repartition(settings.forcePartitions) else doubleSlices 
+	loadedSlices = if(settings.cacheInput) loadedSlices.cache() else loadedSlices
+	
+	if(settings.cacheInput)
+	  loadedSlices.foreach{
+	   inSlice =>
+	     println("W"+inSlice._1.getWidth())
+	}
+	
+	val start = System.nanoTime()
+	
+	val bwImage = ImageTools2D.BlockImageToKVImage(sc, loadedSlices, settings.threshValue)
+	val clImage = ImageTools2D.compLabelingBySlicePart(bwImage.mapValues{_.toIterator},maxIters=settings.maxIters)
+	val sliceCLimage = clImage.map{inIter => (inIter._1.z,inIter._2.map{inVal => (inVal._1,inVal._2._1)})}
 	val shapes = sliceCLimage.
 		mapValues{
 		 	curSlice =>
@@ -83,16 +98,32 @@ object CellTracking  {
 		 	  }
 		 	  
 	}
-	val outText = shapes.mapValues{allShapes => allShapes.map(_.toString(",")).mkString("\\n")}
-	outText.foreach{
+	val cCount = sc.accumulator(0)
+	shapes.foreach{
 	  cSlice => 
-	  	val outFile = new java.io.File(settings.savePath+"/shape"+cSlice._1+".csv")
+	    writeOutput(cSlice,settings.savePath+"/shape")
+	    cCount+=1
+	}
+	
+	val end = System.nanoTime()
+	val elapsedTime = (end-start)/1000000000.0
+	val fps = cCount.value/elapsedTime
+    sc.stop
+    
+    println("Time Elapsed:"+elapsedTime+", FPS:"+fps)
+  }
+  
+  def writeOutput(cSlice: (Int,Iterable[GrayVoxels]),outPath: String) = {
+    	val outFile = new java.io.File(outPath+cSlice._1+".csv")
 	  	val writer = new BufferedWriter(new FileWriter(outFile))
-	  	writer.write(cSlice._1)
+	  	writer.write(GrayVoxels.getHeaderString("Test",false,true)+"\n")
+	  	cSlice._2.foreach{
+	  	  cShape => 
+	  	    val cLine = cShape.mkString(new D3float(1.0f),false,true)
+	  	    writer.write(cLine+"\n")
+	  	}
 	    //Close writer
 	  	writer.close();
-	}
-    sc.stop
   }
 }
 
