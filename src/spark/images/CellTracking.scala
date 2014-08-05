@@ -63,7 +63,7 @@ object CellTracking  {
 	val tiffSlices = sc.tiffFolder(settings.imgPath)
 	
 	// read the number from the filename
-	val parseFilename = "(.*)GFP([0-9]*)[.]tif".r
+	val parseFilename = "(.*)DAPI([0-9]*)[.]tif".r
 	val getFileNumber: (String => Long) = {
 	  filename =>
 	    parseFilename findFirstIn filename match {
@@ -86,7 +86,8 @@ object CellTracking  {
 	val start = System.nanoTime()
 	
 	val bwImage = ImageTools2D.BlockImageToKVImage(sc, loadedSlices, settings.threshValue)
-	val clImage = ImageTools2D.compLabelingBySlicePart(bwImage.mapValues{_.toIterator},maxIters=settings.maxIters)
+	val clImage = ImageTools2D.compLabelingBySlicePartJL(bwImage.mapValues{_.toIterator},maxIters=settings.maxIters)
+	println(clImage.mapValues{cSlice => cSlice.size}.collectAsMap.mkString("\t"))
 	val sliceCLimage = clImage.map{inIter => (inIter._1.z,inIter._2.map{inVal => (inVal._1,inVal._2._1)})}
 	val shapes = sliceCLimage.
 		mapValues{
@@ -124,6 +125,65 @@ object CellTracking  {
 	  	}
 	    //Close writer
 	  	writer.close();
+  }
+}
+
+object CellTrackingSingle {
+
+  def main(args: Array[String]) {
+	 val (settings,p) = CellTrackingCommon.getParameters(args)
+	p.checkForInvalid()
+	val sc = SparkGlobal.getContext("CellTrackingTool").sc
+	
+	// read in a directory of tiffs (as a live stream)
+	val tiffSlices = sc.tiffFolder(settings.imgPath)
+	
+	// read the number from the filename
+	val parseFilename = "(.*)GFP([0-9]*)[.]tif".r
+	val getFileNumber: (String => Long) = {
+	  filename =>
+	    parseFilename findFirstIn filename match {
+	    	case Some(parseFilename(prefix,number)) => number.toLong
+	    	case None=> 0L
+	    }
+	}
+	// read the values as arrays of doubles
+	val doubleSlices = tiffSlices.loadAs2D(sorted=false,nameToValue=Some(getFileNumber))
+	
+	var loadedSlices = if(settings.forcePartitions>0) doubleSlices.repartition(settings.forcePartitions) else doubleSlices 
+	loadedSlices = if(settings.cacheInput) loadedSlices.cache() else loadedSlices
+	
+	if(settings.cacheInput)
+	  loadedSlices.foreach{
+	   inSlice =>
+	     println("W"+inSlice._1.getWidth())
+	}
+	
+	val start = System.nanoTime()
+	
+	val bwImage = ImageTools2D.BlockImageToKVImageDouble(sc, loadedSlices, settings.threshValue)
+	val cCount = sc.accumulator(0)
+	bwImage.foreach{
+	  curSlice =>
+	    val clSlice = ImageTools2D.sliceCompLabel[Double](curSlice._2.toIterator,new D3int(1,1,0), settings.maxIters)
+	    
+	    val slCLsl = (curSlice._1.z,clSlice.map{inVal => (inVal._1,inVal._2._1)})
+	    val pointList = slCLsl._2.toList.groupBy(_._2)
+	    val shapes = pointList.map{
+		 	    inGroup =>
+		 	      ShapeAnalysis.singleShape(inGroup._1,inGroup._2)
+		 	  }
+	    CellTracking.writeOutput((slCLsl._1,shapes),settings.savePath+"/shape")
+	    cCount+=1
+	    
+	}
+	
+	val end = System.nanoTime()
+	val elapsedTime = (end-start)/1000000000.0
+	val fps = cCount.value/elapsedTime
+    sc.stop
+    
+    println("Time Elapsed:"+elapsedTime+", FPS:"+fps)
   }
 }
 

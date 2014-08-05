@@ -85,6 +85,44 @@ object ImageTools {
     labelImg
 
   }
+  /**
+  * Core routines for component labeling independent of implementation which is given by the pointSpreadFunctionc command
+  */
+ private[spark] def compLabelingJoinList[T](inImg: RDD[(D3int,T)],windSize: D3int = new D3int(1,1,1)) = {
+    // perform a threshold and relabel points
+    var labelImg = inImg.zipWithUniqueId.map(inval => (inval._1._1,(inval._2,inval._1._2)))
+    
+    var running = true
+    var iterations = 0
+    while (running) {
+      val spreadList = labelImg.flatMap(spread_voxels(_,windSize))
+      val mergeList = spreadList.groupByKey.map{
+        cKeyValues => 
+          val cPoints = cKeyValues._2
+          val isTrue = (for(cPt <- cPoints) yield cPt._2)
+          (for(cPt <- cPoints) yield cPt._1._1,
+            isTrue.reduce(_ || _))
+      }.filter(_._2)
+      val replList = mergeList.flatMap{
+        mlVal =>
+          val mlList = mlVal._1.toList
+          val minComp = mlList.min
+          for (cVal <- mlList; if cVal!=minComp) yield (cVal,minComp)
+      }.distinct.collect.toMap
+      running = (replList.size>0)
+      val newLabels = labelImg.mapValues{
+        cVox => (replList.getOrElse(cVox._1,cVox._1),cVox._2)
+      }
+      
+      labelImg = newLabels
+      iterations += 1
+      println("****")
+      println("Iter #" + iterations + ": Replacements:" + replList.size)
+      println("****")
+    }
+    labelImg
+
+  }
  
 }
 
@@ -103,8 +141,22 @@ object ImageTools2D {
         val imgPos = cSlice.getPos
         for{y<- 0 until imgDim.y;
             x<-0 until imgDim.x;
-            oVal = cSliceArr(y*imgDim.x+x);
+            oVal = cSliceArr(y*imgDim.x+x)
             if num.gt(oVal,threshold)
+        } yield (new D3int(imgPos.x+x,imgPos.y+y,imgPos.z),oVal)
+    }
+  }
+  /** create a Key-value Image with only points above a certain value **/
+  def BlockImageToKVImageDouble(sc: SparkContext,inImg: RDD[(D3int,TImgBlock[Array[Double]])],threshold: Double)  = {
+    inImg.mapValues{
+      cSlice =>
+        val cSliceArr = cSlice.get
+        val imgDim = cSlice.getDim
+        val imgPos = cSlice.getPos
+        for{y<- 0 until imgDim.y;
+            x<-0 until imgDim.x;
+            oVal = cSliceArr(y*imgDim.x+x);
+            if oVal>=threshold
         } yield (new D3int(imgPos.x+x,imgPos.y+y,imgPos.z),oVal)
     }
   }
@@ -122,10 +174,11 @@ object ImageTools2D {
 	    ,true)
   }
   
+  
    /**
   * perform component labeling for slices separately 
   */
- private[ImageTools2D] def sliceCompLabel[T](inImg: Iterator[(D3int,T)],windSize: D3int,maxIters: Int = Integer.MAX_VALUE)  = {
+  def sliceCompLabel[T](inImg: Iterator[(D3int,T)],windSize: D3int,maxIters: Int = Integer.MAX_VALUE)  = {
     // perform a threshold and relabel points
     var labelImg = inImg.toList.zipWithIndex.map{inval => (inval._1._1,(inval._2.toLong,inval._1._2))}
     var groupList = Map(0L -> 0)
@@ -150,6 +203,52 @@ object ImageTools2D {
     }
     labelImg.toIterator
   } 
+  
+     /** a very general component labeling routine using partitions to increase efficiency and minimize the amount of over the wire traffic **/
+  def compLabelingBySlicePartJL[T](inImg: RDD[(D3int,Iterator[(D3int,T)])],windSize: D3int = new D3int(1,1,0),maxIters: Int = Integer.MAX_VALUE) = {
+	  inImg.mapPartitions(
+	    inPart => 
+	      inPart.map{inSlice => (inSlice._1,compLabelingSliceJoinList[T](inSlice._2,windSize))}
+	    ,true)
+  }
+  
+  private[spark] def compLabelingSliceJoinList[T](inImg: Iterator[(D3int,T)],windSize: D3int = new D3int(1,1,0)) = {
+    // perform a threshold and relabel points
+    var labelImg = inImg.zipWithIndex.map(inval => (inval._1._1,(inval._2.toLong,inval._1._2)))
+    
+    var running = true
+    var iterations = 0
+    while (running) {
+      val spreadList = labelImg.flatMap(ImageTools.spread_voxels(_,windSize))
+      val mergeList = spreadList.toList.groupBy(_._1).map{
+        cKeyValues => 
+          val cPoints = cKeyValues._2
+          val isTrue = (for(cPt <- cPoints) yield cPt._2._2)
+          
+          (for(cPt <- cPoints) yield cPt._2._1._1,
+            isTrue.reduce(_ || _))
+      }.filter(_._2)
+      val replList = mergeList.flatMap{
+        mlVal =>
+          val mlList = mlVal._1.toList
+          val minComp = mlList.min
+          for (cVal <- mlList; if cVal!=minComp) yield (cVal,minComp)
+      }.toMap
+      
+      val newLabels = labelImg.map{
+        cVox => (cVox._1,(replList.getOrElse(cVox._2._1,cVox._2._1),cVox._2._2))
+      }
+      
+      labelImg = newLabels
+      iterations += 1
+      println("****")
+      println("Iter #" + iterations + ": Replacements:" + replList.size)
+      println("****")
+      running = (replList.size>0)
+    }
+    labelImg
+
+  }
   
   
 }
