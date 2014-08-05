@@ -1,3 +1,4 @@
+package tipl.ccgeom;
 /*----------------------------------------------------------------------------
  * Class cPointd  -- point with double coordinates
  *

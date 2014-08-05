@@ -1,3 +1,4 @@
+package tipl.ccgeom;
 /*--------------------------------------------------------------------------
  * Class cFace -- face of polyhydra or planar graph;
  *                in this case it is a triangular face

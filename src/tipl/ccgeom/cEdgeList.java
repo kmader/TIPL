@@ -1,3 +1,4 @@
+package tipl.ccgeom;
 /*---------------------------------------------------------------------------
  * Class cEdgeList -- used for storing a group of edges
  *

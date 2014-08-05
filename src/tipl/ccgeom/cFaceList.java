@@ -1,3 +1,4 @@
+package tipl.ccgeom;
 /*-----------------------------------------------------------------------------
  * Class cFaceList -- stores faces in a form of a list datastructure
  * 
