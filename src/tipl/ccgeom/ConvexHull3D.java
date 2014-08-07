@@ -5,7 +5,12 @@ package tipl.ccgeom;
  * Application for computing convex hull of points in 3D.
  *---------------------------------------------------------------------------*/
 import java.awt.*;
-import java.io.*;
+
+import tipl.ccgeom.cFaceList.cFace;
+import tipl.ccgeom.cFaceList.cFaceBasic;
+import tipl.util.D3int;
+
+import java.util.List;
 
 public class ConvexHull3D {
   /* Define flags */
@@ -15,80 +20,52 @@ public class ConvexHull3D {
   private static final boolean PROCESSED = true;
   private static final int SAFE = 1000000;
 
-  private boolean debug;  
+  private final boolean debug=false;  
+  private final boolean verbose=false;
   private boolean check;  
   boolean toDraw;
-  private cVertexList list;
-  private cEdgeList elist;
-  private cFaceList flist;
-
-  public static void main(String args[]) throws IOException {
-    ConvexHull3D ch = new ConvexHull3D();
+  final protected cVertexList list;
+  protected cEdgeList elist;
+  protected cFaceList flist;
+  // Begin Kevin Code
+  /**
+   * Create a Hull from a D3 list of points (an easy output from a shape object)
+   * @param inList the list of points in the object
+   * @return
+   */
+  public static ConvexHull3D HullFromD3List(List<D3int> inList) {
+	 return new ConvexHull3D(new cVertexList(inList));
   }
+  public cEdgeList GetEdges() {
+	  return elist;
+  }
+  public List<cFaceBasic> GetFaces() {
+	  return flist.toList();
+  }
+  // End Kevin Code
+  private ConvexHull3D(cVertexList inlist) {
+    this.list=inlist;
+    execute();
+  }
+  private void execute() {
+	  elist = new cEdgeList();
+	    flist = new cFaceList();
+	    toDraw = true;
+	    check = false;
 
-  ConvexHull3D() throws IOException {
-    list = new cVertexList();
-    elist = new cEdgeList();
-    flist = new cFaceList();
-    debug = toDraw = false;
-    check = false;
-    String s;
+	   
 
-    char c;
-    char line[] = new char[20];
-    int i = 0;
-    int x, y, z;
-    boolean flag;
-    int counter;
+	    ReadVertices();
+	    if(verbose) System.out.println("Data was accepted");
+	    if(verbose) list.PrintVertices3D();
+	    System.out.println("Calculating convex hull...");
 
-    System.out.println("\n\nInput points:\nCoord-s must be seperated by a *tab*\n"+
-		       "ENTER after each point"+"\nTo finish input type end + "+
-		       "ENTER at the end"+
-		       "\nExample:\n17      23      123\n34      5      1\nend\n"+
-		       "-----------------start entering data-------------------");
-    do {
-      do {
-	c = (char) System.in.read();
-	line[i] = c;
-	i++;
-      } while (c !='\n' );
-      s = new String(line);
-      s = s.substring(0,i-1);
-      if (s.equals("end"))
-	break;
-      flag = false;
-      counter = 0;
-      for (int j=0; j < s.length(); j++) {
-	if (s.charAt(j) == '\t') 
-	  counter++; 
-	if (counter == 2) {
-	  flag = true; break; 
-	}
-      }
-      if (flag) {
-	int t = s.indexOf('\t');
-	int t1 = s.lastIndexOf('\t');
-	x = Integer.parseInt(s.substring(0,t));
-	y = Integer.parseInt(s.substring(t+1,t1));
-	z = Integer.parseInt(s.substring(t1+1,s.length()));
-	list.SetVertex3D(x,y,z);
-	i=0;
-      }
-      else 
-	break;
-    } while (!s.equals("end"));
-
-    ReadVertices();
-    System.out.println("Data was accepted");
-    list.PrintVertices3D();
-    System.out.println("Calculating convex hull...");
-
-    if (DoubleTriangle()) {
-      toDraw = true;
-      ConstructHull();
-      Print();
-      ClearLists();
-    }
+	    if (DoubleTriangle()) {
+	      toDraw = true;
+	      ConstructHull();
+	      Print();
+	     
+	    }
   }
 
   public void ReadVertices() 
@@ -106,12 +83,7 @@ public class ConvexHull3D {
     } while ( v != list.head );
   }
 
-  public void ClearLists()
-  {
-    elist.ClearEdgeList();
-    flist.ClearFaceList();
-    check = debug = toDraw = false;
-  }
+
 
   /*---------------------------------------------------------------------
     Print: Prints out the vertices and the faces.  Uses the vnum indices 
@@ -159,7 +131,8 @@ public class ConvexHull3D {
  
     System.out.println("\nVertices:\tV = "+ V);
     System.out.println("index:\tx\ty\tz");
-    do {                                 
+    
+    if (debug) do {                                 
       System.out.println( v.vnum+":\t"+v.v.x+"\t"+v.v.y+"\t"+v.v.z+"");
       System.out.println("newpath");
       System.out.println(v.v.x+"\t"+v.v.y+" 2 0 360 arc");
@@ -176,7 +149,7 @@ public class ConvexHull3D {
     } while ( f  != flist.head );
     System.out.println("\nFaces:\tF = "+F);
     System.out.println("Visible faces only:");
-    do {           
+    if (debug) do {           
       /* Print face only if it is lower */
       if ( f. lower )
 	{
@@ -194,7 +167,7 @@ public class ConvexHull3D {
     /* prints a list of all faces */
     System.out.println("List of all faces:");
     System.out.println("\tv0\tv1\tv2\t(vertex indices)");
-    do {
+    if(debug) do {
       System.out.println("\t"+f.vertex[0].vnum+
 			 "\t"+f.vertex[1].vnum+
 			 "\t"+f.vertex[2].vnum);

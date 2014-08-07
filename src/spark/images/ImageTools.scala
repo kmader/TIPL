@@ -29,7 +29,6 @@ object ImageTools {
 	      a._2 | b._2 // does it exist in the original
 	      ) 
 	}
-	
   /** a very general component labeling routine **/
   def compLabeling[T](inImg: RDD[(D3int,T)],windSize: D3int = new D3int(1,1,1)) = {
 	 compLabelingCore(inImg,(inPoints: 

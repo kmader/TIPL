@@ -1,4 +1,5 @@
 package tipl.ccgeom;
+
 /*----------------------------------------------------------------------
 class cVertexList.
 
@@ -18,6 +19,8 @@ GetNearVertex finds the vertex in the list closest to a particular
 point (specified by a user mouseclick elsewhere).
 ----------------------------------------------------------------------*/
 import java.awt.*;
+import tipl.util.D3int;
+import java.util.List;
 
 class cVertexList {
   int n;              // 0 means empty; 1 means one vertex; etc.
@@ -26,6 +29,11 @@ class cVertexList {
   cVertexList() {
     head = null;
     n = 0;
+  }
+  
+  cVertexList(List<D3int> d3list) {
+	  super();
+	  for(D3int val : d3list) this.SetVertex3D(val.x, val.y, val.z);
   }
 
  public cVertex GetElement(int index)
@@ -102,7 +110,7 @@ class cVertexList {
   }
 
   /* Adds vertex, inserting in between vertices of the closes edge */
-  public void AddVertex(int x, int y)
+  private void AddVertex(int x, int y)
   {
     cVertex v = new cVertex(x, y);
     //gets vertex of 1st vertex of the closest edge to the point	

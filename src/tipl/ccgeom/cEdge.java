@@ -1,4 +1,7 @@
 package tipl.ccgeom;
+
+import tipl.ccgeom.cFaceList.cFace;
+
 /*-----------------------------------------------------------------------------
  * Class cEdge is used to represent an edge of a polygon or polyhydra
  *-----------------------------------------------------------------------------*/
@@ -20,7 +23,15 @@ public class cEdge {
     delete = false;
     next = prev = null;
   }
-
+  @Override
+  public String toString() {
+	  return endpts[0]+" -> "+endpts[1];
+  }
+  public cPointi getVec() {
+	  cPointi a = endpts[0].getVec();
+	  cPointi b = endpts[1].getVec();
+	  return new cPointi(b.x-a.x,b.y-a.y,b.z-a.z);
+  }
   public void PrintEdge(int n)
   {
     if (this != null) {

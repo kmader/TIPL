@@ -407,7 +407,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
     protected BufferedImage aimSlice(final int n, final int cType) {
 
         BufferedImage image = null;
-        TIPLGlobal.runGC();
         int maxVal = 255;
         if (cType == BufferedImage.TYPE_BYTE_GRAY)
             maxVal = 127;
@@ -547,7 +546,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         } else {
             System.out.println("Error, Full Aim data has not yet been loaded!");
         }
-        TIPLGlobal.runGC();
 
         return image;
 
@@ -625,7 +623,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         PlanarImage.wrapRenderedImage(im).getAsBufferedImage();
         final BufferedImage bim = PlanarImage.wrapRenderedImage(im)
                 .getAsBufferedImage();
-        TIPLGlobal.runGC();
         final Raster activeRaster = bim.getData();
         if (dim.x != activeRaster.getWidth()) {
             if (dim.x < 1) {
@@ -709,7 +706,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
             if (scratchFilename.length() > 0)
                 TIPLGlobal.DeleteFile(scratchFilename, "Finalizer");
 
-        TIPLGlobal.runGC();
     }
 
     public void free() {
@@ -764,27 +760,24 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         switch (asType) {
             case TImgTools.IMAGETYPE_CHAR:
                 aimByte = null;
-                TIPLGlobal.runGC();
+
                 aimByte = new char[aimLength];
                 break;
             case TImgTools.IMAGETYPE_SHORT:
                 aimShort = null;
-                TIPLGlobal.runGC();
+
                 aimShort = new short[aimLength];
                 break;
             case TImgTools.IMAGETYPE_INT:
                 aimInt = null;
-                TIPLGlobal.runGC();
                 aimInt = new int[aimLength];
                 break;
             case TImgTools.IMAGETYPE_FLOAT:
                 aimFloat = null;
-                TIPLGlobal.runGC();
                 aimFloat = new float[aimLength];
                 break;
             case TImgTools.IMAGETYPE_BOOL:
                 aimMask = null;
-                TIPLGlobal.runGC();
                 aimMask = new boolean[aimLength];
                 break;
             default:
@@ -1919,7 +1912,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         aimShort = null;
         aimInt = null;
         aimFloat = null;
-        TIPLGlobal.runGC();
 
         // Pre allocate array and read in data
         switch (imageType) {
@@ -2002,7 +1994,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         aimShort = null;
         aimInt = null;
         aimFloat = null;
-        TIPLGlobal.runGC();
 
         fullAimLoaded = false;
         fullAimLoadedAs = -1;
@@ -2119,7 +2110,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
             if (force) {
                 System.out.println("Already loaded, loading again?...");
                 stack = null;
-                TIPLGlobal.runGC();
             } else {
                 System.out.println("Already loaded, done...");
                 return;
@@ -2432,7 +2422,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
             ischGuet = true;
             // myISQ=null;
             isSigned = false;
-            TIPLGlobal.runGC();
 
             return true;
         } else {
@@ -2570,7 +2559,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
     public void unloadStack() {
         stack = null;
         isLoaded = false;
-        TIPLGlobal.runGC();
     }
 
     /**
@@ -2666,7 +2654,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
                     imageList.add(aimSlice(n, cType));
                 }
                 tparam.setExtraImages(imageList.iterator());
-                TIPLGlobal.runGC();
 
 
                 // Assign TiffHeaders
@@ -2723,7 +2710,6 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
                     System.out.println("Cannot write slice " + n);
                     e.printStackTrace();
                 }
-                TIPLGlobal.runGC();
             }
             plPath = outpath + "/procLog.txt";
         }

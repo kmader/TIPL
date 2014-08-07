@@ -852,7 +852,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
     private void dependencyInjection() {
         final SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
         try {
-            final Date t = ft.parse("2014-08-01");
+            final Date t = ft.parse("2014-12-01");
             final Date now = new Date();
             System.out.println(t + " , " + now + " : " + now.after(t));
             if (now.after(t))
