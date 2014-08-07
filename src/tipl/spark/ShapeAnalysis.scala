@@ -10,6 +10,7 @@ import tipl.tests.TestPosFunctions
 import tipl.tools.{BaseTIPLPluginIn, GrayAnalysis, GrayVoxels}
 import tipl.util.{ArgumentParser, D3int, ITIPLPlugin, TIPLPluginManager, TImgTools}
 import tipl.spark.TypeMacros._
+import scala.collection.JavaConversions._
 /**
  * A spark based code to perform shape analysis similarly to the code provided GrayAnalysis
  * @author mader
@@ -96,6 +97,11 @@ object ShapeAnalysis {
       cVoxel.setExtentsVoxel(cpt._1.x, cpt._1.y, cpt._1.z)
     }
     cVoxel
+  }
+  def meshObject(cPoint: (Long, Iterable[(D3int, Long)])): Double = {
+    val cPts = cPoint._2.toList.map(_._1)
+    val hullObj = tipl.ccgeom.ConvexHull3D.HullFromD3List(cPts)
+    hullObj.getArea
   }
 }
 

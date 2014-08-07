@@ -27,13 +27,23 @@ public class cFaceList {
 	  List<cFaceBasic> outList = new ArrayList<cFaceBasic>(n);
 	  cFace cEle = head;
 	  if (head==null) return outList;
-	  outList.add(cEle.asBasic());
-	  cEle=cEle.next;
-	  while (cEle!=head) {
+	  do {
 		  outList.add(cEle.asBasic());
 		  cEle=cEle.next;
-	  }
+	  } while (cEle!=head);
 	  return outList;
+  }
+  
+  public double totalArea() {
+	  cFace cEle = head;
+	  double area=0.0;
+	  if (head==null) return area;
+	  
+	  do {
+		  area+=cEle.getArea();
+		  cEle=cEle.next;
+	  } while (cEle!=head);
+	  return area;
   }
 
   public cFace MakeNullFace()

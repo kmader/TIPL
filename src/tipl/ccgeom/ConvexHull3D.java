@@ -22,11 +22,11 @@ public class ConvexHull3D {
 
   private final boolean debug=false;  
   private final boolean verbose=false;
-  private boolean check;  
-  boolean toDraw;
+  private boolean check=false;  
+  boolean toDraw=true;
   final protected cVertexList list;
-  protected cEdgeList elist;
-  protected cFaceList flist;
+  final protected cEdgeList elist=new cEdgeList();
+  final protected cFaceList flist=new cFaceList();
   // Begin Kevin Code
   /**
    * Create a Hull from a D3 list of points (an easy output from a shape object)
@@ -36,11 +36,63 @@ public class ConvexHull3D {
   public static ConvexHull3D HullFromD3List(List<D3int> inList) {
 	 return new ConvexHull3D(new cVertexList(inList));
   }
-  public cEdgeList GetEdges() {
+  public static interface AdaptiveHull {
+	  public boolean addPoint(D3int curPoint);
+	  public List<cFaceBasic> getFaces();
+	  public double getArea();
+  }
+  public static AdaptiveHull createAdaptiveHull() {
+	  final ConvexHull3D hull = new ConvexHull3D(); 
+	  return new AdaptiveHull() {
+		  boolean allEmpty=true;
+		boolean freshPoints = true;
+		
+		@Override
+		public boolean addPoint(D3int curPoint) {
+			cVertex cVx = new cVertex(curPoint.x,curPoint.y,curPoint.z);
+			
+			if (allEmpty) {
+				hull.list.InsertBeforeHead(cVx);
+				allEmpty=true;
+				return freshPoints;
+			} else {
+				
+			}
+			freshPoints=freshPoints || hull.AddOne(cVx);
+			return freshPoints;
+		}
+		
+		protected void doUpdate() {
+			if (freshPoints) {
+				hull.ReadVertices();
+				boolean doConstruct = hull.DoubleTriangle();
+				if (doConstruct) hull.ConstructHull();
+				freshPoints=false;
+			} 
+		}
+		
+		@Override
+		public List<cFaceBasic> getFaces() { doUpdate();return hull.getFaces(); }
+
+		@Override
+		public double getArea() { doUpdate();return hull.getArea(); }
+		  
+	  };
+  }
+  
+  public cEdgeList getEdges() {
 	  return elist;
   }
-  public List<cFaceBasic> GetFaces() {
+  public List<cFaceBasic> getFaces() {
 	  return flist.toList();
+  }
+  public double getArea() {
+	  return flist.totalArea();
+  }
+  
+  private ConvexHull3D() {
+	  
+	  this.list=new cVertexList(); // wont be using this variable and wont execute
   }
   // End Kevin Code
   private ConvexHull3D(cVertexList inlist) {
@@ -48,13 +100,6 @@ public class ConvexHull3D {
     execute();
   }
   private void execute() {
-	  elist = new cEdgeList();
-	    flist = new cFaceList();
-	    toDraw = true;
-	    check = false;
-
-	   
-
 	    ReadVertices();
 	    if(verbose) System.out.println("Data was accepted");
 	    if(verbose) list.PrintVertices3D();
@@ -63,7 +108,7 @@ public class ConvexHull3D {
 	    if (DoubleTriangle()) {
 	      toDraw = true;
 	      ConstructHull();
-	      Print();
+	      if(debug) Print();
 	     
 	    }
   }

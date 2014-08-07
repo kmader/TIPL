@@ -1539,8 +1539,8 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
                         String outString = insFile.readLine().getLine();
 
-                        final int curRow = new Integer(
-                                cLine.get("lacuna_number"));
+                        final int curRow = new Double(
+                                cLine.get("lacuna_number")).intValue();
 
                         if (TIPLGlobal.getDebug())
                             System.out.println("Processing Line:#" + curRow);
