@@ -34,15 +34,12 @@ public class cEdge {
   }
   public void PrintEdge(int n)
   {
-    if (this != null) {
       System.out.print("Edge" + n + ": ");
       endpts[0].PrintVertex();
       System.out.print(" ");
       endpts[1].PrintVertex();
       System.out.print("; ");
       System.out.println("");
-    }
-    else 
-      System.out.println("no edge");
+   
   }
 }

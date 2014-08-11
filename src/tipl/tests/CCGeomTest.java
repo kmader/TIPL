@@ -30,7 +30,7 @@ public class CCGeomTest {
 		ConvexHull3D cch = ConvexHull3D.HullFromD3List(keepPoints);
 		
 		double area = cch.getArea();
-		System.out.println("Comparing Surface Area:");
+		System.out.println("Comparing Surface Area:"+keepPoints.size()+" pts");
 
 		double goalTol = 0.05;
 		System.out.println("Area:"+area+", Actual Surface Area:"+suArea+", Tolerance:"+goalTol*suArea+", Pct:"+goalTol*100+"%");
@@ -124,26 +124,55 @@ public class CCGeomTest {
 
 
 	}
-
+	
 	@Test
 	public void testConvexHullManyPoints() {
+		testConvexHullShell(15,0);
+	}
+	
+	@Test
+	public void testConvexHullBigShell() {
+		testConvexHullShell(30,29);
+	}
+	
+	public void testConvexHullShell(final double sphereRadius,final double innerRadius) {
 		System.out.println("****** Many Points Test ******");
 		final ArrayList<D3int> keepPoints = new ArrayList<D3int>();
-		final int windSize=15;
-		final double sphereRadius=10;
+		final int windSize=(int) (Math.round(sphereRadius)+1);
+		
 
 		for(int x=-windSize;x<=windSize;x++) {
 			for(int y=-windSize;y<=windSize;y++) {
 				for(int z=-windSize;z<=windSize;z++) {
-					if ((Math.abs(x)<=sphereRadius) && (Math.abs(y)<=sphereRadius) && (Math.abs(z)<=sphereRadius))  keepPoints.add(new D3int(x,y,z));
+					double r = Math.sqrt(Math.pow(x, 2)+Math.pow(y, 2)+Math.pow(z, 2));
+					if ((r<=sphereRadius) && (r>=innerRadius)) keepPoints.add(new D3int(x,y,z));
 				}
 			}
 		}
-		double suArea = 6*Math.pow(2*sphereRadius, 2);
+		double suArea = 4*Math.PI*Math.pow(sphereRadius, 2);
 		checkSA(keepPoints,suArea);
-
+	}
+	
+	/**
+	 * For other fun shapes
+	 */
+	@Test
+	public void testConvexHullSpiral() {
+		System.out.println("****** Convex Shapes Test ******");
+		final ArrayList<D3int> keepPoints = new ArrayList<D3int>();
+		final double radius = 10;
+		final double height = 10;
+		for(double t=0.0;t<2*Math.PI;t+=0.1) {
+			int x = (int) Math.round(radius*Math.cos(t));
+			int y = (int) Math.round(radius*Math.sin(t));
+			int z = (int) Math.round(t/6.28*height);
+			keepPoints.add(new D3int(x,y,z));
+		}
+		// cylinder surface area
+		double suArea = 2*Math.PI*Math.pow(radius, 2)+2*Math.PI*radius*height;
 
 	}
+	
 	/**
 	 * Test for real images
 	 */

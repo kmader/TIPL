@@ -1505,9 +1505,9 @@ public class Gui extends JPanel implements
             if (enableSpinnerChangeListener) {
                 control.spinnersAreChanging = true;
 
-                control.degreeX = (double) spinnerX.getValue();
-                control.degreeY = (double) spinnerY.getValue();
-                control.degreeZ = (double) spinnerZ.getValue();
+                control.degreeX = ((Double) spinnerX.getValue()).doubleValue();
+                control.degreeY = ((Double) spinnerY.getValue()).doubleValue();
+                control.degreeZ = ((Double) spinnerZ.getValue()).doubleValue();
 
                 vv.setRotation(control.degreeX, control.degreeY, control.degreeZ);
                 control.spinnersAreChanging = false;

@@ -177,7 +177,7 @@ object IOOps {
       // sort by file name and then remove the filename
       val srdPreSorted = (if(sorted) srdIn.sortByKey(true, partitions) else srdIn)
       val srdSorted = nameToValue match {
-        case Some(f: (String => Int)) => srdPreSorted.map{inKV => (inKV._2,f(inKV._1))}
+        case Some(f: (String => Long)) => srdPreSorted.map{inKV => (inKV._2,f(inKV._1))}
         case None => srdPreSorted.map(_._2).zipWithIndex 
       }
       					
