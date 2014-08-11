@@ -15,6 +15,8 @@ package tipl.ij.scripting;
  */
  
 import java.io.PrintWriter;
+import java.util.ArrayList;
+
 import ij.IJ;
 import common.AbstractInterpreter;
 import scala.Option;
@@ -87,14 +89,19 @@ public class Scala_Interpreter extends AbstractInterpreter{
 	}
 
 
-    /** pre-imports ImageJ and Java classes.
-     * Work around of AbstractInterpreter.importAll()
-     */
+	/** pre-imports ImageJ and Java classes.
+	 * Work around of AbstractInterpreter.importAll()
+	 */
+	public static ArrayList<String> getPreimportStatements() {
+		ArrayList<String> scalaStatements =  new ArrayList<String>();
+		scalaStatements.add("ij._");
+		scalaStatements.add("java.lang.String");
+		scalaStatements.add("script.imglib.math.Compute");
+		scalaStatements.add("scala.math._");
+		return scalaStatements;
+	}
 	public void preimport() {
-		final String[] importstatements = {
-	            "ij._", "java.lang.String", "script.imglib.math.Compute"
-	        };
-		for (String statement : importstatements){
+		for (String statement : getPreimportStatements()){
 			try {
 				eval("import " + statement);
 			} catch (Throwable e) {

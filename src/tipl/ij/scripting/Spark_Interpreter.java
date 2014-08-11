@@ -6,8 +6,10 @@ package tipl.ij.scripting;
 import ij.IJ;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import org.apache.spark.repl.SparkIMain;
+
 import common.AbstractInterpreter;
 import scala.Option;
 import scala.collection.immutable.List;
@@ -19,7 +21,7 @@ import scala.tools.nsc.Settings;
  *
  */
 public class Spark_Interpreter extends AbstractInterpreter {
-	
+
 	SparkIMain imain = null;
 	String varname, vartype, varval, aline;
 	Option<Object> varobj;
@@ -37,6 +39,14 @@ public class Spark_Interpreter extends AbstractInterpreter {
 		imain = new SparkIMain(settings, stream);
 
 		preimport();
+		String sparkCommand = "val sc = tipl.spark.SparkGlobal.getContext(\"FijiSpark\").sc";
+		try {	
+			eval(sparkCommand);
+
+		} catch (Throwable e) {
+			IJ.log("Failed starting spark " + sparkCommand);
+			e.printStackTrace();
+		}
 		prompt.setEnabled(true);
 		println("Ready.");
 	}
@@ -58,7 +68,7 @@ public class Spark_Interpreter extends AbstractInterpreter {
 		}
 		return aline;
 	}
-	
+
 
 	/**
 	 * Overriding super abstract method.
@@ -76,19 +86,23 @@ public class Spark_Interpreter extends AbstractInterpreter {
 		}
 		buffer.append("}");
 		return "".equals(packageName) ?
-			"import " + buffer + "\n":
-			"import " + packageName + "." + buffer + "\n";
+				"import " + buffer + "\n":
+					"import " + packageName + "." + buffer + "\n";
 	}
 
 
-    /** pre-imports ImageJ and Java classes.
-     * Work around of AbstractInterpreter.importAll()
-     */
+	/** pre-imports ImageJ and Java classes.
+	 * Work around of AbstractInterpreter.importAll()
+	 */
+	public static ArrayList<String> getPreimportStatements() {
+		ArrayList<String> scalaStatements = Scala_Interpreter.getPreimportStatements();
+		scalaStatements.add("org.apache.spark.SparkContext");
+		scalaStatements.add("org.apache.spark.SparkContext._");
+		scalaStatements.add("org.apache.spark._");
+		return scalaStatements;
+	}
 	public void preimport() {
-		final String[] importstatements = {
-	            "ij._", "java.lang.String", "script.imglib.math.Compute"
-	        };
-		for (String statement : importstatements){
+		for (String statement : getPreimportStatements()){
 			try {
 				eval("import " + statement);
 			} catch (Throwable e) {
@@ -107,7 +121,7 @@ public class Spark_Interpreter extends AbstractInterpreter {
 	 * @param args
 	 */
 	static public void main(String[] args){
-		Scala_Interpreter si = new Scala_Interpreter();
+		Spark_Interpreter si = new Spark_Interpreter();
 		si.run(null);
 	}
 }
