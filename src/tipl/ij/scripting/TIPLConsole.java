@@ -34,17 +34,23 @@ public class TIPLConsole extends AbstractInterpreter {
 	protected PyDictionary globals = new PyDictionary();
 	protected PySystemState pystate = new PySystemState();
 
-	public TIPLConsole() { }
+	public TIPLConsole() { }	
 
 	public TIPLConsole(PythonInterpreter pi) {
 		this.pi = pi;
 	}
+	/**
+	 * Import the default TIPL classes so images can be read and processed easily
+	 */
+	protected void importDefault() {
+		
+	}
 
 	public void run(String arg) {
 		super.run(arg);
-		super.window.setTitle("Jython Interpreter");
+		super.window.setTitle("TIPL Interpreter");
 		super.prompt.setEnabled(false);
-		print("Starting Jython ...");
+		print("Starting TIPL ...");
 		// Create a python interpreter that can load classes from plugin jar files.
 		ClassLoader classLoader = IJ.getClassLoader();
 		if (classLoader == null)
@@ -57,6 +63,7 @@ public class TIPLConsole extends AbstractInterpreter {
 		pi.setErr(out);
 		//pre-import all ImageJ java classes and TrakEM2 java classes
 		importAll();
+		
 		// fix back on closing
 		super.window.addWindowListener(
 			new WindowAdapter() {
