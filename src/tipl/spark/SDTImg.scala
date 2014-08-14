@@ -1,6 +1,9 @@
 package tipl.spark
 
 import scala.reflect.ClassTag
+import tipl.util.D3int
+import tipl.util.D3float
+import tipl.formats.TImg
 
 /**
  * Scala Version of KVImg

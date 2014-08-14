@@ -1,6 +1,7 @@
 package tipl.spark
-
+import tipl.util.TImgTools._
 import scala.reflect.ClassTag
+import tipl.formats.TImgRO
 
 object TypeMacros {
 

@@ -11,8 +11,14 @@ import org.apache.spark.rdd.{BinaryFileRDD, RDD}
 import org.apache.spark.streaming.StreamingContext._
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.dstream.DStream
-
 import scala.reflect.ClassTag
+import tipl.formats.TiffFolder.TIFSliceReader
+import tipl.util.TImgTools
+import tipl.spark.hadoop.TiffFileInputFormat
+import tipl.formats.TImgRO
+import tipl.formats.TReader.TSliceReader
+import tipl.util.D3int
+import tipl.util.TImgBlock
 
 /**
  * IOOps is a cover for all the functions related to reading in and writing out Images in Spark

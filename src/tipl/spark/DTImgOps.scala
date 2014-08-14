@@ -5,15 +5,18 @@ package tipl.spark
 import org.apache.spark.SparkContext._
 import org.apache.spark.api.java.JavaPairRDD
 import org.apache.spark.rdd.RDD
-
-import scala.reflect.ClassTagD
-
+import scala.reflect.ClassTag
+import tipl.util.TImgBlock
+import tipl.util.D3int
+import tipl.util.TIPLOps._
+import tipl.tools.BaseTIPLPluginIn
+import scala.util.Sorting.stableSort
 /**
  * A collectiono of useful functions for DTImg classes to allow more complicated analyses
  * @author mader
  *
  */
-@serializable object DTImgOps {
+object DTImgOps {
 
 
   def DTImgToKV(inImg: DTImg[_]) = {
@@ -89,11 +92,13 @@ import scala.reflect.ClassTagD
     /** a much simpler version of spreadSlices taking advantage of Scala's language features
       *
       */
+  
     def spreadSlices(windSize: D3int) = {
-      srd.spreadSliceimport scala.util.Sorting.stableSortransform the DTImg into a KVImg
-   */
+      srd.spreadSlices(windSize)
+    }
+  }
 
-  import scala.util.Sorting.stableSort
+  
 
   def fromKVImg[T](inImg: KVImg[T])(implicit T: ClassTag[T]): DTImg[Array[T]] = {
     val dim = inImg.getDim

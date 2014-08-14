@@ -3,13 +3,18 @@
  */
 package tipl.spark
 
+import tipl.formats.TImgRO
+import tipl.formats.TImg
+import tipl.util.ITIPLStorage
+import tipl.spark.IOOps._
+
 /**
  * A SparkBased version of the Storage Module which loads and processes images using Spark instead of the old VirtualAim basis
  * @author mader
  *
  */
 
-class SSTImg(baseImg: TImgRO) extends ATImg(baseImg, baseImg.getImageType) {
+class SSTImg(baseImg: TImgRO) extends  TImg.ATImg(baseImg, baseImg.getImageType) {
 
   override def getPolyImage(sliceNumber: Int, asType: Int) = baseImg.getPolyImage(sliceNumber, asType)
 

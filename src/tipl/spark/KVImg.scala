@@ -6,8 +6,12 @@ package tipl.spark
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-
 import scala.reflect.ClassTag
+import tipl.util.D3int
+import tipl.util.D3float
+import tipl.util.TImgTools
+import tipl.formats.TImgRO
+import tipl.formats.TImg
 
 /**
  * A KV Pair image where the key is the position and the value is the value

@@ -8,6 +8,11 @@ package tipl.spark
 import org.apache.spark.SparkContext
 import org.apache.spark.graphx.{Edge, Graph, _}
 import org.apache.spark.rdd.RDD
+import tipl.util.D3float
+import tipl.util.D3int
+import tipl.spark.IOOps._
+import tipl.util.TIPLOps._
+import org.apache.spark.SparkContext._
 
 /** A collection of graph generating functions. */
 object FEMDemo {

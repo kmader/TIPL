@@ -1,8 +1,11 @@
 package tipl.spark
 
 import java.io.Serializable
-
 import scala.math._
+import tipl.util.TImgTools
+import tipl.formats.TImgRO
+import org.apache.spark.rdd.PairRDDFunctions._
+import org.apache.spark.SparkContext._
 
 class Histogram extends Serializable {
 
