@@ -13,6 +13,8 @@ import static org.hamcrest.Matchers.either;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
+import ij.IJ;
+import ij.gui.GenericDialog;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -263,6 +265,36 @@ public class TIPLPluginManager {
 		for (PluginInfo cPlug : getAllPlugins()) outPlugName+="\nType:"+cPlug.pluginType()+"\t"+cPlug.toString();
 		System.out.println(TIPLPluginManager.class.getName()+" showing all plugins available");
 		System.out.println(outPlugName);
+	}
+	/**
+	 * The connection between TIPL and ImageJ plugins. It creates a general interface for using all of the plugins on imageJ images.
+	 * @author mader
+	 *
+	 */
+	public static class IJlink implements ij.plugin.PlugIn {
+
+		@Override
+		public void run(String arg0) {
+			IJ.log("Starting plugin:"+this);
+			 GenericDialog localGenericDialog = new GenericDialog("TIPL Function to Run");
+			List<PluginInfo> plugins = TIPLPluginManager.getAllPlugins();
+			String[] plugNames = new String[plugins.size()];
+			int i=0;
+			for(PluginInfo curPlug: plugins){
+				plugNames[i] = curPlug.pluginType()+":"+curPlug.toString();
+				i++;
+			}
+					
+			    localGenericDialog.addChoice("plugin", plugNames, plugNames[0]);
+			    localGenericDialog.showDialog();
+			    if (localGenericDialog.wasCanceled())
+			      return;
+			    int n = localGenericDialog.getNextChoiceIndex();
+			    IJ.log(plugNames[n]+" has been selected!");
+
+			
+		}
+		
 	}
 
 }

@@ -99,6 +99,8 @@ public class Spark_Interpreter extends AbstractInterpreter {
 		scalaStatements.add("org.apache.spark.SparkContext");
 		scalaStatements.add("org.apache.spark.SparkContext._");
 		scalaStatements.add("org.apache.spark._");
+		scalaStatements.add("org.apache.spark.rdd.PairRDDFunctions._");
+		scalaStatements.add("tipl.spark.IOOps._");
 		return scalaStatements;
 	}
 	public void preimport() {

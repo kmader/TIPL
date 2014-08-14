@@ -8,15 +8,14 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.*;
 import org.apache.spark.storage.StorageLevel;
-
 import scala.Tuple2;
 import scala.Tuple3;
 import tipl.formats.FImage;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.TSliceWriter;
-import tipl.util.ArgumentList.TypedPath;
 import tipl.util.*;
+import tipl.util.ArgumentList.TypedPath;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -67,10 +66,10 @@ public class DTImg<T> implements TImg, Serializable {
         this.path = path;
         SparkGlobal.assertPersistance(this);
         int sliceCount = (int) baseImg.count();
-        if (getDim().z!=sliceCount) dim.z=sliceCount;
+        if (getDim().z != sliceCount) dim.z = sliceCount;
 
     }
-    
+
 
     public static void main(String[] args) {
 
@@ -186,7 +185,7 @@ public class DTImg<T> implements TImg, Serializable {
         return jsc.parallelizePairs(inSlices, partitionCount);
     }
 
-    
+
     /**
      * factory for wrapping RDDs into DTImg classes
      *
@@ -196,11 +195,11 @@ public class DTImg<T> implements TImg, Serializable {
      * @return
      */
     static public <Fc> DTImg<Fc> WrapRDD(TImgTools.HasDimensions parent, JavaPairRDD<D3int, TImgBlock<Fc>> newImage,
-                                                           int imgType) {
+                                         int imgType) {
         DTImg<Fc> outImage = new DTImg<Fc>(parent, newImage, imgType, "[virtual]");
         return outImage;
     }
-    
+
 
     /**
      * factory create a new image from a javasparkcontext and a path and type
@@ -323,7 +322,6 @@ public class DTImg<T> implements TImg, Serializable {
     }
 
 
-
     /**
      * Save the image into a series of text files without header (format x,y,z,val)
      *
@@ -433,20 +431,21 @@ public class DTImg<T> implements TImg, Serializable {
     public String getPath() {
         return path;
     }
+
     /**
      * A fairly simple operation of filtering the RDD for the correct slice and returning that slice
      */
     @Override
     public Object getPolyImage(int sliceNumber, final int asType) {
-    	final int zPos = getPos().z+sliceNumber;
-    	
-       T curSlice = this.baseImg.filter(new Function<Tuple2<D3int,TImgBlock<T>>,Boolean>() {
-		@Override
-		public Boolean call(Tuple2<D3int, TImgBlock<T>> arg0) throws Exception {
-			return (arg0._1.z==zPos);
-		}
-       }).first()._2.get();
-       return TImgTools.convertArrayType(curSlice, getImageType(), asType, getSigned(), getShortScaleFactor());
+        final int zPos = getPos().z + sliceNumber;
+
+        T curSlice = this.baseImg.filter(new Function<Tuple2<D3int, TImgBlock<T>>, Boolean>() {
+            @Override
+            public Boolean call(Tuple2<D3int, TImgBlock<T>> arg0) throws Exception {
+                return (arg0._1.z == zPos);
+            }
+        }).first()._2.get();
+        return TImgTools.convertArrayType(curSlice, getImageType(), asType, getSigned(), getShortScaleFactor());
     }
 
     @Override
