@@ -24,6 +24,15 @@ public final class ScalaPlugins {
         }
     };
     
+    @TIPLPluginManager.PluginInfo(pluginType = "Filter",
+    	    desc = "Spark-based filtering and scale",
+    	    sliceBased = false, sparkBased = true)
+    final static public TIPLPluginManager.TIPLPluginFactory  svFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    	    public ITIPLPlugin get()  {
+    	      return new SFilterScale();
+    	    }
+    	  };
+    
     
     @TIPLPluginManager.PluginInfo(pluginType = "kVoronoi",
             desc = "Spark-based surface voronoi tesselation",
