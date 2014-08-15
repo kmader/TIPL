@@ -19,6 +19,8 @@ import tipl.util.TImgTools;
  * @author Kevin Mader
  */
 public class VFilterScale extends FilterScale {	
+	
+	
 	@TIPLPluginManager.PluginInfo(pluginType = "Filter",
 			desc="Slice based filter tool",
 			sliceBased=true,
@@ -31,61 +33,7 @@ public class VFilterScale extends FilterScale {
 		}
 	};
 	
-	/**
-	 * The command line executable version of the code The code that is run
-	 * (without reading the arguments) is
-	 * 
-	 * <pre>
-	 *      <li> System.out.println("Loading "+inputFile+" ...");
-	 *      <p> Read the input file as an aim
-	 *      <li> VirtualAim inputAim=TImgTools.ReadTImg(inputFile);
-	 *      <p> Create a new instance of the VFilterScale plugin using the aim file
-	 *      <li> VFilterScale myVFilterScaler=new VFilterScale(inputAim);
-	 *      <li> System.out.println("Resizing"+inputFile+" ...");
-	 *      <p> Use the >0 (default) criterion for removing the edges of the image
-	 *      <li>myVFilterScaler.find_edges();
-	 *      <p> Run the plugin and generate the output image
-	 *      <li>myVFilterScaler.run();
-	 *      <p> Save the output image into an aim file outputAim, use inputAim and its procedure log as a template
-	 *      <li>VirtualAim outputAim=myVFilterScaler.ExportAim(inputAim);
-	 *      <p> Write the outputAim file to the hard disk as outputFile as an 8bit (0) image
-	 *      <li>outputAim.WriteAim(outputFile,0);
-	 * </pre>
-	 */
-	public static void main(final String[] args) {
-		final String kVer = "130514_003";
-		System.out.println("V_FilterScale v" + kVer);
-		System.out.println(" FilterScales Aim files based on given criteria");
-		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final ArgumentParser p = TIPLGlobal.activeParser(args);
-		final String inputFile = p.getOptionString("input", "",
-				"Input masked image");
-		final String outputFile = p.getOptionString("output",
-				"FilterScaled.tif", "Output FilterScaled image");
-		cmdLineFilter(null, p);
-		if (p.hasOption("?")) {
-			System.out.println(" FilterScale Demo Help");
-			System.out
-					.println(" Analyzes Labeled Gray values inside of Int Labeled Regions");
-			System.out.println(" Arguments::");
-			System.out.println(" ");
-			System.out.println(p.getHelp());
-			System.exit(0);
-		}
 
-		if (inputFile.length() > 0) { // Read in labels, if find edge is
-										// selected or a mask is given
-			System.out.println("Loading " + inputFile + " ...");
-			final TImg inputAim = TImgTools.ReadTImg(inputFile);
-			final VFilterScale myFilterScaler = new VFilterScale(inputAim);
-			System.out.println("Resizing" + inputFile + " ...");
-			cmdLineFilter(myFilterScaler, p);
-			final TImg outputAim = myFilterScaler.ExportImages(inputAim)[0];
-			TImgTools.WriteTImg(outputAim,outputFile);
-
-		}
-
-	}
 
 	public boolean isVirtual;
 	/** Store the input aim-file, allows for slice by slice resizing */
@@ -93,10 +41,10 @@ public class VFilterScale extends FilterScale {
 	/** Is the full dataset loaded or just slices */
 	boolean fullLoaded = true;
 
-	public VFilterScale() {
+	protected VFilterScale() {
 	}
 
-	public VFilterScale(final TImgRO inAim) {
+	private VFilterScale(final TImgRO inAim) {
 		LoadImages(new TImgRO[] { inAim });
 	}
 
@@ -115,7 +63,7 @@ public class VFilterScale extends FilterScale {
 		if (isInitialized) {
 			if (runCount > 0) {
 				VirtualAim outVirtualAim;
-				switch (oimageType) {
+				switch (curSettings.oimageType) {
 				case 10: // Boolean
 					outVirtualAim = templateAim.inheritedAim(outAimMask, odim,
 							new D3int(0));
@@ -184,8 +132,10 @@ public class VFilterScale extends FilterScale {
 	 */
 	@Override
 	protected boolean runFilter(final int bSlice, final int tSlice) {
+		final D3int up = curSettings.upfactor;
+		final D3int dn = curSettings.downfactor;
 		final int inImageType = _inputAim.getImageType();
-		final int outImageType = oimageType;
+		final int outImageType = curSettings.oimageType;
 		int ooff;
 		// Loop through new image
 		if (supportsThreading)
@@ -219,10 +169,10 @@ public class VFilterScale extends FilterScale {
 			// simply filtering)
 			// but it keeps everything later much simpler i think
 
-			float iposz = (dnZ + 0.0f) / (upZ + 0.0f) * oz;
+			float iposz = (dn.z + 0.0f) / (up.z + 0.0f) * oz;
 			int tilowz, tiuppz;
-			tilowz = (int) Math.floor(iposz - dnZ);
-			tiuppz = (int) Math.ceil(iposz + dnZ);
+			tilowz = (int) Math.floor(iposz - dn.z);
+			tiuppz = (int) Math.ceil(iposz + dn.z);
 			tilowz = max(lowz, tilowz);
 			tiuppz = min(tiuppz, uppz);
 
@@ -254,19 +204,19 @@ public class VFilterScale extends FilterScale {
 				for (int ox = olowx; ox < ouppx; ox++, ooff++) {
 					// Interpolate position in input image
 
-					float iposy = (dnY + 0.0f) / (upY + 0.0f) * oy;
-					float iposx = (dnX + 0.0f) / (upX + 0.0f) * ox;
+					float iposy = (dn.y + 0.0f) / (up.y + 0.0f) * oy;
+					float iposx = (dn.x + 0.0f) / (up.x + 0.0f) * ox;
 
 					// Range to scan in input image
 					int tilowx, tilowy, tiuppx, tiuppy;
 
-					tilowx = (int) Math.floor(iposx - dnX);
-					tilowy = (int) Math.floor(iposy - dnY);
+					tilowx = (int) Math.floor(iposx - dn.x);
+					tilowy = (int) Math.floor(iposy - dn.y);
 
-					tiuppx = (int) Math.ceil(iposx + dnX);
-					tiuppy = (int) Math.ceil(iposy + dnY);
+					tiuppx = (int) Math.ceil(iposx + dn.x);
+					tiuppy = (int) Math.ceil(iposy + dn.y);
 
-					if (scalingFilterGenerator == null) {
+					if (curSettings.scalingFilterGenerator == null) {
 						iposx = min(uppx, max((int) iposx, lowx));
 						iposy = min(uppy, max((int) iposy, lowy));
 						iposz = min(uppz, max((int) iposz, lowz));
@@ -337,7 +287,7 @@ public class VFilterScale extends FilterScale {
 							break;
 						}
 
-						switch (oimageType) {
+						switch (curSettings.oimageType) {
 						case 0: // Byte
 							outAimByte[ooff] = (char) dcVox;
 
@@ -489,12 +439,12 @@ public class VFilterScale extends FilterScale {
 
 		final float eTime = (System.currentTimeMillis() - sTime) / (1000F);
 		String filterNameOut = "NearestNeighbor";
-		if (scalingFilterGenerator != null)
-			filterNameOut = scalingFilterGenerator.make().filterName();
+		if (curSettings.scalingFilterGenerator != null)
+			filterNameOut = curSettings.scalingFilterGenerator.make().filterName();
 
 		String logAdd = "VFilterScale Operation (" + filterNameOut
-				+ ") : Upscale:(" + upX + ", " + upY + ", " + upZ
-				+ "), Downscale (" + dnX + ", " + dnY + ", " + dnZ + "), T:"
+				+ ") : Upscale:(" + up.x + ", " + up.y + ", " + up.z
+				+ "), Downscale (" + dn.x + ", " + dn.y + ", " + dn.z + "), T:"
 				+ eTime;
 		logAdd += "\n InMean:" + String.format("%.2f", inSum / inCnt)
 				+ ", OutMean:" + String.format("%.2f", outSum / outCnt) + ", "

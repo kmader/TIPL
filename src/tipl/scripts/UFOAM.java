@@ -2,6 +2,7 @@ package tipl.scripts;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.settings.FilterSettings;
 import tipl.tools.*;
 import tipl.util.*;
 
@@ -545,30 +546,24 @@ public class UFOAM {
     }
 
     public void runResample() {
-        FilterScale fs;
-        final TImgRO.FullReadable ufiltFull = TImgTools
-                .makeTImgFullReadable(ufiltAim);
-        if (doLaplace)
-            fs = new FilterScale(ufiltFull.getFloatAim(), ufiltAim.getDim(),
-                    ufiltAim.getOffset(), ufiltAim.getElSize()); // only makes
-            // sense in
-            // float
-            // mode
-        else
-            fs = new VFilterScale(ufiltAim);
 
+        final ITIPLPluginIO fs = TIPLPluginManager.createBestPluginIO("Filter", new TImgRO[] {ufiltAim});
+        fs.LoadImages( new TImgRO[] {ufiltAim});
+        int filterMode = FilterSettings.NEAREST_NEIGHBOR;
         if (doMedian) {
-            fs.setMedianFilter();
+            filterMode=FilterSettings.MEDIAN;
         } else if (doLaplace) {
-            fs.setLaplaceFilter();
+        	filterMode = FilterSettings.LAPLACE;
         } else if (doGradient) {
-            fs.setGradientFilter();
+        	filterMode = FilterSettings.GRADIENT;
         } else if (doGauss) {
-            fs.setGaussFilter();
+        	filterMode = FilterSettings.GAUSSIAN;
         }
-        fs.SetScale(upsampleFactor, upsampleFactor, upsampleFactor,
-                downsampleFactor, downsampleFactor, downsampleFactor);
-        fs.runFilter();
+        
+        final D3int ds = new D3int(downsampleFactor,downsampleFactor,downsampleFactor);
+        final D3int up = new D3int(upsampleFactor,upsampleFactor,upsampleFactor);
+        fs.setParameter("-upfactor="+up+" -downfactor="+ds+" -filter="+filterMode);
+        fs.execute();
         floatAim = fs.ExportImages(ufiltAim)[0];
         ufiltAim = null;
         TIPLGlobal.runGC();

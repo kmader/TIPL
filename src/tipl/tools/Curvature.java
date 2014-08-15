@@ -32,6 +32,7 @@ import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.settings.FilterSettings;
 import tipl.util.*;
 
 /**
@@ -186,16 +187,14 @@ public class Curvature extends BaseTIPLPluginIO {
 
         finputAim.getBoolAim(); // make it into a boolean array before reading
         // it as a float array
-        final FilterScale fs = new FilterScale(finputAim.getFloatAim(),
-                inputAim.getDim(), inputAim.getOffset(), inputAim.getElSize()); // only
-        // makes
-        // sense
-        // in
-        // float
-        // mode
-        fs.setGaussFilter(isig);
-        fs.SetScale(upV, upV, upV, dnV, dnV, dnV);
-        fs.runFilter();
+        
+        final ITIPLPluginIO fs = TIPLPluginManager.createBestPluginIO("Filter", new TImgRO[] {finputAim});
+        fs.LoadImages( new TImgRO[] {finputAim});
+        final D3int ds = new D3int(dnV,dnV,dnV);
+        final D3int up = new D3int(upV,upV,upV);
+        fs.setParameter("-upfactor="+up+" -downfactor="+ds+" -filtersetting="+isig+" -filter="+FilterSettings.GAUSSIAN);
+        fs.execute();
+
 
         final TImg floatImg = fs.ExportImages(inputAim)[0];
 

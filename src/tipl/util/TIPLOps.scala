@@ -6,7 +6,7 @@ import tipl.formats.TImg
 import tipl.tools.BaseTIPLPluginIn._
 import tipl.tools.VFilterScale
 
-import tipl.tools.FilterScale.filterGenerator
+import tipl.settings.FilterSettings.filterGenerator
 import tipl.spark.SKVoronoi
 import tipl.spark.ShapeAnalysis
 import org.apache.spark.rdd.RDD
@@ -97,12 +97,14 @@ object TIPLOps {
       plugObj.setParameter("-csvname="+outfile)
       plugObj.execute
     }
-    def filter(size: D3int = new D3int(1,1,1), shape: morphKernel = fullKernel, filter: filterGenerator = null): TImgRO = {
-      val plugObj = new VFilterScale
+    def filter(size: D3int = new D3int(1,1,1)):TImgRO = { //, shape: morphKernel = fullKernel, filter: filterGenerator = null): TImgRO = {
+      val plugObj = TIPLPluginManager.createBestPluginIO("Filter", Array(inputImage));
       plugObj.LoadImages(Array(inputImage))
-      plugObj.neighborSize=size
-      plugObj.neighborKernel=shape
-      plugObj.scalingFilterGenerator = filter
+      plugObj.setParameter("-upfactor="+size+" -downfactor="+size);
+      
+      //TODO Implement this  plugObj.neighborKernel=shape
+      //TODO plugObj.asInstanceOf[].scalingFilterGenerator = filter
+      
       plugObj.execute
       plugObj.ExportImages(inputImage)(0)
     }

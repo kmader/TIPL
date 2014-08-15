@@ -111,7 +111,7 @@ public class TIPLPluginManager {
 	public static ITIPLPluginIO getPluginIO(PluginInfo curInfo) {
 		return (ITIPLPluginIO) getPlugin(curInfo);
 	}
-	
+
 	/**
 	 * Get a list of all the plugin factories that exist
 	 * @return
@@ -131,7 +131,7 @@ public class TIPLPluginManager {
 				if (TIPLGlobal.getDebug()) e.printStackTrace();
 			}
 		}
-		
+
 		return new ArrayList<PluginInfo>(pluginList.keySet());
 	}
 	/**
@@ -141,11 +141,11 @@ public class TIPLPluginManager {
 	 * @throws InstantiationException
 	 */
 	public static List<PluginInfo> getPluginsNamed(final String pluginType) 
-			 {
+	{
 		return filter(having(on(PluginInfo.class).pluginType(),equalToIgnoringCase(pluginType)),getAllPlugins());
 	}
 	public static List<PluginInfo> getPluginsBySize(final List<PluginInfo> inList,long voxelCount) {
-		 return filter(having(on(PluginInfo.class).maximumSize(),
+		return filter(having(on(PluginInfo.class).maximumSize(),
 				either(greaterThan(voxelCount)).
 				or(lessThan(0L))), // either larger than the voxel count or negative 1
 				inList);
@@ -168,41 +168,70 @@ public class TIPLPluginManager {
 		List<PluginInfo> sortedPlugs=sort(inList,on(PluginInfo.class).bytesPerVoxel());
 		return sortedPlugs.get(0);
 	}
-	
-	
-	protected static PluginInfo getBestPlugin(final String pluginType,final TImgRO[] inImages) {
+
+
+	protected static PluginInfo getBestPlugin(final String pluginType,final TImgTools.HasDimensions[] inImages) {
 		//TODO get size from other images at some point
 		List<PluginInfo> namedPlugins=getPluginsNamed(pluginType);
 		if (namedPlugins.size()<1) throw new IllegalArgumentException("No plugins of type:"+pluginType+" have been loaded, check classpath, and annotation setup");
-		
+
 		String outPlugName = "Named Plugins Plugins for "+pluginType+" are: ";
-		
+
 		for (PluginInfo cPlug : namedPlugins) outPlugName+=","+cPlug.toString();
 		if (TIPLGlobal.getDebug()) System.out.println(outPlugName);
-		
+
 		long imVoxCount=(long) inImages[0].getDim().prod();
 		List<PluginInfo> bestPlugins=getPluginsBySize(namedPlugins,imVoxCount);
 		if (bestPlugins.size()<1) throw new IllegalArgumentException("No plugins of type:"+pluginType+" can handle images sized:"+imVoxCount);
-		
-		
+
+
 		outPlugName = "Sized Plugins (>"+imVoxCount+") for "+pluginType+" are: ";
-		
+
 		for (PluginInfo cPlug : bestPlugins) outPlugName+=","+cPlug.toString();
 		if (TIPLGlobal.getDebug()) System.out.println(outPlugName);
-		
+
 		// remove spark plugins
 		List<PluginInfo> noSparkPlugins=filter(
 				having(on(PluginInfo.class).sparkBased(),is(false)),
 				bestPlugins);
 		if (noSparkPlugins.size()<1) throw new IllegalArgumentException("No plugins of type:"+pluginType+" can handle images sized:"+imVoxCount+" can run without Spark");
-		
-		
+
+
 		outPlugName = "Available Plugins for "+pluginType+" are: ";
-		
+
 		for (PluginInfo cPlug : noSparkPlugins) outPlugName+=","+cPlug.toString();
 		if (TIPLGlobal.getDebug()) System.out.println(outPlugName);
-		
+
 		return getFastestPlugin(noSparkPlugins);
+	}
+	/**
+	 * The standard image size if none is provided
+	 */
+	public static D3int DEFAULT_IMAGEDIM = new D3int(1000,1000,1000);
+	/**
+	 * Create an empty default image with the correct size
+	 */
+	public static final TImgTools.HasDimensions[] getDefaultImage() {
+		return new TImgTools.HasDimensions[]{
+				new TImgTools.HasDimensions() {
+					@Override
+					public D3int getDim() {return DEFAULT_IMAGEDIM;}
+
+					@Override
+					public D3float getElSize() {return new D3float(1,1,1);}
+
+					@Override
+					public D3int getOffset() {return new D3int(0,0,0);}
+
+					@Override
+					public D3int getPos() {return new D3int(0,0,0);}
+
+					@Override
+					public String getProcLog() {return "";}
+
+					@Override
+					public float getShortScaleFactor() {return 1;}
+				}};
 	}
 	/**
 	 * get the best suited plugin for the given images
@@ -210,19 +239,41 @@ public class TIPLPluginManager {
 	 * @param inImages the input images
 	 * @return an instance of the plugin as a standard plugin
 	 */
-	public static ITIPLPlugin createBestPlugin(final String pluginType,final TImgRO[] inImages) {
+	public static ITIPLPlugin createBestPlugin(final String pluginType,final TImgTools.HasDimensions[] inImages) {
 		return getPlugin(getBestPlugin(pluginType,inImages));
 	}
+	
+	/**
+	 * get the best suited plugin for the given images
+	 * @param pluginType name of the plugin
+	 * @param inImages the input images
+	 * @return an instance of the plugin as a standard plugin
+	 */
+	public static ITIPLPlugin createBestPlugin(final String pluginType) {
+		return getPlugin(getBestPlugin(pluginType,getDefaultImage()));
+	}
+	
 	/**
 	 * get the best suited plugin for the given images
 	 * @param pluginType name of the plugin
 	 * @param inImages the input images
 	 * @return an instance of the plugin as an io plugin
 	 */
-	public static ITIPLPluginIO createBestPluginIO(final String pluginType,final TImgRO[] inImages) {
+	public static ITIPLPluginIO createBestPluginIO(final String pluginType,final TImgTools.HasDimensions[] inImages) {
 		return getPluginIO(getBestPlugin(pluginType,inImages));
 	}
 	
+	/**
+	 * get the best suited plugin for the given images
+	 * @param pluginType name of the plugin
+	 * @return an instance of the plugin as an io plugin
+	 */
+	public static ITIPLPluginIO createBestPluginIO(final String pluginType) {
+		return getPluginIO(getBestPlugin(pluginType,getDefaultImage()));
+	}
+	
+	
+
 	/**
 	 * get the fastest (or first) suited plugin for the given images
 	 * @param pluginType name of the plugin
@@ -239,8 +290,8 @@ public class TIPLPluginManager {
 	public static ITIPLPlugin createFirstPlugin(final String pluginType) {	
 		return getPlugin(getFastestPlugin(getPluginsNamed(pluginType)));
 	}
-	
-	
+
+
 	/**
 	 * Converts a TIPLPlugin into a runnable to it can be given to a thread (this allows run to be permanently taken out of plugin function)
 	 * @param inPlug the plugin
@@ -252,16 +303,16 @@ public class TIPLPluginManager {
 			@Override
 			public void run() {
 				inPlug.execute();
-				
+
 			}
-			
+
 		};
 	}
-	
+
 	public static void main(String[] args) {
-		
+
 		String outPlugName = "Installed Plugins are: ";
-		
+
 		for (PluginInfo cPlug : getAllPlugins()) outPlugName+="\nType:"+cPlug.pluginType()+"\t"+cPlug.toString();
 		System.out.println(TIPLPluginManager.class.getName()+" showing all plugins available");
 		System.out.println(outPlugName);
@@ -276,7 +327,7 @@ public class TIPLPluginManager {
 		@Override
 		public void run(String arg0) {
 			IJ.log("Starting plugin:"+this);
-			 GenericDialog localGenericDialog = new GenericDialog("TIPL Function to Run");
+			GenericDialog localGenericDialog = new GenericDialog("TIPL Function to Run");
 			List<PluginInfo> plugins = TIPLPluginManager.getAllPlugins();
 			String[] plugNames = new String[plugins.size()];
 			int i=0;
@@ -284,17 +335,17 @@ public class TIPLPluginManager {
 				plugNames[i] = curPlug.pluginType()+":"+curPlug.toString();
 				i++;
 			}
-					
-			    localGenericDialog.addChoice("plugin", plugNames, plugNames[0]);
-			    localGenericDialog.showDialog();
-			    if (localGenericDialog.wasCanceled())
-			      return;
-			    int n = localGenericDialog.getNextChoiceIndex();
-			    IJ.log(plugNames[n]+" has been selected!");
 
-			
+			localGenericDialog.addChoice("plugin", plugNames, plugNames[0]);
+			localGenericDialog.showDialog();
+			if (localGenericDialog.wasCanceled())
+				return;
+			int n = localGenericDialog.getNextChoiceIndex();
+			IJ.log(plugNames[n]+" has been selected!");
+
+
 		}
-		
+
 	}
 
 }

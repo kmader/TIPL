@@ -3,6 +3,8 @@
  */
 package tipl.tests;
 
+import static org.junit.Assert.fail;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -12,6 +14,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import tipl.formats.TImgRO;
+import tipl.settings.FilterSettings;
 import tipl.tools.BaseTIPLPluginIn;
 import tipl.tools.FilterScale;
 import tipl.util.D3int;
@@ -45,13 +48,15 @@ public class FilterTests {
 		System.out.println("Using Plugin:"+pluginToUse);
 		pluginId=pluginToUse;
 	}
+	
+	
 	//@Test
 	public void testDivideWorkBig() {
 		System.out.println("Testing that work is divided into chunks between 1 and the last slice");
 		final TImgRO testImg = TestPosFunctions.wrapIt(5*TIPLGlobal.availableCores,
 				new TestPosFunctions.DiagonalPlaneAndDotsFunction());
 		ITIPLPluginIO cv = makeFilter(pluginId,testImg);
-		cv.setParameter("-upfactor=1,1,1 -downfactor=1,1,1 -filter="+FilterScale.GAUSSIAN);
+		cv.setParameter("-upfactor=1,1,1 -downfactor=1,1,1 -filter="+FilterSettings.GAUSSIAN);
 		TIPLTestingLibrary.testDivideWork(((BaseTIPLPluginIn) cv),0, testImg.getDim().z,true);
 
 
@@ -63,7 +68,7 @@ public class FilterTests {
 			final TImgRO testImg = TestPosFunctions.wrapIt(coreCount,
 					new TestPosFunctions.DiagonalPlaneAndDotsFunction());
 			ITIPLPluginIO cv = makeFilter(pluginId,testImg);
-			cv.setParameter("-upfactor=1,1,1 -downfactor=1,1,1 -filter="+FilterScale.GAUSSIAN);
+			cv.setParameter("-upfactor=1,1,1 -downfactor=1,1,1 -filter="+FilterSettings.GAUSSIAN);
 			TIPLTestingLibrary.testDivideWork(((BaseTIPLPluginIn) cv),0, testImg.getDim().z,true);
 		}
 
@@ -73,7 +78,7 @@ public class FilterTests {
 	/**
 	 * Test dimensions of output image
 	 */
-	//@Test
+	@Test
 	public void testOutDim() {
 		// offset lines
 		final TImgRO testImg = TestPosFunctions.wrapItAs(10,
@@ -90,7 +95,7 @@ public class FilterTests {
 
 		// second image
 		RS = makeFilter(pluginId,testImg);
-		RS.setParameter("-upfactor=1,1,1 -downfactor=1,2,3 -filter="+FilterScale.GAUSSIAN);
+		RS.setParameter("-upfactor=1,1,1 -downfactor=1,2,3 -filter="+FilterSettings.GAUSSIAN);
 		System.out.println("Input Image Type"+testImg.getImageType());
 
 		RS.execute();
@@ -98,6 +103,22 @@ public class FilterTests {
 
 		TIPLTestingLibrary.checkDimensions(outImg, new D3int(10, 5, 3), new D3int(0, 0, 0));
 	}
+	
+	@Test
+	public void hasSettings() {
+		final TImgRO testImg = TestPosFunctions.wrapItAs(10,
+				new TestPosFunctions.LinesFunction(),3);
+
+		ITIPLPluginIO fs = makeFilter(pluginId,testImg);
+		try {
+			FilterSettings.HasFilterSettings hfs = (FilterSettings.HasFilterSettings) fs;
+			System.out.println(hfs.getFilterSettings());
+		} catch (Exception e) {
+			fail("Does not implement has filter settings interface correctly"+e.getMessage());
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Not really related to the standard filter test, but a good verification of the single point functions
 	 */
@@ -136,7 +157,7 @@ public class FilterTests {
 
 
 		ITIPLPluginIO RS = makeFilter(pluginId,sheetImage);
-		RS.setParameter("-upfactor=2,2,2 -downfactor=2,2,2 -filter="+FilterScale.GAUSSIAN+" -filtersetting=1.0");
+		RS.setParameter("-upfactor=2,2,2 -downfactor=2,2,2 -filter="+FilterSettings.GAUSSIAN+" -filtersetting=1.0");
 		RS.execute();
 
 		TImgRO outImg = RS.ExportImages(sheetImage)[0];
@@ -157,7 +178,7 @@ public class FilterTests {
 
 
 		ITIPLPluginIO RS = makeFilter(pluginId,pointImage);
-		RS.setParameter("-upfactor=2,2,2 -downfactor=2,2,2 -filter="+FilterScale.GAUSSIAN+" -filtersetting=0.5");
+		RS.setParameter("-upfactor=2,2,2 -downfactor=2,2,2 -filter="+FilterSettings.GAUSSIAN+" -filtersetting=0.5");
 		RS.execute();
 
 		TImgRO outImg = RS.ExportImages(pointImage)[0];
@@ -167,7 +188,7 @@ public class FilterTests {
 
 		// now change sigma and ensure it still works
 		RS = makeFilter(pluginId,pointImage);
-		RS.setParameter("-upfactor=2,2,2 -downfactor=2,2,2 -filter="+FilterScale.GAUSSIAN+" -filtersetting=1");
+		RS.setParameter("-upfactor=2,2,2 -downfactor=2,2,2 -filter="+FilterSettings.GAUSSIAN+" -filtersetting=1");
 		RS.execute();
 		outImg = RS.ExportImages(pointImage)[0];
 		if (saveImages) TImgTools.WriteTImg(outImg,"/Users/mader/Dropbox/TIPL/temp_testing/point_"+RS.getPluginName()+".tif");
@@ -179,7 +200,7 @@ public class FilterTests {
 		final TImgRO pointImage2 = TestPosFunctions.wrapItAs(10,
 				new TestPosFunctions.SinglePointFunction(6, 6, 6),3);
 		RS = makeFilter(pluginId,pointImage2);
-		RS.setParameter("-upfactor=1,1,1 -downfactor=2,2,2 -filter="+FilterScale.GAUSSIAN+" -filtersetting=0.5");
+		RS.setParameter("-upfactor=1,1,1 -downfactor=2,2,2 -filter="+FilterSettings.GAUSSIAN+" -filtersetting=0.5");
 		RS.execute();
 		outImg = RS.ExportImages(pointImage)[0];
 		if (saveImages) TImgTools.WriteTImg(outImg,"/Users/mader/Dropbox/TIPL/temp_testing/point_ds_"+RS.getPluginName()+".tif");
@@ -198,14 +219,14 @@ public class FilterTests {
 				new TestPosFunctions.ProgZImage(),3);
 
 		ITIPLPluginIO RS = makeFilter(pluginId,gradImage);
-		RS.setParameter("-upfactor=2,2,2 -downfactor=2,2,2 -filter="+FilterScale.LAPLACE);
+		RS.setParameter("-upfactor=2,2,2 -downfactor=2,2,2 -filter="+FilterSettings.LAPLACE);
 		RS.execute();
 		TImgRO outImg = RS.ExportImages(gradImage)[0];
 		TIPLTestingLibrary.doPointsMatch(outImg, 5, 5, 5, 0.33f, 0.01f);
 
 		// now change sigma and ensure it still works
 		RS = makeFilter(pluginId,gradImage);
-		RS.setParameter("-upfactor=1,1,1 -downfactor=2,2,2 -filter="+FilterScale.LAPLACE);
+		RS.setParameter("-upfactor=1,1,1 -downfactor=2,2,2 -filter="+FilterSettings.LAPLACE);
 		RS.execute();
 		outImg = RS.ExportImages(gradImage)[0];
 		TIPLTestingLibrary.doPointsMatch(outImg, 2, 2, 2, 0.33f, 0.01f);

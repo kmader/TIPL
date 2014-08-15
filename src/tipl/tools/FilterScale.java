@@ -2,6 +2,7 @@ package tipl.tools;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.settings.FilterSettings;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
@@ -15,7 +16,22 @@ import tipl.util.TImgTools;
  * 
  * @author Kevin Mader
  */
-public class FilterScale extends BaseTIPLPluginMult {
+public class FilterScale extends BaseTIPLPluginMult implements FilterSettings.HasFilterSettings {
+	
+	protected FilterSettings curSettings = new FilterSettings();
+	@Override
+	public ArgumentParser setParameter(final ArgumentParser p,
+			final String prefix) {
+		ArgumentParser oArgs = curSettings.setParameter(p, prefix);
+		if (isInitialized) CalcOutDim(); // only run if the images have been loaded
+		return oArgs;
+	}
+	
+	
+	public FilterSettings getFilterSettings() {return curSettings;}
+	public void setFilterSettings(FilterSettings inSettings) {curSettings=inSettings;}
+	
+
 	@TIPLPluginManager.PluginInfo(pluginType = "Filter",
 			desc="Full memory filter",
 			sliceBased=false,
@@ -29,131 +45,11 @@ public class FilterScale extends BaseTIPLPluginMult {
 		}
 	};
 	
-	/** filter types
-	0 - Nearest Neighbor, 1 - Gaussian, 2 - Gradient, 3 - Laplace, 4 - Median
-	**/
-	final public static int NEAREST_NEIGHBOR=0;
-	final public static int GAUSSIAN=1;
-	final public static int GRADIENT=2;
-	final public static int LAPLACE=3;
-	final public static int MEDIAN=4;
 	
-	
-	/** How a filter generating function looks */
-	public interface filterGenerator {
-		public BaseTIPLPluginIn.filterKernel make();
-	}
-
-	/**
-	 * The command line executable version of the code The code that is run
-	 * (without reading the arguments) is
-	 * 
-	 * <pre>
-	 *      <li> System.out.println("Loading "+inputFile+" ...");
-	 *      <p> Read the input file as an aim
-	 *      <li> VirtualAim inputAim=TImgTools.ReadTImg(inputFile);
-	 *      <p> Create a new instance of the FilterScale plugin using the aim file
-	 *      <li> FilterScale myFilterScaler=new FilterScale(inputAim);
-	 *      <li> System.out.println("Resizing"+inputFile+" ...");
-	 *      <p> Use the >0 (default) criterion for removing the edges of the image
-	 *      <li>myFilterScaler.find_edges();
-	 *      <p> Run the plugin and generate the output image
-	 *      <li>myFilterScaler.run();
-	 *      <p> Save the output image into an aim file outputAim, use inputAim and its procedure log as a template
-	 *      <li>VirtualAim outputAim=myFilterScaler.ExportAim(inputAim);
-	 *      <p> Write the outputAim file to the hard disk as outputFile as an 8bit (0) image
-	 *      <li>outputAim.WriteAim(outputFile,0);
-	 * </pre>
-	 */
-	protected static void cmdLineFilter(final FilterScale tFS,
-			final ArgumentParser p) {
-
-		final int filterType = p
-				.getOptionInt("filter", 0,
-						"0 - Nearest Neighbor, 1 - Gaussian, 2 - Gradient, 3 - Laplace, 4 - Median");
-
-		final D3int upfactor = p.getOptionD3int("upfactor", new D3int(1, 1, 1),
-				"Upscale factor");
-		final D3int downfactor = p.getOptionD3int("downfactor", new D3int(2, 2,
-				2), "Downscale factor");
-		if (tFS == null)
-			return;
-
-		tFS.SetScale(upfactor.x, upfactor.y, upfactor.z, downfactor.x,
-				downfactor.y, downfactor.z);
-		switch (filterType) {
-		case 1:
-			tFS.setGaussFilter();
-			break;
-		case 2:
-			tFS.setGradientFilter();
-			break;
-		case 3:
-			tFS.setLaplaceFilter();
-			break;
-		case 4:
-			tFS.setMedianFilter();
-			break;
-		}
-		tFS.runFilter();
-
-	}
-
-	public static void main(final String[] args) {
-		final String kVer = "120514_002";
-		System.out.println("FilterScale v" + kVer);
-		System.out.println(" FilterScales Aim files based on given criteria");
-		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final ArgumentParser p = TIPLGlobal.activeParser(args);
-		final String inputFile = p.getOptionString("input", "",
-				"Input masked image");
-		final String outputFile = p.getOptionString("output",
-				"FilterScaled.tif", "Output FilterScaled image");
-		cmdLineFilter(null, p);
-		if (p.hasOption("?")) {
-			System.out.println(" FilterScale Demo Help");
-			System.out
-					.println(" Analyzes Labeled Gray values inside of Int Labeled Regions");
-			System.out.println(" Arguments::");
-			System.out.println(" ");
-			System.out.println(p.getHelp());
-			System.exit(0);
-		}
-
-		if (inputFile.length() > 0) { // Read in labels, if find edge is
-										// selected or a mask is given
-			System.out.println("Loading " + inputFile + " ...");
-			final TImg inputAim = TImgTools.ReadTImg(inputFile);
-			final FilterScale myFilterScaler = new FilterScale(inputAim);
-			System.out.println("Resizing" + inputFile + " ...");
-			cmdLineFilter(myFilterScaler, p);
-			final TImg outputAim = myFilterScaler.ExportImages(inputAim)[0];
-			TImgTools.WriteTImg(outputAim,outputFile);
-
-		}
-
-	}
 
 	/** Output aim length */
 	int itAimLength;
-	/** Upscale X */
-	public int upX = 1;
-	/** Upscale Y */
-	public int upY = 1;
-	/** Upscale Z */
-	public int upZ = 1;
-	/** Downscale X */
-	public int dnX = 2;
 
-	/** Downscale Y */
-	public int dnY = 2;
-	/** Downscale Z */
-	public int dnZ = 2;
-	/**
-	 * Filter generating function (needed for threading to make multiple copies
-	 * of the filter for each region)
-	 */
-	public filterGenerator scalingFilterGenerator = null;
 	protected D3int ipos = new D3int(0);
 	/** Selected Region of Interest */
 	protected int itLowx;
@@ -171,10 +67,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 	protected int ouppy;
 	protected int ouppz;
 
-	/**
-	 * Set imagetype of output image (default = -1 is the same as the input type
-	 */
-	public int oimageType = -1;
+
 	/** First input aim */
 	public boolean[] outAimMask;
 	/** First input aim */
@@ -201,50 +94,20 @@ public class FilterScale extends BaseTIPLPluginMult {
 	public boolean supportsThreading = true;
 
 	protected FilterScale() {
-		// Just for subclasses
+		
 	}
 
-	@Deprecated
-	public FilterScale(final boolean[] inputmap, final D3int idim,
-			final D3int ioffset, final D3float ielSize) {
-		elSize = ielSize;
-		ImportAim(inputmap, idim, ioffset);
-	}
-
-	@Deprecated
-	public FilterScale(final float[] inputmap, final D3int idim,
-			final D3int ioffset, final D3float ielSize) {
-		elSize = ielSize;
-		ImportAim(inputmap, idim, ioffset);
-	}
-
-	@Deprecated
-	public FilterScale(final int[] inputmap, final D3int idim,
-			final D3int ioffset, final D3float ielSize) {
-		elSize = ielSize;
-		ImportAim(inputmap, idim, ioffset);
-	}
-
-	@Deprecated
-	public FilterScale(final short[] inputmap, final D3int idim,
-			final D3int ioffset, final D3float ielSize) {
-		elSize = ielSize;
-		ImportAim(inputmap, idim, ioffset);
-	}
-
-	public FilterScale(final TImgRO inAim) {
-		LoadImages(new TImgRO[] { inAim });
-	}
 	/**
 	 * calculate the dimensions of the output volume
 	 */
 	protected void CalcOutDim() {
-
-		final int nx = (int) Math.round((float) (upX + 0.0) / (dnX + 0.0)
+		final D3int up = curSettings.upfactor;
+		final D3int dn = curSettings.downfactor;
+		final int nx = (int) Math.round((float) (up.x + 0.0) / (dn.x + 0.0)
 				* dim.x);
-		final int ny = (int) Math.round((float) (upY + 0.0) / (dnY + 0.0)
+		final int ny = (int) Math.round((float) (up.y + 0.0) / (up.y + 0.0)
 				* dim.y);
-		final int nz = (int) Math.round((float) (upZ + 0.0) / (dnZ + 0.0)
+		final int nz = (int) Math.round((float) (up.z + 0.0) / (dn.z + 0.0)
 				* dim.z);
 
 		odim = new D3int(nx, ny, nz);
@@ -258,12 +121,12 @@ public class FilterScale extends BaseTIPLPluginMult {
 		ouppy = odim.y;
 		ouppz = odim.z;
 
-		oelsize = new D3float((dnX + 0.0) / (upX + 0.0) * elSize.x, (dnY + 0.0)
-				/ (upY + 0.0) * elSize.y, (dnZ + 0.0) / (upZ + 0.0) * elSize.z);
+		oelsize = new D3float((dn.x + 0.0) / (up.x + 0.0) * elSize.x, (dn.y + 0.0)
+				/ (up.y + 0.0) * elSize.y, (dn.z + 0.0) / (up.z + 0.0) * elSize.z);
 
-		opos = new D3int((int) Math.round((upX + 0.0) / (dnX + 0.0) * ipos.x),
-				(int) Math.round((upY + 0.0) / (dnY + 0.0) * ipos.y),
-				(int) Math.round((upZ + 0.0) / (dnZ + 0.0) * ipos.z)); // rescale
+		opos = new D3int((int) Math.round((up.x + 0.0) / (dn.x + 0.0) * ipos.x),
+				(int) Math.round((up.y + 0.0) / (dn.y + 0.0) * ipos.y),
+				(int) Math.round((up.z + 0.0) / (dn.z + 0.0) * ipos.z)); // rescale
 																		// outpos
 
 
@@ -273,30 +136,30 @@ public class FilterScale extends BaseTIPLPluginMult {
 	 */
 	protected void AllocateDim() {
 		//
-		if (oimageType == -1)
-			oimageType = imageType;
+		if (curSettings.oimageType == -1)
+			curSettings.oimageType = imageType;
 		// Initialize aimArray
-		switch (oimageType) {
+		switch (curSettings.oimageType) {
 		case TImgTools.IMAGETYPE_CHAR: // Byte
-			outAimByte =(char[]) TImgTools.watchBigAlloc(oimageType, (int) odim.prod());
+			outAimByte =(char[]) TImgTools.watchBigAlloc(curSettings.oimageType, (int) odim.prod());
 			break;
 		case TImgTools.IMAGETYPE_SHORT: // Short
-			outAimShort = (short[]) TImgTools.watchBigAlloc(oimageType, (int) odim.prod());
+			outAimShort = (short[]) TImgTools.watchBigAlloc(curSettings.oimageType, (int) odim.prod());
 			break;
 		case TImgTools.IMAGETYPE_INT: // Int
-			outAimInt = (int[]) TImgTools.watchBigAlloc(oimageType, (int) odim.prod());
+			outAimInt = (int[]) TImgTools.watchBigAlloc(curSettings.oimageType, (int) odim.prod());
 			break;
 		case TImgTools.IMAGETYPE_FLOAT: // Float
-			outAimFloat=(float[]) TImgTools.watchBigAlloc(oimageType, (int) odim.prod());
+			outAimFloat=(float[]) TImgTools.watchBigAlloc(curSettings.oimageType, (int) odim.prod());
 			break;
 		case TImgTools.IMAGETYPE_BOOL: // Boolean
-			outAimMask = (boolean[]) TImgTools.watchBigAlloc(oimageType, (int) odim.prod());
+			outAimMask = (boolean[]) TImgTools.watchBigAlloc(curSettings.oimageType, (int) odim.prod());
 			break;
 		}
 
 		System.out.println("New output: dim-" + odim + ", ElSize:" + oelsize
 				+ ", Pos:" + opos + "," + StrPctRatio(odim.prod(), dim.prod())
-				+ " VolRed, ImgT:" + oimageType);
+				+ " VolRed, ImgT:" + curSettings.oimageType);
 		procLog += "New output: dim-" + odim + ", pos:" + opos + ", "
 				+ StrPctRatio(odim.prod(), dim.prod()) + " VolRed, ImgT:"
 				+ imageType + "\n";
@@ -336,7 +199,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 		if (isInitialized) {
 			if (runCount > 0) {
 				TImg outVirtualAim;
-				switch (oimageType) {
+				switch (curSettings.oimageType) {
 				case 10: // Boolean
 					outVirtualAim = templateAim.inheritedAim(outAimMask, odim,
 							new D3int(0));
@@ -359,7 +222,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 					break;
 				default:
 					System.err
-							.println("Input type not supported " + oimageType);
+							.println("Input type not supported " + curSettings.oimageType);
 					return null;
 				}
 				outVirtualAim.setPos(opos);
@@ -386,7 +249,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 
 	/** Current Filter */
 	protected BaseTIPLPluginIn.filterKernel getFilter() {
-		return scalingFilterGenerator.make();
+		return curSettings.scalingFilterGenerator.make();
 
 	}
 
@@ -446,26 +309,30 @@ public class FilterScale extends BaseTIPLPluginMult {
 
 	/** Code to actually run the filter code on the image */
 	public boolean runFilter() {
-		System.out.println("Rescale Operation Running : Upscale:(" + upX + ","
-				+ upY + "," + upZ + "), Downscale (" + dnX + "," + dnY + ","
-				+ dnZ + ")");
+		final D3int up = curSettings.upfactor;
+		final D3int dn = curSettings.downfactor;
+		System.out.println("Rescale Operation Running : Upscale:(" + up.x + ","
+				+ up.y + "," + up.z + "), Downscale (" + dn.x + "," + dn.y + ","
+				+ dn.z + ")");
 		CalcOutDim();
 		AllocateDim();
 		runMulticore();
 		runCount++;
 		String filterNameOut = "NearestNeighbor";
-		if (scalingFilterGenerator != null)
-			filterNameOut = scalingFilterGenerator.make().filterName();
+		if (curSettings.scalingFilterGenerator != null)
+			filterNameOut = curSettings.scalingFilterGenerator.make().filterName();
 
 		final String logAdd = "FilterScale Operation (" + filterNameOut
-				+ ") : Upscale:(" + upX + ", " + upY + ", " + upZ
-				+ "), Downscale (" + dnX + ", " + dnY + ", " + dnZ + ")";
+				+ ") : Upscale:(" + up.x + ", " + up.y + ", " + up.z
+				+ "), Downscale (" + dn.x + ", " + dn.y + ", " + dn.z + ")";
 		procLog += logAdd;
 		return true;
 	}
 
 	/** Code to actually run the filter code on a portion of the image */
 	protected boolean runFilter(final int bSlice, final int tSlice) {
+		final D3int up = curSettings.upfactor;
+		final D3int dn = curSettings.downfactor;
 		int ooff, inoff;
 		// Loop through new image
 		if (supportsThreading)
@@ -485,22 +352,22 @@ public class FilterScale extends BaseTIPLPluginMult {
 				ooff = (oz * odim.y + oy) * odim.x + olowx;
 				for (int ox = olowx; ox < ouppx; ox++, ooff++) {
 					// Interpolate position in input image
-					float iposz = (dnZ + 0.0f) / (upZ + 0.0f) * oz;
-					float iposy = (dnY + 0.0f) / (upY + 0.0f) * oy;
-					float iposx = (dnX + 0.0f) / (upX + 0.0f) * ox;
+					float iposz = (dn.z + 0.0f) / (up.z + 0.0f) * oz;
+					float iposy = (dn.y + 0.0f) / (up.y + 0.0f) * oy;
+					float iposx = (dn.x + 0.0f) / (up.x + 0.0f) * ox;
 
 					// Range to scan in input image
 					int tilowx, tilowy, tilowz, tiuppx, tiuppy, tiuppz;
 
-					tilowx = (int) Math.floor(iposx - dnX);
-					tilowy = (int) Math.floor(iposy - dnY);
-					tilowz = (int) Math.floor(iposz - dnZ);
+					tilowx = (int) Math.floor(iposx - dn.x);
+					tilowy = (int) Math.floor(iposy - dn.y);
+					tilowz = (int) Math.floor(iposz - dn.z);
 
-					tiuppx = (int) Math.ceil(iposx + dnX);
-					tiuppy = (int) Math.ceil(iposy + dnY);
-					tiuppz = (int) Math.ceil(iposz + dnZ);
+					tiuppx = (int) Math.ceil(iposx + dn.x);
+					tiuppy = (int) Math.ceil(iposy + dn.y);
+					tiuppz = (int) Math.ceil(iposz + dn.z);
 
-					if (scalingFilterGenerator == null) {
+					if (curSettings.scalingFilterGenerator == null) {
 						iposx = min(uppx, max((int) iposx, lowx));
 						iposy = min(uppy, max((int) iposy, lowy));
 						iposz = min(uppz, max((int) iposz, lowz));
@@ -527,7 +394,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 								dcVox++;
 							break;
 						}
-						switch (oimageType) {
+						switch (curSettings.oimageType) {
 						case 0: // Byte
 							outAimByte[ooff] = (char) dcVox;
 
@@ -597,7 +464,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 						final double outputVal = curFilter.value();
 						outSum += outputVal;
 						outCnt++;
-						switch (oimageType) {
+						switch (curSettings.oimageType) {
 
 						case 0: // Byte
 							outAimByte[ooff] = (char) outputVal;
@@ -627,12 +494,12 @@ public class FilterScale extends BaseTIPLPluginMult {
 
 		final float eTime = (System.currentTimeMillis() - sTime) / (1000F);
 		String filterNameOut = "NearestNeighbor";
-		if (scalingFilterGenerator != null)
-			filterNameOut = scalingFilterGenerator.make().filterName();
+		if (curSettings.scalingFilterGenerator != null)
+			filterNameOut = curSettings.scalingFilterGenerator.make().filterName();
 
 		String logAdd = "FilterScale Operation (" + filterNameOut
-				+ ") : Upscale:(" + upX + ", " + upY + ", " + upZ
-				+ "), Downscale (" + dnX + ", " + dnY + ", " + dnZ + "), T:"
+				+ ") : Upscale:(" + up.x + ", " + up.y + ", " + up.z
+				+ "), Downscale (" + dn.x + ", " + dn.y + ", " + dn.z + "), T:"
 				+ eTime;
 		logAdd += "\n InMean:" + String.format("%.2f", inSum / inCnt)
 				+ ", OutMean:" + String.format("%.2f", outSum / outCnt) + ", "
@@ -660,141 +527,7 @@ public class FilterScale extends BaseTIPLPluginMult {
 	protected void runShort() {
 	}
 
-	/** Use a gaussian filter */
-	@Deprecated
-	public void setGaussFilter() {
-		scalingFilterGenerator = new filterGenerator() {
-			@Override
-			public BaseTIPLPluginIn.filterKernel make() {
-				return BaseTIPLPluginIn.gaussFilter(upX, upY, upZ);
-			}
-		};
 
-	}
 
-	/** Use a gaussian filter */
-	@Deprecated
-	public void setGaussFilter(final double sigma) {
-
-		scalingFilterGenerator = new filterGenerator() {
-			@Override
-			public BaseTIPLPluginIn.filterKernel make() {
-				return BaseTIPLPluginIn.gaussFilter(sigma, sigma, sigma);
-			}
-		};
-
-	}
-
-	/** Use a gradient filter */
-	@Deprecated
-	public void setGradientFilter() {
-		scalingFilterGenerator = new filterGenerator() {
-			@Override
-			public BaseTIPLPluginIn.filterKernel make() {
-				return BaseTIPLPluginIn.gradientFilter();
-			}
-		};
-
-	}
-
-	/** Use a laplace filter */
-	@Deprecated
-	public void setLaplaceFilter() {
-		scalingFilterGenerator = new filterGenerator() {
-			@Override
-			public BaseTIPLPluginIn.filterKernel make() {
-				return BaseTIPLPluginIn.laplaceFilter();
-			}
-		};
-
-	}
-
-	@Deprecated
-	public void setMedianFilter() {
-
-		scalingFilterGenerator = new filterGenerator() {
-			@Override
-			public BaseTIPLPluginIn.filterKernel make() {
-				return BaseTIPLPluginIn.medianFilter(upX, upY, upZ);
-			}
-		};
-
-	}
-
-	/** Use a Median filter */
-	@Deprecated
-	public void setMedianFilter(final int size) {
-
-		scalingFilterGenerator = new filterGenerator() {
-			@Override
-			public BaseTIPLPluginIn.filterKernel make() {
-				return BaseTIPLPluginIn.medianFilter(size, size, size);
-			}
-		};
-
-	}
-
-	@Override
-	public ArgumentParser setParameter(final ArgumentParser p,
-			final String prefix) {
-		final int filterType = p
-				.getOptionInt(prefix + "filter", 0,
-						NEAREST_NEIGHBOR+" - Nearest Neighbor,"+
-				GAUSSIAN+" - Gaussian, "+GRADIENT+" - Gradient, "+LAPLACE+" - Laplace, "+MEDIAN+" - Median");
-		final double filterParameter = p
-				.getOptionDouble(
-						prefix + "filtersetting",
-						-1.0,
-						"For gaussian it is the Sigma Value, for Median it is the window size (values less than 0 are ignored)");
-		oimageType = p
-				.getOptionInt(prefix+"output", oimageType,
-						"-1 is same as input, "+TImgTools.IMAGETYPE_HELP);
-		final D3int upfactor = p.getOptionD3int(prefix + "upfactor", new D3int(
-				1, 1, 1), "Upscale factor");
-		final D3int downfactor = p.getOptionD3int(prefix + "downfactor",
-				new D3int(2, 2, 2), "Downscale factor");
-
-		SetScale(upfactor.x, upfactor.y, upfactor.z, downfactor.x,
-				downfactor.y, downfactor.z);
-		switch (filterType) {
-		case NEAREST_NEIGHBOR:
-			break;
-		case GAUSSIAN:
-			if (filterParameter > 0)
-				setGaussFilter(filterParameter);
-			else
-				setGaussFilter();
-			break;
-		case GRADIENT:
-			setGradientFilter();
-			break;
-		case LAPLACE:
-			setLaplaceFilter();
-			break;
-		case MEDIAN:
-			if (filterParameter > 0)
-				setMedianFilter((int) filterParameter);
-			else
-				setMedianFilter();
-			break;
-		default:
-			throw new IllegalArgumentException("Filter type:"+filterType+" does not exist!");
-		}
-		
-		if (isInitialized) CalcOutDim(); // only run if the images have been loaded
-		return p;
-
-	}
-
-	@Deprecated
-	public void SetScale(final int ux, final int uy, final int uz,
-			final int dx, final int dy, final int dz) {
-		upX = ux;
-		upY = uy;
-		upZ = uz;
-		dnX = dx;
-		dnY = dy;
-		dnZ = dz;
-	}
 
 }

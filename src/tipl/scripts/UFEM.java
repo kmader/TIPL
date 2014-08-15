@@ -4,6 +4,7 @@ import tipl.formats.PureFImage;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
+import tipl.settings.FilterSettings;
 import tipl.tools.*;
 import tipl.util.*;
 
@@ -437,19 +438,26 @@ public class UFEM implements Runnable {
     public static TImg filter(final TImg ufiltAim, final boolean doLaplace,
                               final boolean doGradient, final boolean doGauss, final boolean doMedian,
                               final int upsampleFactor, final int downsampleFactor) {
-        final VFilterScale fs = new VFilterScale(ufiltAim);
-        if (doLaplace) {
-            fs.setLaplaceFilter();
+        
+    	
+        final ITIPLPluginIO fs = TIPLPluginManager.createBestPluginIO("Filter", new TImgRO[] {ufiltAim});
+        fs.LoadImages( new TImgRO[] {ufiltAim});
+        int filterMode = FilterSettings.NEAREST_NEIGHBOR;
+        if (doMedian) {
+            filterMode=FilterSettings.MEDIAN;
+        } else if (doLaplace) {
+        	filterMode = FilterSettings.LAPLACE;
         } else if (doGradient) {
-            fs.setGradientFilter();
+        	filterMode = FilterSettings.GRADIENT;
         } else if (doGauss) {
-            fs.setGaussFilter();
-        } else if (doMedian) {
-            fs.setMedianFilter();
+        	filterMode = FilterSettings.GAUSSIAN;
         }
-        fs.SetScale(upsampleFactor, upsampleFactor, upsampleFactor,
-                downsampleFactor, downsampleFactor, downsampleFactor);
-        fs.runFilter();
+        
+        final D3int ds = new D3int(downsampleFactor,downsampleFactor,downsampleFactor);
+        final D3int up = new D3int(upsampleFactor,upsampleFactor,upsampleFactor);
+        fs.setParameter("-upfactor="+up+" -downfactor="+ds+" -filter="+filterMode);
+        fs.execute();
+        
         return fs.ExportImages(ufiltAim)[0];
     }
 
@@ -717,9 +725,11 @@ public class UFEM implements Runnable {
      * Code to make preview (slices every 20 slides of the data)
      */
     public void makePreview(final String previewName, final TImg previewData) {
-        final FilterScale fs = new FilterScale(previewData);
-        fs.SetScale(1, 1, 1, 1, 1, 20);
-        fs.runFilter();
+    	final int skipSlices=20;
+        final ITIPLPluginIO fs = TIPLPluginManager.createBestPluginIO("Filter", new TImgRO[] {previewData});
+        fs.LoadImages( new TImgRO[] {previewData});
+        fs.setParameter("-upfactor=1,1,1 -downfactor=1,1,"+skipSlices);
+        fs.execute();
         final TImg tempAim = fs.ExportImages(previewData)[0];
         TImgTools.WriteTImg(tempAim, previewName);
     }

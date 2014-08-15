@@ -2,10 +2,14 @@ package tipl.blocks;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.settings.FilterSettings;
+import tipl.tools.FilterScale;
 import tipl.tools.VFilterScale;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
+import tipl.util.D3int;
 import tipl.util.ITIPLPluginIO;
+import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
 
 /**
@@ -32,7 +36,8 @@ public class FilterBlock extends BaseTIPLBlock {
 			"ufilt", "", "Input unfiltered image", true) };
 	public final IBlockImage[] outImages = new IBlockImage[] { new BlockImage(
 			"gfilt", "gfilt.tif", "Post-filtering image", true) };
-	ITIPLPluginIO fs = new VFilterScale();
+	
+
 
 	public FilterBlock() {
 		super(blockName);
@@ -69,7 +74,9 @@ public class FilterBlock extends BaseTIPLBlock {
 	@Override
 	public boolean executeBlock() {
 		final TImgRO ufiltAim=getUfiltImage();
+		ITIPLPluginIO fs = TIPLPluginManager.createBestPluginIO("Filter",new TImgTools.HasDimensions[]{ufiltAim});
 		fs.LoadImages(new TImgRO[] { ufiltAim });
+		((FilterSettings.HasFilterSettings) fs).setFilterSettings(curSettings);
 		fs.execute();
 		final TImg gfiltAim = fs.ExportImages(ufiltAim)[0];
 		TImgTools.WriteTImg(gfiltAim, getFileParameter("gfilt"), true);
@@ -91,13 +98,14 @@ public class FilterBlock extends BaseTIPLBlock {
 		prefix=newPrefix;
 		
 	}
+	protected FilterSettings curSettings = new FilterSettings();
 	@Override
 	public ArgumentParser setParameterBlock(final ArgumentParser p) {
 		changeElSize = p.getOptionBoolean(prefix+"changeelsize", changeElSize,
 				"Change the voxel size in the ufilt image");
 		forcedElSize = p.getOptionD3float(prefix+"elsize", forcedElSize,
 				"New voxel size for ufilt image");
-		return fs.setParameter(p, prefix);
+		return curSettings.setParameter(p, prefix);
 	}
 
 }
