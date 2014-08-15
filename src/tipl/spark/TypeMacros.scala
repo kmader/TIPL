@@ -132,6 +132,9 @@ object TypeMacros {
         case m: TImgRO => DTImg.ConvertTImg(SparkGlobal.getContext(), m, IMAGETYPE_INT)
       }
     }
+    def toDTLabels(): DTImg[Array[Long]] = DTImg.ConvertTImg(SparkGlobal.getContext,cImg,IMAGETYPE_LONG)
+    def toDTValues(): DTImg[Array[Double]] = DTImg.ConvertTImg(SparkGlobal.getContext,cImg,IMAGETYPE_DOUBLE)
+    def toDTBinary(): DTImg[Array[Boolean]] = DTImg.ConvertTImg(SparkGlobal.getContext,cImg,IMAGETYPE_BOOL)
   }
 
 }

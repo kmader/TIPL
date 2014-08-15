@@ -125,7 +125,7 @@ public class FilterTests {
 	@Test 
 	public void testPosFunctions() {
 		final TImgRO pointImage = TestPosFunctions.wrapItAs(10,
-				new TestPosFunctions.SinglePointFunction(5, 5, 5),3);
+				new TestPosFunctions.SinglePointFunction(5, 5, 5),TImgTools.IMAGETYPE_FLOAT);
 		// make sure the single point function is ok
 		TIPLTestingLibrary.doPointsMatch(pointImage, 5, 5, 5, 1f, 0.01f);
 		if (saveImages) TImgTools.WriteTImg(pointImage,"/Users/mader/Dropbox/TIPL/temp_testing/pointImage.tif");

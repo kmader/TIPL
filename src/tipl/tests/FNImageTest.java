@@ -8,6 +8,7 @@ import org.junit.Test;
 import tipl.formats.FNImage;
 import tipl.formats.FNImage.VoxelFunctionN;
 import tipl.formats.TImgRO;
+import tipl.util.TImgTools;
 
 /**
  * Test the FNImage package which is used to combine multiple images together in an efficient manner
@@ -103,6 +104,32 @@ public class FNImageTest {
 		TIPLTestingLibrary.doImagesMatch(phaseMap, revPhaseMap); // check that the order does not matter
 		
 	}
+	
+	/**
+	 * Test the purefunc image filter on a single point
+	 */
+
+	@Test
+	public void testPureFuncImage() {
+		// offset lines
+		final TImgRO pointImage = TestPosFunctions.wrapItAs(10,
+				new TestPosFunctions.SinglePointFunction(5, 5, 5),3);
+		for(int i = 0; i<pointImage.getDim().z; i++) {
+			Object outSlice = pointImage.getPolyImage(i, TImgTools.IMAGETYPE_FLOAT);
+			assert(outSlice instanceof float[]);
+			assert(((float[]) outSlice)[0]>=0);
+		}
+	}
+
+	@Test
+	public void testPureFuncImagePM() {
+		final TImgRO pointImage = TestPosFunctions.wrapItAs(10,
+				new TestPosFunctions.SinglePointFunction(5, 5, 5),TImgTools.IMAGETYPE_FLOAT);
+		// make sure the single point function is ok
+		TIPLTestingLibrary.doPointsMatch(pointImage, 5, 5, 5, 1f, 0.01f);
+	}
+	
+
 
 
 }

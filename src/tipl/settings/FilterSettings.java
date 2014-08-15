@@ -1,5 +1,7 @@
 package tipl.settings;
 
+import java.io.Serializable;
+
 import tipl.tools.BaseTIPLPluginIn;
 import tipl.tools.BaseTIPLPluginIn.filterKernel;
 import tipl.settings.FilterSettings.filterGenerator;
@@ -12,7 +14,7 @@ import tipl.util.TImgTools;
  * @author mader
  *
  */
-public class FilterSettings {
+public class FilterSettings implements Serializable {
 	/** filter types
 	0 - Nearest Neighbor, 1 - Gaussian, 2 - Gradient, 3 - Laplace, 4 - Median
 	**/
@@ -22,7 +24,7 @@ public class FilterSettings {
 	final public static int LAPLACE=3;
 	final public static int MEDIAN=4;
 	
-	public static interface HasFilterSettings {
+	public static interface HasFilterSettings extends Serializable {
 		public FilterSettings getFilterSettings();
 		public void setFilterSettings(FilterSettings inSettings);
 	}

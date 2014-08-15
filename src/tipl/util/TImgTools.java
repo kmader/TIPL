@@ -358,9 +358,9 @@ public class TImgTools {
 		case IMAGETYPE_DOUBLE: // double
 			return gf;
 		case IMAGETYPE_FLOAT: // Float - Long
-			final double[] gd = new double[sliceSize];
+			final float[] gd = new float[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
-				gd[i] = gf[i];
+				gd[i] = (float) gf[i];
 			return gd;
 		case IMAGETYPE_BOOL: // Mask
 			final boolean[] gbool = new boolean[sliceSize];

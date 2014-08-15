@@ -19,6 +19,28 @@ object ImageTools {
     for (x <- 0 to windSize.x; y <- 0 to windSize.y; z <- 0 to windSize.z)
       yield (new D3int(pos.x + x, pos.y + y, pos.z + z), (label, (x == 0 & y == 0 & z == 0)))
   }
+  /**
+   *  spread slices out
+   */
+  def spread_slices[S](pvec: (D3int, S), zSize: Int) = {
+    val pos = pvec._1
+    val label = pvec._2
+    for (z <- -zSize to zSize)
+      yield (new D3int(pos.x, pos.y, pos.z + z), (label, (z == 0)))
+  }
+  /**
+   *  spread blocks out
+   *  @param pvec is the current block
+   *  @param zSize is the spreading to perform
+   */
+  def spread_blocks[S](pvec: (D3int, TImgBlock[S]), zSize: Int) = {
+    val pos = pvec._1
+    val origblock = pvec._2
+    
+    for (z <- -zSize to zSize)
+      yield (new D3int(pos.x, pos.y, pos.z + z), origblock)
+  }
+  
   def cl_merge_voxels[T](a: ((Long, T), Boolean), b: ((Long, T), Boolean)): ((Long, T), Boolean) = {
     (
       (

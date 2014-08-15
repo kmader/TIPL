@@ -228,23 +228,23 @@ public class VFilterScale extends FilterScale {
 								switch (inImageType) { // Only way to be sure
 														// the data is actually
 														// the right type
-								case 10: // Boolean
+								case TImgTools.IMAGETYPE_BOOL: // Boolean
 									blSlice = (boolean[]) cachedSlices[(int) iposz
 											- lowz];
 									break;
-								case 0: // Byte
+								case TImgTools.IMAGETYPE_CHAR: // Byte
 									chSlice = (char[]) cachedSlices[(int) iposz
 											- lowz];
 									break;
-								case 1: // Short
+								case TImgTools.IMAGETYPE_SHORT: // Short
 									shSlice = (short[]) cachedSlices[(int) iposz
 											- lowz];
 									break;
-								case 2: // Integer
+								case TImgTools.IMAGETYPE_INT: // Integer
 									itSlice = (int[]) cachedSlices[(int) iposz
 											- lowz];
 									break;
-								case 3: // Float
+								case TImgTools.IMAGETYPE_FLOAT: // Float
 									ftSlice = (float[]) cachedSlices[(int) iposz
 											- lowz];
 									break;
@@ -269,41 +269,41 @@ public class VFilterScale extends FilterScale {
 																				// slice
 						switch (inImageType) { // Only way to be sure the data
 												// is actually the right type
-						case 10: // Boolean
+						case TImgTools.IMAGETYPE_BOOL: // Boolean
 							if (blSlice[sOff2])
 								dcVox++;
 							break;
-						case 0: // Byte
+						case TImgTools.IMAGETYPE_CHAR: // Byte
 							dcVox = (chSlice)[sOff2];
 							break;
-						case 1: // Short
+						case TImgTools.IMAGETYPE_SHORT: // Short
 							dcVox = (shSlice)[sOff2];
 							break;
-						case 2: // Integer
+						case TImgTools.IMAGETYPE_INT: // Integer
 							dcVox = (itSlice)[sOff2];
 							break;
-						case 3: // Float
+						case TImgTools.IMAGETYPE_FLOAT: // Float
 							dcVox = (ftSlice)[sOff2];
 							break;
 						}
 
 						switch (curSettings.oimageType) {
-						case 0: // Byte
+						case TImgTools.IMAGETYPE_CHAR: // Byte
 							outAimByte[ooff] = (char) dcVox;
 
 							break;
-						case 1: // Short
+						case TImgTools.IMAGETYPE_SHORT: // Short
 							outAimShort[ooff] = (short) dcVox;
 							break;
-						case 2: // Int
+						case TImgTools.IMAGETYPE_INT: // Int
 							outAimInt[ooff] = (int) dcVox;
 
 							break;
-						case 3: // Float
+						case TImgTools.IMAGETYPE_FLOAT: // Float
 							outAimFloat[ooff] = (float) dcVox;
 
 							break;
-						case 10: // Boolean
+						case TImgTools.IMAGETYPE_BOOL: // Boolean
 							outAimMask[ooff] = dcVox >= 0.5;
 							break;
 						}
@@ -325,20 +325,20 @@ public class VFilterScale extends FilterScale {
 																	// actually
 																	// the right
 																	// type
-								case 10: // Boolean
+								case TImgTools.IMAGETYPE_BOOL: // Boolean
 									blSlice = (boolean[]) cachedSlices[iz
 											- lowz];
 									break;
-								case 0: // Byte
+								case TImgTools.IMAGETYPE_CHAR: // Byte
 									chSlice = (char[]) cachedSlices[iz - lowz];
 									break;
-								case 1: // Short
+								case TImgTools.IMAGETYPE_SHORT: // Short
 									shSlice = (short[]) cachedSlices[iz - lowz];
 									break;
-								case 2: // Integer
+								case TImgTools.IMAGETYPE_INT: // Integer
 									itSlice = (int[]) cachedSlices[iz - lowz];
 									break;
-								case 3: // Float
+								case TImgTools.IMAGETYPE_FLOAT: // Float
 									ftSlice = (float[]) cachedSlices[iz - lowz];
 									break;
 								default:
@@ -377,20 +377,20 @@ public class VFilterScale extends FilterScale {
 																		// the
 																		// right
 																		// type
-									case 10: // Boolean
+									case TImgTools.IMAGETYPE_BOOL: // Boolean
 										if (blSlice[sOff2])
 											dcVox++;
 										break;
-									case 0: // Byte
+									case TImgTools.IMAGETYPE_CHAR: // Byte
 										dcVox = (chSlice)[sOff2];
 										break;
-									case 1: // Short
+									case TImgTools.IMAGETYPE_SHORT: // Short
 										dcVox = (shSlice)[sOff2];
 										break;
-									case 2: // Integer
+									case TImgTools.IMAGETYPE_INT: // Integer
 										dcVox = (itSlice)[sOff2];
 										break;
-									case 3: // Float
+									case TImgTools.IMAGETYPE_FLOAT: // Float
 										dcVox = (ftSlice)[sOff2];
 										break;
 									}

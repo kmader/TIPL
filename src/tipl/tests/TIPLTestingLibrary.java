@@ -6,6 +6,7 @@ package tipl.tests;
 import tipl.formats.TImgRO;
 import tipl.tools.BaseTIPLPluginIn;
 import tipl.util.D3int;
+import tipl.util.TImgTools;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -72,7 +73,7 @@ public abstract class TIPLTestingLibrary {
         final int rposX = posX - img.getPos().x;
         final int rposY = posY - img.getPos().y;
         final int rposZ = posZ - img.getPos().z;
-        float[] curslice = (float[]) img.getPolyImage(rposZ, 3);
+        float[] curslice = (float[]) img.getPolyImage(rposZ, TImgTools.IMAGETYPE_FLOAT);
         assertEquals(gval, curslice[rposY * img.getDim().x + rposX], tol);
         return true;
     }
