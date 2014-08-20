@@ -8,12 +8,14 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.*;
 import org.apache.spark.storage.StorageLevel;
+
 import scala.Tuple2;
 import scala.Tuple3;
 import tipl.formats.FImage;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.TSliceWriter;
+import tipl.formats.TImg.ArrayBackedTImg;
 import tipl.util.*;
 import tipl.util.ArgumentList.TypedPath;
 
@@ -33,22 +35,19 @@ import java.util.List;
  * @author mader
  */
 @SuppressWarnings("serial")
-public class DTImg<T> implements TImg, Serializable {
+public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
     static protected final boolean futureTImgMigrate = true;
     /**
      *
      */
     private static final long serialVersionUID = -1824695496632428954L;
-    final int imageType;
     final String path;
     /**
      * should be final but sometimes it changes *
      */
     protected JavaPairRDD<D3int, TImgBlock<T>> baseImg;
     protected String procLog = "";
-    protected float ssf = 1;
-    protected D3int dim, pos, offset;
-    protected D3float elsize;
+
 
     /**
      * Everything is much easier with one unified constructor and then several factories which call it
@@ -60,8 +59,8 @@ public class DTImg<T> implements TImg, Serializable {
      */
     protected DTImg(TImgTools.HasDimensions parent, JavaPairRDD<D3int, TImgBlock<T>> newImage,
                     int imgType, String path) {
-        this.baseImg = newImage;//.partitionBy(SparkGlobal.getPartitioner(getDim()));
-        this.imageType = imgType;
+        super(parent,imgType);
+    	this.baseImg = newImage;//.partitionBy(SparkGlobal.getPartitioner(getDim()));
         TImgTools.mirrorImage(parent, this);
         this.path = path;
         SparkGlobal.assertPersistance(this);
@@ -382,55 +381,6 @@ public class DTImg<T> implements TImg, Serializable {
 
     }
 
-    @Override
-    public boolean getCompression() {
-        return false;
-    }
-
-    @Override
-    public void setCompression(boolean inData) {
-        throw new IllegalArgumentException("Not Implemented");
-    }
-
-    @Override
-    public D3int getDim() {
-        return dim;
-    }
-
-    @Override
-    public void setDim(D3int inData) {
-        dim = inData;
-    }
-
-    @Override
-    public D3float getElSize() {
-        return elsize;
-    }
-
-    @Override
-    public void setElSize(D3float inData) {
-        elsize = inData;
-    }
-
-    @Override
-    public int getImageType() {
-        return imageType;
-    }
-
-    @Override
-    public D3int getOffset() {
-        return offset;
-    }
-
-    @Override
-    public void setOffset(D3int inData) {
-        offset = inData;
-    }
-
-    @Override
-    public String getPath() {
-        return path;
-    }
 
     /**
      * A fairly simple operation of filtering the RDD for the correct slice and returning that slice
@@ -448,83 +398,22 @@ public class DTImg<T> implements TImg, Serializable {
         return TImgTools.convertArrayType(curSlice, getImageType(), asType, getSigned(), getShortScaleFactor());
     }
 
-    @Override
-    public D3int getPos() {
-        return pos;
-    }
 
-    @Override
-    public void setPos(D3int inData) {
-        pos = inData;
-    }
-
-    @Override
-    public String getProcLog() {
-        return procLog;
-    }
 
     @Override
     public String getSampleName() {
         return path;
     }
-
+    
     @Override
-    public float getShortScaleFactor() {
-        return ssf;
-    }
-
-    @Override
-    public void setShortScaleFactor(float issf) {
-        ssf = issf;
-    }
-
-    @Override
-    public boolean getSigned() {
-        return false;
-    }
-
-    @Override
-    public void setSigned(boolean inData) {
-        throw new IllegalArgumentException("Not Implemented");
-    }
-
-    @Override
-    public TImg inheritedAim(boolean[] imgArray, D3int dim, D3int offset) {
-        // TODO Auto-generated method stub
-        throw new IllegalArgumentException("Not Implemented");
-    }
-
-    @Override
-    public TImg inheritedAim(char[] imgArray, D3int dim, D3int offset) {
-        // TODO Auto-generated method stub
-        throw new IllegalArgumentException("Not Implemented");
-    }
-
-    @Override
-    public TImg inheritedAim(float[] imgArray, D3int dim, D3int offset) {
-        // TODO Auto-generated method stub
-        throw new IllegalArgumentException("Not Implemented");
-    }
-
-    @Override
-    public TImg inheritedAim(int[] imgArray, D3int dim, D3int offset) {
-        // TODO Auto-generated method stub
-        throw new IllegalArgumentException("Not Implemented");
-    }
-
-    @Override
-    public TImg inheritedAim(short[] imgArray, D3int dim, D3int offset) {
-        // TODO Auto-generated method stub
-        throw new IllegalArgumentException("Not Implemented");
-    }
-
-    @Override
-    public TImg inheritedAim(TImgRO inAim) {
-        final JavaSparkContext cJsc = SparkGlobal.getContext();
+    protected TImg makeImageFromDataArray(D3int dim,D3int pos,D3float elSize,int stype,Object[] sliceData) {
+    	final TImg tempConstruct = new ArrayBackedTImg(dim,pos,elSize,stype,sliceData);
+    	final JavaSparkContext cJsc = SparkGlobal.getContext();
         final JavaPairRDD<D3int, TImgBlock<T>> oldImage = MigrateImage(cJsc,
-                inAim, getImageType());
-        return DTImg.WrapRDD(this, oldImage, getImageType());
+                tempConstruct, stype);
+        return DTImg.WrapRDD(tempConstruct, oldImage, getImageType());
     }
+
 
     @Override
     public boolean InitializeImage(D3int dPos, D3int cDim, D3int dOffset,
@@ -532,15 +421,6 @@ public class DTImg<T> implements TImg, Serializable {
         throw new IllegalArgumentException("Not Implemented");
     }
 
-    @Override
-    public int isFast() {
-        return 1;
-    }
-
-    @Override
-    public boolean isGood() {
-        return true;
-    }
 
     /**
      * passes basically directly through to the JavaPair RDD but it wraps

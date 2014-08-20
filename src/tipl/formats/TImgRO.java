@@ -146,12 +146,14 @@ public interface TImgRO extends TImgTools.HasDimensions, Serializable {
      */
     public abstract class ATImgRO implements TImgRO {
         private static final long serialVersionUID = -8883859233940303695L;
-        final protected D3int dim;
+        protected D3int dim;
         final protected int imageType;
         protected D3int pos;
         protected D3float elSize;
         protected D3int offset = new D3int(0);
         protected String procLog = "";
+        protected float ssf = 1.0f;
+        protected boolean signed = false;
 
         public ATImgRO(TImgTools.HasDimensions tempImg, final int iimageType) {
             assert (TImgTools.isValidType(iimageType));
@@ -244,14 +246,14 @@ public interface TImgRO extends TImgTools.HasDimensions, Serializable {
             // TODO Auto-generated method stub
             return "";
         }
-
+        
         /* (non-Javadoc)
          * @see tipl.formats.TImgRO#getShortScaleFactor()
          */
         @Override
         public float getShortScaleFactor() {
             // TODO Auto-generated method stub
-            return 1;
+            return ssf;
         }
 
         /* (non-Javadoc)
@@ -259,7 +261,7 @@ public interface TImgRO extends TImgTools.HasDimensions, Serializable {
          */
         @Override
         public boolean getSigned() {
-            return false;
+            return signed;
         }
 
         /* (non-Javadoc)

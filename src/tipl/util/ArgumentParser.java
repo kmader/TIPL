@@ -39,7 +39,7 @@ public class ArgumentParser extends ArgumentList {
     @Deprecated
     public ArgumentParser(final String[] args, boolean iKnowWhatImDoing) {
         for (int i = 0; i < args.length; i++) {
-            if (args[i].startsWith("-") || args[i].startsWith("/")) {
+            if (args[i].trim().startsWith("-") || args[i].trim().startsWith("/")) {
                 final int loc = args[i].indexOf("=");
                 final String keyRaw = (loc > 0) ? args[i].substring(1, loc)
                         : args[i].substring(1);
@@ -49,7 +49,7 @@ public class ArgumentParser extends ArgumentList {
                 final String key = formatKey(keyRaw);
                 putArg(key, new ArgumentList.GenericArgument(key, value));
 
-            } else {
+            } else if (args[i].trim().length()>0) {
                 // FLAT_0 is unreachable since the key is uppercase
                 putArg("FLAT_" + i, new ArgumentList.EmptyArgument(args[i]));
             }
