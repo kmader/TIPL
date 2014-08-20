@@ -63,6 +63,21 @@ object TIPLOps {
 	   new D3float(ip.x*iv,ip.y*iv,ip.z*iv)
 	 }
   }
+  implicit class RichTImgList(val inputImageList: Array[TImgRO]) {
+    def pluginIO(name: String): ITIPLPluginIO = {
+       TIPLPluginManager.createBestPluginIO[TImgRO](name,inputImageList)
+    }
+    def plugin(name: String): ITIPLPlugin = {
+      TIPLPluginManager.createBestPlugin[TImgRO](name,inputImageList)
+    }
+    def run(name: String, parameters: String): Array[TImg] = {
+      val plug = pluginIO(name)
+      plug.LoadImages(inputImageList)
+      plug.setParameter(parameters)
+      plug.execute()
+      plug.ExportImages(inputImageList(0))
+    }
+  }
   /**
    * A TImg class supporting both filters and IO
    */
@@ -70,7 +85,7 @@ object TIPLOps {
     /**
      * The old reading functions
      */
-    val fullTImg = new TImgRO.TImgFull(inputImage)
+    lazy val fullTImg = new TImgRO.TImgFull(inputImage)
     override def getBoolArray(sliceNumber: Int) = {fullTImg.getBoolArray(sliceNumber)}
     override def getByteArray(sliceNumber: Int) = {fullTImg.getByteArray(sliceNumber)}
     override def getShortArray(sliceNumber: Int) = {fullTImg.getShortArray(sliceNumber)}

@@ -170,7 +170,7 @@ public class TIPLPluginManager {
 	}
 
 
-	protected static PluginInfo getBestPlugin(final String pluginType,final TImgTools.HasDimensions[] inImages) {
+	protected static <T extends TImgTools.HasDimensions> PluginInfo getBestPlugin(final String pluginType,final T[] inImages) {
 		//TODO get size from other images at some point
 		List<PluginInfo> namedPlugins=getPluginsNamed(pluginType);
 		if (namedPlugins.size()<1) throw new IllegalArgumentException("No plugins of type:"+pluginType+" have been loaded, check classpath, and annotation setup");
@@ -239,7 +239,7 @@ public class TIPLPluginManager {
 	 * @param inImages the input images
 	 * @return an instance of the plugin as a standard plugin
 	 */
-	public static ITIPLPlugin createBestPlugin(final String pluginType,final TImgTools.HasDimensions[] inImages) {
+	public static <T extends TImgTools.HasDimensions> ITIPLPlugin createBestPlugin(final String pluginType,final T[] inImages) {
 		return getPlugin(getBestPlugin(pluginType,inImages));
 	}
 	
@@ -259,7 +259,7 @@ public class TIPLPluginManager {
 	 * @param inImages the input images
 	 * @return an instance of the plugin as an io plugin
 	 */
-	public static ITIPLPluginIO createBestPluginIO(final String pluginType,final TImgTools.HasDimensions[] inImages) {
+	public static <T extends TImgTools.HasDimensions> ITIPLPluginIO createBestPluginIO(final String pluginType,final T[] inImages) {
 		return getPluginIO(getBestPlugin(pluginType,inImages));
 	}
 	

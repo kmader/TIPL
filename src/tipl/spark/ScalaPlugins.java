@@ -24,7 +24,6 @@ public final class ScalaPlugins {
         }
     };
     
-    
     @TIPLPluginManager.PluginInfo(pluginType = "Filter",
     	    desc = "Spark-based filtering and scale",
     	    sliceBased = false, sparkBased = true)
