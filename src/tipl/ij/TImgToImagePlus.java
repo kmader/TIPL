@@ -10,6 +10,7 @@ import ij.measure.Calibration;
 import ij.process.ImageProcessor;
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
+import tipl.util.TImgTools;
 
 import java.awt.*;
 
@@ -105,7 +106,7 @@ public class TImgToImagePlus extends ImagePlus {
             ip = outIm;
             bpixels = ipixels;
             chw = ichw;
-            mode = 0;
+            mode = TImgTools.IMAGETYPE_CHAR;
 
         }
 
@@ -115,7 +116,7 @@ public class TImgToImagePlus extends ImagePlus {
             ip = outIm;
             fpixels = ipixels;
             chw = ichw;
-            mode = 3;
+            mode = TImgTools.IMAGETYPE_FLOAT;
 
         }
 
@@ -125,14 +126,14 @@ public class TImgToImagePlus extends ImagePlus {
             ip = outIm;
             spixels = ipixels;
             chw = ichw;
-            mode = 1;
+            mode = TImgTools.IMAGETYPE_SHORT;
 
         }
 
         @Override
         public void run() {
             switch (mode) {
-                case 0:
+                case TImgTools.IMAGETYPE_CHAR:
                     cnt = 0;
                     sum = 0;
                     ssum = 0;
@@ -150,7 +151,7 @@ public class TImgToImagePlus extends ImagePlus {
                         // }
                     }
                     break;
-                case 1:
+                case TImgTools.IMAGETYPE_SHORT:
                     cnt = 0;
                     sum = 0;
                     ssum = 0;
@@ -168,7 +169,7 @@ public class TImgToImagePlus extends ImagePlus {
                         // }
                     }
                     break;
-                case 3:
+                case TImgTools.IMAGETYPE_FLOAT:
                     cnt = 0;
                     sum = 0;
                     ssum = 0;

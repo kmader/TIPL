@@ -5,6 +5,7 @@ package tipl.ij.scripting
 import tipl.formats.TImgRO
 import tipl.util.TImgTools
 import ij.IJ
+import tipl.util.TImgBlock
 
 /**
  * Tools for making previewing and exploring data in FIJI from Spark easy
@@ -12,6 +13,11 @@ import ij.IJ
  *
  */
 object scOps {
+    implicit class ijConvertableBlock[T](inBlock: TImgBlock[T]) {
+      def asTImg() = {
+        new TImgBlock.TImgBlockAsTImg(inBlock);
+      }
+    }
 	implicit class ijConvertibleImage(inImg: TImgRO) {
 	  lazy val is = tipl.ij.TImgToImageStack.MakeImageStack(inImg)
 	  

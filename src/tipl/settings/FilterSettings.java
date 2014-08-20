@@ -30,7 +30,7 @@ public class FilterSettings implements Serializable {
 	}
 
 	/** How a filter generating function looks */
-	public interface filterGenerator {
+	public interface filterGenerator extends Serializable {
 		public BaseTIPLPluginIn.filterKernel make();
 	}
 	public D3int upfactor = new D3int(1,1,1);
@@ -62,96 +62,73 @@ public class FilterSettings implements Serializable {
 						"-1 is same as input, "+TImgTools.IMAGETYPE_HELP);
 		upfactor = p.getOptionD3int(prefix + "upfactor", upfactor, "Upscale factor");
 		downfactor = p.getOptionD3int(prefix + "downfactor",downfactor, "Downscale factor");
-
+		
+		final D3int sigma = (filterParameter>0) ? new D3int((int) filterParameter) : upfactor;
 		switch (filterType) {
 		case NEAREST_NEIGHBOR:
+			scalingFilterGenerator = new filterGenerator() {
+				@Override
+				public BaseTIPLPluginIn.filterKernel make() {
+					return new BaseTIPLPluginIn.filterKernel() {
+						double lastValue = -1;
+						@Override
+						public void addpt(double x1, double x2, double y1,
+								double y2, double z1, double z2, double value) {
+							lastValue = value;	
+						}
+						@Override
+						public String filterName() {
+							// TODO Auto-generated method stub
+							return "Last Neighbor";
+						}
+						@Override
+						public void reset() {}
+						@Override
+						public double value() {return lastValue;}
+					};
+				}
+			};
 			break;
 		case GAUSSIAN:
-			if (filterParameter > 0)
-				setGaussFilter(filterParameter);
-			else
-				setGaussFilter();
+				scalingFilterGenerator = new filterGenerator() {
+				@Override
+				public BaseTIPLPluginIn.filterKernel make() {
+					return BaseTIPLPluginIn.gaussFilter(sigma.x, sigma.y, sigma.z);
+				}
+			};
 			break;
 		case GRADIENT:
-			setGradientFilter();
+			scalingFilterGenerator = new filterGenerator() {
+				@Override
+				public BaseTIPLPluginIn.filterKernel make() {
+					return BaseTIPLPluginIn.gradientFilter();
+				}
+			};
 			break;
 		case LAPLACE:
-			setLaplaceFilter();
+			scalingFilterGenerator = new filterGenerator() {
+				@Override
+				public BaseTIPLPluginIn.filterKernel make() {
+					return BaseTIPLPluginIn.laplaceFilter();
+				}
+			};
 			break;
 		case MEDIAN:
-			if (filterParameter > 0)
-				setMedianFilter((int) filterParameter);
-			else
-				setMedianFilter();
+			scalingFilterGenerator = new filterGenerator() {
+				@Override
+				public BaseTIPLPluginIn.filterKernel make() {
+					return BaseTIPLPluginIn.medianFilter(sigma.x, sigma.y, sigma.z);
+				}
+			};
 			break;
 		default:
 			throw new IllegalArgumentException("Filter type:"+filterType+" does not exist!");
 		}
-		
-		
 		return p;
 
 	}
-	/** Use a gaussian filter */
-	@Deprecated
-	private void setGaussFilter() {
-		scalingFilterGenerator = new filterGenerator() {
-			@Override
-			public BaseTIPLPluginIn.filterKernel make() {
-				return BaseTIPLPluginIn.gaussFilter(upfactor.x, upfactor.y, upfactor.z);
-			}
-		};
 
-	}
 
-	/** Use a gaussian filter */
-	@Deprecated
-	private void setGaussFilter(final double sigma) {
-
-		scalingFilterGenerator = new filterGenerator() {
-			@Override
-			public BaseTIPLPluginIn.filterKernel make() {
-				return BaseTIPLPluginIn.gaussFilter(sigma, sigma, sigma);
-			}
-		};
-
-	}
-
-	/** Use a gradient filter */
-	@Deprecated
-	private void setGradientFilter() {
-		scalingFilterGenerator = new filterGenerator() {
-			@Override
-			public BaseTIPLPluginIn.filterKernel make() {
-				return BaseTIPLPluginIn.gradientFilter();
-			}
-		};
-
-	}
-
-	/** Use a laplace filter */
-	@Deprecated
-	private void setLaplaceFilter() {
-		scalingFilterGenerator = new filterGenerator() {
-			@Override
-			public BaseTIPLPluginIn.filterKernel make() {
-				return BaseTIPLPluginIn.laplaceFilter();
-			}
-		};
-
-	}
-
-	@Deprecated
-	private void setMedianFilter() {
-
-		scalingFilterGenerator = new filterGenerator() {
-			@Override
-			public BaseTIPLPluginIn.filterKernel make() {
-				return BaseTIPLPluginIn.medianFilter(upfactor.x, upfactor.y, upfactor.z);
-			}
-		};
-
-	}
 
 	/** Use a Median filter */
 	@Deprecated

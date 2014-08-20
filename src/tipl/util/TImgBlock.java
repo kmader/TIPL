@@ -188,6 +188,34 @@ public class TImgBlock<V> implements Serializable {
         }
 
     }
+    /**
+     * Convert a TImgBlock (a single slice) into a TImg Object since it is easier like that
+     * @author mader
+     *
+     * @param <Ti>
+     */
+    static public class TImgBlockAsTImg extends TImgRO.ATImgRO implements TImgRO {
+    	final protected TImgBlock baseBlock;
+    	
+    	public TImgBlockAsTImg(final TImgBlock baseBlock) {
+    		super(baseBlock.getDim(),baseBlock.getPos(),new D3float(1,1,1),TImgTools.identifySliceType(baseBlock.get()));
+    		this.baseBlock=baseBlock;
+    	}
+    	public TImgBlockAsTImg(final TImgBlock baseBlock,final D3float elSize) {
+    		super(baseBlock.getDim(),baseBlock.getPos(),elSize,TImgTools.identifySliceType(baseBlock.get()));
+    		this.baseBlock=baseBlock;
+    	}
+		@Override
+		public Object getPolyImage(int sliceNumber, int asType) {
+			assert(sliceNumber==0); //TODO make this more generic in case the block is not a slice
+			return TImgTools.convertArrayType(baseBlock.get(), getImageType(), asType, getSigned(), getShortScaleFactor());
+		}
+		@Override
+		public String getSampleName() {
+			return baseBlock.toString();
+		}
+    	
+    }
 
     /**
      * For reading files remotely, creates a future object with the path and slice number of the file to read

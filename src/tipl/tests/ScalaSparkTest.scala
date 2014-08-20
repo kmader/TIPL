@@ -1,44 +1,35 @@
 
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * A few basic tests for Spark
  */
 
 package tipl.tests
 
 import scala.math.random
-
 import org.apache.spark._
+import tipl.spark.SparkGlobal
 
-/** Computes an approximation to pi */
-object ScalaSparkTest {
+/** Computes an approximation to pi with failing jobs */
+object SparkFailureTest {
   def main(args: Array[String]) {
-    if (args.length == 0) {
-      System.err.println("Usage: SparkPi <master> [<slices>]")
-      System.exit(1)
-    }
-    val spark = new SparkContext(args(0), "SparkPi",
-      System.getenv("SPARK_HOME"), SparkContext.jarOfClass(this.getClass).toSeq)
-    val slices = if (args.length > 1) args(1).toInt else 2
-    val n = 100000 * slices
-    val count = spark.parallelize(1 to n, slices).map { i =>
+	val p = SparkGlobal.activeParser(args)
+	val slices = p.getOptionInt("slices",100000,"Number of slices for Pi calculation")
+	val failureRate = p.getOptionDouble("fail",1e-3/1e3,"rate of failure for spark jobs (random exception thrown)")
+    p.checkForInvalid()
+    val sc = SparkGlobal.getContext("CrashTest")
+    
+    val n = 100 * slices
+    val exCount = sc.accumulator(0)
+    val count = sc.parallelize(1 to n, slices).map { i =>
       val x = random * 2 - 1
       val y = random * 2 - 1
+      if(random<failureRate) {
+        exCount+=1
+        throw new IllegalArgumentException("Random Exception Testing")
+      }
       if (x*x + y*y < 1) 1 else 0
     }.reduce(_ + _)
-    println("Pi is roughly " + 4.0 * count / n)
-    spark.stop()
+    println("Pi is roughly " + 4.0 * count / n+", with #"+exCount.value+" exceptions")
+    sc.stop()
   }
 }

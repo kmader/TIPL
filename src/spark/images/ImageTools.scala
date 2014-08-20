@@ -40,7 +40,20 @@ object ImageTools {
     for (z <- -zSize to zSize)
       yield (new D3int(pos.x, pos.y, pos.z + z), origblock)
   }
-  
+    /**
+   *  spread blocks out according to an upscale and downscale factor
+   *  @param pvec is the current block
+   *  @param up is the upscaling factor (blocks spread from -up.z to up.z
+   *  @param dn is the downscaling factor the output position will be scaled by this number
+   */
+  def spread_blocks_gen[S](pvec: (D3int, TImgBlock[S]), up: D3int, dn: D3int) = {
+    
+    val pos = pvec._1
+    val origblock = pvec._2
+    
+    for (z <- -up.z to up.z)
+      yield (new D3int((pos.x*up.x)/dn.x, (pos.y*up.y)/dn.y, ((pos.z + z)*up.z)/dn.z), origblock)
+  }
   def cl_merge_voxels[T](a: ((Long, T), Boolean), b: ((Long, T), Boolean)): ((Long, T), Boolean) = {
     (
       (

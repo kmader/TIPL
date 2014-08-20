@@ -24,6 +24,7 @@ public final class ScalaPlugins {
         }
     };
     
+    
     @TIPLPluginManager.PluginInfo(pluginType = "Filter",
     	    desc = "Spark-based filtering and scale",
     	    sliceBased = false, sparkBased = true)
@@ -33,7 +34,7 @@ public final class ScalaPlugins {
     	    }
     	  };
     
-    
+   
     @TIPLPluginManager.PluginInfo(pluginType = "kVoronoi",
             desc = "Spark-based surface voronoi tesselation",
             sliceBased = false, sparkBased = true)

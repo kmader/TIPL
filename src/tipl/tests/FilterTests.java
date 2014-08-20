@@ -139,7 +139,7 @@ public class FilterTests {
 		// offset lines
 		int boxSize=10;
 		int layerWidth=3;
-		final TImgRO sheetImage =   TestPosFunctions.wrapItAs(boxSize,
+		final TImgRO sheetImage = TestPosFunctions.wrapItAs(boxSize,
 				new TestPosFunctions.SphericalLayeredImage(boxSize/2, boxSize/2, boxSize/2, 0, 1, layerWidth),3);
 		if (saveImages)	TImgTools.WriteTImg(sheetImage,"/Users/mader/Dropbox/TIPL/temp_testing/sheetImage.tif");		
 	}
@@ -211,7 +211,7 @@ public class FilterTests {
 	/**
 	 * Test the laplace filter on a single point
 	 */
-	//@Test
+	@Test
 	public void testOutLaplace() {
 		// offset lines
 

@@ -46,9 +46,9 @@ public abstract class TIPLTestingLibrary {
     }
 
     public static void checkDim(final TImgRO img, final D3int dim) {
-        assertEquals(img.getDim().x, dim.x);
-        assertEquals(img.getDim().y, dim.y);
-        assertEquals(img.getDim().z, dim.z);
+        assertEquals(dim.x, img.getDim().x);
+        assertEquals(dim.y, img.getDim().y);
+        assertEquals(dim.z, img.getDim().z);
     }
 
     public static void checkPos(final TImgRO img, final D3int pos) {

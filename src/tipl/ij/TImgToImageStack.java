@@ -13,6 +13,7 @@ import ij.process.ShortProcessor;
 import java.awt.image.ColorModel;
 
 import tipl.formats.TImgRO;
+import tipl.util.TImgTools;
 
 /**
  * @author mader
@@ -103,8 +104,8 @@ public class TImgToImageStack extends ImageStack {
 				+ ", wid=" + wid + " , het=" + het);
 		ImageProcessor ip = null;
 		switch (imageType) {
-		case 0:
-		case 10:
+		case TImgTools.IMAGETYPE_CHAR:
+		case TImgTools.IMAGETYPE_BOOL:
 			char[] bpixels = null;
 			// if (!isLoaded)
 			bpixels = coreTFull.getByteArray(n - 1);
@@ -116,8 +117,8 @@ public class TImgToImageStack extends ImageStack {
 			ip.setMinAndMax(Byte.MIN_VALUE, Byte.MAX_VALUE);
 			if (useAutoRanger) (new TImgToImagePlus.autoRanger(ip, curHistWind, bpixels)).start();
 			break;
-		case 1:
-		case 2:
+		case TImgTools.IMAGETYPE_SHORT:
+		case TImgTools.IMAGETYPE_INT:
 			short[] spixels = null;
 			// if (!isLoaded)
 			spixels = coreTFull.getShortArray(n - 1);
@@ -127,7 +128,7 @@ public class TImgToImageStack extends ImageStack {
 			if (useAutoRanger) (new TImgToImagePlus.autoRanger(ip, curHistWind, spixels)).start();
 			break;
 
-		case 3:
+		case TImgTools.IMAGETYPE_FLOAT:
 			float[] fpixels = null;
 			// if (!isLoaded)
 			fpixels = coreTFull.getFloatArray(n - 1);
@@ -136,6 +137,8 @@ public class TImgToImageStack extends ImageStack {
 			ip.setMinAndMax(-Double.MAX_VALUE, Double.MAX_VALUE);
 			if (useAutoRanger) (new TImgToImagePlus.autoRanger(ip, curHistWind, fpixels)).start();
 			break;
+		default: 
+			throw new IllegalArgumentException("Unknown type");
 
 		}
 
