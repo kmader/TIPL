@@ -96,6 +96,10 @@ public class TImgBlock<V> implements Serializable {
     public V getClone() {
         return get();
     }
+    
+    public double[] getAsDouble() {
+    	return TImgTools.convertArrayDouble(sliceData);
+    }
 
     public D3int getPos() {
         return pos;

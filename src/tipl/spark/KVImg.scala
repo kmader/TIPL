@@ -79,43 +79,83 @@ import tipl.formats.TImg
 
   def toKVFloat() =
     toKVAuto[Float](TImgTools.IMAGETYPE_FLOAT)
+   def toKVDouble() =
+    toKVAuto[Double](TImgTools.IMAGETYPE_DOUBLE)
+    
+   
+   def saveAsParquetFile(path: String) = {
+    import org.apache.spark.sql.SQLContext
+    val sqlContext = new SQLContext(baseImg.sparkContext)
+    // first convert the image to a double (it makes it easier for now, since otherwise sqlcontext goes crazy with javamirrors and type tags and all that
+    val schemaTab = sqlContext.createSchemaRDD(toKVDouble.getBaseImg.map{inRow => KVImgRowGeneric(inRow._1.x,inRow._1.y,inRow._1.z,inRow._2)})
+    schemaTab.saveAsParquetFile(path)
+  }
 
 
 }
 
+@serializable case class KVImgRowGeneric(x: Int, y: Int, z: Int, value: Double)
+
 object KVImg {
+
   def ConvertTImg(sc: SparkContext, inImg: TImgRO, imType: Int) = {
     val curImg = DTImg.ConvertTImg(sc, inImg, imType)
-    new KVImg(inImg, imType, DTImgOps.DTImgToKV(curImg))
+    new KVImg(inImg, imType, DTImgOps.DTImgToKVRDD(curImg))
   }
+  
+  /** Load a parquet file
+   *  
+   */
+   def loadFromParquetFile(path: String, elSize: D3float = new D3float(1.0f)):
+	   KVImg[Double] = {
+    import org.apache.spark.sql.SQLContext
+    val sqlContext = new SQLContext(SparkGlobal.getContext("KVImg Loading Pqrquet"))
+    val schemaTab = sqlContext.parquetFile(path)
+    val kvTab = schemaTab.map{ curRow => 
+      val cPos = new D3int(curRow.getInt(0),curRow.getInt(1),curRow.getInt(2))
+      (cPos,curRow.getDouble(3))
+      }
+    val (pos,dim) = inferShape(kvTab.map(_._1))
+    new KVImg(dim, pos, elSize, TImgTools.IMAGETYPE_DOUBLE,kvTab)
+  }
+   /**
+    * Infer the shape from a key-value pair RDD
+    */
+   def inferShape(fMat: RDD[D3int]) = {
+     val posx = fMat.map(_.x).min
+     val posy = fMat.map(_.y).min
+     val posz = fMat.map(_.z).min
+     val dimx = fMat.map(_.x).max-posx
+     val dimy = fMat.map(_.y).max-posy
+     val dimz = fMat.map(_.z).max-posz
+     (new D3int(posx,posy,posz),new D3int(dimx,dimy,dimz))
+   }
 
   /**
    * Transform the DTImg into a KVImg
    */
-  def fromDTImg[T, V](inImg: DTImg[T])(implicit lm: ClassTag[T], gm: ClassTag[V]) = {
-
-    val kvBase = DTImgOps.DTImgToKVStrict[T, V](inImg)
-    new KVImg[V](inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(), kvBase);
-
+  def fromDTImg[T, V](inImg: DTImg[T])(implicit lm: ClassTag[T], gm: ClassTag[V]): KVImg[V] = {
+	  DTImgOps.DTImgToKVStrict[T, V](inImg)
   }
 
   def fromDTImgBlind(inImg: DTImg[_]) = inImg.getImageType() match {
-    case TImgTools.IMAGETYPE_BOOL => new KVImg(inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(), DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Boolean]]]))
-    case TImgTools.IMAGETYPE_CHAR => new KVImg(inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(), DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Byte]]]))
-    case TImgTools.IMAGETYPE_SHORT => new KVImg(inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(), DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Short]]]))
-    case TImgTools.IMAGETYPE_INT => new KVImg(inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(), DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Int]]]))
-    case TImgTools.IMAGETYPE_LONG => new KVImg(inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(), DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Long]]]))
-    case TImgTools.IMAGETYPE_FLOAT => new KVImg(inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(), DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Float]]]))
-    case TImgTools.IMAGETYPE_DOUBLE => new KVImg(inImg.getDim(), inImg.getPos(), inImg.getElSize(), inImg.getImageType(), DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Double]]]))
+    case TImgTools.IMAGETYPE_BOOL => DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Boolean]]])
+    case TImgTools.IMAGETYPE_CHAR => DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Byte]]])
+    case TImgTools.IMAGETYPE_SHORT => DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Short]]])
+    case TImgTools.IMAGETYPE_INT => DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Int]]])
+    case TImgTools.IMAGETYPE_LONG => DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Long]]])
+    case TImgTools.IMAGETYPE_FLOAT => DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Float]]])
+    case TImgTools.IMAGETYPE_DOUBLE => DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Double]]])
     case m: Int => throw new IllegalArgumentException("Unknown type:" + m)
   }
 
-  def FromRDD[T](objToMirror: TImgTools.HasDimensions, imageType: Int, wrappedImage: RDD[(D3int, T)])(implicit lm: ClassTag[T]) = {
+  def fromRDD[T](objToMirror: TImgTools.HasDimensions, imageType: Int, wrappedImage: RDD[(D3int, T)])(implicit lm: ClassTag[T]) = {
     new KVImg[T](objToMirror, imageType, wrappedImage)
   }
 
   private[KVImg] def makeConvFunc[T](inType: Int, outType: Int) = {
     inVal: Any => TypeMacros.fromDouble(TypeMacros.castEleToDouble(inVal, inType), outType).asInstanceOf[T]
   }
+  
 
 }

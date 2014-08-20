@@ -33,7 +33,7 @@ import tipl.util.TIPLOps.NeighborhoodOperation
         inpf.get(Array(x.doubleValue, y.doubleValue, z.doubleValue)))
     })
 
-    KVImg.FromRDD[Double](objToMirror, TImgTools.IMAGETYPE_DOUBLE, wrappedImage)
+    KVImg.fromRDD[Double](objToMirror, TImgTools.IMAGETYPE_DOUBLE, wrappedImage)
   }
 
   /**
@@ -141,7 +141,7 @@ import tipl.util.TIPLOps.NeighborhoodOperation
       val javaImg = outImg.mapValues {
         _.doubleValue
       }
-      KVImg.FromRDD[Double](ip, TImgTools.IMAGETYPE_DOUBLE, javaImg)
+      KVImg.fromRDD[Double](ip, TImgTools.IMAGETYPE_DOUBLE, javaImg)
     }
 
     def getInterface() = {

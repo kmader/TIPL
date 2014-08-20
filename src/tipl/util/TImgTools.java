@@ -22,7 +22,8 @@ import java.util.Date;
  */
 public class TImgTools {
 	/**
-	 * the values define the types of various images and should be used instead of hardcoded values *
+	 * the values define the types of various images and should be used instead of hardcoded values
+	 * Type refers to binary or stored values
 	 */
 
 	public static final int IMAGETYPE_BOOL = 10;
@@ -36,6 +37,38 @@ public class TImgTools {
 	public static final int IMAGETYPE_SPECTRAL = 6;
 	public static final int IMAGETYPE_GLOB = 7;
 	public static final int IMAGETYPE_LONG = 7;
+	
+	/**
+	 * Image class refers to the information which is being stored in the image (distinct values from imagetype)
+	 */
+	public static final int IMAGECLASS_BINARY = 100;
+	public static final int IMAGECLASS_LABEL = 101;
+	public static final int IMAGECLASS_VALUE = 102;
+	public static final int IMAGECLASS_OTHER = 103;
+	/**
+	 * Convert a type to a class of image (makes processing easier)
+	 * @param type the IMAGETYPE of the data coming in
+	 * @return the ImageClass of this type
+	 */
+	public static int ImageTypeToClass(int type) {
+		switch(type) {
+		case IMAGETYPE_BOOL:
+			return IMAGECLASS_BINARY;
+		case IMAGETYPE_CHAR:
+		case IMAGETYPE_SHORT:
+		case IMAGETYPE_INT:
+		case IMAGETYPE_LONG:
+			return IMAGECLASS_LABEL;
+		case IMAGETYPE_FLOAT:
+		case IMAGETYPE_DOUBLE:
+			return IMAGECLASS_VALUE;
+		default:
+			if (TIPLGlobal.getDebug()) System.out.println("Warning: ImageType ("+type+") is unknown and is being labeled as other");
+			return IMAGECLASS_OTHER;
+			
+			
+		}
+	}
 	/**
 	 * Check to see if the image is cached or otherwise fast access (used for
 	 * caching methods to avoid double caching), 0 is encoded disk-based, 1 is
@@ -687,6 +720,15 @@ public class TImgTools {
 		 throw new IllegalArgumentException("Type of object:" + iData
 				 + " cannot be determined!! Proceed with extreme caution");
 	 }
+	 /**
+	  * convert any known array type to an array of doubles (good enough for labels or values)
+	  * @param inSlice
+	  * @return slice as an array of double
+	  */
+	 public static double[] convertArrayDouble(Object inSlice) {
+		 final int type = identifySliceType(inSlice);
+		 return (double[]) convertArrayType(inSlice,type,IMAGETYPE_DOUBLE,true,127);
+	 }
 	 
 
 	 /**
@@ -1133,6 +1175,34 @@ public class TImgTools {
 		  * @return
 		  */
 		 public float getShortScaleFactor();
+		 
 
+	 }
+	 
+	 public static HasDimensions SimpleDimensions(final D3int dim, final D3float elSize,final  D3int pos) {
+		 return new HasDimensions() {
+			@Override
+			public D3int getDim() {return dim;}
+
+			@Override
+			public D3float getElSize() {return elSize;}
+
+			@Override
+			public D3int getOffset() {	return new D3int(0,0,0);}
+
+			@Override
+			public D3int getPos() { return pos;}
+
+			@Override
+			public String getProcLog() {
+				return "";
+			}
+
+			@Override
+			public float getShortScaleFactor() {
+				return 1;
+			} 
+			 
+		 };
 	 }
 }

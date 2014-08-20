@@ -8,18 +8,20 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 import tipl.util.TImgBlock
 import tipl.util.D3int
+import tipl.util.D3float
+import tipl.util.TImgTools
+import tipl.util.TImgTools.HasDimensions
 import tipl.util.TIPLOps._
 import tipl.tools.BaseTIPLPluginIn
 import scala.util.Sorting.stableSort
+
 /**
- * A collectiono of useful functions for DTImg classes to allow more complicated analyses
+ * A collection of useful functions for DTImg classes to allow more complicated analyses
  * @author mader
  *
  */
 object DTImgOps {
-
-
-  def DTImgToKV(inImg: DTImg[_]) = {
+  private[spark] def DTImgToKVRDD(inImg: DTImg[_]) = {
     val imgType = inImg.getImageType
     inImg.getBaseImg.rdd.flatMap {
       cPoint =>
@@ -33,23 +35,53 @@ object DTImgOps {
         }
         yield (new D3int(pos.x + x, pos.y + y, pos.z + z), outArr((z * dim.y + y) * dim.x + x))
     }
+    
     //val onImg = TypeMacros.correctlyTypeDTImg(inImg)
   }
-
-  def DTImgToKVStrict[T, V](inImg: DTImg[T]): RDD[(D3int, V)] = {
-    DTImgToKV(inImg).mapValues {
-      cValue => cValue.asInstanceOf[V]
-    }
+  
+  def DTImgToKV(inImg: DTImg[_])  = {
+    new KVImg(inImg,inImg.getImageType,DTImgToKVRDD(inImg))
   }
 
+  def DTImgToKVStrict[T, V](inImg: DTImg[T])(implicit V: ClassTag[V]): KVImg[V] = {
+    val outImg = DTImgToKVRDD(inImg).mapValues {
+      cValue => cValue.asInstanceOf[V]
+    }
+    new KVImg[V](inImg,inImg.getImageType,outImg)
+  }
+  
   @serializable implicit class RichDtRDD[A](srd: RDD[(D3int, TImgBlock[A])]) extends
   NeighborhoodOperation[TImgBlock[A], TImgBlock[A]] {
+    
     val blockShift = (offset: D3int) => {
       (p: (D3int, TImgBlock[A])) => {
         val nPos = p._1 + offset
         (nPos, new TImgBlock[A](p._2.getClone(), nPos, offset))
       }
 
+    }
+   /**
+     * Wrap a RDD as a DTImg
+     * @param baseObj the image to mirror
+     * @param imtype the type of the image
+     */
+    def wrap(elSize: D3float = new D3float(1.0)): DTImg[A] = {
+      val fele = srd.first
+      val sPos = fele._1
+      val odim = fele._2.getDim
+      val ndim = new D3int(odim.x,odim.y,srd.count.asInstanceOf[Int])
+      val baseImg = TImgTools.SimpleDimensions(odim,elSize,sPos)
+      val imgtype = TImgTools.identifySliceType(fele._2.get)
+      wrap(baseImg,imgtype)
+      
+    }
+    /**
+     * Wrap a RDD as a DTImg
+     * @param baseObj the image to mirror
+     * @param imtype the type of the image
+     */
+    def wrap(baseObj: HasDimensions, imtype: Int): DTImg[A] = {
+      DTImg.WrapRDD[A](baseObj, JavaPairRDD.fromRDD(srd), imtype);
     }
 
     def spreadSlices(windSize: D3int): (RDD[(D3int, Iterable[TImgBlock[A]])]) = {
@@ -67,6 +99,16 @@ object DTImgOps {
       curOut
 
     }
+    /**
+     * simple apply a function to a slice
+     */
+    def apply[B](mapFun: (Double => B))(implicit B: ClassTag[B]) = {
+      srd.mapValues{ inBlock => 
+        val outArray = (for (cval <- inBlock.getAsDouble()) yield mapFun(cval)).toArray
+        new TImgBlock[Array[B]](outArray,inBlock)
+        }
+    }
+    
 
     def blockOperation(windSize: D3int, kernel: Option[BaseTIPLPluginIn.morphKernel], mapFun: (Iterable[TImgBlock[A]] => TImgBlock[A])): RDD[(D3int, TImgBlock[A])] = {
       val spread = srd.spreadSlices(windSize).collectSlices(windSize, kernel, mapFun)

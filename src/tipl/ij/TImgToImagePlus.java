@@ -140,7 +140,6 @@ public class TImgToImagePlus extends ImagePlus {
                     minv = bpixels[0];
                     maxv = bpixels[0];
                     for (char bpixel : bpixels) {
-                        // if (bpixels[i]>0) {
                         sum += bpixel;
                         ssum += ((float) bpixel) * bpixel;
                         cnt++;
@@ -148,7 +147,6 @@ public class TImgToImagePlus extends ImagePlus {
                             maxv = bpixel;
                         if (bpixel < minv)
                             minv = bpixel;
-                        // }
                     }
                     break;
                 case TImgTools.IMAGETYPE_SHORT:
@@ -158,7 +156,6 @@ public class TImgToImagePlus extends ImagePlus {
                     minv = spixels[0];
                     maxv = spixels[0];
                     for (short spixel : spixels) {
-                        // if (spixels[i]>0) {
                         sum += spixel;
                         ssum += ((float) spixel) * spixel;
                         cnt++;
@@ -166,7 +163,6 @@ public class TImgToImagePlus extends ImagePlus {
                             maxv = spixel;
                         if (spixel < minv)
                             minv = spixel;
-                        // }
                     }
                     break;
                 case TImgTools.IMAGETYPE_FLOAT:
