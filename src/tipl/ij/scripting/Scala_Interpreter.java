@@ -100,6 +100,7 @@ public class Scala_Interpreter extends AbstractInterpreter{
 		scalaStatements.add("scala.math._");
 		scalaStatements.add("tipl.util.TImgBlock");
 		scalaStatements.add("tipl.util.TImgTools");
+		scalaStatements.add("tipl.util.TIPLOps._");
 		scalaStatements.add("tipl.ij.scripting.scOps._");
 		return scalaStatements;
 	}

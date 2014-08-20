@@ -572,19 +572,18 @@ public class DTImg<T> implements TImg, Serializable {
      * apply a given voxel function in parallel to every point in the image
      *
      * @param inFunction
-     * @param outType
      * @return
      */
-    public DTImg<float[]> applyVoxelFunction(final FImage.VoxelFunction inFunction, int outType) {
-        return mapValues(new Function<TImgBlock<T>, TImgBlock<float[]>>() {
+    public DTImg<double[]> applyVoxelFunction(final FImage.VoxelFunction inFunction) {
+        return mapValues(new Function<TImgBlock<T>, TImgBlock<double[]>>() {
 
             @Override
-            public TImgBlock<float[]> call(TImgBlock<T> startingBlock) throws Exception {
+            public TImgBlock<double[]> call(TImgBlock<T> startingBlock) throws Exception {
 
                 T curPts = startingBlock.get();
                 double[] dblPts = (double[]) TImgTools.convertArrayType(curPts, TImgTools.identifySliceType(curPts),
                         TImgTools.IMAGETYPE_DOUBLE, true, 1, Integer.MAX_VALUE);
-                float[] outPts = new float[dblPts.length];
+                double[] outPts = new double[dblPts.length];
                 for (int zi = 0; zi < startingBlock.getDim().z; zi++) {
                     Double zpos = (double) (zi + getPos().z);
                     for (int yi = 0; yi < startingBlock.getDim().y; yi++) {
@@ -593,15 +592,57 @@ public class DTImg<T> implements TImg, Serializable {
                             int ind = (zi * getDim().z + yi) * getDim().y + xi;
                             Double xpos = (double) (xi + getPos().x);
                             Double[] ipos = new Double[]{xpos, ypos, zpos};
-                            outPts[ind] = (float) inFunction.get(ipos, dblPts[ind]);
+                            outPts[ind] = inFunction.get(ipos, dblPts[ind]);
                         }
                     }
                 }
-                return new TImgBlock<float[]>(outPts, startingBlock);
+                return new TImgBlock<double[]>(outPts, startingBlock);
 
             }
 
+        }, TImgTools.IMAGETYPE_DOUBLE);
+    }
+    
+    /**
+     * Convert the current image into an integer image (for labels useful)
+     * @return
+     */
+    static public <To,Tn> DTImg<Tn> changeType(DTImg<To> inImage, final int outType) {
+    	assert(TImgTools.isValidType(outType));
+        return inImage.mapValues(new Function<TImgBlock<To>, TImgBlock<Tn>>() {
+            @Override
+            public TImgBlock<Tn> call(TImgBlock<To> startingBlock) throws Exception {
+                To curPts = startingBlock.get();
+                Tn ipts = (Tn) TImgTools.convertArrayType(curPts, TImgTools.identifySliceType(curPts),
+                        outType, true, 1, Integer.MAX_VALUE);
+                
+                return new TImgBlock<Tn>(ipts, startingBlock);
+            }
         }, outType);
+    }
+    
+    /**
+     * Convert the current image into an float image (for labels useful)
+     * @return
+     */
+    public DTImg<float[]> asDTFloat() {
+        return DTImg.changeType(this,TImgTools.IMAGETYPE_FLOAT);
+    }
+    
+    /**
+     * Convert the current image into an integer image (for labels useful)
+     * @return
+     */
+    public DTImg<int[]> asDTInt() {
+        return DTImg.changeType(this,TImgTools.IMAGETYPE_INT);
+    }
+    
+    /**
+     * Convert the current image into an boolean image (for labels useful)
+     * @return
+     */
+    public DTImg<boolean[]> asDTBool() {
+        return DTImg.changeType(this,TImgTools.IMAGETYPE_BOOL);
     }
 
     /**

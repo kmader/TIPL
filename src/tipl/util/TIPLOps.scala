@@ -63,16 +63,16 @@ object TIPLOps {
 	   new D3float(ip.x*iv,ip.y*iv,ip.z*iv)
 	 }
   }
-  implicit class RichTImgList(val inputImageList: Array[TImgRO]) {
+  implicit class RichTImgList[T <: TImgRO](val inputImageList: Array[T]) {
     def pluginIO(name: String): ITIPLPluginIO = {
-       TIPLPluginManager.createBestPluginIO[TImgRO](name,inputImageList)
+       TIPLPluginManager.createBestPluginIO[T](name,inputImageList)
     }
     def plugin(name: String): ITIPLPlugin = {
-      TIPLPluginManager.createBestPlugin[TImgRO](name,inputImageList)
+      TIPLPluginManager.createBestPlugin[T](name,inputImageList)
     }
     def run(name: String, parameters: String): Array[TImg] = {
       val plug = pluginIO(name)
-      plug.LoadImages(inputImageList)
+      plug.LoadImages(inputImageList.asInstanceOf[Array[TImgRO]])
       plug.setParameter(parameters)
       plug.execute()
       plug.ExportImages(inputImageList(0))
