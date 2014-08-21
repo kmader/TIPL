@@ -147,7 +147,6 @@ public class HildThickness extends Thickness {
 		KT.execute();
 		return new TImg[] { distAim, KT.ExportImages(distAim)[0] };
 	}
-
 	public static void main(final String[] args) {
 		System.out.println("Hildebrand-based Thickness Map v"
 				+ HildThickness.kVer);

@@ -180,6 +180,7 @@ public class BaseBlockRunner implements IBlockRunner {
 		ArgumentParser p = TIPLGlobal.activeParser(args);
 		final String blocknames = p.getOptionString("blocknames", "",
 				"Class names of the blocks to run");
+		final boolean simpleNames = p.getOptionBoolean("simplenames", false, "Use simple names (b1 instead of thresholdblock1");
 		if (blocknames.length() > 0) {
 			IBlockRunner cr=new BaseBlockRunner(); 
 			int blockIndex=1;
@@ -194,7 +195,12 @@ public class BaseBlockRunner implements IBlockRunner {
 				ITIPLBlock cBlock = null;
 				try {
 					cBlock = (ITIPLBlock) Class.forName(blockname).newInstance();
-					cBlock.setPrefix(cBlock.getClass().getSimpleName()+blockIndex+":");
+					String blockClassName = cBlock.getClass().getSimpleName();
+					if(simpleNames) {
+						cBlock.setPrefix(blockClassName.replaceAll("[^A-Z]","")+"B"+blockIndex+":");
+					} else {
+						cBlock.setPrefix(blockClassName+blockIndex+":");
+					}
 					cr.add(cBlock);
 				} catch (final ClassNotFoundException e) {
 					e.printStackTrace();
