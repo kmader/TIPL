@@ -138,7 +138,7 @@ public class HildThickness extends Thickness {
 
 		ITIPLPluginIO KV = TIPLPluginManager.createBestPluginIO("kVoronoi", new TImg[] {bwObject});
 		KV.setParameter("-includeEdges=false");
-		KV.LoadImages(new TImg[] {bwObject});
+		KV.LoadImages(new TImg[] {null,bwObject});
 		KV.execute();
 		final TImg distAim = KV.ExportImages(bwObject)[1];
 		KV = null;

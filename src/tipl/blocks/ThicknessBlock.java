@@ -33,7 +33,7 @@ public class ThicknessBlock extends BaseTIPLBlock {
 					"Thickness map", true),
 					new BlockImage("distance_map", "distmap.tif",
 							"Distance map", false),
-							new BlockImage("ridge_map", "",
+							new BlockImage("ridge_map", "ridge.tif",
 									"Distance Ridge Map", false)};
 
 
@@ -80,34 +80,36 @@ public class ThicknessBlock extends BaseTIPLBlock {
 	protected boolean useFloat=true;
 	@Override
 	public boolean executeBlock() {
-		TImgRO[] threshImgs = new TImgRO[] {getInputFile("threshold")};
+		
+		TImgRO threshImg = getInputFile("threshold");
+		TImgRO[] threshImgs = new TImgRO[] {null,threshImg};
 
 		distPlugin.LoadImages(threshImgs);
 		distPlugin.execute();
-		final TImg distAim = distPlugin.ExportImages(threshImgs[0])[1];
+		final TImg distAim = distPlugin.ExportImages(threshImg)[1];
 		if (getFileParameter("distance_map").length() > 0) {
 			finishImages(distAim, getFileParameter("distance_map"));
 		}
+		
 		thickPlugin.LoadImages(new TImg[] { distAim });
 		thickPlugin.execute();
-
-		TImg[] thickOut =   thickPlugin.ExportImages(distAim);
+		TImg[] thickOut = thickPlugin.ExportImages(distAim);
 
 		if (getFileParameter("thickness_map").length() > 0) {
 			finishImages(thickOut[0], getFileParameter("thickness_map"));
 		}
 		if (getFileParameter("ridge_map").length() > 0) {
-			finishImages(thickOut[0], getFileParameter("ridge_map"));
+			finishImages(thickOut[1], getFileParameter("ridge_map"));
 		}
 		
 		if (histoFile.length() > 0)
 			GrayAnalysis.StartHistogram(thickOut[0], histoFile + ".tsv");
 		if (profileFile.length() > 0) {
-			GrayAnalysis.StartZProfile(thickOut[0], threshImgs[0], profileFile
+			GrayAnalysis.StartZProfile(thickOut[0], threshImg, profileFile
 					+ "_z.tsv", 0.1f);
-			GrayAnalysis.StartRProfile(thickOut[0], threshImgs[0], profileFile
+			GrayAnalysis.StartRProfile(thickOut[0], threshImg, profileFile
 					+ "_r.tsv", 0.1f);
-			GrayAnalysis.StartRCylProfile(thickOut[0], threshImgs[0], profileFile
+			GrayAnalysis.StartRCylProfile(thickOut[0], threshImg, profileFile
 					+ "_rcyl.tsv", 0.1f);
 		}
 
