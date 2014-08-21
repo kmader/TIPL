@@ -127,7 +127,9 @@ public class ThresholdBlock extends BaseTIPLBlock {
 		if (getFileParameter("mask").length() > 0) {
 			finishImages(new MappedImage.FixedImage(threshImg, 10, 1), getFileParameter("mask"));
 		}
-		finishImages(threshImg, getFileParameter("threshold"));
+		if (getFileParameter("threshold").length() > 0) {
+			finishImages(threshImg, getFileParameter("threshold"));
+		}
 
 		rawImg = null;
 

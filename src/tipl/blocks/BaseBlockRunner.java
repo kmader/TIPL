@@ -155,7 +155,7 @@ public class BaseBlockRunner implements IBlockRunner {
 		return blockList.getFirst().isReady();
 	}
 
-	public final static String kVer="131107_01";
+	public final static String kVer="140821_02";
 	protected static void checkHelp(final ArgumentParser p) {
 		if (p.hasOption("?")) {
 			System.out.println(" BaseBlockRunner");
@@ -183,8 +183,14 @@ public class BaseBlockRunner implements IBlockRunner {
 		if (blocknames.length() > 0) {
 			IBlockRunner cr=new BaseBlockRunner(); 
 			int blockIndex=1;
-			for(String blockname : blocknames.split(",")) {
-
+			for(String iblockname : blocknames.split(",")) {
+				String blockname = iblockname;
+				try {
+					Object junk = (ITIPLBlock) Class.forName(blockname).newInstance();
+				} catch (Exception e) {
+					// try adding the right prefix
+					blockname = "tipl.blocks."+iblockname;
+				}
 				ITIPLBlock cBlock = null;
 				try {
 					cBlock = (ITIPLBlock) Class.forName(blockname).newInstance();

@@ -362,8 +362,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 		if (!skipBlock) {
 			System.out.println(toString()+(isReady() ? " is ready!" : " is not ready!!!!"));
 			return executeBlock();
-		}
-		else {
+		} else {
 			System.out.println(toString() + " skipped!");
 		}
 		return true;
