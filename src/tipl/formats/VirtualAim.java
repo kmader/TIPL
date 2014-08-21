@@ -568,7 +568,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
      * @param useFloatInput whether or not to use float input or integer for the voxel
      *                      function
      */
-    public VirtualAim ApplyFunction(final int iimageType,
+    private VirtualAim ApplyFunction(final int iimageType,
                                     final FImage.VoxelFunction ivf, final boolean useFloatInput) {
         final FImage outF = new FImage(this, iimageType, ivf, useFloatInput);
         return new VirtualAim(outF);

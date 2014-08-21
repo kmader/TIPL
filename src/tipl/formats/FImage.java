@@ -95,12 +95,13 @@ public class FImage extends FuncImage {
 	 * Fimage simply returns data from the template file whenever any resource
 	 * except slice data is requested
 	 */
-	public FImage(final TImgRO dummyDataset, final int iimageType,
+	protected FImage(final TImgRO dummyDataset, final int iimageType,
 			final VoxelFunction ivf) {
 		super(dummyDataset, iimageType, false);
 		vf = ivf;
 
 	}
+	
 
 	/**
 	 * Fimage simply returns data from the template file whenever any resource

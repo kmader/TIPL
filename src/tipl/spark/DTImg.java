@@ -510,6 +510,14 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
     }
     
     /**
+     * Convert the current image into an float image (for labels useful)
+     * @return
+     */
+    public DTImg<double[]> asDTDouble() {
+        return DTImg.changeType(this,TImgTools.IMAGETYPE_DOUBLE);
+        
+    }
+    /**
      * Convert the current image into an integer image (for labels useful)
      * @return
      */

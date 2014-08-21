@@ -5,23 +5,23 @@ import tipl.formats.TImgRO
 import tipl.formats.TImg
 import tipl.tools.BaseTIPLPluginIn._
 import tipl.tools.VFilterScale
-
 import tipl.settings.FilterSettings.filterGenerator
 import tipl.spark.SKVoronoi
 import tipl.spark.ShapeAnalysis
 import org.apache.spark.rdd.RDD
 import tipl.tools.BaseTIPLPluginIn
-
 import tipl.spark.DTImg
 import tipl.spark.hadoop.TiffFileInputFormat
 import org.apache.spark.input.ByteInputFormat
 import tipl.formats.TReader.TSliceReader
-
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.PairRDDFunctions._
-
+import tipl.spark.DTImgOps._
 import org.apache.spark.api.java.JavaPairRDD
+import tipl.spark.KVImg
+import tipl.formats.FImage
+import tipl.util.TImgTools
 
 /**
  * An extension of TImgRO to make the available filters show up
@@ -123,6 +123,45 @@ object TIPLOps {
       plugObj.execute
       plugObj.ExportImages(inputImage)(0)
     }
+    
+    
+    
+     /**
+     * simple apply a function to each point in the image
+     */
+    def apply[B](mapFun: (Double => B))(implicit bm: ClassTag[B]) = {
+      val outputType = TImgTools.identifySliceType(new Array[B](1))
+      inputImage match {
+        case a: DTImg[_] => a.getBaseImg().rdd.apply[B](mapFun).wrap(a.getElSize)
+        case a: KVImg[_] => new KVImg(a,outputType,a.toKVDouble.getBaseImg().mapValues(mapFun))
+        case a: TImgRO => new FImage(a, outputType, mapFun.asVF, true)
+      }
+    }
+      
+
+  }
+  
+  implicit class RichFunction[B](val mapFun: (Double => B))(implicit bm: ClassTag[B]) {
+      
+      val outputType = TImgTools.identifySliceType(new Array[B](1))
+      lazy val vf = new FImage.VoxelFunction() {
+				override def get(ipos: Array[java.lang.Double], voxval: Double):Double = {
+				  mapFun(voxval) match {
+				  case a: Double => a
+				  case a: Int => a.toDouble
+				  case a: Float => a.toDouble
+				  case a: Long => a.toDouble
+				  case a: Char => a.toDouble
+				  case a: Short => a.toDouble
+				  case a: B => a.toString.toDouble
+				  }
+				}
+				override def getRange() = TImgTools.identifyTypeRange(outputType)
+				override def name() =  "ScalaFunction:" + mapFun
+				override def toString() = name()
+        }
+      
+      def asVF() = vf
   }
 }
 

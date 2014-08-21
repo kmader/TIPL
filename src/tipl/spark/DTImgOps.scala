@@ -15,6 +15,7 @@ import tipl.util.TIPLOps._
 import tipl.tools.BaseTIPLPluginIn
 import scala.util.Sorting.stableSort
 
+
 /**
  * A collection of useful functions for DTImg classes to allow more complicated analyses
  * @author mader
@@ -114,6 +115,7 @@ object DTImgOps {
       val spread = srd.spreadSlices(windSize).collectSlices(windSize, kernel, mapFun)
       spread
     }
+    
 
 
   }
@@ -129,7 +131,7 @@ object DTImgOps {
 
   @serializable implicit class RichDTImg[A](ip: DTImg[A]) {
 
-    val srd = ip.baseImg.rdd
+    val srd = ip.getBaseImg.rdd
 
     /** a much simpler version of spreadSlices taking advantage of Scala's language features
       *
@@ -138,6 +140,37 @@ object DTImgOps {
     def spreadSlices(windSize: D3int) = {
       srd.spreadSlices(windSize)
     }
+    
+    private[RichDTImg] def sizeCheck(inImg: HasDimensions) = {
+      if(!TImgTools.CheckSizes2(ip, inImg)) throw new IllegalArgumentException("Image sizes must match! d1:"+ip.getDim+", p1:"+ip.getPos+"\t d2:"+inImg.getDim+" p2:"+inImg.getPos)
+    }
+    /** 
+     *  generic implementation of an operator
+     *  @param image to combine with the ip image forming the classes
+     *  @param combFunc function to use to combine the two images
+     *  
+     */
+    private[RichDTImg] def combineImages[B](inImg: DTImg[B],combFunc: ((Double,Double) => Double)):
+    DTImg[Array[Double]] = {
+      sizeCheck(inImg)
+      val aImg = ip.getBaseImg.rdd
+      val bImg = inImg.getBaseImg.rdd
+      val jImg = aImg.join(bImg).mapValues{
+        inImages => 
+          val aArr = inImages._1.getAsDouble()
+          val bArr = inImages._2.getAsDouble()
+          val outArray = new Array[Double](aArr.length)
+          for(i<-0 until aArr.length) outArray(i)=combFunc(aArr(i),bArr(i))
+          new TImgBlock[Array[Double]](outArray,inImages._1) // inherit from first block
+      }
+      DTImg.WrapRDD[Array[Double]](ip,JavaPairRDD.fromRDD(jImg),TImgTools.IMAGETYPE_DOUBLE)
+    }
+    
+    def +[B](inImg: DTImg[B]) = combineImages(inImg,_+_)
+    def -[B](inImg: DTImg[B]) = combineImages(inImg,_-_)
+    def *[B](inImg: DTImg[B]) = combineImages(inImg,_*_)
+    def /[B](inImg: DTImg[B]) = combineImages(inImg,_/_)
+
   }
 
   

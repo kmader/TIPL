@@ -32,7 +32,6 @@ public final class ScalaPlugins {
     	      return new SFilterScale();
     	    }
     	  };
-    
 
     @TIPLPluginManager.PluginInfo(pluginType = "kVoronoi",
             desc = "Spark-based surface voronoi tesselation",
