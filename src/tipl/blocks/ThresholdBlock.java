@@ -122,13 +122,13 @@ public class ThresholdBlock extends BaseTIPLBlock {
 			notThreshImg.appendProcLog("CMD:Threshold, Value:" + (isFlipped ? opString : iopString)
 					+ " " + threshVal);
 			notThreshImg=postNotthreshFunction(TImgTools.WrapTImgRO(notThreshImg));
-			finishImages(notThreshImg, getFileParameter("notthreshold"));
+			finishImages(notThreshImg, "notthreshold");
 		}
 		if (getFileParameter("mask").length() > 0) {
-			finishImages(new MappedImage.FixedImage(threshImg, 10, 1), getFileParameter("mask"));
+			finishImages(new MappedImage.FixedImage(threshImg, 10, 1), "mask");
 		}
 		if (getFileParameter("threshold").length() > 0) {
-			finishImages(threshImg, getFileParameter("threshold"));
+			finishImages(threshImg, "threshold");
 		}
 
 		rawImg = null;
@@ -155,10 +155,9 @@ public class ThresholdBlock extends BaseTIPLBlock {
 		return postThreshFunction(inImage);
 	}
 
-	protected void finishImages(TImgRO inImage, final String inName) {
-		if (rmEdges)
-			inImage = removeEdges(inImage, remEdgesRadius);
-		TImgTools.WriteTImg(inImage, inName, true);
+	protected void finishImages(final TImgRO inImage, final String inNameArg) {
+		TImgRO betterImg = (rmEdges) ? removeEdges(inImage, remEdgesRadius) : inImage;
+		SaveImage(betterImg, inNameArg);
 	}
 
 	@Override

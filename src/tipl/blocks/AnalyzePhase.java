@@ -1,5 +1,6 @@
 package tipl.blocks;
 
+import tipl.blocks.BaseTIPLBlock.TIPLBlockFactory;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.tools.GrayAnalysis;
@@ -20,19 +21,30 @@ public class AnalyzePhase extends BaseTIPLBlock {
             new BlockImage("segmented", "segmented.tif", "Segmented image",
                     true),
             new BlockImage("mask", "mask.tif", "Mask Image", true)};
-    public final IBlockImage[] outImages = new IBlockImage[]{new BlockImage(
-            "labeled", "labeled.tif", "Labeled Image", false)};
+    public final IBlockImage[] outImages = new IBlockImage[]{
+    		new BlockImage("labeled", "labeled.tif", "Labeled Image", false),
+    		new BlockImage("density", "density.tif", "Density Image", false),
+    		new BlockImage("neighbors", "neighbors.tif", "Neighbor Image", false)
+    };
     public String prefix;
     public int minVoxCount;
 	public String phaseName;
 	// public double sphKernelRadius;
 	public boolean writeShapeTensor;
-    protected ShapeAndNeighborAnalysis SNA = new ShapeAndNeighborAnalysis();
+    protected ShapeAndNeighborAnalysis SNA = new ShapeAndNeighborAnalysis("NOT INITIALIZED");
     ITIPLPluginIO CL = TIPLPluginManager.createFirstPluginIO("ComponentLabel");
 
     public AnalyzePhase() {
         super("AnalyzePhase");
         prefix = "";
+    }
+    /**
+     * Just for subclasses
+     * @param blockName
+     * @param anything
+     */
+    protected AnalyzePhase(final String blockName,boolean anything) {
+    	super(blockName);
     }
 
     public AnalyzePhase(final String inPrefix) {
@@ -49,33 +61,39 @@ public class AnalyzePhase extends BaseTIPLBlock {
     protected IBlockImage[] bGetOutputNames() {
         return outImages;
     }
+	
+	
+	protected TImg performCL() {
+		 final TImgRO segmentAim = getInputFile("segmented");
 
+	        // volume filter
+	        CL.LoadImages(new TImgRO[]{segmentAim});
+
+	        // myCL.useSphKernel(sphKernelRadius)
+	        CL.execute(); // count only objects with more than 5 voxels minvoxel
+	        TImgTools.RemoveTImgFromCache(getFileParameter("segmented"));
+	        final TImg labImg=CL.ExportImages(segmentAim)[0];
+	        SaveImage(labImg, "labeled");
+	        return labImg;
+	}
+	
+	protected boolean performShapeAnalysis(final TImg labImg) {
+		final TImgRO maskImg = getInputFile("mask");
+        final TImg[] outImages = SNA.execute(labImg, maskImg, writeShapeTensor);
+        SaveImage(outImages[0], "density");
+        SaveImage(outImages[1], "neighbors");
+        return true;
+	}
+	
 	@Override
     public boolean executeBlock() {
-        final TImg segmentAim = TImgTools.ReadTImg(
-                getFileParameter("segmented"), true, true);
-
-        // volume filter
-        CL.LoadImages(new TImgRO[]{segmentAim});
-
-        // myCL.useSphKernel(sphKernelRadius)
-        CL.execute(); // count only objects with more than 5 voxels minvoxel
-        TImgTools.RemoveTImgFromCache(getFileParameter("segmented"));
-        final TImg labImg = CL.ExportImages(segmentAim)[0];
-        TImgTools.WriteBackground(labImg, phaseName + ".tif");
-        final TImg maskImg = TImgTools.ReadTImg(getFileParameter("mask"), true,
-                true);
-        final TImg[] outImages = SNA.execute(labImg, maskImg, phaseName,
-                writeShapeTensor);
-        TImgTools.WriteBackground(outImages[0], phaseName + "_dens.tif");
-
-        TImgTools.WriteBackground(outImages[1], phaseName + "_nh.tif");
-        return true;
+		final TImg labImg = performCL();
+        return performShapeAnalysis(labImg);
     }
 
 	@Override
     protected String getDescription() {
-        return "Run analysis on a thresheld phase";
+        return "Run component labeling, shape, density, and neigbhorhood analysis on a thresheld phase";
     }
 
 	@Override
@@ -88,13 +106,14 @@ public class AnalyzePhase extends BaseTIPLBlock {
         prefix = newPrefix;
 
 	}
-
+	
     @Override
     public ArgumentParser setParameterBlock(final ArgumentParser p) {
-        minVoxCount = p.getOptionInt(prefix + "minvoxcount", 1, "Minimum voxel count");
+    	minVoxCount = p.getOptionInt(prefix + "minvoxcount", 1, "Minimum voxel count");
         // sphKernelRadius=p.getOptionDouble("sphkernelradius",1.74,"Radius of spherical kernel to use for component labeling: vertex sharing is sqrt(3)*r, edge sharing is sqrt(2)*r,face sharing is 1*r ");
         writeShapeTensor = p.getOptionBoolean(prefix + "shapetensor", true, "Include Shape Tensor");
-        phaseName = p.getOptionString(prefix + "phase", "pores", "Phase name");
+        phaseName = p.getOptionString(prefix + "phase", "phase1", "Phase name");
+        SNA = new ShapeAndNeighborAnalysis(phaseName);
         final ArgumentParser p2 = SNA.getNeighborPlugin().setParameter(p,
                 prefix);
         return CL.setParameter(p2, prefix);
@@ -110,29 +129,58 @@ public class AnalyzePhase extends BaseTIPLBlock {
     public static class ShapeAndNeighborAnalysis {
         public final boolean useGrownLabel = false;
         ITIPLPluginIO myNH = new Neighbors();
-
-        public TImg[] execute(final TImgRO labeledImage, final TImgRO maskImage,
-                              final String phName, final boolean writeShapeTensor) {
+        public ShapeAndNeighborAnalysis(String phName) {
+        	seedCSVFile=phName+"_1.csv";
+        	densCSVFile=phName+"_2.csv";
+        	nhCSVFile=phName+"_3.csv";
+        	edgeCSVFile=phName + "_edge.csv";
+        	appendMode=false;
+        	this.phName=phName;
+        }
+        
+        public ShapeAndNeighborAnalysis(String seedFile, String phName) {
+        	seedCSVFile=seedFile;
+        	densCSVFile=phName+"_2.csv";
+        	nhCSVFile=phName+"_3.csv";
+        	edgeCSVFile=phName + "_edge.csv";
+        	appendMode=true;
+        	this.phName=phName;
+        }
+        final protected String phName;
+        final protected String seedCSVFile;
+        final protected String densCSVFile;
+        final protected String nhCSVFile;
+        final protected String edgeCSVFile;
+        
+        /**
+         * appendMode means the file is appended rather than created (skip LacunaAnalysis Step)
+         */
+        final protected boolean appendMode;
+        
+        public TImg[] execute(final TImgRO labeledImage, final TImgRO maskImage, final boolean writeShapeTensor) {
             // now make the dilation
             final ITIPLPluginIO vorn = getGrowingPlugin(labeledImage, maskImage);
             vorn.execute();
             final TImg growOut = vorn.ExportImages(labeledImage)[0];
             final TImgRO cImg = (useGrownLabel) ? (growOut) : (labeledImage);
-            GrayAnalysis.StartLacunaAnalysis(cImg, phName + "_1.csv", "Mask",
-                    writeShapeTensor);
-            GrayAnalysis.AddDensityColumn(growOut, phName + "_1.csv", phName
-                    + "_2.csv", "Density");
+            
+            if (!appendMode) {
+            	GrayAnalysis.StartLacunaAnalysis(cImg, seedCSVFile, "Mask",writeShapeTensor);
+            }
+            
+                    
+            GrayAnalysis.AddDensityColumn(growOut, seedCSVFile, densCSVFile, 
+            		((appendMode) ? phName+"_" : "")+"Density");
             final ITIPLPluginIO myNH = getNeighborPlugin();
             myNH.LoadImages(new TImgRO[]{growOut});
             myNH.execute();
-            myNH.execute("WriteNeighborList", phName + "_edge.csv");
+            myNH.execute("WriteNeighborList", edgeCSVFile);
             final TImg NHimg = myNH.ExportImages(growOut)[0];
-            TImgTools.WriteBackground(NHimg, phName + "_nh.tif");
-            GrayAnalysis.AddRegionColumn(growOut, NHimg, phName + "_2.csv",
-                    phName + "_3.csv", "Neighbors");
+            GrayAnalysis.AddRegionColumn(growOut, NHimg, densCSVFile,nhCSVFile,
+            		((appendMode) ? phName+"_" : "")+"Neighbors");
             return new TImg[]{growOut, NHimg};
         }
-
+        
         /**
          * @param obj
          * @param mask

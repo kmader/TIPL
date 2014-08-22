@@ -383,9 +383,12 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 		return ioParameters.get(argument);
 	}
 	
-	
 	private TImgRO getInputFileRaw(final String argument) {
-		 if (getFileParameter(argument).length()<1) return null;
+		 if (getFileParameter(argument).length()<1) {
+			 System.out.println("Block:"+this.blockName+" is missing file argument:"+argument);
+			 throw new IllegalArgumentException("Block:"+this.blockName+" is missing file argument:"+argument);
+			 //return null;
+		 }
 		 return TImgTools.ReadTImg(getFileParameter(argument),readFromCache,saveToCache);
 	}
 	protected int lastReadSlices=-2;
@@ -543,6 +546,21 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	@Override
 	public String toString() {
 		return "BK:" + blockName;
+	}
+	/**
+	 * Background saving makes things faster but can cause issues
+	 */
+	final static protected boolean bgSave=false;
+	/**
+	 * A save function so background saving can be controlled on a block level
+	 * @param imgObj
+	 */
+	public void SaveImage(TImgRO imgObj,String nameArg) {
+		if(bgSave) {
+			TImgTools.WriteBackground(imgObj, getFileParameter(nameArg));
+		} else {
+			TImgTools.WriteTImg(imgObj, getFileParameter(nameArg), saveToCache);
+		}
 	}
 
 }

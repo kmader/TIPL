@@ -88,7 +88,7 @@ public class ThicknessBlock extends BaseTIPLBlock {
 		distPlugin.execute();
 		final TImg distAim = distPlugin.ExportImages(threshImg)[1];
 		if (getFileParameter("distance_map").length() > 0) {
-			finishImages(distAim, getFileParameter("distance_map"));
+			finishImages(distAim, "distance_map");
 		}
 		
 		thickPlugin.LoadImages(new TImg[] { distAim });
@@ -96,10 +96,10 @@ public class ThicknessBlock extends BaseTIPLBlock {
 		TImg[] thickOut = thickPlugin.ExportImages(distAim);
 
 		if (getFileParameter("thickness_map").length() > 0) {
-			finishImages(thickOut[0], getFileParameter("thickness_map"));
+			finishImages(thickOut[0], "thickness_map");
 		}
 		if (getFileParameter("ridge_map").length() > 0) {
-			finishImages(thickOut[1], getFileParameter("ridge_map"));
+			finishImages(thickOut[1], "ridge_map");
 		}
 		
 		if (histoFile.length() > 0)
@@ -117,13 +117,13 @@ public class ThicknessBlock extends BaseTIPLBlock {
 	}
 
 
-	protected void finishImages(TImgRO inImage, final String inName) {
-		TImgTools.WriteTImg(inImage, inName, true);
+	protected void finishImages(TImgRO inImage, final String inNameArg) {
+		SaveImage(inImage, inNameArg);
 	}
 
 	@Override
 	protected String getDescription() {
-		return "Generic Block for running a thickness analysis";
+		return "Block for running a thickness analysis";
 	}
 
 	@Override

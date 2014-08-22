@@ -31,7 +31,9 @@ public class GrowRegions extends BaseTIPLBlock {
 			AnalyzePhase.ShapeAndNeighborAnalysis {
 		public final boolean useGrownLabel = true;
 		public int fillType = 0;
-
+		public GrownShapeNeighborAnalysis(String phName) {
+			super(phName);
+		}
 		@Override
 		public ITIPLPluginIO getGrowingPlugin(final TImgRO obj, final TImgRO mask) {
 			switch (fillType) {
@@ -57,7 +59,7 @@ public class GrowRegions extends BaseTIPLBlock {
 	public String phaseName;
 	protected boolean writeShapeTensor;
 	protected double sphKernelRadius;
-	protected GrownShapeNeighborAnalysis SNA = new GrownShapeNeighborAnalysis();
+	protected GrownShapeNeighborAnalysis SNA= new GrownShapeNeighborAnalysis("TOTALLY INVALID");
 	public final IBlockImage[] inImages = new IBlockImage[] {
 			new BlockImage("labels", "label.tif", "Labeled image", true),
 			new BlockImage("mask", "mask.tif", "Mask Image", true) };
@@ -92,8 +94,7 @@ public class GrowRegions extends BaseTIPLBlock {
 	public boolean executeBlock() {
 		final TImgRO labelAim = getInputFile("labels");
 		final TImgRO maskImg = getInputFile("mask");
-		final TImg[] outImages = SNA.execute(labelAim, maskImg, phaseName,
-				writeShapeTensor);
+		final TImg[] outImages = SNA.execute(labelAim, maskImg, writeShapeTensor);
 		TImgTools.WriteBackground(outImages[0], getFileParameter("fillvols"));
 		TImgTools.WriteBackground(outImages[1], getFileParameter("fillnh"));
 		return true;
@@ -116,6 +117,8 @@ public class GrowRegions extends BaseTIPLBlock {
 
 	@Override
 	public ArgumentParser setParameterBlock(final ArgumentParser p) {
+		phaseName = p.getOptionString("phase", "filled_labels", "Phase name");
+		SNA = new GrownShapeNeighborAnalysis(phaseName);
 		SNA.fillType = p
 				.getOptionInt(
 						"filltype",
@@ -129,7 +132,7 @@ public class GrowRegions extends BaseTIPLBlock {
 						"Radius of spherical kernel to use for component labeling: vertex sharing is sqrt(3)*r, edge sharing is sqrt(2)*r,face sharing is 1*r ");
 		writeShapeTensor = p.getOptionBoolean("shapetensor",
 				"Include Shape Tensor");
-		phaseName = p.getOptionString("phase", "filled_labels", "Phase name");
+		
 		TIPLGlobal.availableCores = p.getOptionInt("maxcores",
 				TIPLGlobal.availableCores,
 				"Number of cores/threads to use for processing");

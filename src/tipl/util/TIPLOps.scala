@@ -22,6 +22,7 @@ import org.apache.spark.api.java.JavaPairRDD
 import tipl.spark.KVImg
 import tipl.formats.FImage
 import tipl.util.TImgTools
+import tipl.spark.SparkGlobal
 
 /**
  * An extension of TImgRO to make the available filters show up
@@ -124,8 +125,6 @@ object TIPLOps {
       plugObj.ExportImages(inputImage)(0)
     }
     
-    
-    
      /**
      * simple apply a function to each point in the image
      */
@@ -163,5 +162,6 @@ object TIPLOps {
       
       def asVF() = vf
   }
+  
 }
 

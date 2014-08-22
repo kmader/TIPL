@@ -261,6 +261,23 @@ object IOOps {
 
     }
   }
+  import tipl.tools.GrayAnalysis
+  /**
+   * Allow strings to be read in directly as images
+   */
+  implicit class TIPLString(val baseString: String) {
+    lazy val sc = SparkGlobal.getContext(baseString).sc
+    def readAsTImg() = TImgTools.ReadTImg(baseString)
+    def readTiff() = sc.tiffFolder(baseString)
+    def addDensityColumn(inImg: TImgRO,outName: String="",analysisName: String = "Density") = {
+      val outfileName = if(outName.length<1) baseString+"_dens.csv" else outName
+      GrayAnalysis.AddDensityColumn(inImg,baseString,outfileName,analysisName)
+    }
+    def addRegionColumn(labImg: TImgRO,regImg: TImgRO ,outName: String="",analysisName: String = "Density") = {
+      val outfileName = if(outName.length<1) baseString+"_dens.csv" else outName
+      GrayAnalysis.AddRegionColumn(labImg,regImg,baseString,outfileName,analysisName)
+    } 
+  }
 
 
 }

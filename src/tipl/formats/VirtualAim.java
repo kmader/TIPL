@@ -1984,7 +1984,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
     @Deprecated
     // this function is hideous, this really needs to be fixed
     protected void loadAimfromTImg(final TImgRO inTImg) {
-        System.out.println("Loading generic TImg as Aim");
+        System.out.println("Loading generic TImg as Aim: "+inTImg);
         useTImg = true;
         baseTImg = inTImg;
         imageType = inTImg.getImageType();

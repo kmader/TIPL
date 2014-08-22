@@ -79,7 +79,7 @@ public class FilterBlock extends BaseTIPLBlock {
 		((FilterSettings.HasFilterSettings) fs).setFilterSettings(curSettings);
 		fs.execute();
 		final TImg gfiltAim = fs.ExportImages(ufiltAim)[0];
-		TImgTools.WriteTImg(gfiltAim, getFileParameter("gfilt"), true);
+		SaveImage(gfiltAim, "gfilt");
 		TImgTools.RemoveTImgFromCache(getFileParameter("ufilt"));
 		return true;
 	}
