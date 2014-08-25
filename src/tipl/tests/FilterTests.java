@@ -48,8 +48,8 @@ public class FilterTests {
 		System.out.println("Using Plugin:"+pluginToUse);
 		pluginId=pluginToUse;
 	}
-	
-	
+
+
 	//@Test
 	public void testDivideWorkBig() {
 		System.out.println("Testing that work is divided into chunks between 1 and the last slice");
@@ -103,7 +103,44 @@ public class FilterTests {
 
 		TIPLTestingLibrary.checkDimensions(outImg, new D3int(10, 5, 3), new D3int(0, 0, 0));
 	}
-	
+
+	/**
+	 * Test multiple filter iterations
+	 */
+	@Test
+	public void testOutMultiple() {
+		// offset lines
+		final TImgRO testImg = TestPosFunctions.wrapItAs(6,
+				new TestPosFunctions.LinesFunction(),TImgTools.IMAGETYPE_FLOAT);
+
+		ITIPLPluginIO RS = makeFilter(pluginId,testImg);
+		RS.setParameter("-upfactor=1,1,1 -downfactor=3,3,3");
+		System.out.println("Input Image Type:"+testImg.getImageType());
+
+		RS.execute();
+		TImgRO outImg = RS.ExportImages(testImg)[0];
+		TIPLTestingLibrary.checkDim(outImg, new D3int(2, 2, 2));
+
+		// second image
+		RS = makeFilter(pluginId,outImg);
+		RS.setParameter("-upfactor=2,2,2 -downfactor=1,1,1 -filter="+FilterSettings.GAUSSIAN);
+		System.out.println("Input Image Type:"+testImg.getImageType());
+
+		RS.execute();
+		TImgRO outImg2 = RS.ExportImages(testImg)[0];
+
+		TIPLTestingLibrary.checkDim(outImg2, new D3int(4, 4, 4));
+
+		// third image
+		RS = makeFilter(pluginId,outImg2);
+		RS.setParameter("-upfactor=3,3,3 -downfactor=2,2,2 -filter="+FilterSettings.GAUSSIAN);
+		System.out.println("Input Image Type:"+testImg.getImageType());
+		RS.execute();
+		TImgRO outImg3 = RS.ExportImages(testImg)[0];
+
+		TIPLTestingLibrary.checkDim(outImg3, new D3int(6, 6, 6));
+	}
+
 	@Test
 	public void hasSettings() {
 		final TImgRO testImg = TestPosFunctions.wrapItAs(10,
@@ -118,7 +155,7 @@ public class FilterTests {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Not really related to the standard filter test, but a good verification of the single point functions
 	 */

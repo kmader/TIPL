@@ -261,6 +261,7 @@ object IOOps {
 
     }
   }
+  
   import tipl.tools.GrayAnalysis
   /**
    * Allow strings to be read in directly as images

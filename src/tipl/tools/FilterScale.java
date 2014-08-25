@@ -105,7 +105,7 @@ public class FilterScale extends BaseTIPLPluginMult implements FilterSettings.Ha
 		final D3int dn = curSettings.downfactor;
 		final int nx = (int) Math.round((float) (up.x + 0.0) / (dn.x + 0.0)
 				* dim.x);
-		final int ny = (int) Math.round((float) (up.y + 0.0) / (up.y + 0.0)
+		final int ny = (int) Math.round((float) (up.y + 0.0) / (dn.y + 0.0)
 				* dim.y);
 		final int nz = (int) Math.round((float) (up.z + 0.0) / (dn.z + 0.0)
 				* dim.z);
@@ -124,7 +124,8 @@ public class FilterScale extends BaseTIPLPluginMult implements FilterSettings.Ha
 		oelsize = new D3float((dn.x + 0.0) / (up.x + 0.0) * elSize.x, (dn.y + 0.0)
 				/ (up.y + 0.0) * elSize.y, (dn.z + 0.0) / (up.z + 0.0) * elSize.z);
 
-		opos = new D3int((int) Math.round((up.x + 0.0) / (dn.x + 0.0) * ipos.x),
+		opos = new D3int(
+				(int) Math.round((up.x + 0.0) / (dn.x + 0.0) * ipos.x),
 				(int) Math.round((up.y + 0.0) / (dn.y + 0.0) * ipos.y),
 				(int) Math.round((up.z + 0.0) / (dn.z + 0.0) * ipos.z)); // rescale
 																		// outpos
