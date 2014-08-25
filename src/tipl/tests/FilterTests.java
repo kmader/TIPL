@@ -82,7 +82,7 @@ public class FilterTests {
 	public void testOutDim() {
 		// offset lines
 		final TImgRO testImg = TestPosFunctions.wrapItAs(10,
-				new TestPosFunctions.LinesFunction(),3);
+				new TestPosFunctions.LinesFunction(),TImgTools.IMAGETYPE_FLOAT);
 
 		ITIPLPluginIO RS = makeFilter(pluginId,testImg);
 		RS.setParameter("-upfactor=1,1,1 -downfactor=2,2,2");
@@ -144,7 +144,7 @@ public class FilterTests {
 	@Test
 	public void hasSettings() {
 		final TImgRO testImg = TestPosFunctions.wrapItAs(10,
-				new TestPosFunctions.LinesFunction(),3);
+				new TestPosFunctions.LinesFunction(),TImgTools.IMAGETYPE_FLOAT);
 
 		ITIPLPluginIO fs = makeFilter(pluginId,testImg);
 		try {
@@ -177,7 +177,7 @@ public class FilterTests {
 		int boxSize=10;
 		int layerWidth=3;
 		final TImgRO sheetImage = TestPosFunctions.wrapItAs(boxSize,
-				new TestPosFunctions.SphericalLayeredImage(boxSize/2, boxSize/2, boxSize/2, 0, 1, layerWidth),3);
+				new TestPosFunctions.SphericalLayeredImage(boxSize/2, boxSize/2, boxSize/2, 0, 1, layerWidth),TImgTools.IMAGETYPE_FLOAT);
 		if (saveImages)	TImgTools.WriteTImg(sheetImage,"/Users/mader/Dropbox/TIPL/temp_testing/sheetImage.tif");		
 	}
 
@@ -199,6 +199,9 @@ public class FilterTests {
 
 		TImgRO outImg = RS.ExportImages(sheetImage)[0];
 		if (saveImages) TImgTools.WriteTImg(outImg,"/Users/mader/Dropbox/TIPL/temp_testing/sheet_"+RS.getPluginName()+".tif");
+		
+		TIPLTestingLibrary.doSliceMeanValueMatch(outImg, 5, .411, 0.01);
+		
 		TIPLTestingLibrary.doPointsMatch(outImg, 3, 3, 3, .11f, 0.01f);
 		TIPLTestingLibrary.doPointsMatch(outImg, 5, 5, 4, .66f, 0.01f);
 		TIPLTestingLibrary.doPointsMatch(outImg, 4, 4, 4, .29f, 1e-3f);
@@ -211,14 +214,16 @@ public class FilterTests {
 	public void testOutGaussian() {
 		// offset lines
 		final TImgRO pointImage = TestPosFunctions.wrapItAs(10,
-				new TestPosFunctions.SinglePointFunction(5, 5, 5),3);
-
-
+				new TestPosFunctions.SinglePointFunction(5, 5, 5),TImgTools.IMAGETYPE_FLOAT);
+		
 		ITIPLPluginIO RS = makeFilter(pluginId,pointImage);
 		RS.setParameter("-upfactor=2,2,2 -downfactor=2,2,2 -filter="+FilterSettings.GAUSSIAN+" -filtersetting=0.5");
 		RS.execute();
 
 		TImgRO outImg = RS.ExportImages(pointImage)[0];
+		
+
+		
 		TIPLTestingLibrary.doPointsMatch(outImg, 3, 3, 3, .01f, 0.01f);
 		TIPLTestingLibrary.doPointsMatch(outImg, 5, 5, 4, .016f, 0.01f);
 		TIPLTestingLibrary.doPointsMatch(outImg, 4, 4, 4, 5e-6f, 1e-5f);
@@ -235,7 +240,7 @@ public class FilterTests {
 
 		// now change the dimensions and see if it still works
 		final TImgRO pointImage2 = TestPosFunctions.wrapItAs(10,
-				new TestPosFunctions.SinglePointFunction(6, 6, 6),3);
+				new TestPosFunctions.SinglePointFunction(6, 6, 6),TImgTools.IMAGETYPE_FLOAT);
 		RS = makeFilter(pluginId,pointImage2);
 		RS.setParameter("-upfactor=1,1,1 -downfactor=2,2,2 -filter="+FilterSettings.GAUSSIAN+" -filtersetting=0.5");
 		RS.execute();
@@ -253,7 +258,7 @@ public class FilterTests {
 		// offset lines
 
 		final TImgRO gradImage = TestPosFunctions.wrapItAs(10,
-				new TestPosFunctions.ProgZImage(),3);
+				new TestPosFunctions.ProgZImage(),TImgTools.IMAGETYPE_FLOAT);
 
 		ITIPLPluginIO RS = makeFilter(pluginId,gradImage);
 		RS.setParameter("-upfactor=2,2,2 -downfactor=2,2,2 -filter="+FilterSettings.LAPLACE);

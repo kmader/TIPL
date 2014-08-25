@@ -77,6 +77,25 @@ public abstract class TIPLTestingLibrary {
         assertEquals(gval, curslice[rposY * img.getDim().x + rposX], tol);
         return true;
     }
+    /**
+     * Check the mean value of a slice
+     * @param img
+     * @param sliceNo
+     * @param meanVal
+     * @param tol
+     * @return
+     */
+    public static boolean doSliceMeanValueMatch(final TImgRO img, int sliceNo,final double meanVal,final double tol) {
+        float[] curSlice = (float[]) img.getPolyImage(sliceNo, TImgTools.IMAGETYPE_FLOAT);
+        double sliceSum=0,sliceSqSum=0;
+        for(float cVal: curSlice) {
+        	sliceSum+=cVal;
+        	sliceSqSum+=Math.pow(cVal,2);
+        }
+        sliceSum/=curSlice.length;
+        assertEquals(meanVal,sliceSum,tol);
+        return true;
+    }
 
     public static boolean doSlicesMatch(final boolean[] slice1,
                                         final boolean[] slice2) {

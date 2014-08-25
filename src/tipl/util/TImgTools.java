@@ -25,18 +25,24 @@ public class TImgTools {
 	 * the values define the types of various images and should be used instead of hardcoded values
 	 * Type refers to binary or stored values
 	 */
-
+	
 	public static final int IMAGETYPE_BOOL = 10;
 	public static final int IMAGETYPE_CHAR = 0;
 	public static final int IMAGETYPE_SHORT = 1;
 	public static final int IMAGETYPE_INT = 2;
 	public static final int IMAGETYPE_FLOAT = 3;
-	public static final String IMAGETYPE_HELP = "(boolean image/1bit=" + IMAGETYPE_BOOL + ", character image/8bit=" + IMAGETYPE_CHAR + ", short image/16bit=" + IMAGETYPE_SHORT + ", integer image/32bit=" + IMAGETYPE_INT + ", float image/32bit=" + IMAGETYPE_FLOAT + ")";
 	public static final int IMAGETYPE_DOUBLE = 4;
 	public static final int IMAGETYPE_COMPLEX = 5;
 	public static final int IMAGETYPE_SPECTRAL = 6;
 	public static final int IMAGETYPE_GLOB = 7;
-	public static final int IMAGETYPE_LONG = 7;
+	public static final int IMAGETYPE_LONG = 8;
+	/** 
+	 * A list of all supported image types
+	 */
+	public static final int[] IMAGETYPES = new int[] {
+		IMAGETYPE_BOOL, IMAGETYPE_CHAR, IMAGETYPE_SHORT, IMAGETYPE_INT, IMAGETYPE_DOUBLE, IMAGETYPE_LONG
+	};
+	public static final String IMAGETYPE_HELP = "(boolean image/1bit=" + IMAGETYPE_BOOL + ", character image/8bit=" + IMAGETYPE_CHAR + ", short image/16bit=" + IMAGETYPE_SHORT + ", integer image/32bit=" + IMAGETYPE_INT + ", float image/32bit=" + IMAGETYPE_FLOAT + ", double image/64bit="+IMAGETYPE_DOUBLE+", long image/64bit="+IMAGETYPE_LONG+")";
 	
 	/**
 	 * Image class refers to the information which is being stored in the image (distinct values from imagetype)
@@ -45,12 +51,13 @@ public class TImgTools {
 	public static final int IMAGECLASS_LABEL = 101;
 	public static final int IMAGECLASS_VALUE = 102;
 	public static final int IMAGECLASS_OTHER = 103;
+	
 	/**
 	 * Convert a type to a class of image (makes processing easier)
 	 * @param type the IMAGETYPE of the data coming in
 	 * @return the ImageClass of this type
 	 */
-	public static int ImageTypeToClass(int type) {
+	public static int imageTypeToClass(int type) {
 		switch(type) {
 		case IMAGETYPE_BOOL:
 			return IMAGECLASS_BINARY;
@@ -118,6 +125,29 @@ public class TImgTools {
 		}
 		return outImages;
 	}
+	/**
+	 * A function to allow changing image types by wrapping objects instead of modifying the field
+	 * @param inImg
+	 * @param desiredType
+	 * @return
+	 */
+    static public final TImg ChangeImageType(final TImgRO inImg, final int desiredType) {
+    	assert isValidType(desiredType);
+    	return new TImg.ATImg(inImg,desiredType) {
+    		final private TImgRO hiddenImg = inImg;
+			@Override
+			public Object getPolyImage(int sliceNumber, int asType) {
+				return inImg.getPolyImage(sliceNumber, asType);
+			}
+
+			@Override
+			public String getSampleName() {
+				return inImg.getSampleName();
+			}
+    		
+    	};
+    }
+	
 
 	/**
 	 * The general function for comparing the dimensions of two TImg class
@@ -174,8 +204,11 @@ public class TImgTools {
 	public static Object convertArrayType(final Object inArray,
 			final int inType, final int outType, final boolean isSigned,
 			final float shortScaleFactor, final int maxVal) {
+		final int autoInType = identifySliceType(inArray);
+		assert (inType==autoInType); // make sure it is what it says it is
 		assert isValidType(inType);
 		assert isValidType(outType);
+		
 		switch (inType) {
 		case IMAGETYPE_CHAR: // byte
 			return convertCharArray((char[]) inArray, outType, isSigned,
@@ -291,6 +324,13 @@ public class TImgTools {
 				gf[i] = (gs[i] - (isSigned ? maxVal / 2.0f : 0.0f))
 				* shortScaleFactor;
 			return gf;
+			
+		case IMAGETYPE_DOUBLE: // Float - Long
+			final double[] gd = new double[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+				gd[i] = (gs[i] - (isSigned ? maxVal / 2.0f : 0.0f))
+				* shortScaleFactor;
+			return gd;
 
 		case IMAGETYPE_BOOL: // Mask
 			final boolean[] gbool = new boolean[sliceSize];
@@ -717,6 +757,8 @@ public class TImgTools {
 			 return TImgTools.IMAGETYPE_DOUBLE;
 		 if (iData instanceof long[])
 			 return TImgTools.IMAGETYPE_LONG;
+		 if (iData instanceof scala.Int[]) 
+			 throw new IllegalArgumentException("Scala types are not acceptable image types!");
 		 throw new IllegalArgumentException("Type of object:" + iData
 				 + " cannot be determined!! Proceed with extreme caution");
 	 }

@@ -381,14 +381,15 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
 
     }
 
-
     /**
      * A fairly simple operation of filtering the RDD for the correct slice and returning that slice
      */
     @Override
     public Object getPolyImage(int sliceNumber, final int asType) {
-        final int zPos = getPos().z + sliceNumber;
-
+    	assert(sliceNumber<getDim().z);
+    	
+    	final int zPos = getPos().z + sliceNumber;
+        
         T curSlice = this.baseImg.filter(new Function<Tuple2<D3int, TImgBlock<T>>, Boolean>() {
             @Override
             public Boolean call(Tuple2<D3int, TImgBlock<T>> arg0) throws Exception {
@@ -461,21 +462,21 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
             public TImgBlock<double[]> call(TImgBlock<T> startingBlock) throws Exception {
 
                 T curPts = startingBlock.get();
+                D3int sPos = startingBlock.getPos();
                 double[] dblPts = (double[]) TImgTools.convertArrayType(curPts, TImgTools.identifySliceType(curPts),
                         TImgTools.IMAGETYPE_DOUBLE, true, 1, Integer.MAX_VALUE);
                 double[] outPts = new double[dblPts.length];
-                for (int zi = 0; zi < startingBlock.getDim().z; zi++) {
-                    Double zpos = (double) (zi + getPos().z);
+                    Double zpos = (double) (sPos.z);
                     for (int yi = 0; yi < startingBlock.getDim().y; yi++) {
-                        Double ypos = (double) (yi + getPos().y);
+                        Double ypos = (double) (yi + sPos.y);
                         for (int xi = 0; xi < startingBlock.getDim().x; xi++) {
-                            int ind = (zi * getDim().z + yi) * getDim().y + xi;
-                            Double xpos = (double) (xi + getPos().x);
+                            int ind = yi * getDim().y + xi;
+                            Double xpos = (double) (xi + sPos.x);
                             Double[] ipos = new Double[]{xpos, ypos, zpos};
                             outPts[ind] = inFunction.get(ipos, dblPts[ind]);
                         }
                     }
-                }
+ 
                 return new TImgBlock<double[]>(outPts, startingBlock);
 
             }

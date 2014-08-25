@@ -66,6 +66,9 @@ public interface TImg extends TImgRO, TImgRO.CanExport,
 		}
 
     }
+    
+
+    
     /**
      * A class for handling the basic mundane functions inside TImg
      *

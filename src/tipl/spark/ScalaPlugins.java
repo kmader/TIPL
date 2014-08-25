@@ -3,6 +3,7 @@
  */
 package tipl.spark;
 
+import tipl.tools.Resize;
 import tipl.util.ITIPLPlugin;
 import tipl.util.TIPLPluginManager;
 
@@ -32,7 +33,7 @@ public final class ScalaPlugins {
     	      return new SFilterScale();
     	    }
     	  };
-
+    	 
     @TIPLPluginManager.PluginInfo(pluginType = "kVoronoi",
             desc = "Spark-based surface voronoi tesselation",
             sliceBased = false, sparkBased = true)
@@ -42,6 +43,16 @@ public final class ScalaPlugins {
             return new SKVoronoi();
         }
     };
-
+    
+	@TIPLPluginManager.PluginInfo(pluginType = "Resize",
+			desc="Spark-based Resize tool",
+			sliceBased=true, sparkBased = true)
+	final public static TIPLPluginManager.TIPLPluginFactory rsFactory = new TIPLPluginManager.TIPLPluginFactory() {
+		@Override
+		public ITIPLPlugin get() {
+			return new SResize();
+		}
+	};
 
 }
+

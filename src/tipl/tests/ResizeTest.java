@@ -18,6 +18,7 @@ import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
 import tipl.util.D3int;
 import tipl.util.ITIPLPluginIO;
+import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TIPLPluginManager.PluginInfo;
 import tipl.util.TImgTools;
@@ -55,8 +56,8 @@ public class ResizeTest {
 	public static void testSlicesMatchBool(final PluginInfo idPlugin,final TImgRO testImg) {
 		// offset lines
 
-		// TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
-		System.out.println("Testing Slices Match  in BW");
+		if (TIPLGlobal.getDebug()) TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
+		System.out.println("Testing Slices Match in BW");
 		ITIPLPluginIO RS = makeRS(idPlugin,testImg);
 
 		RS.setParameter("-pos=0,0,5 -dim=10,10,2");
@@ -85,7 +86,7 @@ public class ResizeTest {
 	public static void testSlicesMatchInt(final PluginInfo idPlugin,final TImgRO testImg) {
 		// offset lines
 
-		 TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
+		if (TIPLGlobal.getDebug()) TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Slices Match");
 		ITIPLPluginIO RS = makeRS(idPlugin,testImg);
 
@@ -248,10 +249,10 @@ public class ResizeTest {
 		final TImgRO testImg = TestPosFunctions.wrapIt(10,
 				new TestPosFunctions.DiagonalPlaneFunction());
 		// TImgRO.FullReadable vImg=TImgTools.makeTImgFullReadable(testImg);
-		final VirtualAim vImg = new VirtualAim(testImg);
+		//final VirtualAim vImg = new VirtualAim(testImg);
 
-		vImg.getBoolAim();
-		testSlicesMatchBool(pluginId,vImg);
+		//vImg.getBoolAim();
+		testSlicesMatchBool(pluginId,testImg);
 	}
 
 	@Test
@@ -261,6 +262,20 @@ public class ResizeTest {
 
 		testSlicesMatchBool(pluginId,testImg);
 
+	}
+	
+	@Test
+	public void testFindEdges() {
+		final TImgRO curTestImage = TestPosFunctions.wrapItAs(10,
+				new TestPosFunctions.SinglePointFunction(5, 5, 5),TImgTools.IMAGETYPE_BOOL);
+
+		final ITIPLPluginIO RS = makeRS(pluginId,curTestImage);
+		RS.setParameter("-find_edges=true");
+		RS.execute();
+		final TImgRO outImg = RS.ExportImages(curTestImage)[0];
+		if(TIPLTestingLibrary.verbose) System.out.println("Current Dimensions, pos:"+outImg.getPos()+", dim:"+outImg.getDim());
+		TIPLTestingLibrary.checkDimensions(outImg, new D3int(1, 1, 1),new D3int(5, 5, 5));
+		System.out.println("Testing SphRadius");
 	}
 
 }

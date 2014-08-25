@@ -96,7 +96,7 @@ public class TImgToImageStack extends ImageStack {
 		System.out.println("getProcessor: " + n + ", Type=" + imageType
 				+ ", wid=" + wid + " , het=" + het);
 		ImageProcessor ip = null;
-		switch (TImgTools.ImageTypeToClass(imageType)) {
+		switch (TImgTools.imageTypeToClass(imageType)) {
 		case TImgTools.IMAGECLASS_BINARY:
 			char[] bpixels = (char[]) coreTImg.getPolyImage(n-1, TImgTools.IMAGETYPE_CHAR);
 			final byte[] rbpixels = new byte[bpixels.length];

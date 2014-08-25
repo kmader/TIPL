@@ -253,6 +253,31 @@ public class PureFImage implements TImgRO, TImgTools.ChangesDimensions {
 		 */
 		public String name();
 	}
+	/**
+	 * A simple utility function to convert pure position functions into standard voxel functions
+	 * @param testFun
+	 * @return
+	 */
+	public static FImage.VoxelFunction fromPositionFunction(final PositionFunction testFun) {
+		return new FImage.VoxelFunction() {
+			final PositionFunction pf = testFun;
+			@Override
+			public double get(Double[] ipos, double v) {
+				return testFun.get(ipos);
+			}
+
+			@Override
+			public double[] getRange() {
+				return testFun.getRange();
+			}
+
+			@Override
+			public String name() {
+				return testFun.name();
+			}
+			
+		};
+	}
 
 	/**
 	 * RImageCyl is simply an image where the intensity values = the radial

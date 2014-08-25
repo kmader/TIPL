@@ -115,10 +115,13 @@ object DTImgOps {
       val spread = srd.spreadSlices(windSize).collectSlices(windSize, kernel, mapFun)
       spread
     }
+
     
 
 
   }
+ 
+  
 
   /**
    * A class of a spread RDD image (after a flatMap/spread operation)
