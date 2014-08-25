@@ -451,23 +451,23 @@ public class Resize extends BaseTIPLPluginMult {
 					for (int x = lowx; x < uppx; x++, off++) {
 						boolean isValidVoxel = false;
 						switch (imageType) {
-						case 10: // Boolean
+						case TImgTools.IMAGETYPE_BOOL: // Boolean
 							if (curFilter.accept(inAimMask[off]))
 								isValidVoxel = true;
 							break;
-						case 0: // Byte
+						case TImgTools.IMAGETYPE_CHAR: // Byte
 							if (curFilter.accept((inAimByte[off])))
 								isValidVoxel = true;
 							break;
-						case 1: // Short
+						case TImgTools.IMAGETYPE_SHORT: // Short
 							if (curFilter.accept(inAimShort[off]))
 								isValidVoxel = true;
 							break;
-						case 2: // Boolean
+						case TImgTools.IMAGETYPE_INT: // Int
 							if (curFilter.accept(inAimInt[off]))
 								isValidVoxel = true;
 							break;
-						case 3: // Float
+						case TImgTools.IMAGETYPE_FLOAT: // Float
 							if (curFilter.accept(inAimFloat[off]))
 								isValidVoxel = true;
 							break;

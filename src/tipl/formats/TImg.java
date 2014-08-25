@@ -44,7 +44,18 @@ public interface TImg extends TImgRO, TImgRO.CanExport,
     static public class ArrayBackedTImg extends ATImg implements Serializable {
     	final Object[] sliceData;
     	final int sliceType;
-    	@Deprecated
+    	/**
+    	 * Create an array backed image from any inAim
+    	 * @param inAim the input image to solidify
+    	 * @param stype the type of image to save
+    	 * @return
+    	 */
+    	public static ArrayBackedTImg CreateFromTImg(TImgRO inAim,final int stype) {
+    		Object[] sData = new Object[inAim.getDim().z];
+    		for(int z=0;z<inAim.getDim().z;z++) sData[z]=inAim.getPolyImage(z, stype);
+    		return new ArrayBackedTImg(inAim.getDim(),inAim.getPos(),inAim.getElSize(),stype,sData);
+    	}
+    	
     	private ArrayBackedTImg(HasDimensions tempImg, int iimageType,Object[] sliceData) {
     		super(tempImg,iimageType);
     		this.sliceData=sliceData;
@@ -67,7 +78,7 @@ public interface TImg extends TImgRO, TImgRO.CanExport,
 
     }
     
-
+    	
     
     /**
      * A class for handling the basic mundane functions inside TImg

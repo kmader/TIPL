@@ -14,6 +14,7 @@ import tipl.util.TImgTools.HasDimensions
 import tipl.util.TIPLOps._
 import tipl.tools.BaseTIPLPluginIn
 import scala.util.Sorting.stableSort
+import tipl.formats.TImgRO
 
 
 /**
@@ -175,8 +176,24 @@ object DTImgOps {
     def /[B](inImg: DTImg[B]) = combineImages(inImg,_/_)
 
   }
-
-  
+/**
+ * A smarter conversion function
+ */
+    def fromTImgRO(inImg: TImgRO) = {
+    val imClass = TImgTools.imageTypeToClass(inImg.getImageType)
+    inImg match {
+      case dImg: DTImg[_] if (imClass==TImgTools.IMAGECLASS_LABEL) => dImg.asDTLong
+      case dImg: DTImg[_] if (imClass==TImgTools.IMAGECLASS_VALUE) => dImg.asDTDouble
+      case dImg: DTImg[_] if (imClass==TImgTools.IMAGECLASS_BINARY) => dImg.asDTBool
+      case normImg: TImgRO if (imClass==TImgTools.IMAGECLASS_LABEL) => 
+        DTImg.ConvertTImg[Array[Long]](SparkGlobal.getContext("DTImgOps"), normImg, TImgTools.IMAGETYPE_LONG)
+     case normImg: TImgRO if (imClass==TImgTools.IMAGECLASS_VALUE) => 
+        DTImg.ConvertTImg[Array[Double]](SparkGlobal.getContext("DTImgOps"), normImg, TImgTools.IMAGETYPE_DOUBLE)
+     case normImg: TImgRO if (imClass==TImgTools.IMAGECLASS_BINARY) => 
+        DTImg.ConvertTImg[Array[Boolean]](SparkGlobal.getContext("DTImgOps"), normImg, TImgTools.IMAGETYPE_BOOL)
+     case normImg: TImgRO if (imClass==TImgTools.IMAGECLASS_OTHER) => throw new IllegalArgumentException(" Image Type Other is not supported yet inside Resize:Spark :"+inImg.getImageType)
+    }
+  }
 
   def fromKVImg[T](inImg: KVImg[T])(implicit T: ClassTag[T]): DTImg[Array[T]] = {
     val dim = inImg.getDim
@@ -207,5 +224,6 @@ object DTImgOps {
     DTImg.WrapRDD[Array[T]](inImg, JavaPairRDD.fromRDD(sslices), inImg.getImageType());
 
   }
+  
 }
 

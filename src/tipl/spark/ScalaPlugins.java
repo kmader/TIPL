@@ -44,6 +44,7 @@ public final class ScalaPlugins {
         }
     };
     
+    
 	@TIPLPluginManager.PluginInfo(pluginType = "Resize",
 			desc="Spark-based Resize tool",
 			sliceBased=true, sparkBased = true)
@@ -53,6 +54,5 @@ public final class ScalaPlugins {
 			return new SResize();
 		}
 	};
-
 }
 

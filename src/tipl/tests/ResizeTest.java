@@ -14,6 +14,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import tipl.formats.PureFImage;
+import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
 import tipl.util.D3int;
@@ -296,6 +297,34 @@ public class ResizeTest {
 		System.out.println("Slice Value:"+outSlice[0]+", "+outSlice.length);
 		assertEquals(1,outSlice.length);
 		assertEquals(true,outSlice[0]);
+	}
+	
+	@Test
+	public void testDoubleResize() {
+		final TImgRO testImg = TestPosFunctions.wrapIt(10,
+				new TestPosFunctions.DiagonalPlaneFunction());
+		System.out.println("Testing Slices Match in BW Simply");
+		ITIPLPluginIO RS = makeRS(pluginId,testImg);
+
+		RS.setParameter("-pos=0,0,5 -dim=10,10,2");
+		RS.execute();
+
+		final TImgRO outImg = RS.ExportImages(testImg)[0];
+		System.out.println(outImg.getPos() + ", " + testImg.getPos());
+		TIPLTestingLibrary.doSlicesMatchB(outImg, 0, testImg, 5);
+		TIPLTestingLibrary.doSlicesMatchB(outImg, 1, testImg, 6);
+		
+		//TImgRO abImage = TImg.ArrayBackedTImg.CreateFromTImg(outImg, TImgTools.IMAGETYPE_BOOL);
+		
+		// now make another subimage
+		RS = makeRS(pluginId,outImg);
+		RS.setParameter("-pos=0,0,6 -dim=10,10,1");
+		RS.execute();
+		final TImgRO outImg2 = RS.ExportImages(outImg)[0];
+		
+		TIPLTestingLibrary.checkDim(outImg2,new D3int(10,10,1));
+		
+		TIPLTestingLibrary.doSlicesMatchB(outImg2, 0, testImg, 6);
 	}
 
 }
