@@ -235,6 +235,8 @@ public class ResizeTest {
 		testSlicesMatchBool(pluginId,vImg);
 
 	}
+	
+
 
 	@Test
 	public void testSlicesMatchNormal() {
@@ -248,11 +250,11 @@ public class ResizeTest {
 	public void testSlicesMatchPreload() {
 		final TImgRO testImg = TestPosFunctions.wrapIt(10,
 				new TestPosFunctions.DiagonalPlaneFunction());
-		// TImgRO.FullReadable vImg=TImgTools.makeTImgFullReadable(testImg);
+		 TImgRO.FullReadable vImg=TImgTools.makeTImgFullReadable(testImg);
 		//final VirtualAim vImg = new VirtualAim(testImg);
 
-		//vImg.getBoolAim();
-		testSlicesMatchBool(pluginId,testImg);
+		vImg.getBoolAim();
+		testSlicesMatchBool(pluginId,vImg);
 	}
 
 	@Test
@@ -276,6 +278,24 @@ public class ResizeTest {
 		if(TIPLTestingLibrary.verbose) System.out.println("Current Dimensions, pos:"+outImg.getPos()+", dim:"+outImg.getDim());
 		TIPLTestingLibrary.checkDimensions(outImg, new D3int(1, 1, 1),new D3int(5, 5, 5));
 		System.out.println("Testing SphRadius");
+	}
+	
+	@Test
+	public void testSinglePointCrop() {
+		System.out.println("Testing Slices Match");
+		final TImgRO testImg = TestPosFunctions.wrapItAs(10,
+				new TestPosFunctions.SinglePointFunction(5, 5, 5),TImgTools.IMAGETYPE_BOOL);
+		ITIPLPluginIO RS = makeRS(pluginId,testImg);
+
+		RS.setParameter("-pos=5,5,5 -dim=1,1,1");
+		RS.execute();
+
+		final TImgRO outImg = RS.ExportImages(testImg)[0];
+		final boolean[] outSlice = (boolean[])outImg.getPolyImage(0, TImgTools.IMAGETYPE_BOOL);
+		
+		System.out.println("Slice Value:"+outSlice[0]+", "+outSlice.length);
+		assertEquals(1,outSlice.length);
+		assertEquals(true,outSlice[0]);
 	}
 
 }

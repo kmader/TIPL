@@ -386,16 +386,29 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      */
     @Override
     public Object getPolyImage(int sliceNumber, final int asType) {
-    	assert(sliceNumber<getDim().z);
+    	if (sliceNumber>=getDim().z) throw new IllegalArgumentException(this.getSampleName()+": Slice requested ("+sliceNumber+") exceeds image dimensions "+getDim());
     	
     	final int zPos = getPos().z + sliceNumber;
-        
-        T curSlice = this.baseImg.filter(new Function<Tuple2<D3int, TImgBlock<T>>, Boolean>() {
+    	/**
+    	List<TImgBlock<T>> outSlices =  this.baseImg.lookup(new D3int(getPos().x,getPos().y,zPos));
+    	T curSlice =outSlices.get(0).get();
+    	**/
+    	
+    	JavaPairRDD<D3int,TImgBlock<T>> outSlices = this.baseImg.filter(new Function<Tuple2<D3int, TImgBlock<T>>, Boolean>() {
             @Override
             public Boolean call(Tuple2<D3int, TImgBlock<T>> arg0) throws Exception {
                 return (arg0._1.z == zPos);
             }
-        }).first()._2.get();
+        });
+        
+    	
+    	if (outSlices.count()!=1) throw 
+    	new IllegalArgumentException(this.getSampleName()+", lookup failed:"+sliceNumber+" (z:"+zPos+"), of "+getDim()+" of #"+this.baseImg.count()+" blocks");
+    	
+    	T curSlice = outSlices.first()._2.get();
+        /**
+        
+        **/
         return TImgTools.convertArrayType(curSlice, getImageType(), asType, getSigned(), getShortScaleFactor());
     }
 
