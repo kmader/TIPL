@@ -168,6 +168,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         macro = macroOptions != null;
         addKeyListener(this);
         addWindowListener(this);
+        setResizable(true);
     }
 
     public static GUIControl asGUI(final Checkbox f) {
@@ -1664,6 +1665,18 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
     public boolean wasOKed() {
         return wasOKed || macro;
     }
+    Vector<Runnable> disposeTasks=new Vector<Runnable>(0);
+    public void addDisposalTasks(Runnable curTask) {
+    	disposeTasks.add(curTask);
+    }
+    protected boolean isDisposed = false;
+    @Override
+    public void dispose() {
+    	isDisposed=false;
+    	for(Runnable curTask: disposeTasks) curTask.run();
+    	super.dispose();
+    	isDisposed=true;
+    }
 
     @Override
     public void windowActivated(final WindowEvent e) {
@@ -1671,8 +1684,9 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 
     @Override
     public void windowClosed(final WindowEvent e) {
+    	
     }
-
+    
     @Override
     public void windowClosing(final WindowEvent e) {
         wasCanceled = true;

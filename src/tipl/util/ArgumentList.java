@@ -109,6 +109,7 @@ public class ArgumentList {
 
     public ArgumentList() {
     }
+    
 
     protected ArgumentList(final ArgumentList inArgumentList) {
         options = inArgumentList.sneakyGetOptions();
@@ -121,7 +122,16 @@ public class ArgumentList {
         options = inOptions;
         forwards = inForwards;
     }
-
+    /**
+     * Appends the current list to another object given as an input and returned
+     * @param listToAppend list to be appended
+     * @return a new appended list
+     */
+    public <T extends ArgumentList> T appendToList(T listToAppend ) {
+    	for(String cKey: options.keySet())
+    		listToAppend.putArg(cKey,options.get(cKey));
+    	return listToAppend;
+    }
     protected static String formatKey(final String inKey) {
         return inKey.toLowerCase();
     }

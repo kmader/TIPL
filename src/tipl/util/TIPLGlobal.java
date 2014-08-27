@@ -5,6 +5,7 @@ import tipl.formats.VirtualAim;
 import tipl.util.TIPLMongo.ITIPLUsage;
 import tipl.util.TIPLMongo.TIPLUsage;
 
+import java.awt.Window;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -397,6 +398,13 @@ public class TIPLGlobal {
         }
         if (IJcore == null) IJcore = new ImageJ(IJmode);
         return IJcore;
+    }
+    
+    public static void closeAllWindows() {
+    	ij.WindowManager.closeAllWindows();
+    	for(Window cWind: Window.getWindows()) {
+    		cWind.dispose();
+    	}
     }
 
     public static ITIPLUsage getUsage() {

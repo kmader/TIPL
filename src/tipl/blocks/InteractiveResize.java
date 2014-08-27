@@ -23,6 +23,7 @@ import tipl.util.ArgumentDialog;
 import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.SGEJob;
 import tipl.util.TIPLDialog;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
@@ -41,12 +42,16 @@ public class InteractiveResize implements TIPLDialog.DialogInteraction {
 	
 	final protected BaseTIPLBlock resizeBlock;
 	final Future<ArgumentParser> fixedArgs;
+	final ExecutorService dialogFetch;
 	public InteractiveResize(String[] args) {
 		ArgumentDialog.showDialogs=true;
 		resizeBlock = new ResizeBlock("");
-		ExecutorService dialogFetch = TIPLGlobal.getTaskExecutor();
+		dialogFetch = TIPLGlobal.getTaskExecutor();
 		
-		final ArgumentParser curArgs = resizeBlock.setParameter(TIPLGlobal.activeParser(args));
+		final ArgumentParser curArgs = resizeBlock.setParameter(TIPLGlobal.activeParser(args));	
+	final boolean runAsJob = curArgs
+			.getOptionBoolean("sge:runasjob",
+					"Run this script as an SGE job (adds additional settings to this task");
 		fixedArgs = dialogFetch.submit(new Callable<ArgumentParser>() {
 			public ArgumentParser call() {
 				return resizeGUI(curArgs);
@@ -56,63 +61,50 @@ public class InteractiveResize implements TIPLDialog.DialogInteraction {
 	}
 	
 	public void execute() {
+		final ArgumentParser finalArgs;
 		try {
-			resizeBlock.setParameter(fixedArgs.get());
+			finalArgs = resizeBlock.setParameter(fixedArgs.get());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+			throw new IllegalArgumentException(e);
 		} catch (ExecutionException e) {
 			e.printStackTrace();
+			throw new IllegalArgumentException(e);
 		}
-		resizeBlock.execute();
+		
+		if (finalArgs.getOptionBoolean("sge:runasjob", "")) {
+			finalArgs.getOptionString("-blockname", ResizeBlock.class.getSimpleName(), "Name of resize block to use");
+			ArgumentDialog.SGEJob(BaseTIPLBlock.class.getName(),finalArgs);
+		} else {
+			resizeBlock.execute();
+		}
+		
+		dialogFetch.shutdown();
+		TIPLGlobal.closeAllWindows();
+		TIPLGlobal.getIJInstance().quit();
 	}
 	
-	public ArgumentParser resizeGUI(final ArgumentParser p) {
-		p.getOptionBoolean("showslice",false,
-				"Show the slice and select the region using the ROI tool",
-				new ArgumentList.ArgumentCallback() {
-					@Override
-					public Object valueSet(final Object value) {
-						final String cValue = value.toString();
-						// if it is false now, it will be true
-						boolean nextState = !Boolean.parseBoolean(cValue);
-						if (nextState) showSlicePreview();
-						else closeSlicePreview();
-						return value;
-					}
-				});
-		
+	public ArgumentParser resizeGUI(final ArgumentParser p) {		
 		  aDialog = ArgumentDialog.newDialog(p, "Resize Block GUI",
 				"Set the appropriate parameters for the Resize GUI");
-		  
-		  return aDialog.scrapeDialog().subArguments("showslice", true);
-		  
-		
+		  showSlicePreview();
+		  return aDialog.scrapeDialog();
 	}
 	
 	
 	protected ArgumentDialog aDialog = null;
 	
-	protected Thread sspThread = null;
 	protected slicePreviewROI spObj= null; 
 	protected StackWindow curWindow = null;
 	/**
 	 * A wrapper to launch the proper function in a new thread
 	 */
 	public void showSlicePreview() {
-		
-		if (sspThread==null) {
 			spObj = new InteractiveResize.slicePreviewROI(resizeBlock.getFileParameter("input"),this);
-			sspThread = new Thread(spObj,"SlicePreviewThread");
+			Thread sspThread = new Thread(spObj,"SlicePreviewThread");
 			sspThread.start();
-		}
 	}
 	
-	public void closeSlicePreview() {
-		if(sspThread!=null) sspThread.interrupt();
-		sspThread=null;
-		if(curWindow!=null) curWindow.close();
-		curWindow=null;
-	}
 	/**
 	 * A class for performing the preview and region of interest selection manually
 	 * @author mader
@@ -148,6 +140,8 @@ public class InteractiveResize implements TIPLDialog.DialogInteraction {
 			curImage.setRoi(guiPos.x-basePos.x, guiPos.y-basePos.y, basePos.x+guiDim.x,basePos.y+guiDim.y);
 			
 			curImage.show("Hai!");
+			
+			
 			curImage.getCanvas().addMouseListener(new MouseListener() {
 				@Override
 				public void mouseClicked(MouseEvent e) {}

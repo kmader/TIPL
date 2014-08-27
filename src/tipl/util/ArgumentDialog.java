@@ -3,12 +3,18 @@
  */
 package tipl.util;
 
+import tipl.blocks.BaseTIPLBlock;
 import tipl.blocks.ITIPLBlock;
 import tipl.util.ArgumentList.ArgumentCallback;
 import tipl.util.ArgumentList.RangedArgument;
 import tipl.util.TIPLDialog.GUIControl;
+import ij.gui.DialogListener;
+import ij.gui.GenericDialog;
 
 import java.awt.*;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.awt.event.WindowStateListener;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 
@@ -21,7 +27,23 @@ import org.apache.tools.ant.types.Commandline.Argument;
  * @author mader
  */
 public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.DialogInteraction {
-
+	/**
+	 * A Gui for the SGEJob console
+	 * @param className
+	 * @param taskArgs
+	 */
+	public static void SGEJob(final String className,final ArgumentParser taskArgs) {
+		ArgumentParser sgeArgs = TIPLGlobal.activeParser("");
+		// just for getting the arguments
+		SGEJob.runAsJob("",sgeArgs,
+				"sge:");
+		ArgumentDialog aDialog = ArgumentDialog.newDialog(sgeArgs, "Sun Grid Engine Arguments",
+				"Set the appropriate parameters Sun Grid Engine Submission");
+		ArgumentParser sgeFinalArgs = aDialog.scrapeDialog();
+		
+		SGEJob jobToRun = SGEJob.runAsJob(className,taskArgs.appendToList(sgeFinalArgs.subArguments("sge:execute", true)),"sge:");
+		jobToRun.submit();
+	}
 	
 	public String getKey(String keyName) {
 		return controls.get(keyName).getValueAsString();
@@ -35,13 +57,26 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
     final protected TIPLDialog g;
     final private LinkedHashMap<String, IArgumentBasedControl> controls = new LinkedHashMap<String, IArgumentBasedControl>();
 
-    
+    /**
+     * Prepare the call-backs for the dialog correctly
+     * @param inList
+     * @param title
+     * @param helpText
+     * @return
+     */
     public static ArgumentDialog newDialog(final ArgumentList inList, final String title,
                           final String helpText) {
-    	return new ArgumentDialog(inList,title,helpText);
+    	final ArgumentDialog outDialog = new ArgumentDialog(inList,title,helpText);
+    	outDialog.g.addDisposalTasks(new Runnable() {
+			@Override
+			public void run() { outDialog.shutdownFunctions();}
+    	});
+    	return outDialog;
     }
     
-    protected ArgumentDialog(final ArgumentList inList, final String title,
+    
+    
+    private ArgumentDialog(final ArgumentList inList, final String title,
                           final String helpText) {
         coreList = inList;
         g = new TIPLDialog(title);
@@ -51,7 +86,7 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
 
     }
     
-    protected ArgumentDialog(final ArgumentList inList, final String title,
+    private ArgumentDialog(final ArgumentList inList, final String title,
             final String helpText, final Frame parent) {
     	coreList = inList;
     	g = new TIPLDialog(title,parent);
@@ -77,10 +112,7 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
         p = guiArgs.scrapeDialog();
         System.out.println(p);
         return blockToRun.setParameter(p);
-
     }
-    
-   
 
     protected GUIControl addD3Control(final String cName, final D3float cStat,
                                       final String helpText) {
@@ -136,25 +168,32 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
      *
      */
     public static class ArgumentBasedControl implements IArgumentBasedControl {
+    	final private String cName;
     	final private ArgumentList.Argument cArg;
     	final private GUIControl guiC;
-    	public ArgumentBasedControl(final GUIControl wrapIt,final ArgumentList.Argument curArgument) {
+    	public ArgumentBasedControl(final String inName,final GUIControl wrapIt,final ArgumentList.Argument curArgument) {
+    		this.cName = inName;
     		this.guiC = wrapIt;
     		this.cArg = curArgument;
+    		if (guiC==null) throw new IllegalArgumentException("Cannot intialize null object:"+cName+" gui control is not present"+cArg);
+			
     	}
     	
 		@Override
 		public String getValueAsString() {
+			if (guiC==null) throw new IllegalArgumentException(cName+" gui control is not present"+cArg);
 			return guiC.getValueAsString();
 		}
 		
 		@Override
 		public void setValueFromString(String newValue) {
+			if (guiC==null) throw new IllegalArgumentException(cName+" gui control is not present"+cArg);
 			guiC.setValueFromString(newValue);
 		} 
 
 		@Override
 		public void setValueCallback(ArgumentCallback iv) {
+			if (guiC==null) throw new IllegalArgumentException(cName+" gui control is not present"+cArg);
 			guiC.setValueCallback(iv);
 		}
 		@Override
@@ -173,10 +212,15 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
                 final double minValue = (Double) rArg.minVal;
                 final double maxValue = (Double) rArg.maxVal;
                 return g.appendSlider(fName, minValue, maxValue,
-                        (maxValue + minValue) / 2);
+                        (maxValue + minValue) / 2); 
             }
-        }
-        if (cValue instanceof Double) {
+            if (cValue instanceof Integer) {
+                final int minValue = (Integer) rArg.minVal;
+                final int maxValue = (Integer) rArg.maxVal;
+                return g.appendSlider(fName, minValue, maxValue,
+                        (maxValue + minValue) / 2); 
+            }
+        } else if (cValue instanceof Double) {
             return g.appendNumericField(fName, (Double) cValue,
                     3);
         } else if (cValue instanceof Integer) {
@@ -185,12 +229,14 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
             final boolean cStat = (Boolean) cValue;
             final GUIControl cChecks = g.appendCheckbox(fName, cStat);
             cChecks.setValueCallback(cArgument.getCallback());
+            return cChecks;
         } else if (cValue instanceof D3float) {
             final D3float cStat = (D3float) cValue;
             return addD3Control(cName, cStat, cHelp);
+        } else {
+        	return g.appendStringField(fName, cArgument.getValueAsString());
         }
-
-        return g.appendStringField(fName, cArgument.getValueAsString());
+        throw new IllegalArgumentException(cName+" control should not be null "+cArgument);
 
     }
 
@@ -201,46 +247,67 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
     @Override
     public void process(final ArgumentList.Argument cArgument) {
         final String cName = cArgument.getName();
-        controls.put(cName, new ArgumentBasedControl(getControl(cArgument),cArgument));
+        GUIControl guiC = getControl(cArgument);
+        controls.put(cName, new ArgumentBasedControl(cName,guiC,cArgument));
     }
-    public void waitOnDialog() {
-    	while(g.isVisible() && showDialogs) {
+    public synchronized void waitOnDialog() {
+    	while(!properlyClosed) {
     		try {
 				Thread.currentThread().sleep(100);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+				throw new IllegalArgumentException("waiting for dialog:"+e);
 			}
     	}
+    	if(g.wasCanceled()) throw new IllegalArgumentException(this+" was cancelled cannot continue!");
     }
+    private String[] isdString=null;
     /**
      * Gets all the values and puts them into a command line string
      * @return
      */
-    public String[] scrapeDialogAsString() {
+    private void intScrapeDialogAsString() {
         String curArgs = "";
-        waitOnDialog();
+        
         for (final String objName : controls.keySet())
             curArgs += " -" + objName + "="
                     + controls.get(objName).getValueAsString();
         final String[] outArgs = curArgs.split(" ");
-        return Arrays.copyOfRange(outArgs, 1, outArgs.length);
+        isdString=Arrays.copyOfRange(outArgs, 1, outArgs.length);
     }
+    private ArgumentParser isdParser;
     /**
      * Gets all of the values and puts them into an argumentparser object
      * @return
      */
-    public ArgumentParser scrapeDialog() {
+    private void intScrapeDialog() {
     	ArgumentParser newAp = new ArgumentParser(coreList);
-    	waitOnDialog();
     	for (final String objName : controls.keySet()) {
     		IArgumentBasedControl aControl = controls.get(objName);
     		// make a copy of the argument but insert the value from the textbox / control
     		newAp.putArg(objName, aControl.getArgument().cloneWithNewValue(aControl.getValueAsString()));
     	}
-    	return newAp;
+    	isdParser=newAp;
+    }
+    protected boolean properlyClosed=false;
+    protected void shutdownFunctions() {
+    	intScrapeDialog();
+    	intScrapeDialogAsString();
+    	properlyClosed=true;
     }
     
+    
+    public String[] scrapeDialogAsString() {
+    	waitOnDialog();
+    	if(isdString==null) throw new IllegalArgumentException(this+":scrapeDialogAsString is null, ");
+    	return isdString;
+    }
+    public ArgumentParser scrapeDialog() { 
+    	waitOnDialog();
+    	if(isdParser==null) throw new IllegalArgumentException(this+":scrapeDialog is null, ");
+    	return isdParser;
+    }
+  
 
     public void show() {
         g.showDialog();
