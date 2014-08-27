@@ -83,7 +83,7 @@ public class TImgToImageStack extends ImageStack {
 		else
 			return null;
 	}
-	public boolean useAutoRanger=true;
+	public static boolean useAutoRanger=true;
 	/**
 	 * Returns an ImageProcessor for the specified slice, were 1<=n<=nslices.
 	 * Returns null if the stack is empty.

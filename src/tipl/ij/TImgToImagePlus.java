@@ -99,6 +99,7 @@ public class TImgToImagePlus extends ImagePlus {
         float maxv = 0;
         int mode;
         HistogramWindow chw;
+        public static final boolean isDaemon = true;
 
         public autoRanger(final ImageProcessor outIm,
                           final HistogramWindow ichw, final char[] ipixels) {
@@ -107,6 +108,7 @@ public class TImgToImagePlus extends ImagePlus {
             bpixels = ipixels;
             chw = ichw;
             mode = TImgTools.IMAGETYPE_CHAR;
+            setDaemon(isDaemon);
 
         }
 
@@ -117,7 +119,7 @@ public class TImgToImagePlus extends ImagePlus {
             fpixels = ipixels;
             chw = ichw;
             mode = TImgTools.IMAGETYPE_FLOAT;
-
+            setDaemon(isDaemon);
         }
 
         public autoRanger(final ImageProcessor outIm,
@@ -127,6 +129,7 @@ public class TImgToImagePlus extends ImagePlus {
             spixels = ipixels;
             chw = ichw;
             mode = TImgTools.IMAGETYPE_SHORT;
+            setDaemon(isDaemon);
 
         }
 

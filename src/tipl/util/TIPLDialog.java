@@ -61,7 +61,16 @@ import java.util.Vector;
 public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         FocusListener, ItemListener, KeyListener, AdjustmentListener,
         WindowListener {
-    /**
+	/**
+	 * An interface for making passing back and forth arguments somewhat safer
+	 * @author mader
+	 *
+	 */
+	public static interface DialogInteraction {
+		public String getKey(String keyName);
+		public void setKey(String keyName,String newValue);
+	}
+	/**
      * begin old code *
      */
 
@@ -144,7 +153,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
      * Creates a new TIPLDialog using the specified title and parent frame.
      */
     public TIPLDialog(final String title, final Frame parent) {
-        super(parent == null ? new Frame() : parent, title, true);
+        super(parent == null ? new Frame() : parent, title, false); // modality off
         // super(title,parent);
         if (Prefs.blackCanvas) {
             setForeground(SystemColor.controlText);
@@ -167,11 +176,17 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
             public String getValueAsString() {
                 return f.getState() ? "true" : "false";
             }
+            
 
             @Override
             protected void pushMLToObject(final MouseListener curListener) {
                 f.addMouseListener(curListener);
             }
+
+			@Override
+			public void setValueFromString(String newValue) {
+				f.setState(ArgumentList.boolParse.valueOf(newValue));
+			}
 
         };
     }
@@ -182,11 +197,18 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
             public String getValueAsString() {
                 return f.getText();
             }
+            
 
             @Override
             protected void pushMLToObject(final MouseListener curListener) {
                 f.addMouseListener(curListener);
             }
+
+
+			@Override
+			public void setValueFromString(String newValue) {
+				f.setText(newValue);
+			}
         };
     }
 
@@ -1674,12 +1696,13 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
     }
 
     /**
-     * Interface to allow easy reading the values from controls
+     * Interface to allow easy reading and writing the values  from controls
      *
      * @author mader
      */
     protected static interface GUIControl {
         public String getValueAsString();
+        public void setValueFromString(String newValue);
         public void setValueCallback(ArgumentList.ArgumentCallback iv);
     }
 

@@ -20,7 +20,16 @@ import org.apache.tools.ant.types.Commandline.Argument;
  *
  * @author mader
  */
-public class ArgumentDialog implements ArgumentList.optionProcessor {
+public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.DialogInteraction {
+
+	
+	public String getKey(String keyName) {
+		return controls.get(keyName).getValueAsString();
+	}
+	public void setKey(String keyName, String newValue) {
+		controls.get(keyName).setValueFromString(newValue);
+	}
+	
 	public static boolean showDialogs = !TIPLGlobal.isHeadless();
     final protected ArgumentList coreList;
     final protected TIPLDialog g;
@@ -51,7 +60,6 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
     	if(showDialogs) g.showDialog();
     }
     
-    
     public static <T extends ITIPLBlock> ArgumentParser GUIBlock(final T blockToRun) {
     	return GUIBlock(blockToRun,TIPLGlobal.activeParser(new String[]{}));
     }
@@ -63,7 +71,7 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
      */
     public static <T extends ITIPLBlock> ArgumentParser GUIBlock(final T blockToRun,final ArgumentParser args) {
         ArgumentParser p = blockToRun.setParameter(args);
-        final ArgumentDialog guiArgs = new ArgumentDialog(args,
+        final ArgumentDialog guiArgs = ArgumentDialog.newDialog(args,
                 blockToRun.toString(), blockToRun.getInfo().getDesc());
         
         p = guiArgs.scrapeDialog();
@@ -91,6 +99,14 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
 				x.setValueCallback(iv);
 				y.setValueCallback(iv);
 				z.setValueCallback(iv);
+			}
+
+			@Override
+			public void setValueFromString(String newValue) {
+				D3float floatVal = ArgumentList.d3fparse.valueOf(newValue);
+				x.setValueFromString(""+floatVal.x);
+				y.setValueFromString(""+floatVal.y);
+				z.setValueFromString(""+floatVal.z);
 			}
         	
         };	
@@ -131,13 +147,19 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
 		public String getValueAsString() {
 			return guiC.getValueAsString();
 		}
+		
+		@Override
+		public void setValueFromString(String newValue) {
+			guiC.setValueFromString(newValue);
+		} 
 
 		@Override
 		public void setValueCallback(ArgumentCallback iv) {
 			guiC.setValueCallback(iv);
 		}
 		@Override
-		public ArgumentList.Argument getArgument() { return cArg;} 
+		public ArgumentList.Argument getArgument() { return cArg;}
+
     	
     }
     protected GUIControl getControl(final ArgumentList.Argument cArgument) {
@@ -181,12 +203,23 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
         final String cName = cArgument.getName();
         controls.put(cName, new ArgumentBasedControl(getControl(cArgument),cArgument));
     }
+    public void waitOnDialog() {
+    	while(g.isVisible() && showDialogs) {
+    		try {
+				Thread.currentThread().sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    }
     /**
      * Gets all the values and puts them into a command line string
      * @return
      */
     public String[] scrapeDialogAsString() {
         String curArgs = "";
+        waitOnDialog();
         for (final String objName : controls.keySet())
             curArgs += " -" + objName + "="
                     + controls.get(objName).getValueAsString();
@@ -199,6 +232,7 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
      */
     public ArgumentParser scrapeDialog() {
     	ArgumentParser newAp = new ArgumentParser(coreList);
+    	waitOnDialog();
     	for (final String objName : controls.keySet()) {
     		IArgumentBasedControl aControl = controls.get(objName);
     		// make a copy of the argument but insert the value from the textbox / control
