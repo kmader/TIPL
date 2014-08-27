@@ -62,7 +62,7 @@ public class ADTester {
 	 */
 	@Test
 	public void testGUIBlockRunner() {
-		ArgumentDialog.showDialogs=false;
+		ArgumentDialog.showDialogs=true;
 		
 		BaseBlockRunner cr = new BaseBlockRunner();
 		cr.add(new FilterBlock());
@@ -70,7 +70,6 @@ public class ADTester {
 		cr.add(new FoamThresholdBlock());
 		cr.add(new ThicknessBlock());
 		cr.add(new AnalyzePhase());
-		cr.add(new XDFBlock());
 		
 		ArgumentParser p = TIPLGlobal.activeParser("-gui");
 		p = cr.setParameter(p);
@@ -84,10 +83,11 @@ public class ADTester {
 	 */
 	@Test
 	public void testToDialog() {
-		ArgumentDialog.showDialogs=false;
+		ArgumentDialog.showDialogs=true;
 		final String[] strArr = new String[] { "-ted", "-bob=10",
 				"-scale=1.0,1.0,1.0", "-tandy=0.1", "-david=joey" };
 		final ArgumentParser p = TIPLGlobal.activeParser(strArr);
+		p.getOptionChoiceString("name", "bob", "Choose the correct name", new String[] {"bob","dan","Kevin"});
 		assertEquals(p.getOptionBoolean("ted", "Test-Help"), true);
 		assertEquals(p.getOptionInt("bob", 10, "Test-Help", 10, 11), 10);
 		final D3float fArgs = p

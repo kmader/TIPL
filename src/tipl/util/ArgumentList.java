@@ -745,5 +745,36 @@ public class ArgumentList {
         }
 
     }
+    /**
+     * A class for handling selecting one item from a list
+     * @author mader
+     *
+     */
+    public static class MultipleChoiceArgument extends ValidatedArgument<String> {
+    	final String[] acceptableAnswers;
+		public MultipleChoiceArgument(TypedArgument<String> basisArgument,final String[] acceptableAnswers) {
+			super(basisArgument);
+			this.acceptableAnswers=acceptableAnswers;
+			validateList=new Vector<tValidate<String>>(1);
+			validateList.add(new tValidate<String> (){
+
+				@Override
+				public String getName() {
+					String outString = "Contained in: (";
+					for(String cStr : acceptableAnswers) outString+=cStr+", ";
+					return outString;
+				}
+
+				@Override
+				public boolean isValid(String inValue) {
+					for(String cStr : acceptableAnswers) if(cStr.equalsIgnoreCase(inValue)) return true;
+					return false;
+				}
+				
+			});
+			
+		}
+    	
+    }
 
 }

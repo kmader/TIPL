@@ -344,6 +344,24 @@ public class ArgumentParser extends ArgumentList {
         putArg(opt, cArg);
         return cArg.getValue();
     }
+    
+    public String getOptionChoiceString(final String inOpt, final String defVal,
+            final String helpString, final String[] mcOptions) {
+    	final String opt = formatKey(inOpt);
+    	ArgumentList.TypedArgument<String> cArg;
+    	if (hasOption(opt)) {
+            cArg = new ArgumentList.TypedArgument<String>(getOption(opt),
+                    helpString, defVal, stringParse);
+        } else {
+            cArg = new ArgumentList.TypedArgument<String>(opt, helpString,
+                    defVal,stringParse);
+        }
+    	ArgumentList.MultipleChoiceArgument mcArg= 
+    			new ArgumentList.MultipleChoiceArgument(cArg,mcOptions);
+
+putArg(opt, mcArg);
+return mcArg.getValue();
+}
 
     @Override
     public ArgumentParser subArguments(final String withoutText) {

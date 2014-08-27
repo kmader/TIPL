@@ -191,7 +191,27 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 
         };
     }
+    public static GUIControl asGUI(final Choice ch) {
+    	return new CallbackGUIControlWithMouse() {
+            @Override
+            public String getValueAsString() {
+                return ch.getSelectedItem();
+            }
+            
 
+            @Override
+            protected void pushMLToObject(final MouseListener curListener) {
+                ch.addMouseListener(curListener);
+            }
+
+
+			@Override
+			public void setValueFromString(String newValue) {
+				ch.select(newValue);
+			}
+        };
+    	
+    }
     public static GUIControl asGUI(final TextField f) {
         return new CallbackGUIControlWithMouse() {
             @Override
@@ -340,7 +360,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
      * @param items       the menu items
      * @param defaultItem the menu item initially selected
      */
-    public void addChoice(final String label, final String[] items,
+    public GUIControl addChoice(final String label, final String[] items,
                           final String defaultItem) {
         String label2 = label;
         if (label2.indexOf('_') != -1)
@@ -371,6 +391,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         if (Recorder.record || macro)
             saveLabel(thisChoice, label);
         y++;
+        return asGUI(thisChoice);
     }
 
     /**
