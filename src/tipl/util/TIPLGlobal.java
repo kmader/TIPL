@@ -133,6 +133,11 @@ public class TIPLGlobal {
     public static ArgumentParser activeParser(String[] args) {
         return activeParser(new ArgumentParser(args, true));
     }
+    
+    public static ArgumentParser activeParser(String rawArgs) {
+        return activeParser(rawArgs.split("\\s"));
+    }
+    
 
     /**
      * parser which actively changes local, maxcores, maxiothread and other TIPL wide parameters
@@ -154,12 +159,18 @@ public class TIPLGlobal {
         TIPLGlobal.setDebug(sp.getOptionInt("@debug",
                 TIPLGlobal.getDebugLevel(),
                 "Debug level from " + DEBUG_OFF + " to " + DEBUG_ALL));
-        boolean curHeadlessValue = Boolean.parseBoolean(System.getProperty("java.awt.headless"));
-
-        System.setProperty("java.awt.headless", "" + sp.getOptionBoolean("@headless", curHeadlessValue, "Run TIPL in headless mode"));
+        
+        System.setProperty("java.awt.headless", "" + sp.getOptionBoolean("@headless", isHeadless(), "Run TIPL in headless mode"));
 
         //if (sp.hasOption("?")) System.out.println(sp.getHelp());
         return sp;//.subArguments("@");
+    }
+    /**
+     * Is TIPLGlobal running headless currently
+     * @return
+     */
+    public static boolean isHeadless() {
+    	return Boolean.parseBoolean(System.getProperty("java.awt.headless"));
     }
 
     /**

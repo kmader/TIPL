@@ -23,8 +23,8 @@ public class ArgumentList {
         }
     };
     public static final int ARGUMENTTYPES = 4;
-    public String delimiter = ",";
-    protected strParse<D3float> d3fparse = new strParse<D3float>() {
+    final static public String delimiter = ",";
+    static public strParse<D3float> d3fparse = new strParse<D3float>() {
         @Override
         public D3float valueOf(final String inStr) {
             String sStr = inStr.trim();
@@ -42,7 +42,7 @@ public class ArgumentList {
                     .valueOf(temp[1]), Float.valueOf(temp[2]));
         }
     };
-    protected strParse<D3int> d3iparse = new strParse<D3int>() {
+    static public strParse<D3int> d3iparse = new strParse<D3int>() {
         @Override
         public D3int valueOf(final String inStr) {
             String sStr = inStr.trim();
@@ -65,7 +65,7 @@ public class ArgumentList {
      * code to parse boolean arguments (old version just assumed something being
      * present was evidence of its truth
      */
-    protected strParse<Boolean> boolParse = new strParse<Boolean>() {
+    static public strParse<Boolean> boolParse = new strParse<Boolean>() {
         @Override
         public Boolean valueOf(final String inStr) {
             if (inStr.toLowerCase().trim().contains("false"))
@@ -73,31 +73,31 @@ public class ArgumentList {
             return true;
         }
     };
-    protected strParse<Double> dblParse = new strParse<Double>() {
+    static public strParse<Double> dblParse = new strParse<Double>() {
         @Override
         public Double valueOf(final String inStr) {
             return Double.valueOf(inStr);
         }
     };
-    protected strParse<Float> floatParse = new strParse<Float>() {
+    static public strParse<Float> floatParse = new strParse<Float>() {
         @Override
         public Float valueOf(final String inStr) {
             return Float.valueOf(inStr);
         }
     };
-    protected strParse<Integer> intParse = new strParse<Integer>() {
+    static public strParse<Integer> intParse = new strParse<Integer>() {
         @Override
         public Integer valueOf(final String inStr) {
             return Integer.valueOf(inStr);
         }
     };
-    protected strParse<String> stringParse = new strParse<String>() {
+    static public strParse<String> stringParse = new strParse<String>() {
         @Override
         public String valueOf(final String inStr) {
             return inStr;
         }
     };
-    protected strParse<TypedPath> typePathParse = new strParse<TypedPath>() {
+    static public strParse<TypedPath> typePathParse = new strParse<TypedPath>() {
         @Override
         public TypedPath valueOf(final String inStr) {
             return new TypedPath(inStr);
@@ -291,7 +291,6 @@ public class ArgumentList {
     final public LinkedHashMap<String, ArgumentList.Argument> sneakyGetOptions() {
         return options;
     }
-
     /**
      * Returns an argument parser class which does not contain arguments with
      * the given text (all forwards are passed since unused ones don't hurt
@@ -299,10 +298,24 @@ public class ArgumentList {
      * @param withoutText
      * @return an argumentlist with just the filtered arguments
      */
-    public ArgumentList subArguments(final String withoutText) {
+    public ArgumentList subArguments(final String withoutText)  {
+    	return subArguments(withoutText,false);
+    }
+    /**
+     * Returns an argument parser class which does not contain arguments with
+     * the given text (all forwards are passed since unused ones don't hurt
+     *
+     * @param withoutText
+     * @param strict (only exact matches not just contains)
+     * @return an argumentlist with just the filtered arguments
+     */
+    public ArgumentList subArguments(final String withoutText,final boolean strict) {
         final LinkedHashMap<String, ArgumentList.Argument> newOptions = new LinkedHashMap<String, ArgumentList.Argument>();
         for (final ArgumentList.Argument value : options.values()) {
-            if (!value.getName().contains(withoutText))
+        	boolean keep=true;
+        	if (strict) keep = value.getName().equalsIgnoreCase(withoutText);
+        	else keep = value.getName().contains(withoutText);
+            if (!keep)
                 newOptions.put(value.getName(), value);
         }
 
@@ -353,6 +366,12 @@ public class ArgumentList {
         public String getValueAsString();
 
         public boolean wasInput();
+        
+        /**
+         * For re-reading parameters
+         * @param newValue
+         */
+        public Argument cloneWithNewValue(String newValue);
 
     }
 
@@ -454,6 +473,11 @@ public class ArgumentList {
             return true;
         }
 
+		@Override
+		public Argument cloneWithNewValue(String newValue) {
+			return new GenericArgument(name,newValue);
+		}
+
 
     }
 
@@ -512,12 +536,12 @@ public class ArgumentList {
      * @author mader
      */
     public static class TypedArgument<T> implements Argument {
-        public final String name;
+    	public final String name;
         public final String helpText;
         protected final T value;
-        // private Class<T> type;
         protected final T defaultValue;
         protected final boolean usedDefault;
+        protected final ArgumentParser.strParse<T> parseTool;
 
         public TypedArgument(final Argument inArg, final String inHelpText,
                              final T defValue, final ArgumentParser.strParse<T> tParse) {
@@ -526,18 +550,40 @@ public class ArgumentList {
             value = tParse.valueOf(inArg.getValueAsString());
             defaultValue = defValue;
             usedDefault = false;
+            parseTool=tParse;
         }
-
+        /** just for the clone argument
+         * 
+         * @param inArg
+         * @param inHelpText
+         * @param defValue
+         * @param tParse
+         */
+        protected TypedArgument(final String inName,final String inValue, final String inHelpText,
+                final T defValue, final ArgumentParser.strParse<T> tParse) {
+        	name = inName;
+        	helpText = inHelpText;
+        	value = tParse.valueOf(inValue);
+        	defaultValue = defValue;
+        	usedDefault = false;
+        	parseTool=tParse;
+        }
+        
+		@Override
+		public Argument cloneWithNewValue(String newValue) {
+			return new TypedArgument<T>(name,newValue,helpText,defaultValue,parseTool);
+		}
+        
         protected ArgumentCallback curCallback = emptyCallback;
 
-        // private final Class<T> mClass=T.class;
         public TypedArgument(final String inName, final String inHelpText,
-                             final T defValue) {
+                             final T defValue,final ArgumentParser.strParse<T> tParse) {
             name = inName;
             helpText = inHelpText;
             value = defValue;
             defaultValue = defValue;
             usedDefault = true;
+            parseTool=tParse;
         }
 
         protected TypedArgument(final TypedArgument<T> dumbClass) {
@@ -546,6 +592,7 @@ public class ArgumentList {
             helpText = dumbClass.helpText;
             usedDefault = dumbClass.usedDefault;
             defaultValue = dumbClass.defaultValue;
+            parseTool=dumbClass.parseTool;
         }
 
         @Override
@@ -560,10 +607,6 @@ public class ArgumentList {
 
         @Override
         public String getHelpText() {
-            // this.getClass().getGenericSuperclass()
-            // Type myGeneric = this.getClass().getGenericSuperclass();
-            // Type tType = ((ParameterizedType)
-            // myGeneric).getActualTypeArguments()[0];
             return helpText + ", Default Value (:" + defaultValue + ")";
         }
 

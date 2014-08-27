@@ -124,7 +124,7 @@ public class ArgumentParser extends ArgumentList {
             cArg = new ArgumentList.TypedArgument<Boolean>(getOption(opt),
                     helpString, defBooleanValue, boolParse);
         } else {
-            cArg = new ArgumentList.TypedArgument<Boolean>(opt, helpString, defBooleanValue);
+            cArg = new ArgumentList.TypedArgument<Boolean>(opt, helpString, defBooleanValue,boolParse);
         }
         cArg.setCallback(inCallback);
         putArg(opt, cArg);
@@ -141,7 +141,7 @@ public class ArgumentParser extends ArgumentList {
                     helpString, defVal, d3fparse);
         } else {
             cArg = new ArgumentList.TypedArgument<D3float>(opt, helpString,
-                    defVal);
+                    defVal,d3fparse);
         }
         putArg(opt, cArg);
         return cArg.getValue();
@@ -156,7 +156,7 @@ public class ArgumentParser extends ArgumentList {
                     helpString, defVal, d3iparse);
         } else {
             cArg = new ArgumentList.TypedArgument<D3int>(opt, helpString,
-                    defVal);
+                    defVal,d3iparse);
         }
         putArg(opt, cArg);
         return cArg.getValue();
@@ -182,7 +182,7 @@ public class ArgumentParser extends ArgumentList {
                     helpString, defValue, dblParse);
         } else {
             cArg = new ArgumentList.TypedArgument<Double>(opt, helpString,
-                    defValue);
+                    defValue,dblParse);
         }
         putArg(opt, cArg);
         return cArg.getValue();
@@ -213,7 +213,7 @@ public class ArgumentParser extends ArgumentList {
                     helpString, defValue, dblParse);
         } else {
             cArg = new ArgumentList.TypedArgument<Double>(opt, helpString,
-                    defValue);
+                    defValue,dblParse);
         }
         final ArgumentList.RangedArgument<Double> dArg = new ArgumentList.RangedArgument<Double>(
                 cArg, minValue, maxValue);
@@ -232,7 +232,7 @@ public class ArgumentParser extends ArgumentList {
                     helpString, defValue, floatParse);
         } else {
             cArg = new ArgumentList.TypedArgument<Float>(opt, helpString,
-                    defValue);
+                    defValue,floatParse);
         }
         putArg(opt, cArg);
         return cArg.getValue();
@@ -250,7 +250,7 @@ public class ArgumentParser extends ArgumentList {
                     helpString, defValue, floatParse);
         } else {
             cArg = new ArgumentList.TypedArgument<Float>(opt, helpString,
-                    defValue);
+                    defValue,floatParse);
         }
         final ArgumentList.RangedArgument<Float> dArg = new ArgumentList.RangedArgument<Float>(
                 cArg, minValue, maxValue);
@@ -269,7 +269,7 @@ public class ArgumentParser extends ArgumentList {
                     helpString, defValue, intParse);
         } else {
             cArg = new ArgumentList.TypedArgument<Integer>(opt, helpString,
-                    defValue);
+                    defValue,intParse);
         }
         putArg(opt, cArg);
         return cArg.getValue();
@@ -300,7 +300,7 @@ public class ArgumentParser extends ArgumentList {
                     helpString, defValue, intParse);
         } else {
             cArg = new ArgumentList.TypedArgument<Integer>(opt, helpString,
-                    defValue);
+                    defValue,intParse);
         }
 
         final ArgumentList.RangedArgument<Integer> dArg = new ArgumentList.RangedArgument<Integer>(
@@ -324,7 +324,7 @@ public class ArgumentParser extends ArgumentList {
             // ", Default Location (Path:"+defFilename+")" : "(string)"));
         } else {
             cArg = new ArgumentList.TypedArgument<String>(opt, helpString,
-                    defaultPath + defFilename);
+                    defaultPath + defFilename,stringParse);
         }
         putArg(opt, cArg);
         return cArg.getValue();
@@ -339,7 +339,7 @@ public class ArgumentParser extends ArgumentList {
                     helpString, defVal, stringParse);
         } else {
             cArg = new ArgumentList.TypedArgument<String>(opt, helpString,
-                    defVal);
+                    defVal,stringParse);
         }
         putArg(opt, cArg);
         return cArg.getValue();
@@ -348,6 +348,11 @@ public class ArgumentParser extends ArgumentList {
     @Override
     public ArgumentParser subArguments(final String withoutText) {
         return new ArgumentParser(super.subArguments(withoutText));
+    }
+    
+    @Override
+    public ArgumentParser subArguments(final String withoutText,boolean strict) {
+        return new ArgumentParser(super.subArguments(withoutText,strict));
     }
 
     /**

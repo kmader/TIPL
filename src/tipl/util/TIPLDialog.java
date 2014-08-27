@@ -1680,7 +1680,6 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
      */
     protected static interface GUIControl {
         public String getValueAsString();
-
         public void setValueCallback(ArgumentList.ArgumentCallback iv);
     }
 

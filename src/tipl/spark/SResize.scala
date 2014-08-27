@@ -98,16 +98,16 @@ object SResize {
       case dImg: DTImg[_] if (imClass==TImgTools.IMAGECLASS_BINARY) => dtResize(dImg.asDTBool,outDim,outPos,findEdge)
       case kvImg: KVImg[A] => kvResize(kvImg,outDim,outPos)
       case normImg: TImgRO if (imClass==TImgTools.IMAGECLASS_LABEL) => 
-        val dnormImg = DTImg.ConvertTImg[Array[Long]](SparkGlobal.getContext("SResize"), normImg, TImgTools.IMAGETYPE_LONG)
-        val resizeImg = dtResize(dnormImg,outDim,outPos,findEdge)
+        val dnormImg = normImg.toDTLabels
+          val resizeImg = dtResize(dnormImg,outDim,outPos,findEdge)
         TImgTools.ChangeImageType(resizeImg,normImg.getImageType())
      case normImg: TImgRO if (imClass==TImgTools.IMAGECLASS_VALUE) => 
-        val dnormImg = DTImg.ConvertTImg[Array[Double]](SparkGlobal.getContext("SResize"), normImg, TImgTools.IMAGETYPE_DOUBLE)
+        val dnormImg = normImg.toDTValues
         val resizeImg = dtResize(dnormImg,outDim,outPos,findEdge)
         TImgTools.ChangeImageType(resizeImg,normImg.getImageType())
      case normImg: TImgRO if (imClass==TImgTools.IMAGECLASS_BINARY) => 
-        val dnormImg = DTImg.ConvertTImg[Array[Boolean]](SparkGlobal.getContext("SResize"), normImg, TImgTools.IMAGETYPE_BOOL)
-        val resizeImg = dtResize(dnormImg,outDim,outPos,findEdge)
+        val dnormImg = normImg.toDTBinary
+          val resizeImg = dtResize(dnormImg,outDim,outPos,findEdge)
         TImgTools.ChangeImageType(resizeImg,normImg.getImageType())
      case normImg: TImgRO if (imClass==TImgTools.IMAGECLASS_OTHER) => throw new IllegalArgumentException(" Image Type Other is not supported yet inside Resize:Spark :"+inImg.getImageType)
     }

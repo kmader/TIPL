@@ -8,10 +8,17 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import tipl.blocks.AnalyzePhase;
 import tipl.blocks.FilterBlock;
+import tipl.blocks.FoamThresholdBlock;
 import tipl.blocks.ITIPLBlock;
+import tipl.blocks.BaseBlockRunner;
+import tipl.blocks.ThicknessBlock;
+import tipl.blocks.ThresholdBlock;
+import tipl.blocks.XDFBlock;
 import tipl.util.ArgumentDialog;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
@@ -26,8 +33,10 @@ public class ADTester {
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@Before
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void setUp() throws Exception {
+		// disable headlessness
+		TIPLGlobal.activeParser("-@headless=false");
 	}
 
 	/**
@@ -40,20 +49,32 @@ public class ADTester {
 	/**
 	 * Test method for {@link tipl.util.ArgumentDialog#GUIBlock()}.
 	 */
-	//@Test
+	@Test
 	public void testGUIBlock() {
-		// fail("Not yet implemented"); // TODO
+		ArgumentDialog.showDialogs=true;
+		System.out.println(TIPLGlobal.activeParser(""));
 		ITIPLBlock cBlock = new FilterBlock();
-		cBlock = ArgumentDialog.GUIBlock(cBlock);
-
+		ArgumentParser p = ArgumentDialog.GUIBlock(cBlock);
+		p.checkForInvalid();
 	}
-
 	/**
-	 * Test method for {@link tipl.util.ArgumentDialog#scrapeDialog()}.
+	 * Test a multiblock runner
 	 */
 	@Test
-	public void testScrapeDialog() {
-		// fail("Not yet implemented"); // TODO
+	public void testGUIBlockRunner() {
+		ArgumentDialog.showDialogs=false;
+		
+		BaseBlockRunner cr = new BaseBlockRunner();
+		cr.add(new FilterBlock());
+		cr.add(new ThresholdBlock());
+		cr.add(new FoamThresholdBlock());
+		cr.add(new ThicknessBlock());
+		cr.add(new AnalyzePhase());
+		cr.add(new XDFBlock());
+		
+		ArgumentParser p = TIPLGlobal.activeParser("-gui");
+		p = cr.setParameter(p);
+		p.checkForInvalid();
 	}
 
 	/**
@@ -63,6 +84,7 @@ public class ADTester {
 	 */
 	@Test
 	public void testToDialog() {
+		ArgumentDialog.showDialogs=false;
 		final String[] strArr = new String[] { "-ted", "-bob=10",
 				"-scale=1.0,1.0,1.0", "-tandy=0.1", "-david=joey" };
 		final ArgumentParser p = TIPLGlobal.activeParser(strArr);
@@ -78,7 +100,7 @@ public class ADTester {
 				"joey");
 		final ArgumentDialog a = new ArgumentDialog(p, "whaddup",
 				"nohelpforyou");
-
+		p.checkForInvalid();
 		System.out.println(a.scrapeDialog());
 	}
 

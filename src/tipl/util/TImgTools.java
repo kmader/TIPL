@@ -167,7 +167,17 @@ public class TImgTools {
 		isMatch = isMatch & (otherTImg.getOffset().z == otherVA.getOffset().z);
 		return isMatch;
 	}
-
+	/**
+	 * Standard array conversion with correct default parameters for most datasets
+	 * @param inArray
+	 * @param inType
+	 * @param outType
+	 * @return
+	 */
+	public static Object convertArrayType(final Object inArray,
+			final int inType, final int outType) {
+		return convertArrayType(inArray,inType,outType,false,1);
+	}
 	/**
 	 * Generic function for converting array types (with maxvalue as 127)
 	 *
@@ -769,7 +779,7 @@ public class TImgTools {
 	  */
 	 public static double[] convertArrayDouble(Object inSlice) {
 		 final int type = identifySliceType(inSlice);
-		 return (double[]) convertArrayType(inSlice,type,IMAGETYPE_DOUBLE,true,127);
+		 return (double[]) convertArrayType(inSlice,type,IMAGETYPE_DOUBLE);
 	 }
 	 
 

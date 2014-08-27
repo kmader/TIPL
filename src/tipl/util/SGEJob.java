@@ -157,10 +157,10 @@ public class SGEJob {
         ArgumentParser subP = p.subArguments(prefix);
         // make a synthetic argument containing the value
         ArgumentList.TypedArgument<Integer> maxCores = new ArgumentList.TypedArgument<Integer>("@maxcores", "Max Cores is set by the job itself",
-                coreCount);
+                coreCount,ArgumentList.intParse);
         // jobs must also run headless
         ArgumentList.TypedArgument<Boolean> headless = new ArgumentList.TypedArgument<Boolean>("@headless", "Job must run headless",
-                true);
+                true,ArgumentList.boolParse);
         // insert it into the parameter list
         subP.putArg("@maxcores", maxCores);
         subP.putArg("@headless", headless);

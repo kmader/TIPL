@@ -95,13 +95,13 @@ public class FilterTests {
 
 		// second image
 		RS = makeFilter(pluginId,testImg);
-		RS.setParameter("-upfactor=1,1,1 -downfactor=1,2,3 -filter="+FilterSettings.GAUSSIAN);
+		RS.setParameter("-upfactor=1,1,1 -downfactor=1,2,5 -filter="+FilterSettings.GAUSSIAN);
 		System.out.println("Input Image Type"+testImg.getImageType());
 
 		RS.execute();
 		outImg = RS.ExportImages(testImg)[0];
 
-		TIPLTestingLibrary.checkDimensions(outImg, new D3int(10, 5, 3), new D3int(0, 0, 0));
+		TIPLTestingLibrary.checkDimensions(outImg, new D3int(10, 5, 2), new D3int(0, 0, 0));
 	}
 
 	/**
@@ -217,7 +217,7 @@ public class FilterTests {
 				new TestPosFunctions.SinglePointFunction(5, 5, 5),TImgTools.IMAGETYPE_FLOAT);
 		
 		ITIPLPluginIO RS = makeFilter(pluginId,pointImage);
-		RS.setParameter("-upfactor=2,2,2 -downfactor=2,2,2 -filter="+FilterSettings.GAUSSIAN+" -filtersetting=0.5");
+		RS.setParameter("-upfactor=2,2,2 -downfactor=2,2,2 -filter="+FilterSettings.GAUSSIAN+" -filtersetting=0.75");
 		RS.execute();
 
 		TImgRO outImg = RS.ExportImages(pointImage)[0];

@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import tipl.formats.TImgRO;
+import tipl.util.ArgumentDialog;
 import tipl.util.ArgumentParser;
 import tipl.util.SGEJob;
 import tipl.util.TIPLGlobal;
@@ -17,7 +18,7 @@ import tipl.util.TIPLGlobal;
  * @author mader
  *
  */
-public class BaseBlockRunner implements IBlockRunner {
+public class BaseBlockRunner implements IBlockRunner,ITIPLBlock {
 	final protected LinkedList<ITIPLBlock> blockList;
 	/**
 	 * 
@@ -61,10 +62,14 @@ public class BaseBlockRunner implements IBlockRunner {
 	 * @see tipl.blocks.IBlockRunner#setParameter(tipl.util.ArgumentParser)
 	 */
 	@Override
-	public ArgumentParser setParameter(ArgumentParser p) {
-		// TODO Auto-generated method stub
+	public ArgumentParser setParameter(final ArgumentParser p) {
+		final boolean withGui = p.getOptionBoolean("gui",false,"Show a GUI for parameter adjustment");
 		ArgumentParser s=p;
+		if (withGui) {
+			s = ArgumentDialog.GUIBlock(this,p.subArguments("gui",true));
+		} 
 		for(ITIPLBlock cBlock : blockList) s=cBlock.setParameter(s);
+
 		return s;
 	}
 	@Override
@@ -213,14 +218,16 @@ public class BaseBlockRunner implements IBlockRunner {
 				}
 				blockIndex++;
 			}
-			p = cr.setParameter(p);
+			
+			p = cr.setParameter(p.subArguments("blocknames", true).subArguments("simplenames",true));
+			
 			// code to enable running as a job
 			final boolean runAsJob = p
 					.getOptionBoolean("sge:runasjob",
 							"Run this script as an SGE job (adds additional settings to this task");
 			SGEJob jobToRun = null;
 			if (runAsJob)
-				jobToRun = SGEJob.runAsJob(BaseBlockRunner.class.getName(), p,
+				jobToRun = SGEJob.runAsJob(BaseBlockRunner.class.getName(), p.subArguments("gui",true),
 						"sge:");
 
 			checkHelp(p);

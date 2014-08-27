@@ -389,7 +389,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      */
     @Override
     public Object getPolyImage(int sliceNumber, final int asType) {
-    	if (sliceNumber>=getDim().z) throw new IllegalArgumentException(this.getSampleName()+": Slice requested ("+sliceNumber+") exceeds image dimensions "+getDim());
+    	if ((sliceNumber<0) || (sliceNumber>=getDim().z)) throw new IllegalArgumentException(this.getSampleName()+": Slice requested ("+sliceNumber+") exceeds image dimensions "+getDim());
     	
     	final int zPos = getPos().z + sliceNumber;
 
@@ -397,7 +397,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
     	List<TImgBlock<T>> outSlices =  this.baseImg.lookup(new D3int(getPos().x,getPos().y,zPos));
     	
     	if (outSlices.size()!=1) throw 
-    	new IllegalArgumentException(this.getSampleName()+", lookup failed:"+sliceNumber+" (z:"+zPos+"), of "+getDim()+" of #"+this.baseImg.count()+" blocks");
+    	new IllegalArgumentException(this.getSampleName()+", lookup failed (#"+outSlices.size()+" found):"+sliceNumber+" (z:"+zPos+"), of "+getDim()+" of #"+this.baseImg.count()+" blocks");
     	
     	T curSlice = outSlices.get(0).get();
     	

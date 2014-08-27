@@ -4,12 +4,15 @@
 package tipl.util;
 
 import tipl.blocks.ITIPLBlock;
+import tipl.util.ArgumentList.ArgumentCallback;
 import tipl.util.ArgumentList.RangedArgument;
 import tipl.util.TIPLDialog.GUIControl;
 
 import java.awt.*;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+
+import org.apache.tools.ant.types.Commandline.Argument;
 
 /**
  * A class to render an argument list as a dialog (based on the GenericDialog of
@@ -18,10 +21,10 @@ import java.util.LinkedHashMap;
  * @author mader
  */
 public class ArgumentDialog implements ArgumentList.optionProcessor {
-
+	public static boolean showDialogs = !TIPLGlobal.isHeadless();
     final protected ArgumentList coreList;
     final protected TIPLDialog g;
-    final private LinkedHashMap<String, GUIControl> controls = new LinkedHashMap<String, GUIControl>();
+    final private LinkedHashMap<String, IArgumentBasedControl> controls = new LinkedHashMap<String, IArgumentBasedControl>();
 
     public ArgumentDialog(final ArgumentList inList, final String title,
                           final String helpText) {
@@ -29,34 +32,51 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
         g = new TIPLDialog(title);
         g.addMessage(helpText, null, Color.red);
         inList.processOptions(this);
-        // g.showDialog();
+        if(showDialogs) g.showDialog();
 
     }
-
+    public static <T extends ITIPLBlock> ArgumentParser GUIBlock(final T blockToRun) {
+    	return GUIBlock(blockToRun,TIPLGlobal.activeParser(new String[]{}));
+    }
     /**
-     * Turn a TIPLBlock into a nice GUI
+     * Turn a TIPLBlock into a nice GUI (returning the exact same block)
      *
      * @param blockToRun the intialized block
      * @return the block with setParameter run
      */
-    public static ITIPLBlock GUIBlock(final ITIPLBlock blockToRun) {
-        ArgumentParser args = TIPLGlobal.activeParser(new String[]{});
-        args = blockToRun.setParameter(args);
+    public static <T extends ITIPLBlock> ArgumentParser GUIBlock(final T blockToRun,final ArgumentParser args) {
+        ArgumentParser p = blockToRun.setParameter(args);
         final ArgumentDialog guiArgs = new ArgumentDialog(args,
                 blockToRun.toString(), blockToRun.getInfo().getDesc());
+        
+        p = guiArgs.scrapeDialog();
+        System.out.println(p);
+        return blockToRun.setParameter(p);
 
-        args = TIPLGlobal.activeParser(guiArgs.scrapeDialog());
-        System.out.println(args);
-        blockToRun.setParameter(args);
-
-        return blockToRun;
     }
+    
+   
 
     protected GUIControl addD3Control(final String cName, final D3float cStat,
                                       final String helpText) {
-        addTextControl(helpText + ": " + cName + ".x", cStat.x, "help");
-        addTextControl(cName + ".y", cStat.y, "");
-        return addTextControl(cName + ".z", cStat.z, "");
+    	final GUIControl x = addTextControl(helpText + ": " + cName + ".x", cStat.x, "help");
+        final GUIControl y = addTextControl(cName + ".y", cStat.y, "");
+        final GUIControl z = addTextControl(cName + ".z", cStat.z, "");
+    	return new GUIControl() {
+
+			@Override
+			public String getValueAsString() {
+				return x.getValueAsString()+","+y.getValueAsString()+","+z.getValueAsString();
+			}
+
+			@Override
+			public void setValueCallback(ArgumentCallback iv) {
+				x.setValueCallback(iv);
+				y.setValueCallback(iv);
+				z.setValueCallback(iv);
+			}
+        	
+        };	
     }
 
     protected GUIControl addTextControl(final String cName,
@@ -64,7 +84,45 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
         final GUIControl f = g.appendStringField(cName, cValue.toString());
         return f;
     }
+    /**
+     * Allow the controls to store the original argument
+     * @author mader
+     *
+     */
+    public static interface IArgumentBasedControl extends GUIControl {
+    	/** 
+    	 * 
+    	 * @return the argument value stored in the control
+    	 */
+    	public ArgumentList.Argument getArgument();
+    	
+    }
+    /** 
+     * A basic model for the argument based controls
+     * @author mader
+     *
+     */
+    public static class ArgumentBasedControl implements IArgumentBasedControl {
+    	final private ArgumentList.Argument cArg;
+    	final private GUIControl guiC;
+    	public ArgumentBasedControl(final GUIControl wrapIt,final ArgumentList.Argument curArgument) {
+    		this.guiC = wrapIt;
+    		this.cArg = curArgument;
+    	}
+    	
+		@Override
+		public String getValueAsString() {
+			return guiC.getValueAsString();
+		}
 
+		@Override
+		public void setValueCallback(ArgumentCallback iv) {
+			guiC.setValueCallback(iv);
+		}
+		@Override
+		public ArgumentList.Argument getArgument() { return cArg;} 
+    	
+    }
     protected GUIControl getControl(final ArgumentList.Argument cArgument) {
         final String cName = cArgument.getName();
         final String cHelp = cArgument.getHelpText();
@@ -104,10 +162,13 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
     @Override
     public void process(final ArgumentList.Argument cArgument) {
         final String cName = cArgument.getName();
-        controls.put(cName, getControl(cArgument));
+        controls.put(cName, new ArgumentBasedControl(getControl(cArgument),cArgument));
     }
-
-    public String[] scrapeDialog() {
+    /**
+     * Gets all the values and puts them into a command line string
+     * @return
+     */
+    public String[] scrapeDialogAsString() {
         String curArgs = "";
         for (final String objName : controls.keySet())
             curArgs += " -" + objName + "="
@@ -115,6 +176,20 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
         final String[] outArgs = curArgs.split(" ");
         return Arrays.copyOfRange(outArgs, 1, outArgs.length);
     }
+    /**
+     * Gets all of the values and puts them into an argumentparser object
+     * @return
+     */
+    public ArgumentParser scrapeDialog() {
+    	ArgumentParser newAp = new ArgumentParser(coreList);
+    	for (final String objName : controls.keySet()) {
+    		IArgumentBasedControl aControl = controls.get(objName);
+    		// make a copy of the argument but insert the value from the textbox / control
+    		newAp.putArg(objName, aControl.getArgument().cloneWithNewValue(aControl.getValueAsString()));
+    	}
+    	return newAp;
+    }
+    
 
     public void show() {
         g.showDialog();

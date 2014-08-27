@@ -16,6 +16,7 @@ import net.java.sezpoz.Indexable;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.tools.Resize;
+import tipl.util.ArgumentDialog;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.SGEJob;
@@ -236,6 +237,8 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 		ArgumentParser p = TIPLGlobal.activeParser(args);
 		final String blockname = p.getOptionString("blockname", "",
 				"Class name of the block to run");
+		final boolean withGui = p.getOptionBoolean("gui",false,"Show a GUI for parameter adjustment");
+		
 		// black magic
 		if (blockname.length() > 0) {
 			ITIPLBlock cBlock = null;
@@ -260,14 +263,20 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 				throw new IllegalArgumentException("Block Class:" + blockname
 						+ " could not be created, sorry!");
 			}
+			if (withGui) {
+				p = ArgumentDialog.GUIBlock(cBlock,p.subArguments("gui",true));
+			} 
+			
 			p = cBlock.setParameter(p);
+			
+			
 			// code to enable running as a job
 			final boolean runAsJob = p
 					.getOptionBoolean("sge:runasjob",
 							"Run this script as an SGE job (adds additional settings to this task");
 			SGEJob jobToRun = null;
 			if (runAsJob)
-				jobToRun = SGEJob.runAsJob(BaseTIPLBlock.class.getName(), p,
+				jobToRun = SGEJob.runAsJob(BaseTIPLBlock.class.getName(), p.subArguments("gui",true),
 						"sge:");
 
 			checkHelp(p);

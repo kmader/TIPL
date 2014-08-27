@@ -52,7 +52,7 @@ object ImageTools {
     val origblock = pvec._2
     
     for (z <- -up.z to up.z)
-      yield (new D3int((pos.x*up.x)/dn.x, (pos.y*up.y)/dn.y, ((pos.z + z)*up.z)/dn.z), origblock)
+      yield (new D3int(pos.x, pos.y, pos.z), origblock)
   }
   def cl_merge_voxels[T](a: ((Long, T), Boolean), b: ((Long, T), Boolean)): ((Long, T), Boolean) = {
     (

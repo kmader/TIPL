@@ -134,8 +134,8 @@ object SFilterScale {
   
   def partBasedFilterReduce(inSpreadImg: List[(D3int,TImgBlock[Array[Double]])],
       upWindSize: D3int,
-      filt: filterGenerator): (D3int,partialFilter[Array[Double]])
-      = {
+      filt: filterGenerator): 
+      (D3int,partialFilter[Array[Double]]) = {
     val templateImg = inSpreadImg.head
     val sliceLen = templateImg._2.get.length
     // process blocks
