@@ -98,7 +98,7 @@ public class ADTester {
 		assertEquals(p.getOptionDouble("tandy", 0.1, "Test-Help"), 0.1, 0.01);
 		assertEquals(p.getOptionString("david", "nudda", "Test-Help David"),
 				"joey");
-		final ArgumentDialog a = new ArgumentDialog(p, "whaddup",
+		final ArgumentDialog a = ArgumentDialog.newDialog(p, "whaddup",
 				"nohelpforyou");
 		p.checkForInvalid();
 		System.out.println(a.scrapeDialog());

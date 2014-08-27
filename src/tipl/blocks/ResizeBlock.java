@@ -1,7 +1,9 @@
 package tipl.blocks;
 
+import ij.ImageListener;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.gui.Roi;
 import ij.gui.StackWindow;
 
 import java.awt.event.MouseEvent;
@@ -10,11 +12,13 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
 import tipl.formats.TImg;
+import tipl.ij.TImgToImagePlus;
 import tipl.ij.TImgToImageStack;
 import tipl.tools.Resize;
 import tipl.util.ArgumentDialog;
 import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
+import tipl.util.D3int;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.TImgTools;
 
@@ -91,161 +95,10 @@ public class ResizeBlock extends BaseTIPLBlock {
 		
 	}
 
-	public void resizeGUI(final ArgumentParser p) {
-		p.getOptionBoolean("showslice",false,
-				"Show the slice and select the region using the ROI tool",
-				new ArgumentList.ArgumentCallback() {
-
-					@Override
-					public Object valueSet(final Object value) {
-						final String cValue = value.toString();
-						if (Boolean.parseBoolean(cValue))
-							showSlicePreview();
-						return value;
-					}
-
-				});
-		final ArgumentDialog a = new ArgumentDialog(p, "Resize Block GUI",
-				"Set the appropriate parameters for the Resize GUI");
-
-		a.nbshow();
-
-		// final TImg inputAim =
-		// TImgTools.ReadTImg(getFileParameter("input"),true, true);
-		// ImagePlus curImage=TImgToImagePlus.MakeImagePlus(inputAim);
-		// ImageStack curStack=curImage.getImageStack();
-	}
-
 	@Override
 	public ArgumentParser setParameterBlock(final ArgumentParser p) {
 		final ArgumentParser t = fs.setParameter(p, prefix);
-		if (t.getOptionBoolean("gui", "Use a GUI to set the parameters"))
-			resizeGUI(t);
-
 		return t;
 	}
-
-	public void showSlicePreview() {
-		final TImg inputAim = TImgTools.ReadTImg(getFileParameter("input"),
-				true, true);
-
-		final ImageStack curStack = TImgToImageStack.MakeImageStack(inputAim);
-		final ImagePlus curImage = new ImagePlus(getFileParameter("input"),
-				curStack);
-
-		System.out.println(curImage.getTitle());
-		final StackWindow curWindow = new StackWindow(curImage);
-		curImage.draw();
-
-		// final Roi newROI=new ij.gui.PolygonRoi(4,4,curImage);
-
-		curWindow.addMouseListener(new MouseListener() {
-			// Only worry about the clicks everything else is a waste of time
-			@Override
-			public void mouseClicked(final MouseEvent arg0) {
-				System.out.println("Mouse Clicked: x=" + arg0.getX() + ", y="
-						+ arg0.getY());
-				System.out.println("ROI:" + curImage.getRoi());
-			}
-
-			@Override
-			public void mouseEntered(final MouseEvent arg0) {
-				// TODO Auto-generated method stub
-			}
-
-			@Override
-			public void mouseExited(final MouseEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mousePressed(final MouseEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mouseReleased(final MouseEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-		});
-		final Object lock = new Object();
-		final Thread t = new Thread() {
-			@Override
-			public void run() {
-				synchronized (lock) {
-					while (curWindow.isShowing())
-						try {
-							lock.wait();
-						} catch (final InterruptedException e) {
-							e.printStackTrace();
-						}
-					System.out.println("Working now");
-				}
-			}
-		};
-		t.start();
-
-		curWindow.addWindowListener(new WindowListener() {
-
-			@Override
-			public void windowActivated(final WindowEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void windowClosed(final WindowEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void windowClosing(final WindowEvent arg0) {
-				// TODO Auto-generated method stub
-
-				synchronized (lock) {
-					curWindow.hide();
-					lock.notify();
-				}
-
-			}
-
-			@Override
-			public void windowDeactivated(final WindowEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void windowDeiconified(final WindowEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void windowIconified(final WindowEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void windowOpened(final WindowEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-		});
-
-		try {
-			t.join();
-		} catch (final InterruptedException e) {
-			e.printStackTrace();
-		}
-
-	}
-
+	
 }

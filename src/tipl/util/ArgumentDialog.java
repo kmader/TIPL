@@ -26,7 +26,13 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
     final protected TIPLDialog g;
     final private LinkedHashMap<String, IArgumentBasedControl> controls = new LinkedHashMap<String, IArgumentBasedControl>();
 
-    public ArgumentDialog(final ArgumentList inList, final String title,
+    
+    public static ArgumentDialog newDialog(final ArgumentList inList, final String title,
+                          final String helpText) {
+    	return new ArgumentDialog(inList,title,helpText);
+    }
+    
+    protected ArgumentDialog(final ArgumentList inList, final String title,
                           final String helpText) {
         coreList = inList;
         g = new TIPLDialog(title);
@@ -35,6 +41,17 @@ public class ArgumentDialog implements ArgumentList.optionProcessor {
         if(showDialogs) g.showDialog();
 
     }
+    
+    protected ArgumentDialog(final ArgumentList inList, final String title,
+            final String helpText, final Frame parent) {
+    	coreList = inList;
+    	g = new TIPLDialog(title,parent);
+    	g.addMessage(helpText, null, Color.red);
+    	inList.processOptions(this);
+    	if(showDialogs) g.showDialog();
+    }
+    
+    
     public static <T extends ITIPLBlock> ArgumentParser GUIBlock(final T blockToRun) {
     	return GUIBlock(blockToRun,TIPLGlobal.activeParser(new String[]{}));
     }
