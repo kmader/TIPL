@@ -12,6 +12,7 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.broadcast.Broadcast;
+
 import scala.Tuple2;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
@@ -72,7 +73,7 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
     public static void testFunc(ArgumentParser p) {
         int boxSize = p.getOptionInt("boxsize", 8, "The dimension of the image used for the analysis");
         int layerWidth = p.getOptionInt("width", boxSize / 4, "The width of the layer used for the analysis");
-        String writeIt = p.getOptionPath("out", "", "write image as output file");
+        ArgumentList.TypedPath writeIt = p.getOptionPath("out", "", "write image as output file");
 
         final TImgRO testImg = TestPosFunctions.wrapIt(boxSize,
                 new TestPosFunctions.SphericalLayeredImage(boxSize / 2, boxSize / 2, boxSize / 2, 0, 1, layerWidth));

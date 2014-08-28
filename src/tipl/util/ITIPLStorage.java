@@ -74,7 +74,7 @@ public interface ITIPLStorage {
 	 * @param path
 	 * @return
 	 */
-	public TImg readTImg(final String path);
+	public TImg readTImg(final ArgumentList.TypedPath path);
 	/**
 	 * Read an image and save it to the global cache for later retrieval (must
 	 * then be manually deleted)
@@ -86,7 +86,7 @@ public interface ITIPLStorage {
 	 *            put the image into the cache after it has been read
 	 * @return loaded image
 	 */
-	public TImg readTImg(final String path,boolean readFromCache,boolean saveToCache);
+	public TImg readTImg(final ArgumentList.TypedPath path,boolean readFromCache,boolean saveToCache);
 	/**
 	 * write an image file
 	 * @param outImg
@@ -104,7 +104,7 @@ public interface ITIPLStorage {
 	 * @param IisSigned
 	 */
 	@Deprecated
-	public boolean writeTImg(final TImgRO inImg, final String outpath,
+	public boolean writeTImg(final TImgRO inImg, final ArgumentList.TypedPath outpath,
 			final int outType, final float scaleVal, final boolean IisSigned,boolean saveToCache);
 		
 	/**

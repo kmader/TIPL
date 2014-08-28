@@ -70,26 +70,26 @@ public class UFEM implements Runnable {
     public final int UFEM_MASKDIST = 1;
     public final int UFEM_LACUNDIST = 3;
     public final int LASTSTAGE = 23;
-    protected final String ufiltAimFile;
-    protected final String gfiltAimFile;
-    protected final String threshAimFile;
-    protected final String boneAimFile;
-    protected final String maskAimFile;
-    protected final String porosAimFile;
-    protected final String maskdistAimFile;
-    protected final String thickmapAimFile;
-    protected final String lmaskAimFile;
-    protected final String cmaskAimFile;
-    protected final String comboAimFile;
-    protected final String lacunAimFile;
-    protected final String canalAimFile;
-    protected final String lacunVolsAimFile;
-    protected final String lacunDistAimFile;
-    protected final String canalVolsAimFile;
-    protected final String canalDistAimFile;
-    protected final String cdtoAimFile;
-    protected final String cdtbAimFile;
-    protected final String mdtoAimFile;
+    protected final ArgumentList.TypedPath ufiltAimFile;
+    protected final ArgumentList.TypedPath gfiltAimFile;
+    protected final ArgumentList.TypedPath threshAimFile;
+    protected final ArgumentList.TypedPath boneAimFile;
+    protected final ArgumentList.TypedPath maskAimFile;
+    protected final ArgumentList.TypedPath porosAimFile;
+    protected final ArgumentList.TypedPath maskdistAimFile;
+    protected final ArgumentList.TypedPath thickmapAimFile;
+    protected final ArgumentList.TypedPath lmaskAimFile;
+    protected final ArgumentList.TypedPath cmaskAimFile;
+    protected final ArgumentList.TypedPath comboAimFile;
+    protected final ArgumentList.TypedPath lacunAimFile;
+    protected final ArgumentList.TypedPath canalAimFile;
+    protected final ArgumentList.TypedPath lacunVolsAimFile;
+    protected final ArgumentList.TypedPath lacunDistAimFile;
+    protected final ArgumentList.TypedPath canalVolsAimFile;
+    protected final ArgumentList.TypedPath canalDistAimFile;
+    protected final ArgumentList.TypedPath cdtoAimFile;
+    protected final ArgumentList.TypedPath cdtbAimFile;
+    protected final ArgumentList.TypedPath mdtoAimFile;
     private final boolean runAsJob;
     private final SGEJob jobToRun;
     protected TImg ufiltAim = null;
@@ -493,7 +493,7 @@ public class UFEM implements Runnable {
     }
 
     protected static void makeProfiles(final TImg datAim, final TImg mskAim,
-                                       final String fileroot) {
+                                       final ArgumentList.TypedPath fileroot) {
         GrayAnalysis.StartThetaCylProfile(datAim, mskAim, fileroot + "_th.txt",
                 0.1f);
         GrayAnalysis.StartZProfile(datAim, mskAim, fileroot + "_z.txt", 0.1f);

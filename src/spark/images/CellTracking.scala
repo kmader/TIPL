@@ -60,7 +60,7 @@ object CellTracking {
     val sc = SparkGlobal.getContext("CellTrackingTool").sc
 
     // read in a directory of tiffs (as a live stream)
-    val tiffSlices = sc.tiffFolder(settings.imgPath)
+    val tiffSlices = sc.tiffFolder(settings.imgPath.getPath)
 
     // read the number from the filename
     val parseFilename = "(.*)DAPI([0-9]*)[.]tif".r

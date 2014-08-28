@@ -43,36 +43,36 @@ public class UFOAM {
     public final int LASTSTAGE = 11;
     private final boolean runAsJob;
     ArgumentParser p;
-    String ufiltAimFile;
+    ArgumentList.TypedPath ufiltAimFile;
     TImg ufiltAim = null;
-    String outputDirectory;
-    String floatAimFile;
+    ArgumentList.TypedPath outputDirectory;
+    ArgumentList.TypedPath floatAimFile;
     TImg floatAim = null;
-    String threshoutAimFile;
+    ArgumentList.TypedPath threshoutAimFile;
     TImg threshoutAim = null;
-    String platAimFile;
+    ArgumentList.TypedPath platAimFile;
     TImg platAim = null;
-    String maskAimFile;
+    ArgumentList.TypedPath maskAimFile;
     TImg maskAim = null;
-    String bubblesAimFile;
+    ArgumentList.TypedPath bubblesAimFile;
     TImg bubblesAim = null;
-    String distmapAimFile;
+    ArgumentList.TypedPath distmapAimFile;
     TImg distmapAim = null;
-    String bubbleseedsAimFile;
+    ArgumentList.TypedPath bubbleseedsAimFile;
     TImg bubbleseedsAim = null;
-    String labelsAimFile;
+    ArgumentList.TypedPath labelsAimFile;
     TImg labelsAim = null;
-    String bubblelabelsAimFile;
+    ArgumentList.TypedPath bubblelabelsAimFile;
     TImg bubblelabelsAim = null;
-    String thickmapAimFile;
+    ArgumentList.TypedPath thickmapAimFile;
     TImg thickmapAim = null;
-    String rdfAimFile;
+    ArgumentList.TypedPath rdfAimFile;
     TImg rdfAim = null;
-    String curveAimFile;
+    ArgumentList.TypedPath curveAimFile;
     TImg curveAim = null;
-    String labelnhAimFile;
+    ArgumentList.TypedPath labelnhAimFile;
     TImg labelnhAim;
-    String ridgeAimFile;
+    ArgumentList.TypedPath ridgeAimFile;
     String clporCsv;
     int threshVal, closeIter, closeNH, openIter, openNH, dilNH,
             downsampleFactor, upsampleFactor, startingStage, minVolumeDef,
@@ -121,24 +121,24 @@ public class UFOAM {
         floatAimFile = p.getOptionString("floatout", "",
                 "Post-resampling and filtering image");
         threshoutAimFile = p
-                .getOptionString("threshout", "", "Thresheld image");
-        maskAimFile = p.getOptionString("mask", "", "Input mask");
-        platAimFile = p.getOptionString("plat", "", "Plateau border image");
-        bubblesAimFile = p.getOptionString("bubbles", "", "Bubble image");
+                .getOptionPath("threshout", "", "Thresheld image");
+        maskAimFile = p.getOptionPath("mask", "", "Input mask");
+        platAimFile = p.getOptionPath("plat", "", "Plateau border image");
+        bubblesAimFile = p.getOptionPath("bubbles", "", "Bubble image");
 
-        distmapAimFile = p.getOptionString("distmap", "",
+        distmapAimFile = p.getOptionPath("distmap", "",
                 "Plat Distance map image");
 
-        bubbleseedsAimFile = p.getOptionString("bubbleseeds", "",
+        bubbleseedsAimFile = p.getOptionPath("bubbleseeds", "",
                 "Bubble seeds");
-        labelsAimFile = p.getOptionString("labels", "", "Bubble labels");
-        bubblelabelsAimFile = p.getOptionString("bubblelabels", "",
+        labelsAimFile = p.getOptionPath("labels", "", "Bubble labels");
+        bubblelabelsAimFile = p.getOptionPath("bubblelabels", "",
                 "Filled bubble labels");
-        thickmapAimFile = p.getOptionString("thickmap", "", "Thickness map");
+        thickmapAimFile = p.getOptionPath("thickmap", "", "Thickness map");
         ridgeAimFile = p
-                .getOptionString("ridge", "", "Ridge for thickness map");
+                .getOptionPath("ridge", "", "Ridge for thickness map");
         // RDF
-        rdfAimFile = p.getOptionString("rdf", "rdf.tif",
+        rdfAimFile = p.getOptionPath("rdf", "rdf.tif",
                 "Radial Distribution Function Output");
         rdfMILmode = p
                 .getOptionBoolean("rdfmil",
@@ -148,9 +148,9 @@ public class UFOAM {
         rdfIter = p.getOptionInt("rdfiter", rdfSize * 1000,
                 "Iterations to perform");
         // Curvature
-        curveAimFile = p.getOptionString("curvature", "curvature.tif",
+        curveAimFile = p.getOptionPath("curvature", "curvature.tif",
                 "Curvature Output");
-        labelnhAimFile = p.getOptionString("neighbors", "neighbors.tif",
+        labelnhAimFile = p.getOptionPath("neighbors", "neighbors.tif",
                 "Neighbor Count Image");
         clporCsv = p.getOptionString("csv", "clpor",
                 "Output shape analysis file (auto .csv)");

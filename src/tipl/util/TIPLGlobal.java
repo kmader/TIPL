@@ -147,7 +147,7 @@ public class TIPLGlobal {
      * @return
      */
     public static ArgumentParser activeParser(ArgumentParser sp) {
-        VirtualAim.scratchDirectory = sp.getOptionString("@localdir",
+        VirtualAim.scratchDirectory = sp.getOptionPath("@localdir",
                 VirtualAim.scratchDirectory, "Directory to save local data to");
         VirtualAim.scratchLoading = sp.getOptionBoolean("@local", VirtualAim.scratchLoading, "Load image data from local filesystems");
         TIPLGlobal.availableCores = sp.getOptionInt("@maxcores",
@@ -277,14 +277,15 @@ public class TIPLGlobal {
         }
 
     }
-
+    
     /**
      * Utility Function Section
      */
 
-    public static void copyFile(final String sourceFile, final String destFile) {
-        try {
-            copyFile(new File(sourceFile), new File(destFile));
+    public static void copyFile(final ArgumentList.TypedPath sourceFile, final ArgumentList.TypedPath destFile) {
+        if (!sourceFile.isLocal() || !destFile.isLocal()) throw new IllegalArgumentException("Both source and destination files must be local for copy function to work:"+sourceFile.summary()+" -> "+destFile.summary());
+    	try {
+            copyFile(new File(sourceFile.getPath()), new File(destFile.getPath()));
         } catch (final Exception e) {
             e.printStackTrace();
             System.out.println("Copy file failed (disk full?) " + sourceFile
@@ -292,16 +293,26 @@ public class TIPLGlobal {
             TIPLGlobal.runGC();
         }
     }
+    
+    public static void copyFile(final String sourceFile, final String destFile) {
+       copyFile(new ArgumentList.TypedPath(sourceFile),new ArgumentList.TypedPath(destFile));
+    }
 
-    public static boolean DeleteFile(final String file) {
+    public static boolean DeleteFile(final ArgumentList.TypedPath file) {
         return DeleteFile(file, "Unk");
+    }
+    @Deprecated
+    public static boolean DeleteFile(final String file) {
+        return DeleteFile(new ArgumentList.TypedPath(file), "Unk");
     }
 
     /**
      * Delete files
      */
-    public static boolean DeleteFile(final String file, final String whoDel) {
-        final File f1 = new File(file);
+    public static boolean DeleteFile(final ArgumentList.TypedPath file, final String whoDel) {
+    	if (!file.isLocal()) throw new IllegalArgumentException("File must be local for delete function to work:"+file.summary());
+    	
+    	final File f1 = new File(file.getPath());
         final boolean success = f1.delete();
         if (!success) {
             System.out.println(whoDel + "\t" + "ERROR:" + file
@@ -317,7 +328,9 @@ public class TIPLGlobal {
      * A function to register the current filename as a temporary file that
      * should be delated when the runtime finishes
      */
-    public static void DeleteTempAtFinish(final String delName) {
+    public static void DeleteTempAtFinish(final ArgumentList.TypedPath delName) {
+    	if (!delName.isLocal()) throw new IllegalArgumentException("File must be local for delete function to work:"+delName.summary());
+    	
         curRuntime.addShutdownHook(new Thread() {
             public boolean MyDeleteFile(final String file, final String whoDel) {
                 final File f1 = new File(file);

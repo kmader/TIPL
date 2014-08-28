@@ -954,10 +954,13 @@ public class TImgTools {
 		 outData.appendProcLog(inData.getProcLog());
 		 outData.setShortScaleFactor(inData.getShortScaleFactor());
 	 }
-
+	 @Deprecated
 	 public static TImg ReadTImg(final String path) {
+		return ReadTImg(new ArgumentList.TypedPath(path));
+	 }
+	 public static TImg ReadTImg(final ArgumentList.TypedPath path) {
 		 TImg outImg = getStorage().readTImg(path);
-		 TIPLGlobal.getUsage().registerImage(path, outImg.getDim().toString(), "read");
+		 TIPLGlobal.getUsage().registerImage(path.getPath(), outImg.getDim().toString(), "read");
 		 return outImg;
 	 }
 
@@ -969,7 +972,7 @@ public class TImgTools {
 	  * @param imgType     the type of the image
 	  * @return the object containing the slice as whatever it should be
 	  */
-	 public static Object ReadTImgSlice(final String path, final int sliceNumber, final int imgType) {
+	 public static Object ReadTImgSlice(final ArgumentList.TypedPath path, final int sliceNumber, final int imgType) {
 		 assert (isValidType(imgType));
 		 return ReadTImg(path, true, true).getPolyImage(sliceNumber, imgType);
 	 }
@@ -983,11 +986,26 @@ public class TImgTools {
 	  * @param saveToCache   put the image into the cache after it has been read
 	  * @return loaded image
 	  */
-	 public static TImg ReadTImg(final String path, final boolean readFromCache,
+	 public static TImg ReadTImg(final ArgumentList.TypedPath path, final boolean readFromCache,
 			 final boolean saveToCache) {
 		 TImg outImg = getStorage().readTImg(path, readFromCache, saveToCache);
-		 TIPLGlobal.getUsage().registerImage(path, outImg.getDim().toString(), "read");
+		 TIPLGlobal.getUsage().registerImage(path.toString(), outImg.getDim().toString(), "read");
 		 return outImg;
+	 }
+	 
+	 /**
+	  * Read an image and save it to the global cache for later retrival (must
+	  * then be manually deleted)
+	  *
+	  * @param path
+	  * @param readFromCache check the cache to see if the image is already present
+	  * @param saveToCache   put the image into the cache after it has been read
+	  * @return loaded image
+	  */
+	 @Deprecated
+	 public static TImg ReadTImg(final String path, final boolean readFromCache,
+			 final boolean saveToCache) {
+		 return ReadTImg(new ArgumentList.TypedPath(path), readFromCache, saveToCache);
 	 }
 
 	 public static boolean RemoveTImgFromCache(final String path) {
@@ -1080,9 +1098,9 @@ public class TImgTools {
 	  * @param toCache   should the output value be cached
 	  */
 	 @Deprecated
-	 public static void WriteTImg(final TImgRO inImg, final String outpath,
+	 public static void WriteTImg(final TImgRO inImg, final ArgumentList.TypedPath outpath,
 			 final int outType, final float scaleVal, final boolean IisSigned, final boolean toCache) {
-		 TIPLGlobal.getUsage().registerImage(outpath, inImg.getDim().toString(), inImg + ", " + outType);
+		 TIPLGlobal.getUsage().registerImage(outpath.getPath(), inImg.getDim().toString(), inImg + ", " + outType);
 
 		 getStorage().writeTImg(inImg, outpath, outType, scaleVal, IisSigned, toCache);
 	 }

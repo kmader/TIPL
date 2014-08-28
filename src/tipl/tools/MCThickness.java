@@ -3,6 +3,7 @@ package tipl.tools;
 import java.util.Random;
 
 import tipl.formats.TImg;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
@@ -40,7 +41,7 @@ public class MCThickness extends Thickness {
 	 * @param histoFile
 	 *            the name of the csv histogram file to write
 	 */
-	public static boolean DTO(final String inAimFile, final String outAimFile,
+	public static boolean DTO(final ArgumentList.TypedPath inAimFile, final ArgumentList.TypedPath outAimFile,
 			final String histoFile) {
 		final TImg thickmapAim = DTO(TImgTools.ReadTImg(inAimFile));
 		TImgTools.WriteTImg(thickmapAim,outAimFile);
@@ -75,10 +76,10 @@ public class MCThickness extends Thickness {
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 		ArgumentParser p =TIPLGlobal.activeParser(args);
 		final ITIPLPluginIO myThick = new MCThickness();
-		final String inputFile = p.getOptionString("input", "",
+		final ArgumentList.TypedPath inputFile = p.getOptionPath("input", "",
 				"Input distance map image");
 		p = myThick.setParameter(p, "");
-		final String outputFile = p.getOptionString("output", "thickmap.tif",
+		final ArgumentList.TypedPath outputFile = p.getOptionPath("output", "thickmap.tif",
 				"Output thickness image");
 		if (p.hasOption("?")) {
 			System.out.println("Thickness v" + kVer);

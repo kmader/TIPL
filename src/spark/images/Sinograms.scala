@@ -27,7 +27,7 @@ object SinogramCommon {
   def getParameters(args: Array[String]) = {
     val p = SparkGlobal.activeParser(args)
     val imgPath = p.getOptionPath("tif", "./", "Directory with tiff projections, dark, and flat field images")
-    val imgSuffix = p.getOptionPath("suffix", ".tif", "Suffix to be added to image path *.sss to find the image files")
+    val imgSuffix = p.getOptionString("suffix", ".tif", "Suffix to be added to image path *.sss to find the image files")
 
     val savePath = p.getOptionPath("save", imgPath, "Directory for output")
     val checkpointResults = p.getOptionBoolean("checkpoint", false, "Write intermediate results as output")

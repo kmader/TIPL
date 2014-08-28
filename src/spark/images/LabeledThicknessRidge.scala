@@ -43,7 +43,7 @@ object LabeledThicknessRidge {
 	  // We want the bubble labels and the skeleton labels (subpores within pores)
 	  val dclRidge = ImageTools.compLabeling(compLabeledRidge)
 	  // x, y, z, pore group, pore subgroup, thickness
-	  dclRidge.map{pvec => pvec._1.x+","+pvec._1.y+","+pvec._1.z+","+pvec._2._2._1+","+pvec._2._1+","+pvec._2._2._2}.saveAsTextFile(savePath)
+	  dclRidge.map{pvec => pvec._1.x+","+pvec._1.y+","+pvec._1.z+","+pvec._2._2._1+","+pvec._2._1+","+pvec._2._2._2}.saveAsTextFile(savePath.getPath)
 	}
 	def maskImage(mask: TImgRO, value: TImgRO,asType: Int = TImgTools.IMAGETYPE_FLOAT): TImgRO = {
 	  new FNImage(Array(mask,value),asType,new FNImage.MaskImage(0))

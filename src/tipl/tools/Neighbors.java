@@ -58,23 +58,22 @@ public class Neighbors extends BaseTIPLPluginIO {
     }
 
     public static void main(final String[] args) {
-        final String kVer = "120105_001";
+        final String kVer = "140828_002";
         System.out.println(" Neighborhood Script v" + kVer);
         System.out.println(" Counts neighbors for each object and voxel v"
                 + kVer);
         System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
         final Neighbors nbor = new Neighbors();
         final ArgumentParser p = TIPLGlobal.activeParser(args);
-        final String labelsAim = p.getOptionString("labels", "",
+        final ArgumentList.TypedPath labelsAim = p.getOptionPath("labels", "",
                 "Input labeled image");
-        final String countimageAim = p.getOptionString("countimage", "",
+        final ArgumentList.TypedPath countimageAim = p.getOptionPath("countimage", "",
                 "Output neighbor count image");
-        final String voxcountimageAim = p.getOptionString("voximage", "",
+        final ArgumentList.TypedPath voxcountimageAim = p.getOptionPath("voximage", "",
                 "Output voxel neighbor count image");
         final String outCSV = p.getOptionString("csv", "",
                 "Output neighbor edge file");
-        // D3int nSize = p.getOptionD3int("neighborsize",new
-        // D3int(1,1,1),"Neighborhood size (1,1,1) = (N27)");
+        
         nbor.setParameter(p);
 
         if (p.hasOption("?")) {
@@ -106,7 +105,7 @@ public class Neighbors extends BaseTIPLPluginIO {
             if (voxcountimageAim.length() > 0) {
 
                 System.out.println("Writing voxel counts ...");
-                TImgTools.WriteTImg(nbor.ExportVoxCountImageAim(inputAim), p.getOptionAsString("voximage"), 0, 0, false, false);
+                TImgTools.WriteTImg(nbor.ExportVoxCountImageAim(inputAim), voxcountimageAim, 0, 0, false, false);
 
             }
             if (outCSV.length() > 0) {

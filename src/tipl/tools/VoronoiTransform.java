@@ -2,6 +2,7 @@ package tipl.tools;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
@@ -256,7 +257,7 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO implements IVoro
 	 * @see tipl.tools.IVoronoiTransform#WriteDistanceAim(tipl.formats.TImg, java.lang.String)
 	 */
 	@Override
-	public void WriteDistanceAim(final TImgRO.CanExport templateAim, final String outname) {
+	public void WriteDistanceAim(final TImgRO.CanExport templateAim, final ArgumentList.TypedPath outname) {
 		final TImg newAim = ExportDistanceAim(templateAim);
 		newAim.appendProcLog(procLog);
 		TImgTools.WriteTImg(newAim,outname, 1, (float) distScalar, false,false);
@@ -267,7 +268,7 @@ public abstract class VoronoiTransform extends BaseTIPLPluginIO implements IVoro
 	 */
 	@Override
 	public void WriteVolumesAim(final TImgRO.CanExport templateAim,
-			final String outname) {
+			final ArgumentList.TypedPath outname) {
 		final TImg newAim = ExportVolumesAim(templateAim);
 		newAim.appendProcLog(procLog);
 		TImgTools.WriteTImg(newAim,outname, 1, 1.0f, false,false);

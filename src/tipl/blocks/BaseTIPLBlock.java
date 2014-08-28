@@ -17,6 +17,7 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.tools.Resize;
 import tipl.util.ArgumentDialog;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.SGEJob;
@@ -82,8 +83,8 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	 */
 	protected int maxReadSlices=-1; 
 	protected LinkedHashMap<String, String> blockConnections = new LinkedHashMap<String, String>();
-	final protected LinkedHashMap<String, String> ioParameters = new LinkedHashMap<String, String>();
-	public final static String kVer = "131021_004";
+	final protected LinkedHashMap<String, ArgumentList.TypedPath> ioParameters = new LinkedHashMap<String, ArgumentList.TypedPath>();
+	public final static String kVer = "140828_005";
 
 	protected static void checkHelp(final ArgumentParser p) {
 		if (p.hasOption("?")) {
@@ -388,7 +389,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 
 	@Override
 	@Deprecated
-	public String getFileParameter(final String argument) {
+	public ArgumentList.TypedPath getFileParameter(final String argument) {
 		return ioParameters.get(argument);
 	}
 	
@@ -518,7 +519,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 				p.forceMatchingValues(blockConnections.get(cImage.getName()),
 						getPrefix() + cImage.getName());
 			// otherwise treat it like a normal argument
-			final String oValue = p.getOptionPath(
+			final ArgumentList.TypedPath oValue = p.getOptionPath(
 					getPrefix() + cImage.getName(), cImage.getDefaultValue(),
 					cImage.getDesc()
 							+ ((cImage.isEssential()) ? ", Needed"
@@ -531,7 +532,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 						getPrefix() + cImage.getName());
 
 			// otherwise treat it like a normal argument
-			final String oValue = p.getOptionPath(
+			final ArgumentList.TypedPath oValue = p.getOptionPath(
 					getPrefix() + cImage.getName(), cImage.getDefaultValue(),
 					cImage.getDesc()
 							+ ((cImage.isEssential()) ? ", Needed"

@@ -33,7 +33,7 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
 
   override def setParameter(p: ArgumentParser, prefix: String): ArgumentParser = {
     analysisName = p.getOptionString(prefix + "analysis", analysisName, "Name of analysis")
-    outputName = p.getOptionPath(prefix + "csvname", outputName, "Name of analysis")
+    outputName = p.getOptionString(prefix + "csvname", outputName, "Name of analysis")
     return p
   }
 

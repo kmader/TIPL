@@ -38,7 +38,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
     /**
      * Scratch directory for local-loading
      */
-    public static String scratchDirectory = "/home/scratch/";
+    public static ArgumentList.TypedPath scratchDirectory = "/home/scratch/";
     /**
      * Should the data be copied to scratch first and then read to avoid
      * random-access (tif) to gpfs
@@ -196,7 +196,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
     /**
      * The filename of the actual scratch file used
      */
-    private String scratchFilename = "";
+    private ArgumentList.TypedPath scratchFilename = new ArgumentList.TypedPath("");
     private File[] imglist;
     private int cgLength = -1;
 
@@ -647,17 +647,17 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
                 * activeRaster.getHeight();
         switch (dataType) {
 
-            case 10:
-            case 0: // Char use the interface for short with a different max val
+            case TImgTools.IMAGETYPE_BOOL:
+            case TImgTools.IMAGETYPE_CHAR: // Char use the interface for short with a different max val
                 maxVal = 255;
 
-            case 2: // Int
+            case TImgTools.IMAGETYPE_INT: // Int
                 int[] gi = new int[sliceSize];
                 gi = activeRaster.getPixels(0, 0, activeRaster.getWidth(),
                         activeRaster.getHeight(), gi);
                 return TImgTools.convertArrayType(gi,TImgTools.IMAGETYPE_INT, asType, isSigned,
                         ShortScaleFactor, maxVal);
-            case 3: // Float
+            case TImgTools.IMAGETYPE_FLOAT: // Float
                 float[] gf = new float[sliceSize];
                 gf = activeRaster.getPixels(0, 0, activeRaster.getWidth(),
                         activeRaster.getHeight(), gf);

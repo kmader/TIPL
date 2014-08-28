@@ -74,16 +74,16 @@ public class TIPLStorage implements ITIPLStorage {
 	}
 	
 	@Override
-	public TImg readTImg(final String path) {return readTImg(path,true,true);}
+	public TImg readTImg(final ArgumentList.TypedPath path) {return readTImg(path,true,true);}
 	
-	public TImg readTImg(final String path, final boolean readFromCache,
+	public TImg readTImg(final ArgumentList.TypedPath path, final boolean readFromCache,
 			final boolean saveToCache) {
 		if (readFromCache)
 			if (cachedImages.containsKey(path))
 				return cachedImages.get(path).get();
-		final TImg curImg = new VirtualAim(path);
+		final TImg curImg = new VirtualAim(path.getPath());
 		if (saveToCache)
-			cachedImages.put(path, new ITIPLStorage.StampedObj<TImg>(curImg));
+			cachedImages.put(path.getPath(), new ITIPLStorage.StampedObj<TImg>(curImg));
 		return curImg;
 	}
 	/** 
@@ -147,12 +147,12 @@ public class TIPLStorage implements ITIPLStorage {
 	}
 
 	@Override
-	public boolean writeTImg( TImgRO inImg,  String outpath,
+	public boolean writeTImg( TImgRO inImg,  ArgumentList.TypedPath outpath,
 			 int outType, float scaleVal, boolean IisSigned, boolean saveToCache) {
 		VirtualAim cAim=VirtualAim.TImgToVirtualAim(inImg);
-		cAim.WriteAim(outpath, outType, scaleVal,IisSigned);
+		cAim.WriteAim(outpath.getPath(), outType, scaleVal,IisSigned);
 		if (saveToCache)
-			cachedImages.put(outpath, new ITIPLStorage.StampedObj<TImg>(cAim));
+			cachedImages.put(outpath.toString(), new ITIPLStorage.StampedObj<TImg>(cAim));
 		return true;
 	}
 	@Override
