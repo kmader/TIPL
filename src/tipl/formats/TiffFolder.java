@@ -16,11 +16,11 @@ import java.nio.channels.FileChannel;
 
 import javax.media.jai.PlanarImage;
 
-import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 import com.sun.media.jai.codec.ByteArraySeekableStream;
 import com.sun.media.jai.codec.ImageCodec;
@@ -190,7 +190,7 @@ public class TiffFolder extends DirectoryReader {
 	@DirectoryReader.DReader(name = "tiff")
 	final public static DRFactory readerFactory = new DRFactory() {
 		@Override
-		public DirectoryReader get(final ArgumentList.TypedPath path) {
+		public DirectoryReader get(final TypedPath path) {
 			try {
 				return new TiffFolder(path,tifFilter,"tiff");
 			} catch (final Exception e) {
@@ -223,7 +223,7 @@ public class TiffFolder extends DirectoryReader {
 	@DirectoryReader.DReader(name = "jpeg")
 	final public static DRFactory jpreaderFactory = new DRFactory() {
 		@Override
-		public DirectoryReader get(final ArgumentList.TypedPath path) {
+		public DirectoryReader get(final TypedPath path) {
 			try {
 				return new TiffFolder(path,jpegFilter,"jpeg");
 			} catch (final Exception e) {
@@ -242,7 +242,7 @@ public class TiffFolder extends DirectoryReader {
 	 * operating as a tiff or jpeg folder
 	 */
 	protected final String pluginMode;
-	public TiffFolder(final ArgumentList.TypedPath path,final FileFilter ffilter,final String mode) throws IOException {
+	public TiffFolder(final TypedPath path,final FileFilter ffilter,final String mode) throws IOException {
 		super(path, ffilter, new TiffSliceFactory());
 		pluginMode=mode;
 

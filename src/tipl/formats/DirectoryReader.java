@@ -20,12 +20,12 @@ import java.util.HashMap;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 import net.java.sezpoz.Indexable;
-import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 // Logging
 /**
@@ -43,7 +43,7 @@ public abstract class DirectoryReader implements TReader {
 	}
 
 	public static abstract interface DRFactory {
-		public DirectoryReader get(ArgumentList.TypedPath path);
+		public DirectoryReader get(TypedPath path);
 
 		public FileFilter getFilter();
 	}
@@ -73,7 +73,7 @@ public abstract class DirectoryReader implements TReader {
 	 *            folder path name
 	 * @return best suited directory reader
 	 */
-	public static DirectoryReader ChooseBest(final ArgumentList.TypedPath path) {
+	public static DirectoryReader ChooseBest(final TypedPath path) {
 		HashMap<FileFilter, DRFactory> allFacts;
 		try {
 			allFacts = getAllFactories();
@@ -104,7 +104,7 @@ public abstract class DirectoryReader implements TReader {
 	 * the number of matches for each filter. The filter with the most matches
 	 * is then returned or an exception is thrown
 	 **/
-	public static int FilterCount(final ArgumentList.TypedPath path, final FileFilter cFilter) {
+	public static int FilterCount(final TypedPath path, final FileFilter cFilter) {
 		final File dir = new File(path.getPath());
 		final File[] imglist = dir.listFiles(cFilter);
 		final int zlen = imglist.length;
@@ -121,9 +121,9 @@ public abstract class DirectoryReader implements TReader {
 	public static void main(final ArgumentParser p) {
 		System.out.println("DirectoryReader Tool v" + version);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final ArgumentList.TypedPath inputFile = p.getOptionPath("input", "",
+		final TypedPath inputFile = p.getOptionPath("input", "",
 				"Directory to Convert");
-		final ArgumentList.TypedPath outputFile = p.getOptionPath("output", "test.tif",
+		final TypedPath outputFile = p.getOptionPath("output", "test.tif",
 				"Output File");
 		try {
 			final DirectoryReader cdirReader = ChooseBest(inputFile);
@@ -146,7 +146,7 @@ public abstract class DirectoryReader implements TReader {
 	protected D3int offset = new D3int(0, 0, 0);
 	protected float ShortScaleFactor = 1.0f;
 	private final String procLog = "";
-	final private ArgumentList.TypedPath dirPath;
+	final private TypedPath dirPath;
 
 	final private TSliceFactory tsf;
 	private final boolean signedValue = true;
@@ -154,7 +154,7 @@ public abstract class DirectoryReader implements TReader {
 	private int imageType=-1;
 
 
-	public DirectoryReader(final ArgumentList.TypedPath path, final FileFilter filter,
+	public DirectoryReader(final TypedPath path, final FileFilter filter,
 			final TSliceFactory itsf) throws IOException {
 		dirPath = path;
 		final File dir = new File(path.getPath());
@@ -223,7 +223,7 @@ public abstract class DirectoryReader implements TReader {
 	 * 
 	 * @see tipl.formats.TImg#getPath()
 	 */
-	public ArgumentList.TypedPath getPath() {
+	public TypedPath getPath() {
 		return dirPath;
 	}
 
@@ -379,7 +379,7 @@ public abstract class DirectoryReader implements TReader {
 	 * @see tipl.formats.TReader#SetupReader(java.lang.String)
 	 */
 	@Override
-	public void SetupReader(final ArgumentList.TypedPath inPath) {
+	public void SetupReader(final TypedPath inPath) {
 		// TODO Auto-generated method stub
 
 	}

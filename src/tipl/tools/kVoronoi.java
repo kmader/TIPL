@@ -4,12 +4,12 @@ import java.util.Date;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPlugin;
 import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 // Used as a replacement for the moment function as it allows much more control over data
 // and communication with webservices (potentially?)
@@ -35,13 +35,13 @@ public class kVoronoi extends VoronoiTransform {
 		p.hasOption("debug");
 
 		// Parse the filenames
-		final ArgumentList.TypedPath labelsAimName = p.getOptionPath("labels", "",
+		final TypedPath labelsAimName = p.getOptionPath("labels", "",
 				"Name labeled object input file");
-		final ArgumentList.TypedPath maskAimName = p.getOptionPath("mask", "",
+		final TypedPath maskAimName = p.getOptionPath("mask", "",
 				"Name of the mask output file");
-		final ArgumentList.TypedPath vorVolumesName = p.getOptionPath("vorvols", "",
+		final TypedPath vorVolumesName = p.getOptionPath("vorvols", "",
 				"Name of voronoi volumes output file");
-		final ArgumentList.TypedPath vorDistancesName = p.getOptionPath("vordist", "",
+		final TypedPath vorDistancesName = p.getOptionPath("vordist", "",
 				"Name of voronoi distances output file (distance from label");
 
 		if (p.hasOption("?") || (labelsAimName.length() < 1)) {

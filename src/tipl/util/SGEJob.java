@@ -36,14 +36,14 @@ public class SGEJob {
      */
     protected String argPrefix = "";
     protected int cores = 2;
-    protected ArgumentList.TypedPath logName = new ArgumentList.TypedPath("SGEJob.log");
+    protected TypedPath logName = new TypedPath("SGEJob.log");
     protected String jobName = "TIPLDefaultJob";
     protected String queueName = "all.q";
-    protected ArgumentList.TypedPath qsubPath = new ArgumentList.TypedPath("/gpfs/home/gridengine/sge6.2u5p2/bin/lx26-amd64/qsub");
-    protected ArgumentList.TypedPath tiplPath = new ArgumentList.TypedPath("/afs/psi.ch/project/tipl/jar/");
-    protected ArgumentList.TypedPath sparkJarPath = new ArgumentList.TypedPath( "/afs/psi.ch/project/tipl/spark/lib/spark-assembly-1.0.1-hadoop2.2.0.jar");
-    protected ArgumentList.TypedPath tiplPathBeta = new ArgumentList.TypedPath( "/afs/psi.ch/project/tipl/jar/TIPL_beta.jar");
-    protected ArgumentList.TypedPath javaCmdPath = new ArgumentList.TypedPath("/afs/psi.ch/project/tipl/jvm/bin/java");
+    protected TypedPath qsubPath = new TypedPath("/gpfs/home/gridengine/sge6.2u5p2/bin/lx26-amd64/qsub");
+    protected TypedPath tiplPath = new TypedPath("/afs/psi.ch/project/tipl/jar/");
+    protected TypedPath sparkJarPath = new TypedPath( "/afs/psi.ch/project/tipl/spark/lib/spark-assembly-1.0.1-hadoop2.2.0.jar");
+    protected TypedPath tiplPathBeta = new TypedPath( "/afs/psi.ch/project/tipl/jar/TIPL_beta.jar");
+    protected TypedPath javaCmdPath = new TypedPath("/afs/psi.ch/project/tipl/jvm/bin/java");
     protected String jobToRun = "ls -R *";
     protected boolean waitForJob = false;
     protected boolean includeSGERAM = true;
@@ -305,7 +305,7 @@ public class SGEJob {
      * code to set the defaults to the beamline cluster values
      */
     public void setBeamlineCluster() {
-        qsubPath = new ArgumentList.TypedPath("/gridware/sge/bin/lx24-amd64/qsub");
+        qsubPath = new TypedPath("/gridware/sge/bin/lx24-amd64/qsub");
         includeSGERAM = false;
         queueName = "tomcat_smp_standard.q";
 
@@ -364,7 +364,7 @@ public class SGEJob {
                 .getOptionDouble(argPrefix + "memoryfactor", memoryFactor,
                         "Number of times the image size needed (stored as integer in megabytes)");
 
-        final ArgumentList.TypedPath inFile = p.getOptionPath(argPrefix + "memoryfromaim",
+        final TypedPath inFile = p.getOptionPath(argPrefix + "memoryfromaim",
                 "", "File to use to estimate memory");
         if (inFile.length() > 0)
             setJavaMemory(memEstimate(TImgTools.ReadTImg(inFile).getDim()));

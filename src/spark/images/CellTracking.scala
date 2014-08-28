@@ -20,13 +20,13 @@ import tipl.spark.ShapeAnalysis
 import java.io.BufferedWriter
 import java.io.FileWriter
 import tipl.tools.GrayVoxels
-import tipl.util.ArgumentList
+import tipl.util.TypedPath
 // ~/Dropbox/Informatics/spark/bin/spark-submit --class spark.images.CellTracking --executor-memory 4G --driver-memory 4G /Users/mader/Dropbox/tipl/build/TIPL_core.jar -tif=/Volumes/MacDisk/AeroFS/VardanData/ForKevin_VA/3D/Spheroid2/GFP 
 // sparksubmit --class spark.images.CellTrackingSingle /afs/psi.ch/project/tipl/jar/TIPL_core.jar -tif=/gpfs/home/mader/SpheriodData/3D/Spheroid2/GFP/  -@masternode=spark://merlinc60:7077 -@sparkmemory=5G -cache -threshvalue=5000
 /**
  * Class to hold the basic settings
  */
-@serializable case class CellTrackingSettings(imgPath: ArgumentList.TypedPath, savePath: ArgumentList.TypedPath, checkpointResults: Boolean, cacheInput: Boolean, forcePartitions: Int, maxIters: Int, threshValue: Double)
+@serializable case class CellTrackingSettings(imgPath: TypedPath, savePath: TypedPath, checkpointResults: Boolean, cacheInput: Boolean, forcePartitions: Int, maxIters: Int, threshValue: Double)
 // format for storing image statistics
 @serializable case class cellImstats(min: Double, mean: Double, max: Double)
 /**

@@ -65,13 +65,13 @@ public class Neighbors extends BaseTIPLPluginIO {
         System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
         final Neighbors nbor = new Neighbors();
         final ArgumentParser p = TIPLGlobal.activeParser(args);
-        final ArgumentList.TypedPath labelsAim = p.getOptionPath("labels", "",
+        final TypedPath labelsAim = p.getOptionPath("labels", "",
                 "Input labeled image");
-        final ArgumentList.TypedPath countimageAim = p.getOptionPath("countimage", "",
+        final TypedPath countimageAim = p.getOptionPath("countimage", "",
                 "Output neighbor count image");
-        final ArgumentList.TypedPath voxcountimageAim = p.getOptionPath("voximage", "",
+        final TypedPath voxcountimageAim = p.getOptionPath("voximage", "",
                 "Output voxel neighbor count image");
-        final ArgumentList.TypedPath outCSV = p.getOptionPath("csv", "",
+        final TypedPath outCSV = p.getOptionPath("csv", "",
                 "Output neighbor edge file");
         
         nbor.setParameter(p);
@@ -223,7 +223,7 @@ public class Neighbors extends BaseTIPLPluginIO {
     @Override
     public boolean execute(final String command, final Object cObj) {
         if (command.equalsIgnoreCase("WriteNeighborList"))
-            return WriteNeighborList((ArgumentList.TypedPath) cObj);
+            return WriteNeighborList((TypedPath) cObj);
 
         return super.execute(command, cObj);
     }
@@ -403,7 +403,7 @@ public class Neighbors extends BaseTIPLPluginIO {
      * Write list of neighbors from analysis as a csv file with (obj_a,
      * obj_b,overlapping_voxels) for all obj_a IS_TOUCHING obj_b
      */
-    public boolean WriteNeighborList(final ArgumentList.TypedPath outfileName) {
+    public boolean WriteNeighborList(final TypedPath outfileName) {
         if (!isRun)
             execute();
         System.out.println("Writing EdgeFile..." + outfileName);

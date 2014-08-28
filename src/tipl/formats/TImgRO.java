@@ -1,15 +1,12 @@
 package tipl.formats;
 
-import tipl.util.ArgumentList.TypedPath;
-import tipl.util.ArgumentList;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-
-import tipl.util.ArgumentList.TypedPath;
 
 /**
  * A Read-only TImg (the full TImg is a subinterface of this) useful for
@@ -248,7 +245,7 @@ public interface TImgRO extends TImgTools.HasDimensions, Serializable {
         @Override
         public TypedPath getPath() {
             // TODO Auto-generated method stub
-            return ArgumentList.TypedPath.virtualPath(this.toString());
+            return TypedPath.virtualPath(this.toString());
         }
         
         /* (non-Javadoc)

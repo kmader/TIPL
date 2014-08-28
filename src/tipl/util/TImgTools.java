@@ -956,9 +956,9 @@ public class TImgTools {
 	 }
 	 @Deprecated
 	 public static TImg ReadTImg(final String path) {
-		return ReadTImg(new ArgumentList.TypedPath(path));
+		return ReadTImg(new TypedPath(path));
 	 }
-	 public static TImg ReadTImg(final ArgumentList.TypedPath path) {
+	 public static TImg ReadTImg(final TypedPath path) {
 		 TImg outImg = getStorage().readTImg(path);
 		 TIPLGlobal.getUsage().registerImage(path.getPath(), outImg.getDim().toString(), "read");
 		 return outImg;
@@ -972,7 +972,7 @@ public class TImgTools {
 	  * @param imgType     the type of the image
 	  * @return the object containing the slice as whatever it should be
 	  */
-	 public static Object ReadTImgSlice(final ArgumentList.TypedPath path, final int sliceNumber, final int imgType) {
+	 public static Object ReadTImgSlice(final TypedPath path, final int sliceNumber, final int imgType) {
 		 assert (isValidType(imgType));
 		 return ReadTImg(path, true, true).getPolyImage(sliceNumber, imgType);
 	 }
@@ -986,7 +986,7 @@ public class TImgTools {
 	  * @param saveToCache   put the image into the cache after it has been read
 	  * @return loaded image
 	  */
-	 public static TImg ReadTImg(final ArgumentList.TypedPath path, final boolean readFromCache,
+	 public static TImg ReadTImg(final TypedPath path, final boolean readFromCache,
 			 final boolean saveToCache) {
 		 TImg outImg = getStorage().readTImg(path, readFromCache, saveToCache);
 		 TIPLGlobal.getUsage().registerImage(path.toString(), outImg.getDim().toString(), "read");
@@ -1005,13 +1005,13 @@ public class TImgTools {
 	 @Deprecated
 	 public static TImg ReadTImg(final String path, final boolean readFromCache,
 			 final boolean saveToCache) {
-		 return ReadTImg(new ArgumentList.TypedPath(path), readFromCache, saveToCache);
+		 return ReadTImg(new TypedPath(path), readFromCache, saveToCache);
 	 }
 
 	 public static boolean RemoveTImgFromCache(final String path) {
 		 return getStorage().RemoveTImgFromCache(path);
 	 }
-	 public static boolean RemoveTImgFromCache(final ArgumentList.TypedPath path) {
+	 public static boolean RemoveTImgFromCache(final TypedPath path) {
 		 return getStorage().RemoveTImgFromCache(path.getPath());
 	 }
 
@@ -1060,7 +1060,7 @@ public class TImgTools {
 	  * @param filename path of the saved file
 	  */
 	 public static void WriteBackground(final TImgRO inImg,
-			 final ArgumentList.TypedPath filename) {
+			 final TypedPath filename) {
 		 new Thread(new Runnable() {
 			 @Override
 			 public void run() {
@@ -1080,11 +1080,11 @@ public class TImgTools {
 	  * @param path
 	  * @return success
 	  */
-	 public static boolean WriteTImg(final TImgRO curImg, final ArgumentList.TypedPath path) {
+	 public static boolean WriteTImg(final TImgRO curImg, final TypedPath path) {
 		 return WriteTImg(curImg, path, false);
 	 }
 
-	 public static boolean WriteTImg(final TImgRO curImg, final ArgumentList.TypedPath path,
+	 public static boolean WriteTImg(final TImgRO curImg, final TypedPath path,
 			 final boolean saveToCache) {
 		 TIPLGlobal.getUsage().registerImage(path.getPath(), curImg.getDim().toString(), curImg + "");
 		 return getStorage().writeTImg(curImg, path, saveToCache);
@@ -1101,7 +1101,7 @@ public class TImgTools {
 	  * @param toCache   should the output value be cached
 	  */
 	 @Deprecated
-	 public static void WriteTImg(final TImgRO inImg, final ArgumentList.TypedPath outpath,
+	 public static void WriteTImg(final TImgRO inImg, final TypedPath outpath,
 			 final int outType, final float scaleVal, final boolean IisSigned, final boolean toCache) {
 		 TIPLGlobal.getUsage().registerImage(outpath.getPath(), inImg.getDim().toString(), inImg + ", " + outType);
 

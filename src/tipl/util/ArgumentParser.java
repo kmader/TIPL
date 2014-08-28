@@ -309,13 +309,13 @@ public class ArgumentParser extends ArgumentList {
         return dArg.getValue();
     }
     @Deprecated
-    public ArgumentList.TypedPath getOptionPath(final String inOpt, final String defFilename,
+    public TypedPath getOptionPath(final String inOpt, final String defFilename,
             final String helpString) {
         if (defaultPath.length() < 1)
             if (defFilename.lastIndexOf("//") > 0)
                 defaultPath = defFilename.substring(0,
                         defFilename.lastIndexOf("//") + 1);
-    	return getOptionPath(inOpt,new ArgumentList.TypedPath(defFilename),helpString);
+    	return getOptionPath(inOpt,new TypedPath(defFilename),helpString);
     }
     /**
      * Standard command for getting a path argument from the command line
@@ -324,19 +324,19 @@ public class ArgumentParser extends ArgumentList {
      * @param helpString
      * @return
      */
-    public ArgumentList.TypedPath getOptionPath(final String inOpt, final ArgumentList.TypedPath defFilename,
+    public TypedPath getOptionPath(final String inOpt, final TypedPath defFilename,
                                 final String helpString) {
         final String opt = formatKey(inOpt);
-        ArgumentList.TypedArgument<ArgumentList.TypedPath> cArg;
-        ArgumentList.TypedPath defArgument = new ArgumentList.TypedPath(defaultPath + defFilename);
+        ArgumentList.TypedArgument<TypedPath> cArg;
+        TypedPath defArgument = new TypedPath(defaultPath + defFilename);
         if (hasOption(opt)) {
             
-            cArg = new ArgumentList.TypedArgument<ArgumentList.TypedPath>(getOption(opt),
+            cArg = new ArgumentList.TypedArgument<TypedPath>(getOption(opt),
                     helpString, defArgument, typePathParse);
             // helptext.put(opt,helpString+((defFilename.length()>0) ?
             // ", Default Location (Path:"+defFilename+")" : "(string)"));
         } else {
-            cArg = new ArgumentList.TypedArgument<ArgumentList.TypedPath>(opt, helpString,defArgument,
+            cArg = new ArgumentList.TypedArgument<TypedPath>(opt, helpString,defArgument,
                     typePathParse);
         }
         putArg(opt, cArg);

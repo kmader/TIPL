@@ -10,9 +10,8 @@ import java.util.HashMap;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 import net.java.sezpoz.Indexable;
-import tipl.util.ArgumentList.TypedPath;
-import tipl.util.ArgumentList;
 import tipl.util.TImgBlock;
+import tipl.util.TypedPath;
 
 /**
  * Interface for writing TImg files to a data source on a slice by slice basis
@@ -39,7 +38,7 @@ public interface TSliceWriter extends Serializable {
 		 * @param imgType the type of image to write (default -1)
 		 * @return the instance of the writer, after setup has been run and header written
 		 */
-		public TSliceWriter get(TImgRO imageData,ArgumentList.TypedPath path,int imgType);
+		public TSliceWriter get(TImgRO imageData,TypedPath path,int imgType);
 	}
 	/**
 	 * Since TSliceWriter is an interface and since this isnt java8 I need a subclass to have static functions
@@ -83,7 +82,7 @@ public interface TSliceWriter extends Serializable {
 	}
 
 	/** The command to initialize the writer */
-	public void SetupWriter(TImgRO imgToSave, ArgumentList.TypedPath outputPath, int outType);
+	public void SetupWriter(TImgRO imgToSave, TypedPath outputPath, int outType);
 
 	/** write just the header */
 	public void WriteHeader();

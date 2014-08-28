@@ -9,16 +9,16 @@ import org.junit.Test;
 
 import tipl.formats.TImgRO;
 import tipl.tools.XDF;
-import tipl.util.ArgumentList;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 /**
  * @author mader
  * 
  */
 public class XDFTest {
-	public static final ArgumentList.TypedPath testDir=TIPLTestingLibrary.createTestImage("/Users/mader/Dropbox/TIPL/test/xdf_tests/");
+	public static final TypedPath testDir=TIPLTestingLibrary.createTestImage("/Users/mader/Dropbox/TIPL/test/xdf_tests/");
 	protected static ITIPLPluginIO makeXDF(final TImgRO inImage) {
 		final ITIPLPluginIO XF = new XDF();
 		XF.LoadImages(new TImgRO[] { inImage });

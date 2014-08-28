@@ -20,7 +20,7 @@ import tipl.util.D3int
 import tipl.formats.PureFImage
 import tipl.tests.TestPosFunctions
 import tipl.spark.TypeMacros._
-import tipl.util.ArgumentList
+import tipl.util.TypedPath
 
 /**
  * A spark based code to perform shape analysis similarly to the code provided GrayAnalysis
@@ -198,11 +198,11 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
       ExportDistanceAim(tiEx))
   }
 
-  override def WriteVolumesAim(exObj: TImgRO.CanExport, filename: ArgumentList.TypedPath) = {
+  override def WriteVolumesAim(exObj: TImgRO.CanExport, filename: TypedPath) = {
     TImgTools.WriteTImg(ExportVolumesAim(exObj), filename)
   }
 
-  override def WriteDistanceAim(exObj: TImgRO.CanExport, filename: ArgumentList.TypedPath) = {
+  override def WriteDistanceAim(exObj: TImgRO.CanExport, filename: TypedPath) = {
     TImgTools.WriteTImg(ExportDistanceAim(exObj), filename)
   }
 

@@ -7,7 +7,6 @@ import com.sun.media.jai.codec.*;
 
 import tipl.formats.TiffFolder.TIFSliceReader;
 import tipl.util.*;
-import tipl.util.ArgumentList.TypedPath;
 
 import java.awt.image.RenderedImage;
 import java.io.File;
@@ -25,7 +24,7 @@ public class TiffDirectory implements TImg {
     private final int TAG_ISSIGNED = 994;
     private final File imgFile;
     final private ImageDecoder dec;
-    final private ArgumentList.TypedPath dirPath;
+    final private TypedPath dirPath;
     /**
      * Whether or not to use compression should be used when writing data
      */
@@ -44,7 +43,7 @@ public class TiffDirectory implements TImg {
     private boolean signedValue = true;
     private int imageType;
 
-    public TiffDirectory(final ArgumentList.TypedPath path) throws IOException {
+    public TiffDirectory(final TypedPath path) throws IOException {
         dirPath = path;
         imgFile = new File(path.getPath());
 
@@ -74,9 +73,9 @@ public class TiffDirectory implements TImg {
     public static void main(final ArgumentParser p) {
         System.out.println("TifDirectory Tool v" + VirtualAim.kVer);
         System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-        final ArgumentList.TypedPath inputFile = p.getOptionPath("input", "",
+        final TypedPath inputFile = p.getOptionPath("input", "",
                 "Aim File to Convert");
-        final ArgumentList.TypedPath outputFile = p.getOptionPath("output", "test.tif",
+        final TypedPath outputFile = p.getOptionPath("output", "test.tif",
                 "Aim File to Convert");
         try {
             final TiffDirectory inputAim = new TiffDirectory(inputFile);

@@ -1,9 +1,9 @@
 package tipl.formats;
 
-import tipl.util.ArgumentList.TypedPath;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 /**
  * FImage is simply an image which is a transform (VoxelFunction) of another

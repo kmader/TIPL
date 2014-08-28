@@ -2,9 +2,8 @@ package tipl.formats;
 
 import java.io.Serializable;
 
-import tipl.util.ArgumentList.TypedPath;
-import tipl.util.ArgumentList;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 /**
  * FImage is simply an image which is a transform (VoxelFunction) of another
@@ -122,7 +121,7 @@ public class FImage extends FuncImage {
 
 	@Override
 	public TypedPath getPath() {
-		return ArgumentList.TypedPath.virtualPath(vf.name() + " @ " + templateData.getPath());
+		return TypedPath.virtualPath(vf.name() + " @ " + templateData.getPath());
 	}
 
 	@Override

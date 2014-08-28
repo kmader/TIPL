@@ -43,37 +43,37 @@ public class UFOAM {
     public final int LASTSTAGE = 11;
     private final boolean runAsJob;
     ArgumentParser p;
-    ArgumentList.TypedPath ufiltAimFile;
+    TypedPath ufiltAimFile;
     TImg ufiltAim = null;
-    ArgumentList.TypedPath outputDirectory;
-    ArgumentList.TypedPath floatAimFile;
+    TypedPath outputDirectory;
+    TypedPath floatAimFile;
     TImg floatAim = null;
-    ArgumentList.TypedPath threshoutAimFile;
+    TypedPath threshoutAimFile;
     TImg threshoutAim = null;
-    ArgumentList.TypedPath platAimFile;
+    TypedPath platAimFile;
     TImg platAim = null;
-    ArgumentList.TypedPath maskAimFile;
+    TypedPath maskAimFile;
     TImg maskAim = null;
-    ArgumentList.TypedPath bubblesAimFile;
+    TypedPath bubblesAimFile;
     TImg bubblesAim = null;
-    ArgumentList.TypedPath distmapAimFile;
+    TypedPath distmapAimFile;
     TImg distmapAim = null;
-    ArgumentList.TypedPath bubbleseedsAimFile;
+    TypedPath bubbleseedsAimFile;
     TImg bubbleseedsAim = null;
-    ArgumentList.TypedPath labelsAimFile;
+    TypedPath labelsAimFile;
     TImg labelsAim = null;
-    ArgumentList.TypedPath bubblelabelsAimFile;
+    TypedPath bubblelabelsAimFile;
     TImg bubblelabelsAim = null;
-    ArgumentList.TypedPath thickmapAimFile;
+    TypedPath thickmapAimFile;
     TImg thickmapAim = null;
-    ArgumentList.TypedPath rdfAimFile;
+    TypedPath rdfAimFile;
     TImg rdfAim = null;
-    ArgumentList.TypedPath curveAimFile;
+    TypedPath curveAimFile;
     TImg curveAim = null;
-    ArgumentList.TypedPath labelnhAimFile;
+    TypedPath labelnhAimFile;
     TImg labelnhAim;
-    ArgumentList.TypedPath ridgeAimFile;
-    ArgumentList.TypedPath clporCsv;
+    TypedPath ridgeAimFile;
+    TypedPath clporCsv;
     int threshVal, closeIter, closeNH, openIter, openNH, dilNH,
             downsampleFactor, upsampleFactor, startingStage, minVolumeDef,
             maskContourSteps, porosMaskPeel, rdfSize, rdfIter, ccup, ccdown,
@@ -426,7 +426,7 @@ public class UFOAM {
         }
     }
 
-    public ArgumentList.TypedPath nameVersion(final ArgumentList.TypedPath inName, final int verNumber) {
+    public TypedPath nameVersion(final TypedPath inName, final int verNumber) {
         return inName.append("_" + verNumber + ".csv");
     }
 

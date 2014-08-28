@@ -4,8 +4,8 @@
 package tipl.blocks;
 
 import tipl.formats.TImgRO;
-import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
+import tipl.util.TypedPath;
 
 /**
  * TIPLBlock allows for processing segments to be enclosed into blocks which can
@@ -22,17 +22,17 @@ public interface ITIPLBlock {
 		protected final String name;
 		protected final String desc;
 		protected final boolean isess;
-		protected final ArgumentList.TypedPath dname;
+		protected final TypedPath dname;
 
 		public BlockImage(final String iName, final String iDesc,
 				final boolean essential) {
 			name = iName;
 			desc = iDesc;
 			isess = essential;
-			dname = new ArgumentList.TypedPath("");
+			dname = new TypedPath("");
 		}
 
-		public BlockImage(final String iName, final ArgumentList.TypedPath defName,
+		public BlockImage(final String iName, final TypedPath defName,
 				final String iDesc, final boolean essential) {
 			name = iName;
 			desc = iDesc;
@@ -45,12 +45,12 @@ public interface ITIPLBlock {
 			name = iName;
 			desc = iDesc;
 			isess = essential;
-			dname = new ArgumentList.TypedPath(defName);
+			dname = new TypedPath(defName);
 		}
 		
 
 		@Override
-		public ArgumentList.TypedPath getDefaultValue() {
+		public TypedPath getDefaultValue() {
 			return dname;
 		}
 
@@ -77,7 +77,7 @@ public interface ITIPLBlock {
 		 * 
 		 * @return default filename or path
 		 */
-		public ArgumentList.TypedPath getDefaultValue();
+		public TypedPath getDefaultValue();
 
 		/**
 		 * simple description of the image
@@ -141,7 +141,7 @@ public interface ITIPLBlock {
 	 * @param argument
 	 * @return file/path name
 	 */
-	public ArgumentList.TypedPath getFileParameter(String argument);
+	public TypedPath getFileParameter(String argument);
 	/**
 	 * get an input file (handles loading and everything in a consistent manner and returns null if the image is empty 
 	 * @param argument image argument name

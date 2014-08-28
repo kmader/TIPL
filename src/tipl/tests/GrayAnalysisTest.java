@@ -24,9 +24,9 @@ import static org.junit.Assert.assertEquals;
  */
 public class GrayAnalysisTest {
     final public static String testCSVData = "I am just junk\nCOLA,COLB,COLC\n1,2,3\n4,5,6\n7,8,9\n7,8,9\n";
-    static protected ArgumentList.TypedPath tempFilePathCSV = new ArgumentList.TypedPath("");
-    static protected ArgumentList.TypedPath tempFilePath = new ArgumentList.TypedPath("");
-    static protected ArgumentList.TypedPath tempFilePath2 = new ArgumentList.TypedPath("");
+    static protected TypedPath tempFilePathCSV = new TypedPath("");
+    static protected TypedPath tempFilePath = new TypedPath("");
+    static protected TypedPath tempFilePath2 = new TypedPath("");
     private static boolean doDelete = true;
 
     protected static void showLine(Hashtable<String, String> cLine, int lineNo) {
@@ -39,7 +39,7 @@ public class GrayAnalysisTest {
         System.out.println(lineNo + "\t" + outString);
     }
 
-    protected static int[] checkFile(ArgumentList.TypedPath fileName, boolean verbose) {
+    protected static int[] checkFile(TypedPath fileName, boolean verbose) {
 
         int[] rowCols = new int[2];
         final CSVFile insFile = CSVFile.FromPath(fileName, 2);
@@ -77,7 +77,7 @@ public class GrayAnalysisTest {
         return CL.ExportImages(sImg)[0];
     }
 
-    protected static ITIPLPlugin doLacunaAnalysis(final TImgRO labelImage, final ArgumentList.TypedPath outFile) {
+    protected static ITIPLPlugin doLacunaAnalysis(final TImgRO labelImage, final TypedPath outFile) {
 
 
         ITIPLPlugin cGA = GrayAnalysis.StartLacunaAnalysis(labelImage, outFile, "First Run");
@@ -90,8 +90,8 @@ public class GrayAnalysisTest {
         return cGA;
     }
 
-    static final protected ArgumentList.TypedPath[] tempFiles() {
-        return new ArgumentList.TypedPath[]{tempFilePathCSV, tempFilePath, tempFilePath2};
+    static final protected TypedPath[] tempFiles() {
+        return new TypedPath[]{tempFilePathCSV, tempFilePath, tempFilePath2};
     }
 
     @BeforeClass
@@ -114,7 +114,7 @@ public class GrayAnalysisTest {
      */
     @AfterClass
     public static void deleteTempFiles() {
-        for (ArgumentList.TypedPath cFile : tempFiles()) {
+        for (TypedPath cFile : tempFiles()) {
             if (doDelete) TIPLGlobal.DeleteFile(cFile);
             else System.out.println("Want to delete:: " + cFile);
         }

@@ -228,7 +228,7 @@ public class TImgBlock<V> implements Serializable {
      * @author mader
      */
     static public class TImgBlockFile<Fu> extends TImgBlockFuture<Fu> {
-        protected final ArgumentList.TypedPath fileName;
+        protected final TypedPath fileName;
         protected final int sliceNumber;
         protected final int imgType;
 
@@ -242,7 +242,7 @@ public class TImgBlock<V> implements Serializable {
          * @param dim         the dimension of the block
          * @param offset      the offset of the block
          */
-        public TImgBlockFile(final ArgumentList.TypedPath path, final int sliceNumber, final int imageType, D3int pos, D3int dim, D3int offset) {
+        public TImgBlockFile(final TypedPath path, final int sliceNumber, final int imageType, D3int pos, D3int dim, D3int offset) {
             super(pos, dim, offset);
             this.fileName = path;
             this.sliceNumber = sliceNumber;

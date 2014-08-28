@@ -2,7 +2,6 @@ package tipl.tools;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
@@ -10,6 +9,7 @@ import tipl.util.ITIPLPluginIO;
 import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 /**
  * A plugin to crop, resize, and remove edges from Aim files
@@ -130,12 +130,12 @@ public class Resize extends BaseTIPLPluginMult {
 		System.out.println(" Resizes Aim files based on given criteria");
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 		ArgumentParser p = TIPLGlobal.activeParser(args);
-		final ArgumentList.TypedPath inputFile = p.getOptionPath("input", "",
+		final TypedPath inputFile = p.getOptionPath("input", "",
 				"Input masked image");
-		final ArgumentList.TypedPath matchFile = p.getOptionPath("mask", "",
+		final TypedPath matchFile = p.getOptionPath("mask", "",
 				"Matching masked image");
 		final ITIPLPluginIO RS = new Resize();
-		final ArgumentList.TypedPath outputFile = p.getOptionPath("output", "resized.tif",
+		final TypedPath outputFile = p.getOptionPath("output", "resized.tif",
 				"Output resized image");
 		p = RS.setParameter(p, "");
 		if (p.hasOption("?")) {

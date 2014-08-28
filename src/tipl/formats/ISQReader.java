@@ -6,11 +6,10 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Hashtable;
 
-import tipl.util.ArgumentList;
-import tipl.util.ArgumentList.TypedPath;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 /**
  * Reads raw 8-bit, 16-bit or 32-bit (float or RGB) images from a stream or URL.
@@ -259,9 +258,9 @@ public class ISQReader implements TReader {
 					+ iSlice);
 		}
 	}
-	protected ArgumentList.TypedPath inPath = ArgumentList.TypedPath.virtualPath("");
+	protected TypedPath inPath = TypedPath.virtualPath("");
 	@Override
-	public void SetupReader(final ArgumentList.TypedPath inPath) {
+	public void SetupReader(final TypedPath inPath) {
 		this.inPath = inPath;
 		try {
 			iFile = new File(inPath.getPath());

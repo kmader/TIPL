@@ -2,13 +2,13 @@ package tipl.tools;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
 import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 /**
  * This class peels a mask away from an aim by taking the outermost layers
@@ -48,10 +48,10 @@ public class Peel extends BaseTIPLPluginMult {
 		System.out.println(" Counts Peel for given images v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 		final ArgumentParser p = TIPLGlobal.activeParser(args);
-		final ArgumentList.TypedPath inputFile = p.getOptionPath("input", "", "Input image");
-		final ArgumentList.TypedPath maskFile = p.getOptionPath("mask", "",
+		final TypedPath inputFile = p.getOptionPath("input", "", "Input image");
+		final TypedPath maskFile = p.getOptionPath("mask", "",
 				"Input mask image");
-		final ArgumentList.TypedPath outputFile = p.getOptionPath("output", "",
+		final TypedPath outputFile = p.getOptionPath("output", "",
 				"Peeled image");
 		final int peelS = p.getOptionInt("peelS", 1, "Peel Layers");
 		final boolean isMask = p.getOptionBoolean("ismask",

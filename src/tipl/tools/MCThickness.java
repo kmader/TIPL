@@ -3,7 +3,6 @@ package tipl.tools;
 import java.util.Random;
 
 import tipl.formats.TImg;
-import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
@@ -11,6 +10,7 @@ import tipl.util.ITIPLPluginIO;
 import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 /**
  * Calculate thickness using monte carlo methods by randomly throwing spheres
@@ -41,8 +41,8 @@ public class MCThickness extends Thickness {
 	 * @param histoFile
 	 *            the name of the csv histogram file to write
 	 */
-	public static boolean DTO(final ArgumentList.TypedPath inAimFile, final ArgumentList.TypedPath outAimFile,
-			final ArgumentList.TypedPath histoFile) {
+	public static boolean DTO(final TypedPath inAimFile, final TypedPath outAimFile,
+			final TypedPath histoFile) {
 		final TImg thickmapAim = DTO(TImgTools.ReadTImg(inAimFile));
 		TImgTools.WriteTImg(thickmapAim,outAimFile);
 		GrayAnalysis.StartHistogram(thickmapAim, histoFile.append(".csv"));
@@ -76,10 +76,10 @@ public class MCThickness extends Thickness {
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 		ArgumentParser p =TIPLGlobal.activeParser(args);
 		final ITIPLPluginIO myThick = new MCThickness();
-		final ArgumentList.TypedPath inputFile = p.getOptionPath("input", "",
+		final TypedPath inputFile = p.getOptionPath("input", "",
 				"Input distance map image");
 		p = myThick.setParameter(p, "");
-		final ArgumentList.TypedPath outputFile = p.getOptionPath("output", "thickmap.tif",
+		final TypedPath outputFile = p.getOptionPath("output", "thickmap.tif",
 				"Output thickness image");
 		if (p.hasOption("?")) {
 			System.out.println("Thickness v" + kVer);

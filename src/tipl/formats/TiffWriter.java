@@ -13,10 +13,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import tipl.util.ArgumentList;
 import tipl.util.D3int;
 import tipl.util.TImgBlock;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 import com.sun.media.jai.codec.ImageCodec;
 import com.sun.media.jai.codec.ImageEncoder;
@@ -32,15 +32,15 @@ public class TiffWriter implements TSliceWriter {
 	@TSliceWriter.DWriter(name = "Tiff Folder",type="tif")
 	final public static DWFactory myFactory = new DWFactory() {
 		@Override
-		public TSliceWriter get(final TImgRO outFile,final ArgumentList.TypedPath path,int outType) {
+		public TSliceWriter get(final TImgRO outFile,final TypedPath path,int outType) {
 			TSliceWriter outWriter=new TiffWriter();
 			outWriter.SetupWriter(outFile, path, outType);
 			return outWriter;
 		}
 	};
-	protected ArgumentList.TypedPath plPath=new ArgumentList.TypedPath("");
+	protected TypedPath plPath=new TypedPath("");
 
-	protected ArgumentList.TypedPath outpath=new ArgumentList.TypedPath("");
+	protected TypedPath outpath=new TypedPath("");
 	protected D3int dim=new D3int(-1,-1,1);
 	protected int cType=-1;
 	protected TImgHeader theader;
@@ -52,7 +52,7 @@ public class TiffWriter implements TSliceWriter {
 	public static boolean writeFailureThrowsError=true;
 	
 	@Override
-	public void SetupWriter(TImgRO imageToSave, ArgumentList.TypedPath outputPath, int outType) {
+	public void SetupWriter(TImgRO imageToSave, TypedPath outputPath, int outType) {
 		final boolean makeFolder = (new File(outputPath.getPath())).mkdir();
 		if (makeFolder) {
 			System.out.println("Directory: " + outputPath + " created");

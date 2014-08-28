@@ -3,11 +3,11 @@ package tipl.blocks;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.tools.GrayAnalysis;
-import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 /** performs a thickness analysis (similar to the DTO function) using the best available kVoronoi and HildThickness plugins
  * **/
@@ -133,8 +133,8 @@ public class ThicknessBlock extends BaseTIPLBlock {
 		prefix=newPrefix;
 
 	}
-	protected ArgumentList.TypedPath histoFile=new ArgumentList.TypedPath("thickmap_dto");
-	protected ArgumentList.TypedPath profileFile=new ArgumentList.TypedPath("thickmap_dto");
+	protected TypedPath histoFile=new TypedPath("thickmap_dto");
+	protected TypedPath profileFile=new TypedPath("thickmap_dto");
 	@Override
 	public ArgumentParser setParameterBlock(final ArgumentParser p) {
 		distPlugin.setParameter(p,prefix);

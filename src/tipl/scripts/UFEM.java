@@ -72,26 +72,26 @@ public class UFEM implements Runnable {
     public final int UFEM_MASKDIST = 1;
     public final int UFEM_LACUNDIST = 3;
     public final int LASTSTAGE = 23;
-    protected final ArgumentList.TypedPath ufiltAimFile;
-    protected final ArgumentList.TypedPath gfiltAimFile;
-    protected final ArgumentList.TypedPath threshAimFile;
-    protected final ArgumentList.TypedPath boneAimFile;
-    protected final ArgumentList.TypedPath maskAimFile;
-    protected final ArgumentList.TypedPath porosAimFile;
-    protected final ArgumentList.TypedPath maskdistAimFile;
-    protected final ArgumentList.TypedPath thickmapAimFile;
-    protected final ArgumentList.TypedPath lmaskAimFile;
-    protected final ArgumentList.TypedPath cmaskAimFile;
-    protected final ArgumentList.TypedPath comboAimFile;
-    protected final ArgumentList.TypedPath lacunAimFile;
-    protected final ArgumentList.TypedPath canalAimFile;
-    protected final ArgumentList.TypedPath lacunVolsAimFile;
-    protected final ArgumentList.TypedPath lacunDistAimFile;
-    protected final ArgumentList.TypedPath canalVolsAimFile;
-    protected final ArgumentList.TypedPath canalDistAimFile;
-    protected final ArgumentList.TypedPath cdtoAimFile;
-    protected final ArgumentList.TypedPath cdtbAimFile;
-    protected final ArgumentList.TypedPath mdtoAimFile;
+    protected final TypedPath ufiltAimFile;
+    protected final TypedPath gfiltAimFile;
+    protected final TypedPath threshAimFile;
+    protected final TypedPath boneAimFile;
+    protected final TypedPath maskAimFile;
+    protected final TypedPath porosAimFile;
+    protected final TypedPath maskdistAimFile;
+    protected final TypedPath thickmapAimFile;
+    protected final TypedPath lmaskAimFile;
+    protected final TypedPath cmaskAimFile;
+    protected final TypedPath comboAimFile;
+    protected final TypedPath lacunAimFile;
+    protected final TypedPath canalAimFile;
+    protected final TypedPath lacunVolsAimFile;
+    protected final TypedPath lacunDistAimFile;
+    protected final TypedPath canalVolsAimFile;
+    protected final TypedPath canalDistAimFile;
+    protected final TypedPath cdtoAimFile;
+    protected final TypedPath cdtbAimFile;
+    protected final TypedPath mdtoAimFile;
     private final boolean runAsJob;
     private final SGEJob jobToRun;
     protected TImg ufiltAim = null;
@@ -120,7 +120,7 @@ public class UFEM implements Runnable {
      * How big do you think the data set is
      */
     protected D3int guessDim = new D3int(1024, 1024, 1024);
-    ArgumentList.TypedPath lacunCsv, canalCsv;
+    TypedPath lacunCsv, canalCsv;
     String stageList;
     volatile boolean maskdistAimReady = true;
     volatile boolean canaldistAimReady = true;
@@ -495,7 +495,7 @@ public class UFEM implements Runnable {
     }
 
     protected static void makeProfiles(final TImg datAim, final TImg mskAim,
-                                       final ArgumentList.TypedPath fileroot) {
+                                       final TypedPath fileroot) {
         GrayAnalysis.StartThetaCylProfile(datAim, mskAim, fileroot.append("_th.txt"),
                 0.1f);
         GrayAnalysis.StartZProfile(datAim, mskAim, fileroot.append( "_z.txt"), 0.1f);
@@ -507,9 +507,9 @@ public class UFEM implements Runnable {
     /**
      * a function to provide new names to the newly recontoured objects
      */
-    public static ArgumentList.TypedPath originalName(final ArgumentList.TypedPath inFile) {
+    public static TypedPath originalName(final TypedPath inFile) {
         final int cPos = inFile.getPath().lastIndexOf(File.separator);
-        return new ArgumentList.TypedPath(inFile.getPath().substring(0, cPos + 1) + "precont_"
+        return new TypedPath(inFile.getPath().substring(0, cPos + 1) + "precont_"
                 + inFile.getPath().substring(cPos + 1));
     }
 
@@ -726,7 +726,7 @@ public class UFEM implements Runnable {
     /**
      * Code to make preview (slices every 20 slides of the data)
      */
-    public void makePreview(final ArgumentList.TypedPath previewName, final TImg previewData) {
+    public void makePreview(final TypedPath previewName, final TImg previewData) {
     	final int skipSlices=20;
         final ITIPLPluginIO fs = TIPLPluginManager.createBestPluginIO("Filter", new TImgRO[] {previewData});
         fs.LoadImages( new TImgRO[] {previewData});
@@ -736,7 +736,7 @@ public class UFEM implements Runnable {
         TImgTools.WriteTImg(tempAim, previewName);
     }
 
-    public ArgumentList.TypedPath nameVersion(final ArgumentList.TypedPath inName, final int verNumber) {
+    public TypedPath nameVersion(final TypedPath inName, final int verNumber) {
         return inName.append( "_" + verNumber + ".csv");
     }
 
@@ -886,7 +886,7 @@ public class UFEM implements Runnable {
      *                 labeled image
      */
     public TImg runNeighborhoodAnalysis(final TImg inputAim,
-                                        final ArgumentList.TypedPath edgeName) {
+                                        final TypedPath edgeName) {
         final Neighbors nbor = new Neighbors(inputAim);
         System.out.println("Calculating neighbors " + inputAim + " ...");
         nbor.execute();
@@ -1005,18 +1005,18 @@ public class UFEM implements Runnable {
                 boneAim = null;
                 break;
             case 40:
-                final ArgumentList.TypedPath[] imgListBW = {porosAimFile, lmaskAimFile,
+                final TypedPath[] imgListBW = {porosAimFile, lmaskAimFile,
                         cmaskAimFile};
-                final ArgumentList.TypedPath[] imgListColor = {lacunAimFile, canalAimFile};
+                final TypedPath[] imgListColor = {lacunAimFile, canalAimFile};
                 System.out
                         .println("Begin Special Stage, Recontouring and Mask Repairing...");
 
                 // Make Backups
-                for (final ArgumentList.TypedPath imgFile : imgListBW)
+                for (final TypedPath imgFile : imgListBW)
                 {
                 	TIPLGlobal.copyFile(imgFile, originalName(imgFile));
                 }
-                for (final ArgumentList.TypedPath imgFile : imgListColor)
+                for (final TypedPath imgFile : imgListColor)
                 {
                 	TIPLGlobal.copyFile(imgFile, originalName(imgFile));
                 }
@@ -1043,7 +1043,7 @@ public class UFEM implements Runnable {
 
                 TIPLGlobal.runGC();
                 // The code for mask data
-                for (final ArgumentList.TypedPath imgFile : imgListBW) {
+                for (final TypedPath imgFile : imgListBW) {
                 	
                     if (tryOpenImagePath(imgFile)) {
                         TImg tempAim = TImgTools.ReadTImg(imgFile);
@@ -1055,7 +1055,7 @@ public class UFEM implements Runnable {
                     }
                 }
                 // Te code for color data
-                for (final ArgumentList.TypedPath imgFile : imgListColor) {
+                for (final TypedPath imgFile : imgListColor) {
                 	
                     if (tryOpenImagePath(imgFile)) {
                         TImg tempAim = TImgTools.ReadTImg(imgFile);

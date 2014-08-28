@@ -9,7 +9,6 @@ import ij.ImagePlus;
 import ij.gui.HistogramWindow;
 import tipl.ij.TImgToImagePlus;
 import tipl.util.*;
-import tipl.util.ArgumentList.TypedPath;
 
 import javax.media.jai.PlanarImage;
 
@@ -39,7 +38,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
     /**
      * Scratch directory for local-loading
      */
-    public static ArgumentList.TypedPath scratchDirectory = new ArgumentList.TypedPath("/home/scratch/");
+    public static TypedPath scratchDirectory = new TypedPath("/home/scratch/");
     /**
      * Should the data be copied to scratch first and then read to avoid
      * random-access (tif) to gpfs
@@ -197,7 +196,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
     /**
      * The filename of the actual scratch file used
      */
-    private ArgumentList.TypedPath scratchFilename = new ArgumentList.TypedPath("");
+    private TypedPath scratchFilename = new TypedPath("");
     private File[] imglist;
     private int cgLength = -1;
 
@@ -290,11 +289,11 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
      * file given in path
      */
     @Deprecated
-    public VirtualAim(final ArgumentList.TypedPath path) {
+    public VirtualAim(final TypedPath path) {
         ReadAim(path, false);
     }
     @Deprecated
-    public VirtualAim(final ArgumentList.TypedPath path, final boolean onlyHeader) {
+    public VirtualAim(final TypedPath path, final boolean onlyHeader) {
         ReadAim(path, onlyHeader);
     }
 
@@ -326,11 +325,11 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
         VirtualAim inputAim = null;
 
-        final ArgumentList.TypedPath inputFile = p.getOptionPath("convert", "",
+        final TypedPath inputFile = p.getOptionPath("convert", "",
                 "Aim File to Convert");
-        final ArgumentList.TypedPath previewFile = p.getOptionPath("preview", "",
+        final TypedPath previewFile = p.getOptionPath("preview", "",
                 "Aim File to Preview");
-        ArgumentList.TypedPath outputFile = new  ArgumentList.TypedPath("");
+        TypedPath outputFile = new  TypedPath("");
         if (inputFile.length() > 0) {
 
             outputFile = p.getOptionPath("output", "",
@@ -576,7 +575,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         getAimImage();
     }
     @Deprecated
-    public boolean CheckSizes(final ArgumentList.TypedPath otherAimFile) {
+    public boolean CheckSizes(final TypedPath otherAimFile) {
         final VirtualAim otherVA = new VirtualAim(otherAimFile, true);
         return CheckSizes(otherVA);
     }
@@ -1278,7 +1277,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 
     @Override
     public TypedPath getPath() {
-        return new ArgumentList.TypedPath(aimPath);
+        return new TypedPath(aimPath);
     }
 
     public void GetPoints() {
@@ -2177,7 +2176,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
     /**
      * create a copy of the desired file and return the path
      */
-    protected ArgumentList.TypedPath localLoadingRead(final ArgumentList.TypedPath inpath) {
+    protected TypedPath localLoadingRead(final TypedPath inpath) {
         if (!scratchLoading)
             return inpath;
         try {
@@ -2188,7 +2187,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
                 TIPLGlobal.copyFile(new File(inpath.getPath()), f);
             } catch (final Exception e) {
                 e.printStackTrace();
-                scratchFilename = new ArgumentList.TypedPath("");
+                scratchFilename = new TypedPath("");
                 System.out.println("Could not write local file :"
                         + scratchFilename + ", proceeding normally with:"
                         + inpath);
@@ -2196,7 +2195,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
             }
         } catch (final Exception e) {
             e.printStackTrace();
-            scratchFilename = new ArgumentList.TypedPath("");
+            scratchFilename = new TypedPath("");
             System.out
                     .println("Could not create local int :" + scratchDirectory
                             + ", proceeding normally with:" + inpath);
@@ -2354,7 +2353,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
     /**
      * Reads in the given path and loads the first slice
      */
-    public boolean ReadAim(final ArgumentList.TypedPath inpath, final boolean onlyHeader) {
+    public boolean ReadAim(final TypedPath inpath, final boolean onlyHeader) {
         int zlen = 0;
         // Initialize the Fields here so they can be filled
         pos = new D3int();
@@ -2365,7 +2364,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         isSigned = false;
 
         String spath = inpath.getPath().toUpperCase();
-        ArgumentList.TypedPath localpath = inpath;
+        TypedPath localpath = inpath;
         // Get rid of any semicolons stupid ass vms
         if (spath.lastIndexOf(";") > 0) {
 
@@ -2590,7 +2589,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
      *                fully in the BufferedImage documentation
      */
     public void WriteAim(final String outpath, final int outType) {
-    	ArgumentList.TypedPath optp = new ArgumentList.TypedPath(outpath);
+    	TypedPath optp = new TypedPath(outpath);
         int biType;
         TWriter outWriter;
         if (outType == -1)

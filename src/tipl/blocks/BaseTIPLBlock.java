@@ -17,12 +17,12 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.tools.Resize;
 import tipl.util.ArgumentDialog;
-import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.SGEJob;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 /**
  * A basic concrete implementation of TIPLBlock with the helper functions
@@ -83,7 +83,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	 */
 	protected int maxReadSlices=-1; 
 	protected LinkedHashMap<String, String> blockConnections = new LinkedHashMap<String, String>();
-	final protected LinkedHashMap<String, ArgumentList.TypedPath> ioParameters = new LinkedHashMap<String, ArgumentList.TypedPath>();
+	final protected LinkedHashMap<String, TypedPath> ioParameters = new LinkedHashMap<String, TypedPath>();
 	public final static String kVer = "140828_005";
 
 	protected static void checkHelp(final ArgumentParser p) {
@@ -304,7 +304,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	 * @param filename
 	 *            Path and name of the file/directory to open
 	 */
-	public static boolean tryOpenImagePath(final ArgumentList.TypedPath filename) {
+	public static boolean tryOpenImagePath(final TypedPath filename) {
 
 		TImg tempAim = null; // TImg (should be, but currently that eats way too much computer time)
 		if (filename.length() > 0) {
@@ -389,7 +389,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 
 	@Override
 	@Deprecated
-	public ArgumentList.TypedPath getFileParameter(final String argument) {
+	public TypedPath getFileParameter(final String argument) {
 		return ioParameters.get(argument);
 	}
 	
@@ -487,7 +487,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 																	// argument
 																	// from info
 				if (args.hasOption(carg)) {
-					final ArgumentList.TypedPath curFile = new ArgumentList.TypedPath(args.getOptionAsString(carg));
+					final TypedPath curFile = new TypedPath(args.getOptionAsString(carg));
 					if (!tryOpenImagePath(curFile)) {
 						System.out.println("Not ready for block " + toString()
 								+ ", file:" + carg + "=" + curFile
@@ -519,7 +519,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 				p.forceMatchingValues(blockConnections.get(cImage.getName()),
 						getPrefix() + cImage.getName());
 			// otherwise treat it like a normal argument
-			final ArgumentList.TypedPath oValue = p.getOptionPath(
+			final TypedPath oValue = p.getOptionPath(
 					getPrefix() + cImage.getName(), cImage.getDefaultValue(),
 					cImage.getDesc()
 							+ ((cImage.isEssential()) ? ", Needed"
@@ -532,7 +532,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 						getPrefix() + cImage.getName());
 
 			// otherwise treat it like a normal argument
-			final ArgumentList.TypedPath oValue = p.getOptionPath(
+			final TypedPath oValue = p.getOptionPath(
 					getPrefix() + cImage.getName(), cImage.getDefaultValue(),
 					cImage.getDesc()
 							+ ((cImage.isEssential()) ? ", Needed"

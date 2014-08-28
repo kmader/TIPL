@@ -17,7 +17,6 @@ import tipl.formats.TImgRO;
 import tipl.formats.TSliceWriter;
 import tipl.formats.TImg.ArrayBackedTImg;
 import tipl.util.*;
-import tipl.util.ArgumentList.TypedPath;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -44,7 +43,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      *
      */
     private static final long serialVersionUID = -1824695496632428954L;
-    final ArgumentList.TypedPath path;
+    final TypedPath path;
     /**
      * should be final but sometimes it changes *
      */
@@ -61,7 +60,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param path
      */
     protected DTImg(TImgTools.HasDimensions parent, JavaPairRDD<D3int, TImgBlock<T>> newImage,
-                    int imgType, ArgumentList.TypedPath path) {
+                    int imgType, TypedPath path) {
         super(parent,imgType);
     	this.baseImg = newImage;//.partitionBy(SparkGlobal.getPartitioner(getDim()));
         TImgTools.mirrorImage(parent, this);
@@ -78,8 +77,8 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
         System.out.println("DTImage Convertor");
         ArgumentParser p = SparkGlobal.activeParser(args);
         boolean writeAsTextFile = p.getOptionBoolean("astext", true, "Write the output as multiple text files");
-        final ArgumentList.TypedPath imagePath = p.getOptionPath("input", "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory) to read in");
-        ArgumentList.TypedPath writeIt = p.getOptionPath("output", imagePath + "-txt", "write image as output file");
+        final TypedPath imagePath = p.getOptionPath("input", "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory) to read in");
+        TypedPath writeIt = p.getOptionPath("output", imagePath + "-txt", "write image as output file");
         p.checkForInvalid();
 
         JavaSparkContext jsc = SparkGlobal.getContext("DTImg-Tool");
@@ -97,7 +96,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @return
      */
     protected static <U> JavaPairRDD<D3int, TImgBlock<U>> ImportImage(
-            final JavaSparkContext jsc, final ArgumentList.TypedPath imgName, final int imgType) {
+            final JavaSparkContext jsc, final TypedPath imgName, final int imgType) {
         assert (TImgTools.isValidType(imgType));
         final TImgRO cImg = TImgTools.ReadTImg(imgName, false, true);
         final D3int imgDim = cImg.getDim();
@@ -125,7 +124,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @return
      */
     protected static <U> JavaPairRDD<D3int, TImgBlock<U>> ImportImageSerial(
-            final JavaSparkContext jsc, final ArgumentList.TypedPath imgName, final int imgType) {
+            final JavaSparkContext jsc, final TypedPath imgName, final int imgType) {
         assert (TImgTools.isValidType(imgType));
         final TImgRO cImg = TImgTools.ReadTImg(imgName, false, true);
         final D3int imgDim = cImg.getDim();
@@ -198,7 +197,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      */
     static public <Fc> DTImg<Fc> WrapRDD(TImgTools.HasDimensions parent, JavaPairRDD<D3int, TImgBlock<Fc>> newImage,
                                          int imgType) {
-        DTImg<Fc> outImage = new DTImg<Fc>(parent, newImage, imgType, ArgumentList.TypedPath.virtualPath(newImage.toString()));
+        DTImg<Fc> outImage = new DTImg<Fc>(parent, newImage, imgType, TypedPath.virtualPath(newImage.toString()));
         return outImage;
     }
 
@@ -210,7 +209,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param imgName
      * @param imgType
      */
-    static public <Fc> DTImg<Fc> ReadImage(JavaSparkContext jsc, final ArgumentList.TypedPath imgName, int imgType) {
+    static public <Fc> DTImg<Fc> ReadImage(JavaSparkContext jsc, final TypedPath imgName, int imgType) {
         JavaPairRDD<D3int, TImgBlock<Fc>> newImage = ImportImage(jsc, imgName, imgType);
         TImgTools.HasDimensions parent = TImgTools.ReadTImg(imgName);
         DTImg<Fc> outImage = new DTImg<Fc>(parent, newImage, imgType, imgName);
@@ -230,7 +229,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
         return new DTImg<Fc>(inImage, newImage, imgType, inImage.getPath());
     }
 
-    static public <Fc> DTImg<Fc> ReadObjectFile(JavaSparkContext jsc, final ArgumentList.TypedPath imgName, int imgType) {
+    static public <Fc> DTImg<Fc> ReadObjectFile(JavaSparkContext jsc, final TypedPath imgName, int imgType) {
         final JavaRDD<Tuple2<D3int, TImgBlock<Fc>>> newImage = jsc.objectFile(imgName.getPath());
         final Tuple2<D3int, TImgBlock<Fc>> cTuple = newImage.first();
         final TImgBlock<Fc> cBlock = cTuple._2();
@@ -704,7 +703,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      */
     protected static class ReadSlice<W> implements
             PairFunction<Integer, D3int, TImgBlock<W>> {
-        protected final ArgumentList.TypedPath imgPath;
+        protected final TypedPath imgPath;
         protected final int imgType;
         protected final D3int imgPos;
         protected final D3int sliceDim;
@@ -718,7 +717,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
          * @param imPos   the starting position of the image
          * @param imgDim  the dimensions of the image
          */
-        public ReadSlice(ArgumentList.TypedPath imgName, int inType, final D3int imPos,
+        public ReadSlice(TypedPath imgName, int inType, final D3int imPos,
                          final D3int imgDim) {
             this.imgPos = imPos;
             this.sliceDim = new D3int(imgDim.x, imgDim.y, 1);
@@ -750,7 +749,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      */
     protected static class ReadSlicePromise<W> implements
             PairFunction<Integer, D3int, TImgBlock<W>> {
-        protected final ArgumentList.TypedPath imgPath;
+        protected final TypedPath imgPath;
         protected final int imgType;
         protected final D3int imgPos;
         protected final D3int sliceDim;
@@ -764,7 +763,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
          * @param imPos   the starting position of the image
          * @param imgDim  the dimensions of the image
          */
-        public ReadSlicePromise(ArgumentList.TypedPath imgName, int inType, final D3int imPos,
+        public ReadSlicePromise(TypedPath imgName, int inType, final D3int imPos,
                                 final D3int imgDim) {
             this.imgPos = imPos;
             this.sliceDim = new D3int(imgDim.x, imgDim.y, 1);

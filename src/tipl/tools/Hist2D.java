@@ -3,11 +3,10 @@ package tipl.tools;
 
 import java.io.FileWriter;
 
-import tipl.util.ArgumentList;
-
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
+import tipl.util.TypedPath;
 
 // Used as a replacement for the moment function as it allows much more control over data
 // and communication with webservices (potentially?)
@@ -148,7 +147,7 @@ public class Hist2D extends BaseTIPLPlugin {
 	String headerString = "";
 
 	String headerStr = "";
-	protected ArgumentList.TypedPath outCsvName = new ArgumentList.TypedPath("2dhistout.csv");
+	protected TypedPath outCsvName = new TypedPath("2dhistout.csv");
 
 	String insName = "N/A";
 	boolean asList = false;
@@ -279,14 +278,14 @@ public class Hist2D extends BaseTIPLPlugin {
 	 * Actually runs the GrayAnalysis2D code on the dataset, can be run inside
 	 * of a thread
 	 */
-	protected boolean writeHeader(final String sampName, final ArgumentList.TypedPath sampPath,
-			final ArgumentList.TypedPath greyName) {
+	protected boolean writeHeader(final String sampName, final TypedPath sampPath,
+			final TypedPath greyName) {
 		return writeHeader(sampName, sampPath, greyName, new D3int(-1),
 				new D3int(-1), new D3int(-1), new D3float(0, 0, 0));
 	}
 
-	protected boolean writeHeader(final String sampName, final ArgumentList.TypedPath sampPath,
-			final ArgumentList.TypedPath greyName, final D3int imDim, final D3int imOffset,
+	protected boolean writeHeader(final String sampName, final TypedPath sampPath,
+			final TypedPath greyName, final D3int imDim, final D3int imOffset,
 			final D3int imPos, final D3float imElSize) {
 		try {
 			headerStr += analysisName + " Histogram2D \n";

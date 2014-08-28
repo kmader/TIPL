@@ -7,9 +7,9 @@ import tipl.blocks.AnalyzePhase.ShapeAndNeighborAnalysis;
 import tipl.blocks.ITIPLBlock.BlockImage;
 import tipl.blocks.ITIPLBlock.IBlockImage;
 import tipl.formats.TImg;
-import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 /**
  * A block for adding additional analyses to a analyzephase (different masks for example)
@@ -47,8 +47,8 @@ public class AppendAnalyzePhase extends AnalyzePhase {
     
     @Override
     public ArgumentParser setParameterBlock(final ArgumentParser inp) {
-    	ArgumentList.TypedPath seedFileName = inp.getOptionPath(prefix + "seedfile", "seedfile.csv", "Shape file to append");
-    	ArgumentList.TypedPath phase = inp.getOptionPath(prefix + "phase", "phase2", "Phase name");
+    	TypedPath seedFileName = inp.getOptionPath(prefix + "seedfile", "seedfile.csv", "Shape file to append");
+    	TypedPath phase = inp.getOptionPath(prefix + "phase", "phase2", "Phase name");
         SNA = new ShapeAndNeighborAnalysis(seedFileName,phaseName);
         final ArgumentParser p = SNA.getNeighborPlugin().setParameter(inp,
                 prefix);

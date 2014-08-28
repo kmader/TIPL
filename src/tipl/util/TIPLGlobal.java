@@ -282,7 +282,7 @@ public class TIPLGlobal {
      * Utility Function Section
      */
 
-    public static void copyFile(final ArgumentList.TypedPath sourceFile, final ArgumentList.TypedPath destFile) {
+    public static void copyFile(final TypedPath sourceFile, final TypedPath destFile) {
         if (!sourceFile.isLocal() || !destFile.isLocal()) throw new IllegalArgumentException("Both source and destination files must be local for copy function to work:"+sourceFile.summary()+" -> "+destFile.summary());
     	try {
             copyFile(new File(sourceFile.getPath()), new File(destFile.getPath()));
@@ -295,21 +295,21 @@ public class TIPLGlobal {
     }
     
     public static void copyFile(final String sourceFile, final String destFile) {
-       copyFile(new ArgumentList.TypedPath(sourceFile),new ArgumentList.TypedPath(destFile));
+       copyFile(new TypedPath(sourceFile),new TypedPath(destFile));
     }
 
-    public static boolean DeleteFile(final ArgumentList.TypedPath file) {
+    public static boolean DeleteFile(final TypedPath file) {
         return DeleteFile(file, "Unk");
     }
     @Deprecated
     public static boolean DeleteFile(final String file) {
-        return DeleteFile(new ArgumentList.TypedPath(file), "Unk");
+        return DeleteFile(new TypedPath(file), "Unk");
     }
 
     /**
      * Delete files
      */
-    public static boolean DeleteFile(final ArgumentList.TypedPath file, final String whoDel) {
+    public static boolean DeleteFile(final TypedPath file, final String whoDel) {
     	if (!file.isLocal()) throw new IllegalArgumentException("File must be local for delete function to work:"+file.summary());
     	
     	final File f1 = new File(file.getPath());
@@ -328,11 +328,11 @@ public class TIPLGlobal {
      * A function to register the current filename as a temporary file that
      * should be delated when the runtime finishes
      */
-    public static void DeleteTempAtFinish(final ArgumentList.TypedPath delName) {
+    public static void DeleteTempAtFinish(final TypedPath delName) {
     	if (!delName.isLocal()) throw new IllegalArgumentException("File must be local for delete function to work:"+delName.summary());
     	
         curRuntime.addShutdownHook(new Thread() {
-            public boolean SimpleDeleteFunction(final ArgumentList.TypedPath file, final String whoDel) {
+            public boolean SimpleDeleteFunction(final TypedPath file, final String whoDel) {
                 final File f1 = new File(file.getPath());
                 final boolean success = f1.delete();
                 if (!success) {
@@ -377,11 +377,11 @@ public class TIPLGlobal {
     public static synchronized void returnCores(final int finishedCores) {
         availableCores += finishedCores;
     }
-    public static boolean tryOpen(final String filename) { return tryOpen(new ArgumentList.TypedPath(filename));}
+    public static boolean tryOpen(final String filename) { return tryOpen(new TypedPath(filename));}
     /**
      * Function to try and open an aim file, return true if it is successful
      */
-    public static boolean tryOpen(final ArgumentList.TypedPath filename) {
+    public static boolean tryOpen(final TypedPath filename) {
         if (filename.length() > 0) {
             System.out.println("Trying to open ... " + filename);
         } else {

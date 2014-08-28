@@ -35,7 +35,6 @@ import javax.swing.JFrame;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.ij.TImgToImagePlus;
-import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.ITIPLPlugin;
@@ -44,6 +43,7 @@ import tipl.util.SGEJob;
 import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 	@TIPLPluginManager.PluginInfo(pluginType = "VolumeViewer",
@@ -178,7 +178,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 		return join(a, ", ");
 	}
 
-	protected ArgumentList.TypedPath snapshotPath = new ArgumentList.TypedPath("");
+	protected TypedPath snapshotPath = new TypedPath("");
 	protected boolean customRange = false;
 	protected String animatedVariable = "";
 	protected double animatedStart = 0, animatedEnd = 1;
@@ -314,7 +314,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 		ArgumentParser cArgs = TIPLGlobal.activeParser(args);
 		Volume_Viewer vv = new Volume_Viewer();
 		
-		ArgumentList.TypedPath inpath = cArgs.getOptionPath("input", "", "Image to be opened");
+		TypedPath inpath = cArgs.getOptionPath("input", "", "Image to be opened");
 		
 		vv.setParameter(cArgs, "");
 		boolean runAsJob = cArgs.getOptionBoolean("sge:runasjob",
@@ -399,7 +399,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 			double curValue = animatedStart;
 			double stepSize = (animatedEnd - animatedStart)
 					/ (animatedSteps - 1);
-			ArgumentList.TypedPath rootName = snapshotPath;
+			TypedPath rootName = snapshotPath;
 			String cAnimatedArgument = "-" + animatedVariable + "=";
 			ExecutorService myPool = TIPLGlobal.requestSimpleES();
 			final Volume finalVol = vol;

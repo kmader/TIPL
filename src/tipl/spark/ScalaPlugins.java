@@ -52,8 +52,7 @@ public final class ScalaPlugins {
 		public ITIPLPlugin get() {
 			return new SResize();
 		}
-	};
-	
+	};	
 }
 
 

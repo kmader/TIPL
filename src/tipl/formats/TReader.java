@@ -4,12 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
-import tipl.util.ArgumentList;
-import tipl.util.ArgumentList.TypedPath;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.ITIPLStorage;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 /** Interface for reading TImg files from a data source 
  * this is now serializable but obviously this only makes sense if they are on the path */
@@ -18,7 +17,7 @@ public interface TReader extends Serializable {
 		protected D3int offset = new D3int(0, 0, 0);
 		protected D3int pos = new D3int(0, 0, 0);
 		protected D3float elSize = new D3float(1, 1, 1);
-		protected ArgumentList.TypedPath path = new ArgumentList.TypedPath("");
+		protected TypedPath path = new TypedPath("");
 		final protected String procLog = "";
 		protected int imageType;
 		protected int maxVal;
@@ -67,7 +66,7 @@ public interface TReader extends Serializable {
 		}
 
 		@Override
-		public ArgumentList.TypedPath getPath() {
+		public TypedPath getPath() {
 			// TODO Auto-generated method stub
 			return path;
 		}
@@ -346,7 +345,7 @@ public interface TReader extends Serializable {
 		public D3int getOffset();
 
 		/** The path of the data (whatever it might be) */
-		public ArgumentList.TypedPath getPath();
+		public TypedPath getPath();
 
 		/**
 		 * The position of the bottom leftmost voxel in the image in real space,
@@ -421,7 +420,7 @@ public interface TReader extends Serializable {
 
 	public boolean getSigned();
 	
-	public ArgumentList.TypedPath getPath();
+	public TypedPath getPath();
 
 	/**
 	 * Can the writer be run in parallel (multiple threads processing different
@@ -445,5 +444,5 @@ public interface TReader extends Serializable {
 	public TSliceReader ReadSlice(int n) throws IOException;
 
 	/** The command to initialize the writer */
-	public void SetupReader(ArgumentList.TypedPath inPath);
+	public void SetupReader(TypedPath inPath);
 }

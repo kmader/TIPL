@@ -42,7 +42,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 				TImgRO inImage;
 				GrayAnalysis caGAobj = gaDummy;
 				String analysisName="Shape";
-				ArgumentList.TypedPath outputName=new ArgumentList.TypedPath("output.csv");
+				TypedPath outputName=new TypedPath("output.csv");
 				@Override
 				public ArgumentParser setParameter(ArgumentParser p,
 						String prefix) {
@@ -179,8 +179,8 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
     protected String dlmChar = "\t";
     protected String headerString = "";
     protected String headerStr = "";
-    protected ArgumentList.TypedPath csvName = new ArgumentList.TypedPath("");
-    protected ArgumentList.TypedPath insName = new ArgumentList.TypedPath("");
+    protected TypedPath csvName = new TypedPath("");
+    protected TypedPath insName = new TypedPath("");
     protected String gfiltName = "";
     protected GrayVoxels[] intGvArray = new GrayVoxels[0];
     boolean useCount;
@@ -250,7 +250,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      * @param aName   name of the analysis in the output file (header column prefix)
      */
     @Deprecated
-    public GrayAnalysis(final TImgRO inMap, final ArgumentList.TypedPath outName,
+    public GrayAnalysis(final TImgRO inMap, final TypedPath outName,
                         final String aName) {
         LoadImages(new TImgRO[]{inMap});
         csvName = outName;
@@ -268,8 +268,8 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      * @param aName   name of analysis in the output file (header column prefix)
      */
     @Deprecated
-    public GrayAnalysis(final TImgRO inDMap, final ArgumentList.TypedPath inName,
-                        final ArgumentList.TypedPath outName, final String aName) {
+    public GrayAnalysis(final TImgRO inDMap, final TypedPath inName,
+                        final TypedPath outName, final String aName) {
         LoadImages(new TImgRO[]{inDMap});
         analysisName = aName;
 
@@ -299,7 +299,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      */
     @Deprecated
     public GrayAnalysis(final TImgRO inMap, final TImgRO inGfilt,
-                        final ArgumentList.TypedPath outName, final String aName) {
+                        final TypedPath outName, final String aName) {
         LoadImages(new TImgRO[]{inMap, inGfilt});
         if (gfiltA == null)
             boxDist = true;
@@ -321,7 +321,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      * @param aName   name of analysis in the output file (header column prefix)
      */
     public GrayAnalysis(final TImgRO inMap, final TImgRO inGfilt,
-                        final ArgumentList.TypedPath inName, final ArgumentList.TypedPath outName, final String aName) {
+                        final TypedPath inName, final TypedPath outName, final String aName) {
         analysisName = aName;
         LoadImages(new TImgRO[]{inMap, inGfilt});
 
@@ -346,7 +346,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      */
     @Deprecated
     public GrayAnalysis(final TImgRO inMap, final TImgRO inGfilt,
-                        final ArgumentList.TypedPath inName, final ArgumentList.TypedPath outName, final String aName,
+                        final TypedPath inName, final TypedPath outName, final String aName,
                         final boolean makemedist) {
         analysisName = aName + "_Distance";
         LoadImages(new TImgRO[]{inMap, inGfilt});
@@ -376,8 +376,8 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      * @param outName name of the output csv file (to write to)
      * @param aName   name of analysis in the output file (header column prefix)
      */
-    public static ITIPLPlugin AddDensityColumn(final TImgRO inDMap, final ArgumentList.TypedPath inName,
-                                               final ArgumentList.TypedPath outName, final String aName) {
+    public static ITIPLPlugin AddDensityColumn(final TImgRO inDMap, final TypedPath inName,
+                                               final TypedPath outName, final String aName) {
         final GrayAnalysis newGray = new GrayAnalysis(inDMap, inName, outName,
                 aName);
         newGray.execute();
@@ -395,7 +395,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *                _distance will be appended)
      */
     public static ITIPLPlugin AddDistanceColumn(final TImgRO inMap, final TImgRO inGfilt,
-                                                final ArgumentList.TypedPath inName, final ArgumentList.TypedPath outName, final String aName) {
+                                                final TypedPath inName, final TypedPath outName, final String aName) {
         final GrayAnalysis newGray = new GrayAnalysis(inMap, inGfilt, inName,
                 outName, aName);
         newGray.analysisName = aName + "_Distance";
@@ -437,7 +437,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            name of analysis in the output file (header column prefix)
      */
     public static ITIPLPlugin AddFixedColumn(final TImgRO inMap, final TImgRO inGfilt,
-                                             final ArgumentList.TypedPath inName, final ArgumentList.TypedPath outName, final String aName) {
+                                             final TypedPath inName, final TypedPath outName, final String aName) {
         final GrayAnalysis newGray = new GrayAnalysis(inMap, inGfilt, inName,
                 outName, aName);
         newGray.execute();
@@ -460,7 +460,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            name of analysis in the output file (header column prefix)
      */
     public static ITIPLPlugin AddRegionColumn(final TImgRO inMap, final TImgRO inGfilt,
-                                              final ArgumentList.TypedPath inName, final ArgumentList.TypedPath outName, final String aName) {
+                                              final TypedPath inName, final TypedPath outName, final String aName) {
 
         final GrayAnalysis newGray = new GrayAnalysis(inMap, inGfilt, inName,
                 outName, aName);
@@ -486,8 +486,8 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
         if (justHistogram) {
             GrayAnalysis junk = new GrayAnalysis();
 
-            final ArgumentList.TypedPath infile= p.getOptionPath("file", "gfilt.tif", "Name of the file to run a histogram on");
-            final ArgumentList.TypedPath outFile = p.getOptionPath("csv", "gfilt.csv", "Name of the output file");
+            final TypedPath infile= p.getOptionPath("file", "gfilt.tif", "Name of the file to run a histogram on");
+            final TypedPath outFile = p.getOptionPath("csv", "gfilt.csv", "Name of the output file");
             boolean usefloat = p.getOptionBoolean("usefloat", false, "use scaled float values for bins");
             boolean removeBlanks = p.getOptionBoolean("removeblanks", false, "remove blank fields");
 
@@ -585,7 +585,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartFProfile(final TImgRO inGfilt,
-                                     final FImage profImage, final ArgumentList.TypedPath outFile, final float threshVal) {
+                                     final FImage profImage, final TypedPath outFile, final float threshVal) {
         StartFProfile(inGfilt, profImage, outFile, threshVal, PROFILEPOINTS); // err
         // on
         // the
@@ -604,7 +604,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartFProfile(final TImgRO inGfilt,
-                                     final FImage profImage, final ArgumentList.TypedPath outFile,
+                                     final FImage profImage, final TypedPath outFile,
                                      final float threshVal, final int fbins) {
         final GrayAnalysis newGray = new GrayAnalysis();
         newGray.mapA = profImage;
@@ -642,7 +642,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartFProfile(final TImgRO inGfilt,
-                                     final PureFImage profImage, final ArgumentList.TypedPath outFile,
+                                     final PureFImage profImage, final TypedPath outFile,
                                      final float threshVal) {
         StartFProfile(inGfilt, profImage, outFile, threshVal, PROFILEPOINTS); // err
         // on
@@ -662,7 +662,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartFProfile(final TImgRO inGfilt,
-                                     final PureFImage profImage, final ArgumentList.TypedPath outFile,
+                                     final PureFImage profImage, final TypedPath outFile,
                                      final float threshVal, final int fbins) {
         final GrayAnalysis newGray = new GrayAnalysis();
         newGray.mapA = profImage;
@@ -698,7 +698,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartHistogram(final TImgRO inGfilt,
-                                      final ArgumentList.TypedPath outFile) {
+                                      final TypedPath outFile) {
         StartHistogram(inGfilt, outFile, false);
     }
 
@@ -711,7 +711,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartHistogram(final TImgRO inGfilt,
-                                      final ArgumentList.TypedPath outFile, final boolean removeBlanks) {
+                                      final TypedPath outFile, final boolean removeBlanks) {
         final GrayAnalysis newGray = new GrayAnalysis();
         newGray.mapA = inGfilt;
         newGray.csvName = outFile;
@@ -738,7 +738,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            the number of bins to use
      */
     public static void StartHistogram(final TImgRO inGfilt,
-                                      final ArgumentList.TypedPath outFile, final double minVal, final double maxVal,
+                                      final TypedPath outFile, final double minVal, final double maxVal,
                                       final int steps) {
         StartHistogram(inGfilt, outFile, minVal, maxVal, steps, false);
     }
@@ -758,7 +758,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            the number of bins to use
      */
     public static void StartHistogram(final TImgRO inGfilt,
-                                      final ArgumentList.TypedPath outFile, final double minVal, final double maxVal,
+                                      final TypedPath outFile, final double minVal, final double maxVal,
                                       final int steps, final boolean removeBlanks) {
         final GrayAnalysis newGray = new GrayAnalysis();
         newGray.mapA = inGfilt;
@@ -776,12 +776,12 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
     }
 
     public static GrayAnalysis StartLacunaAnalysis(final TImgRO inMap,
-                                                   final ArgumentList.TypedPath outName, final String aName) {
+                                                   final TypedPath outName, final String aName) {
         return StartLacunaAnalysis(inMap, outName, aName, false);
     }
 
     public static GrayAnalysis StartLacunaAnalysis(final TImgRO inMap,
-                                                   final ArgumentList.TypedPath outName, final String aName,
+                                                   final TypedPath outName, final String aName,
                                                    final boolean includeShapeT) {
         final GrayAnalysis newGray = new GrayAnalysis(inMap, (TImg) null,
                 outName, aName);
@@ -804,7 +804,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            name of the analysis in the output file (header column prefix)
      */
     public static GrayAnalysis StartLacunaAnalysis(final TImgRO inMap,
-                                                   final TImgRO inGfilt, final ArgumentList.TypedPath outName, final String aName) {
+                                                   final TImgRO inGfilt, final TypedPath outName, final String aName) {
         return StartLacunaAnalysis(inMap, inGfilt, outName, aName, false);
     }
 
@@ -825,7 +825,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            visualization and analysis)
      */
     public static GrayAnalysis StartLacunaAnalysis(final TImgRO inMap,
-                                                   final TImgRO inGfilt, final ArgumentList.TypedPath outName, final String aName,
+                                                   final TImgRO inGfilt, final TypedPath outName, final String aName,
                                                    final boolean includeShapeT) {
         final GrayAnalysis newGray = new GrayAnalysis(inMap, inGfilt, outName,
                 aName);
@@ -843,7 +843,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      * @param analysisName
      * @param includeShapeT
      */
-    public static GrayAnalysis ScalaLacunAnalysis(final GrayVoxels[] inVoxels, final TImgRO inMap, final ArgumentList.TypedPath csvName, final String analysisName,
+    public static GrayAnalysis ScalaLacunAnalysis(final GrayVoxels[] inVoxels, final TImgRO inMap, final TypedPath csvName, final String analysisName,
                                                   final boolean includeShapeT) {
 
         final GrayAnalysis newGray = new GrayAnalysis();
@@ -867,7 +867,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartRCylProfile(final TImgRO inGfilt,
-                                        final ArgumentList.TypedPath outFile, final float threshVal) {
+                                        final TypedPath outFile, final float threshVal) {
         final PureFImage cFImg = new PureFImage.RImageCyl(inGfilt, 3);
         final double[] rng = cFImg.getRange();
         StartFProfile(inGfilt, cFImg, outFile, threshVal,
@@ -886,7 +886,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartRCylProfile(final TImgRO inGfilt, final TImgRO inMask,
-                                        final ArgumentList.TypedPath outFile, final float threshVal) {
+                                        final TypedPath outFile, final float threshVal) {
         final FImage maskedF = new FImage.MaskablePFImage(inMask,
                 new PureFImage.RImageCyl(inMask, 3));
         maskedF.useMask = true;
@@ -904,7 +904,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      * @param outFile
      *            path and name of output file
      */
-    public static void StartRProfile(final TImgRO inGfilt, final ArgumentList.TypedPath outFile,
+    public static void StartRProfile(final TImgRO inGfilt, final TypedPath outFile,
                                      final float threshVal) {
         final PureFImage cFImg = new PureFImage.RImage(inGfilt, 3);
         final double[] rng = cFImg.getRange();
@@ -924,7 +924,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartRProfile(final TImgRO inGfilt, final TImgRO inMask,
-                                     final ArgumentList.TypedPath outFile, final float threshVal) {
+                                     final TypedPath outFile, final float threshVal) {
         final FImage maskedF = new FImage.MaskablePFImage(inMask,
                 new PureFImage.RImage(inMask, 3));
         maskedF.useMask = true;
@@ -943,7 +943,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartThetaCylProfile(final TImgRO inGfilt,
-                                            final ArgumentList.TypedPath outFile, final float threshVal) {
+                                            final TypedPath outFile, final float threshVal) {
         final PureFImage cFImg = new PureFImage.ThetaImageCyl(inGfilt, 3);
         StartFProfile(inGfilt, cFImg, outFile, threshVal, 1000);
     }
@@ -960,7 +960,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartThetaCylProfile(final TImgRO inGfilt,
-                                            final TImgRO inMask, final ArgumentList.TypedPath outFile, final float threshVal) {
+                                            final TImgRO inMask, final TypedPath outFile, final float threshVal) {
         final FImage maskedF = new FImage.MaskablePFImage(inMask,
                 new PureFImage.ThetaImageCyl(inMask, 3));
         maskedF.useMask = true;
@@ -976,7 +976,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      * @param outFile
      *            path and name of output file
      */
-    public static void StartZProfile(final TImgRO inGfilt, final ArgumentList.TypedPath outFile,
+    public static void StartZProfile(final TImgRO inGfilt, final TypedPath outFile,
                                      final float threshVal) {
         StartFProfile(inGfilt, new PureFImage.ZImage(inGfilt, 1), outFile,
                 threshVal);
@@ -994,7 +994,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartZProfile(final TImgRO inGfilt, final TImgRO inMask,
-                                     final ArgumentList.TypedPath outFile, final float threshVal) {
+                                     final TypedPath outFile, final float threshVal) {
         final PureFImage maskedF = new PureFImage.ZImage(inMask, 1);
         // maskedF.useMask=true;
 

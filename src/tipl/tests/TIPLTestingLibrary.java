@@ -5,9 +5,9 @@ package tipl.tests;
 
 import tipl.formats.TImgRO;
 import tipl.tools.BaseTIPLPluginIn;
-import tipl.util.ArgumentList;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -213,8 +213,8 @@ public abstract class TIPLTestingLibrary {
      * @param imageName
      * @return
      */
-    static public ArgumentList.TypedPath createTestImage(String imageName) {
-    	return new ArgumentList.TypedPath(imageName);
+    static public TypedPath createTestImage(String imageName) {
+    	return new TypedPath(imageName);
     }
 
 }

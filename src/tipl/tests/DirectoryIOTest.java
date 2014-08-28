@@ -13,21 +13,21 @@ import tipl.formats.DirectoryReader;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.TImgRO.TImgFull;
-import tipl.util.ArgumentList;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 /**
  * @author maderk
  * 
  */
 public class DirectoryIOTest {
-	public static final ArgumentList.TypedPath dmpPath=new ArgumentList.TypedPath("/Users/mader/Dropbox/TIPL/test/io_tests/rec_DMP");
-	public static final ArgumentList.TypedPath tifPath=new ArgumentList.TypedPath("/Users/mader/Dropbox/TIPL/test/io_tests/rec8bit");
+	public static final TypedPath dmpPath=new TypedPath("/Users/mader/Dropbox/TIPL/test/io_tests/rec_DMP");
+	public static final TypedPath tifPath=new TypedPath("/Users/mader/Dropbox/TIPL/test/io_tests/rec8bit");
 	/** to test if folders with extensions *.tiff can be read as well **/
-	public static final ArgumentList.TypedPath tiffPath=new ArgumentList.TypedPath("/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff");
-	public static final ArgumentList.TypedPath tif16Path=new ArgumentList.TypedPath("/Users/mader/Dropbox/TIPL/test/io_tests/rec16bit");
-	public static final ArgumentList.TypedPath isqPath=new ArgumentList.TypedPath("/Users/mader/Dropbox/TIPL/test/io_tests/test.isq;2");
+	public static final TypedPath tiffPath=new TypedPath("/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff");
+	public static final TypedPath tif16Path=new TypedPath("/Users/mader/Dropbox/TIPL/test/io_tests/rec16bit");
+	public static final TypedPath isqPath=new TypedPath("/Users/mader/Dropbox/TIPL/test/io_tests/test.isq;2");
 	/**
 	 * @throws java.lang.Exception
 	 */

@@ -29,10 +29,10 @@ import scala.Tuple2;
 import scala.Tuple3;
 import scala.concurrent.duration.Duration;
 import tipl.formats.TImgRO;
-import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 import java.io.File;
 import java.io.Serializable;
@@ -53,9 +53,9 @@ public class IOTests {
     protected static int range = 3;
     protected static int maximumSlice = 100;
 
-    public static JavaPairRDD<Integer, int[]> ReadIntImg(final JavaSparkContext jsc, final ArgumentList.TypedPath localImgName) {
+    public static JavaPairRDD<Integer, int[]> ReadIntImg(final JavaSparkContext jsc, final TypedPath localImgName) {
        
-    	final ArgumentList.TypedPath imgName = localImgName.makeAbsPath();
+    	final TypedPath imgName = localImgName.makeAbsPath();
         TImgRO cImg = TImgTools.ReadTImg(imgName);
         final int sliceCount = cImg.getDim().z;
 
@@ -155,7 +155,7 @@ public class IOTests {
         return outString;
     }
 
-    public static Result sendTImgTest(final JavaSparkContext jsc, final ArgumentList.TypedPath imgName) {
+    public static Result sendTImgTest(final JavaSparkContext jsc, final TypedPath imgName) {
         final int maxSlice = maximumSlice;
         
         JavaPairRDD<Integer, int[]> dataSet = ReadIntImg(jsc, imgName).filter(new Function<Tuple2<Integer, int[]>, Boolean>() {
@@ -178,7 +178,7 @@ public class IOTests {
     public static void main(String[] args) throws Exception {
         ArgumentParser p = TIPLGlobal.activeParser(args);
         final String masterName = p.getOptionString("master", "local[4]", "Name of the master node for Spark");
-        final ArgumentList.TypedPath imagePath = p.getOptionPath("path", "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory) to read in");
+        final TypedPath imagePath = p.getOptionPath("path", "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory) to read in");
         range = p.getOptionInt("range", range, "The range to use for the filter");
         maximumSlice = p.getOptionInt("maxs", maximumSlice, "The maximum slice to keep");
         p.checkForInvalid();

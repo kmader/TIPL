@@ -138,7 +138,7 @@ public class XDF extends BaseTIPLPluginMult {
     }
 
     public static TImg WriteHistograms(XDF cXDF, TImgRO.CanExport inAim,
-    		ArgumentList.TypedPath outfile) {
+    		TypedPath outfile) {
         final TImg outAim = cXDF.ExportImages(inAim)[0];
         GrayAnalysis.StartRProfile(outAim, outfile.append("_r.txt"), 0.0f);
         GrayAnalysis.StartZProfile(outAim, outfile.append("_z.txt"), 0.0f);

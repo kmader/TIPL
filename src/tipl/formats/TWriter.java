@@ -1,6 +1,6 @@
 package tipl.formats;
 
-import tipl.util.ArgumentList;
+import tipl.util.TypedPath;
 
 
 /** Interface for writing TImg files to a data source */
@@ -12,7 +12,7 @@ public interface TWriter {
 	public boolean isParallel();
 
 	/** The command to initialize the writer */
-	public void SetupWriter(TImg inputImage, ArgumentList.TypedPath outputPath);
+	public void SetupWriter(TImg inputImage, TypedPath outputPath);
 
 	/** Write everything (header and all slices) */
 	public void Write();

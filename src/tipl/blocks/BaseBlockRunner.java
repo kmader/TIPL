@@ -9,10 +9,10 @@ import java.util.List;
 
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentDialog;
-import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.SGEJob;
 import tipl.util.TIPLGlobal;
+import tipl.util.TypedPath;
 
 /**
  * Standard base block runner that runs the separate blocks in a serial fashion
@@ -81,7 +81,7 @@ public class BaseBlockRunner implements IBlockRunner,ITIPLBlock {
 	}
 
 	@Override
-	public ArgumentList.TypedPath getFileParameter(String argument) {
+	public TypedPath getFileParameter(String argument) {
 		// TODO Auto-generated method stub
 		return null;
 	}

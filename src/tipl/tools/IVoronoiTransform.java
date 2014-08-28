@@ -2,8 +2,8 @@ package tipl.tools;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.util.ArgumentList;
 import tipl.util.ITIPLPluginIO;
+import tipl.util.TypedPath;
 
 public interface IVoronoiTransform extends ITIPLPluginIO {
 
@@ -14,10 +14,10 @@ public interface IVoronoiTransform extends ITIPLPluginIO {
 	public abstract TImg ExportVolumesAim(TImgRO.CanExport templateAim);
 
 	/** Code for writing the voronoi distances to an Aim file */
-	public abstract void WriteDistanceAim(TImgRO.CanExport templateAim, ArgumentList.TypedPath outname);
+	public abstract void WriteDistanceAim(TImgRO.CanExport templateAim, TypedPath outname);
 
 	/** Code for writing the voronoi volumes to an Aim file */
 	public abstract void WriteVolumesAim(TImgRO.CanExport templateAim,
-			ArgumentList.TypedPath outname);
+			TypedPath outname);
 
 }

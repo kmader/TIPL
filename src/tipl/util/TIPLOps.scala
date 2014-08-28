@@ -96,7 +96,7 @@ object TIPLOps {
      *  
      */
     def write(path: String) = {
-      TImgTools.WriteTImg(inputImage,new ArgumentList.TypedPath(path))
+      TImgTools.WriteTImg(inputImage,new TypedPath(path))
     }
     /**
      * The kVoronoi operation

@@ -5,11 +5,11 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.tools.GrayAnalysis;
 import tipl.tools.Neighbors;
-import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 /**
  * Run analysis on a thresheld phase
@@ -29,10 +29,10 @@ public class AnalyzePhase extends BaseTIPLBlock {
     };
     public String prefix;
     public int minVoxCount;
-	public ArgumentList.TypedPath phaseName;
+	public TypedPath phaseName;
 	// public double sphKernelRadius;
 	public boolean writeShapeTensor;
-    protected ShapeAndNeighborAnalysis SNA = new ShapeAndNeighborAnalysis(new ArgumentList.TypedPath("NOT INITIALIZED"));
+    protected ShapeAndNeighborAnalysis SNA = new ShapeAndNeighborAnalysis(new TypedPath("NOT INITIALIZED"));
     ITIPLPluginIO CL = TIPLPluginManager.createFirstPluginIO("ComponentLabel");
 
     public AnalyzePhase() {
@@ -130,7 +130,7 @@ public class AnalyzePhase extends BaseTIPLBlock {
     public static class ShapeAndNeighborAnalysis {
         public final boolean useGrownLabel = false;
         ITIPLPluginIO myNH = new Neighbors();
-        public ShapeAndNeighborAnalysis(ArgumentList.TypedPath phName) {
+        public ShapeAndNeighborAnalysis(TypedPath phName) {
         	seedCSVFile=phName.append("_1.csv");
         	densCSVFile=phName.append("_2.csv");
         	nhCSVFile=phName.append("_3.csv");
@@ -139,7 +139,7 @@ public class AnalyzePhase extends BaseTIPLBlock {
         	this.phName=phName;
         }
         
-        public ShapeAndNeighborAnalysis(ArgumentList.TypedPath seedFile, ArgumentList.TypedPath phName) {
+        public ShapeAndNeighborAnalysis(TypedPath seedFile, TypedPath phName) {
         	seedCSVFile=seedFile;
         	densCSVFile=phName.append("_2.csv");
         	nhCSVFile=phName.append("_3.csv");
@@ -147,11 +147,11 @@ public class AnalyzePhase extends BaseTIPLBlock {
         	appendMode=true;
         	this.phName=phName;
         }
-        final protected ArgumentList.TypedPath phName;
-        final protected ArgumentList.TypedPath seedCSVFile;
-        final protected ArgumentList.TypedPath densCSVFile;
-        final protected ArgumentList.TypedPath nhCSVFile;
-        final protected ArgumentList.TypedPath edgeCSVFile;
+        final protected TypedPath phName;
+        final protected TypedPath seedCSVFile;
+        final protected TypedPath densCSVFile;
+        final protected TypedPath nhCSVFile;
+        final protected TypedPath edgeCSVFile;
         
         /**
          * appendMode means the file is appended rather than created (skip LacunaAnalysis Step)

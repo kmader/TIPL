@@ -27,6 +27,7 @@ import tipl.util.SGEJob;
 import tipl.util.TIPLDialog;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 /**
  * An interactive resizing tool
@@ -111,10 +112,10 @@ public class InteractiveResize implements TIPLDialog.DialogInteraction {
 	 *
 	 */
 	protected static class slicePreviewROI implements Runnable {
-		protected final ArgumentList.TypedPath inPath;
+		protected final TypedPath inPath;
 		protected ImagePlus curImage;
 		protected TIPLDialog.DialogInteraction diagPipe;
-		public slicePreviewROI(final ArgumentList.TypedPath inPath, final TIPLDialog.DialogInteraction diagPipe) {
+		public slicePreviewROI(final TypedPath inPath, final TIPLDialog.DialogInteraction diagPipe) {
 			this.inPath=inPath;
 			this.diagPipe = diagPipe;
 		}

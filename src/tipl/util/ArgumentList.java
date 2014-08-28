@@ -3,7 +3,6 @@
  */
 package tipl.util;
 
-import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Vector;
 
@@ -655,106 +654,6 @@ public class ArgumentList {
         }
 
 
-    }
-
-    /**
-     * A class that allows paths to be specified in the format
-     * path::extension and be parsed properly / handled correctly by
-     * IO plugins which need to save stacks in folders in the proper format
-     * the default extension is "" which maps to the first writing tool.
-     * Additionally the tool support multiple types of path from local, to 
-     * virtual, and hadoop formats making it clearer which can be read
-     *
-     * @author mader
-     */
-    public static class TypedPath {
-        final protected String inStr;
-        final protected String inType;
-        
-        public static enum PATHTYPE {
-        	LOCAL, VIRTUAL, HADOOP
-        }
-        final protected PATHTYPE pathType;
-        /**
-         * A cloning command
-         * @param inTp
-         */
-        public TypedPath(final TypedPath inTp) {
-            this.inStr = inTp.getPath();
-            this.inType = inTp.getType();
-            this.pathType = inTp.pathType;
-        }
-        
-        protected TypedPath(final String inStr,PATHTYPE inPathType) {
-        	String[] spStr = inStr.split("::");
-            if (spStr.length > 1) {
-                this.inStr = spStr[0];
-                this.inType = spStr[1];
-            } else {
-                this.inStr = inStr;
-                this.inType = "";
-            }
-            this.pathType = inPathType;
-        }
-        protected TypedPath(final String newPath,final TypedPath oldTp) {
-        	this.inStr = newPath;
-            this.inType = oldTp.getType();
-            this.pathType = oldTp.pathType;
-        }
-        public TypedPath(final String inStr) {
-             this(inStr,PATHTYPE.LOCAL);
-        }
-        
-        
-        public static TypedPath virtualPath(final String hadoopPath) {
-        	return new TypedPath(hadoopPath,PATHTYPE.VIRTUAL);
-        }
-        public static TypedPath hadoopPath(final String hadoopPath) {
-        	return new TypedPath(hadoopPath,PATHTYPE.HADOOP);
-        }
-        
-        
-        public int length() { return getPath().length();}
-
-        public boolean isReadable() {
-        	return ((pathType==PATHTYPE.LOCAL) || (pathType==PATHTYPE.HADOOP));
-        }
-        
-        public boolean isLocal() {
-        	return ((pathType==PATHTYPE.LOCAL));
-        }
-
-        public String getType() {
-            return this.inType;
-        }
-
-        public String getPath() {
-            return this.inStr;
-        }
-
-        public String toString() {
-            return inStr;
-        }
-        public String summary() {
-        	return "Path:"+getPath()+",Type:"+getType()+",FS:"+pathType;
-        }
-        /** 
-         * Make the path absolute only works on local filesystems
-         * @return
-         */
-        public TypedPath makeAbsPath() {
-        	if (!isLocal()) throw new IllegalArgumentException(summary()+" is not local and can not be converted to an absolute path");
-        	final String newPath = (new File(getPath())).getAbsolutePath(); 
-        	return new TypedPath(newPath,this);
-        }
-        /** 
-         * Add a filename to a directory
-         * @param fileName the name of the file
-         * @return the directory
-         */
-        public TypedPath append(String fileName) {
-        	return new TypedPath(getPath()+fileName,this);
-        }
     }
 
     /**

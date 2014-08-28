@@ -2,12 +2,12 @@ package tipl.blocks;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 /**
  * Takes labeled regions and grows them into a mask image (bubbles, cells, etc)
@@ -32,7 +32,7 @@ public class GrowRegions extends BaseTIPLBlock {
 			AnalyzePhase.ShapeAndNeighborAnalysis {
 		public final boolean useGrownLabel = true;
 		public int fillType = 0;
-		public GrownShapeNeighborAnalysis(ArgumentList.TypedPath phName) {
+		public GrownShapeNeighborAnalysis(TypedPath phName) {
 			super(phName);
 		}
 		@Override
@@ -57,10 +57,10 @@ public class GrowRegions extends BaseTIPLBlock {
 	}
 
 	public String prefix;
-	public ArgumentList.TypedPath phaseName;
+	public TypedPath phaseName;
 	protected boolean writeShapeTensor;
 	protected double sphKernelRadius;
-	protected GrownShapeNeighborAnalysis SNA= new GrownShapeNeighborAnalysis(new ArgumentList.TypedPath("TOTALLY INVALID"));
+	protected GrownShapeNeighborAnalysis SNA= new GrownShapeNeighborAnalysis(new TypedPath("TOTALLY INVALID"));
 	public final IBlockImage[] inImages = new IBlockImage[] {
 			new BlockImage("labels", "label.tif", "Labeled image", true),
 			new BlockImage("mask", "mask.tif", "Mask Image", true) };

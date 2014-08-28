@@ -8,11 +8,11 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 /**
  * @author maderk
@@ -118,7 +118,7 @@ public class DMPFolder extends DirectoryReader {
 	@DirectoryReader.DReader(name = "DMP")
 	final public static DRFactory myFactory = new DRFactory() {
 		@Override
-		public DirectoryReader get(final ArgumentList.TypedPath path) {
+		public DirectoryReader get(final TypedPath path) {
 			try {
 				return new DMPFolder(path);
 			} catch (final Exception e) {
@@ -135,7 +135,7 @@ public class DMPFolder extends DirectoryReader {
 	};
 
 
-	public DMPFolder(final ArgumentList.TypedPath path) throws IOException {
+	public DMPFolder(final TypedPath path) throws IOException {
 		super(path, dmpFilter, new DMPSliceFactory());
 
 	}

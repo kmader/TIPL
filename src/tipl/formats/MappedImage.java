@@ -3,11 +3,10 @@
  */
 package tipl.formats;
 
-import tipl.util.ArgumentList;
-import tipl.util.ArgumentList.TypedPath;
 import tipl.util.ArgumentParser;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 import java.util.HashMap;
 
@@ -232,7 +231,7 @@ public class MappedImage extends FuncImage {
 
     @Override
     public TypedPath getPath() {
-        return ArgumentList.TypedPath.virtualPath(svf.name() + " @ " + templateData.getPath());
+        return TypedPath.virtualPath(svf.name() + " @ " + templateData.getPath());
     }
 
     @Override

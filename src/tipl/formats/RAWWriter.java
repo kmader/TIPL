@@ -1,7 +1,7 @@
 package tipl.formats;
 
-import tipl.util.ArgumentList;
 import tipl.util.TIPLGlobal;
+import tipl.util.TypedPath;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
  */
 public class RAWWriter implements TWriter {
     OutputStream os;
-    ArgumentList.TypedPath rawName;
+    TypedPath rawName;
     TImg outImg;
     int rawType;
 
@@ -28,7 +28,7 @@ public class RAWWriter implements TWriter {
     }
 
     @Override
-    public void SetupWriter(final TImg inImg, final ArgumentList.TypedPath outpath) {
+    public void SetupWriter(final TImg inImg, final TypedPath outpath) {
         outImg = inImg;
         rawName = outpath;
         try {

@@ -1,10 +1,9 @@
 package tipl.formats;
 
-import tipl.util.ArgumentList.TypedPath;
-import tipl.util.ArgumentList;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
+import tipl.util.TypedPath;
 
 import java.io.Serializable;
 
@@ -154,7 +153,7 @@ public class PureFImage implements TImgRO, TImgTools.ChangesDimensions {
 
 	@Override
 	public TypedPath getPath() {
-		return ArgumentList.TypedPath.virtualPath(pf.name() + " @ PureFImage");
+		return TypedPath.virtualPath(pf.name() + " @ PureFImage");
 	}
 
 	@Override
