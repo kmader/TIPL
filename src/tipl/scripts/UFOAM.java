@@ -73,7 +73,7 @@ public class UFOAM {
     ArgumentList.TypedPath labelnhAimFile;
     TImg labelnhAim;
     ArgumentList.TypedPath ridgeAimFile;
-    String clporCsv;
+    ArgumentList.TypedPath clporCsv;
     int threshVal, closeIter, closeNH, openIter, openNH, dilNH,
             downsampleFactor, upsampleFactor, startingStage, minVolumeDef,
             maskContourSteps, porosMaskPeel, rdfSize, rdfIter, ccup, ccdown,
@@ -109,7 +109,7 @@ public class UFOAM {
         stageList = p.getOptionString("stagelist", stageList,
                 "Run the given stages (eg 1,2,3,5 )");
 
-        ufiltAimFile = p.getOptionString("ufilt", "", "Input unfiltered image");
+        ufiltAimFile = p.getOptionPath("ufilt", "", "Input unfiltered image");
         outputDirectory = p
                 .getOptionString(
                         "outdir",
@@ -118,7 +118,7 @@ public class UFOAM {
         if (outputDirectory.length() > 0)
             useOutputDirectory();
 
-        floatAimFile = p.getOptionString("floatout", "",
+        floatAimFile = p.getOptionPath("floatout", "",
                 "Post-resampling and filtering image");
         threshoutAimFile = p
                 .getOptionPath("threshout", "", "Thresheld image");
@@ -152,7 +152,7 @@ public class UFOAM {
                 "Curvature Output");
         labelnhAimFile = p.getOptionPath("neighbors", "neighbors.tif",
                 "Neighbor Count Image");
-        clporCsv = p.getOptionString("csv", "clpor",
+        clporCsv = p.getOptionPath("csv", "clpor",
                 "Output shape analysis file (auto .csv)");
 
         // Parse the Parameters
@@ -426,8 +426,8 @@ public class UFOAM {
         }
     }
 
-    public String nameVersion(final String inName, final int verNumber) {
-        return inName + "_" + verNumber + ".csv";
+    public ArgumentList.TypedPath nameVersion(final ArgumentList.TypedPath inName, final int verNumber) {
+        return inName.append("_" + verNumber + ".csv");
     }
 
     public TImg peelAim(final TImg cAim, final int iters) {
@@ -762,7 +762,7 @@ public class UFOAM {
                     runThickness();
                     TImgTools.WriteTImg(thickmapAim, thickmapAimFile);
                     GrayAnalysis.StartHistogram(thickmapAim, thickmapAimFile
-                            + ".csv");
+                    		.append( ".csv"));
                 }
                 thickmapAim = null;
                 distmapAim = null;
@@ -777,7 +777,7 @@ public class UFOAM {
                     curveAim = Curvature.RunCC(bubblesAim, ccsigma, ccup, ccdown,
                             (float) ccthresh);
                     TImgTools.WriteTImg(curveAim, curveAimFile);
-                    GrayAnalysis.StartHistogram(curveAim, curveAimFile + ".csv",
+                    GrayAnalysis.StartHistogram(curveAim, curveAimFile.append( ".csv"),
                             -1, 1, 32765);
                     curveAim = null;
                 } else {
@@ -861,41 +861,34 @@ public class UFOAM {
                 if (platAim == null)
                     platAim = TImgTools.ReadTImg(platAimFile);
                 GrayAnalysis.StartZProfile(platAim, maskAim,
-                        platAimFile + "_z.txt", -1);
+                        platAimFile.append( "_z.txt"), -1);
                 GrayAnalysis.StartRProfile(platAim, maskAim,
-                        platAimFile + "_r.txt", -1);
-                GrayAnalysis.StartRCylProfile(platAim, maskAim, platAimFile
-                        + "_rcyl.txt", -1);
+                        platAimFile.append("_r.txt"), -1);
+                GrayAnalysis.StartRCylProfile(platAim, maskAim, platAimFile.append( "_rcyl.txt"), -1);
                 platAim = null;
 
                 if (thickmapAim == null)
                     thickmapAim = TImgTools.ReadTImg(thickmapAimFile);
-                GrayAnalysis.StartZProfile(thickmapAim, maskAim, thickmapAimFile
-                        + "_z.txt", 0.1f);
-                GrayAnalysis.StartRProfile(thickmapAim, maskAim, thickmapAimFile
-                        + "_r.txt", 0.1f);
-                GrayAnalysis.StartRCylProfile(thickmapAim, maskAim, thickmapAimFile
-                        + "_rcyl.txt", 0.1f);
+                GrayAnalysis.StartZProfile(thickmapAim, maskAim, thickmapAimFile.append("_z.txt"), 0.1f);
+                GrayAnalysis.StartRProfile(thickmapAim, maskAim, thickmapAimFile.append("_r.txt"), 0.1f);
+                GrayAnalysis.StartRCylProfile(thickmapAim, maskAim, thickmapAimFile.append("_rcyl.txt"), 0.1f);
                 thickmapAim = null;
 
                 if (curveAim == null)
                     curveAim = TImgTools.ReadTImg(curveAimFile);
                 GrayAnalysis
-                        .StartZProfile(curveAim, curveAimFile + "_z.txt", -1000);
+                        .StartZProfile(curveAim, curveAimFile.append( "_z.txt"), -1000);
                 GrayAnalysis
-                        .StartRProfile(curveAim, curveAimFile + "_r.txt", -1000);
-                GrayAnalysis.StartRCylProfile(curveAim, curveAimFile + "_rcyl.txt",
+                        .StartRProfile(curveAim, curveAimFile.append( "_r.txt"), -1000);
+                GrayAnalysis.StartRCylProfile(curveAim, curveAimFile.append( "_rcyl.txt"),
                         -1000);
                 curveAim = null;
 
                 if (labelnhAim == null)
                     labelnhAim = TImgTools.ReadTImg(labelnhAimFile);
-                GrayAnalysis.StartZProfile(labelnhAim, maskAim, labelnhAimFile
-                        + "_z.txt", 1);
-                GrayAnalysis.StartRProfile(labelnhAim, maskAim, labelnhAimFile
-                        + "_r.txt", 1);
-                GrayAnalysis.StartRCylProfile(labelnhAim, maskAim, labelnhAimFile
-                        + "_rcyl.txt", 1);
+                GrayAnalysis.StartZProfile(labelnhAim, maskAim, labelnhAimFile.append("_z.txt"), 1);
+                GrayAnalysis.StartRProfile(labelnhAim, maskAim, labelnhAimFile.append("_r.txt"), 1);
+                GrayAnalysis.StartRCylProfile(labelnhAim, maskAim, labelnhAimFile.append("_rcyl.txt"), 1);
                 labelnhAim = null;
 
                 break;

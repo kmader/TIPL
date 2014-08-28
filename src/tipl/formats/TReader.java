@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
+import tipl.util.ArgumentList;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.ITIPLStorage;
@@ -441,5 +442,5 @@ public interface TReader extends Serializable {
 	public TSliceReader ReadSlice(int n) throws IOException;
 
 	/** The command to initialize the writer */
-	public void SetupReader(String inPath);
+	public void SetupReader(ArgumentList.TypedPath inPath);
 }

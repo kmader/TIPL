@@ -138,16 +138,16 @@ public class XDF extends BaseTIPLPluginMult {
     }
 
     public static TImg WriteHistograms(XDF cXDF, TImgRO.CanExport inAim,
-                                       String outfile) {
+    		ArgumentList.TypedPath outfile) {
         final TImg outAim = cXDF.ExportImages(inAim)[0];
-        GrayAnalysis.StartRProfile(outAim, outfile + "_r.txt", 0.0f);
-        GrayAnalysis.StartZProfile(outAim, outfile + "_z.txt", 0.0f);
-        GrayAnalysis.StartRCylProfile(outAim, outfile + "_rcyl.txt", 0.0f);
+        GrayAnalysis.StartRProfile(outAim, outfile.append("_r.txt"), 0.0f);
+        GrayAnalysis.StartZProfile(outAim, outfile.append("_z.txt"), 0.0f);
+        GrayAnalysis.StartRCylProfile(outAim, outfile.append("_rcyl.txt"), 0.0f);
         GrayAnalysis.StartFProfile(outAim,
-                new PureFImage.PhiImageSph(outAim, 3), outfile + "_rphi.txt",
+                new PureFImage.PhiImageSph(outAim, 3), outfile.append( "_rphi.txt"),
                 0.0f);
         GrayAnalysis.StartFProfile(outAim, new PureFImage.ThetaImageCyl(outAim,
-                3), outfile + "_thcyl.txt", 0.0f);
+                3), outfile.append("_thcyl.txt"), 0.0f);
 
         return outAim;
     }
@@ -174,14 +174,14 @@ public class XDF extends BaseTIPLPluginMult {
                 "Load data as native type");
 
         if (asFloat) {
-            startImageType = 3;
+            startImageType = TImgTools.IMAGETYPE_FLOAT;
         } else if (asInt) {
-            startImageType = 2;
+            startImageType = TImgTools.IMAGETYPE_INT;
 
         } else if (asNative) {
             startImageType = -1;
         } else {
-            startImageType = 10;
+            startImageType = TImgTools.IMAGETYPE_BOOL;
         }
         inPhase = p.getOptionInt(cPrefix + "inphase", inPhase,
                 "Input phase to use as starting points for the analysis (only for asint)");

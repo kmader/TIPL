@@ -39,6 +39,15 @@ public interface ITIPLBlock {
 			isess = essential;
 			dname = defName;
 		}
+		@Deprecated
+		public BlockImage(final String iName, final String defName,
+				final String iDesc, final boolean essential) {
+			name = iName;
+			desc = iDesc;
+			isess = essential;
+			dname = new ArgumentList.TypedPath(defName);
+		}
+		
 
 		@Override
 		public ArgumentList.TypedPath getDefaultValue() {

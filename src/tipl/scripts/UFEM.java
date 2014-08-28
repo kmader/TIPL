@@ -120,7 +120,7 @@ public class UFEM implements Runnable {
      * How big do you think the data set is
      */
     protected D3int guessDim = new D3int(1024, 1024, 1024);
-    String lacunCsv, canalCsv;
+    ArgumentList.TypedPath lacunCsv, canalCsv;
     String stageList;
     volatile boolean maskdistAimReady = true;
     volatile boolean canaldistAimReady = true;
@@ -212,9 +212,9 @@ public class UFEM implements Runnable {
         // String
         // baseName=ufiltAimFile.substring(0,ufiltAimFile.lastIndexOf("."));
         // if (baseName.length()<1) baseName="UFILT";
-        lacunCsv = p.getOptionString("lacuncsv", "lacun",
+        lacunCsv = p.getOptionPath("lacuncsv", "lacun",
                 "Output shape analysis file (auto .csv)");
-        canalCsv = p.getOptionString("canalcsv", "canal",
+        canalCsv = p.getOptionPath("canalcsv", "canal",
                 "Output shape analysis file (auto .csv)");
 
         // Parse the Parameters
@@ -498,19 +498,19 @@ public class UFEM implements Runnable {
                                        final ArgumentList.TypedPath fileroot) {
         GrayAnalysis.StartThetaCylProfile(datAim, mskAim, fileroot + "_th.txt",
                 0.1f);
-        GrayAnalysis.StartZProfile(datAim, mskAim, fileroot + "_z.txt", 0.1f);
-        GrayAnalysis2D.StartRZProfile(datAim, fileroot + "_rz.txt", 0.1f, 1000);
-        GrayAnalysis2D.StartThZProfile(datAim, fileroot + "_thz.txt", 0.1f,
+        GrayAnalysis.StartZProfile(datAim, mskAim, fileroot.append( "_z.txt"), 0.1f);
+        GrayAnalysis2D.StartRZProfile(datAim, fileroot.append( "_rz.txt"), 0.1f, 1000);
+        GrayAnalysis2D.StartThZProfile(datAim, fileroot.append("_thz.txt"), 0.1f,
                 1000);
     }
 
     /**
      * a function to provide new names to the newly recontoured objects
      */
-    public static String originalName(final String inFile) {
-        final int cPos = inFile.lastIndexOf(File.separator);
-        return inFile.substring(0, cPos + 1) + "precont_"
-                + inFile.substring(cPos + 1);
+    public static ArgumentList.TypedPath originalName(final ArgumentList.TypedPath inFile) {
+        final int cPos = inFile.getPath().lastIndexOf(File.separator);
+        return new ArgumentList.TypedPath(inFile.getPath().substring(0, cPos + 1) + "precont_"
+                + inFile.getPath().substring(cPos + 1));
     }
 
     public static TImg peelAim(final TImg cAim, final TImg maskAim,
@@ -726,7 +726,7 @@ public class UFEM implements Runnable {
     /**
      * Code to make preview (slices every 20 slides of the data)
      */
-    public void makePreview(final String previewName, final TImg previewData) {
+    public void makePreview(final ArgumentList.TypedPath previewName, final TImg previewData) {
     	final int skipSlices=20;
         final ITIPLPluginIO fs = TIPLPluginManager.createBestPluginIO("Filter", new TImgRO[] {previewData});
         fs.LoadImages( new TImgRO[] {previewData});
@@ -736,8 +736,8 @@ public class UFEM implements Runnable {
         TImgTools.WriteTImg(tempAim, previewName);
     }
 
-    public String nameVersion(final String inName, final int verNumber) {
-        return inName + "_" + verNumber + ".csv";
+    public ArgumentList.TypedPath nameVersion(final ArgumentList.TypedPath inName, final int verNumber) {
+        return inName.append( "_" + verNumber + ".csv");
     }
 
     /**
@@ -886,12 +886,12 @@ public class UFEM implements Runnable {
      *                 labeled image
      */
     public TImg runNeighborhoodAnalysis(final TImg inputAim,
-                                        final String edgeName) {
+                                        final ArgumentList.TypedPath edgeName) {
         final Neighbors nbor = new Neighbors(inputAim);
         System.out.println("Calculating neighbors " + inputAim + " ...");
         nbor.execute();
         System.out.println("Writing csv neigbhor-list ...");
-        nbor.WriteNeighborList(edgeName + "_edge.csv");
+        nbor.WriteNeighborList(edgeName.append("_edge.csv"));
         return nbor.ExportCountImageAim(inputAim);
     }
 
@@ -1012,10 +1012,16 @@ public class UFEM implements Runnable {
                         .println("Begin Special Stage, Recontouring and Mask Repairing...");
 
                 // Make Backups
-                for (final String imgFile : imgListBW)
+                for (final String imgFileStr : imgListBW)
+                {
+                	ArgumentList.TypedPath imgFile = new ArgumentList.TypedPath(imgFileStr);
                     TIPLGlobal.copyFile(imgFile, originalName(imgFile));
-                for (final String imgFile : imgListColor)
-                    TIPLGlobal.copyFile(imgFile, originalName(imgFile));
+                }
+                for (final String imgFileStr : imgListColor)
+                {
+                	ArgumentList.TypedPath imgFile = new ArgumentList.TypedPath(imgFileStr);
+                	TIPLGlobal.copyFile(imgFile, originalName(imgFile));
+                }
                 TIPLGlobal.copyFile(boneAimFile, originalName(boneAimFile));
                 TIPLGlobal.copyFile(maskAimFile, originalName(maskAimFile));
 
@@ -1293,7 +1299,7 @@ public class UFEM implements Runnable {
                 cdtbAim = KT.ExportImages(canalDistAim)[0];
                 canalDistAim = null;
                 TImgTools.WriteTImg(cdtbAim, cdtbAimFile);
-                GrayAnalysis.StartHistogram(cdtbAim, cdtbAimFile + ".csv");
+                GrayAnalysis.StartHistogram(cdtbAim, cdtbAimFile.append(".csv"));
                 cdtbAim = null;
                 break;
             case 20:
@@ -1307,7 +1313,7 @@ public class UFEM implements Runnable {
                 mdtoAim = MKT.ExportImages(maskdistAim)[0];
                 maskdistAim = null;
                 TImgTools.WriteTImg(mdtoAim, mdtoAimFile);
-                GrayAnalysis.StartHistogram(mdtoAim, mdtoAimFile + ".csv");
+                GrayAnalysis.StartHistogram(mdtoAim, mdtoAimFile .append( ".csv"));
                 mdtoAim = null;
                 break;
             case 21:

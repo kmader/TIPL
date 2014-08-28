@@ -403,13 +403,13 @@ public class Neighbors extends BaseTIPLPluginIO {
      * Write list of neighbors from analysis as a csv file with (obj_a,
      * obj_b,overlapping_voxels) for all obj_a IS_TOUCHING obj_b
      */
-    public boolean WriteNeighborList(final String outfileName) {
+    public boolean WriteNeighborList(final ArgumentList.TypedPath outfileName) {
         if (!isRun)
             execute();
         System.out.println("Writing EdgeFile..." + outfileName);
 
         try {
-            final FileWriter out = new FileWriter(outfileName, false);
+            final FileWriter out = new FileWriter(outfileName.getPath(), false);
             String outString = "// Sample: " + outfileName + "\n";
             outString += "// Component 1, Component 2, Voxels\n";
             out.write(outString);

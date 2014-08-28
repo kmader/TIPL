@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Hashtable;
 
+import tipl.util.ArgumentList;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
@@ -259,9 +260,9 @@ public class ISQReader implements TReader {
 	}
 
 	@Override
-	public void SetupReader(final String inPath) {
+	public void SetupReader(final ArgumentList.TypedPath inPath) {
 		try {
-			iFile = new File(inPath);
+			iFile = new File(inPath.getPath());
 		} catch (final Exception e) {
 			System.err.println("Given path:" + inPath + " is not valid...");
 			e.printStackTrace();

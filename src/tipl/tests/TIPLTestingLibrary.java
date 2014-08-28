@@ -5,6 +5,7 @@ package tipl.tests;
 
 import tipl.formats.TImgRO;
 import tipl.tools.BaseTIPLPluginIn;
+import tipl.util.ArgumentList;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
 
@@ -206,6 +207,14 @@ public abstract class TIPLTestingLibrary {
         // make sure the entire dataset is spanned
         assertEquals(lastSlice, maxSlice);
 
+    }
+    /**
+     * A way for creating typed images in the appropriate place for the given test
+     * @param imageName
+     * @return
+     */
+    static public ArgumentList.TypedPath createTestImage(String imageName) {
+    	return new ArgumentList.TypedPath(imageName);
     }
 
 }

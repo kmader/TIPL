@@ -3,6 +3,7 @@ package tipl.tests;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import tipl.formats.TImgRO;
 import tipl.tools.ComponentLabel;
 import tipl.tools.GrayAnalysis;
@@ -23,9 +24,9 @@ import static org.junit.Assert.assertEquals;
  */
 public class GrayAnalysisTest {
     final public static String testCSVData = "I am just junk\nCOLA,COLB,COLC\n1,2,3\n4,5,6\n7,8,9\n7,8,9\n";
-    static protected String tempFilePathCSV = "";
-    static protected String tempFilePath = "";
-    static protected String tempFilePath2 = "";
+    static protected ArgumentList.TypedPath tempFilePathCSV = new ArgumentList.TypedPath("");
+    static protected ArgumentList.TypedPath tempFilePath = new ArgumentList.TypedPath("");
+    static protected ArgumentList.TypedPath tempFilePath2 = new ArgumentList.TypedPath("");
     private static boolean doDelete = true;
 
     protected static void showLine(Hashtable<String, String> cLine, int lineNo) {
@@ -76,7 +77,7 @@ public class GrayAnalysisTest {
         return CL.ExportImages(sImg)[0];
     }
 
-    protected static ITIPLPlugin doLacunaAnalysis(final TImgRO labelImage, final String outFile) {
+    protected static ITIPLPlugin doLacunaAnalysis(final TImgRO labelImage, final ArgumentList.TypedPath outFile) {
 
 
         ITIPLPlugin cGA = GrayAnalysis.StartLacunaAnalysis(labelImage, outFile, "First Run");
@@ -90,7 +91,7 @@ public class GrayAnalysisTest {
     }
 
     static final protected String[] tempFiles() {
-        return new String[]{tempFilePathCSV, tempFilePath, tempFilePath2};
+        return new ArgumentList.TypedPath[]{tempFilePathCSV, tempFilePath, tempFilePath2};
     }
 
     @BeforeClass
@@ -98,11 +99,11 @@ public class GrayAnalysisTest {
         File temp;
         try {
             temp = File.createTempFile("csvTester", ".csv");
-            tempFilePathCSV = temp.getAbsolutePath();
+            tempFilePathCSV = TIPLTestingLibrary.createTestImage(temp.getAbsolutePath());
             temp = File.createTempFile("lacunaAnalysis", ".csv");
-            tempFilePath = temp.getAbsolutePath();
+            tempFilePath = TIPLTestingLibrary.createTestImage(temp.getAbsolutePath());
             temp = File.createTempFile("lacunaAnalysis2", ".csv");
-            tempFilePath2 = temp.getAbsolutePath();
+            tempFilePath2 = TIPLTestingLibrary.createTestImage(temp.getAbsolutePath());
         } catch (IOException e) {
             throw new IllegalArgumentException("cannot create a temporary file for GrayAnalysis to write to");
         }
@@ -180,7 +181,7 @@ public class GrayAnalysisTest {
     @Test
     public void testCSVFileRead() {
         try {
-            FileWriter testWriter = new FileWriter(tempFilePathCSV);
+            FileWriter testWriter = new FileWriter(tempFilePathCSV.getPath());
             testWriter.write(testCSVData);
             testWriter.close();
         } catch (IOException e) {
@@ -188,7 +189,7 @@ public class GrayAnalysisTest {
         }
 
         // check the output file itself
-        int[] rowCols = checkFile(tempFilePathCSV, true);
+        int[] rowCols = checkFile(tempFilePathCSV.getPath(), true);
         assertEquals(4, rowCols[0]);
         assertEquals(3, rowCols[1]);
 
@@ -211,7 +212,7 @@ public class GrayAnalysisTest {
         assertEquals(5, ((Long) cGA.getInfo("groups")).longValue());
 
         // check the output file itself
-        int[] rowCols = checkFile(tempFilePath, false);
+        int[] rowCols = checkFile(tempFilePath.getPath(), false);
         assertEquals(5, rowCols[0]);
         assertEquals(40, rowCols[1]);
 
@@ -231,7 +232,7 @@ public class GrayAnalysisTest {
         assertEquals(5, ((Long) cGA.getInfo("groups")).longValue());
 
         // check the output file itself
-        int[] rowCols = checkFile(tempFilePath2, true);
+        int[] rowCols = checkFile(tempFilePath2.getPath(), true);
         assertEquals(5, rowCols[0]);
         assertEquals(44, rowCols[1]);
 

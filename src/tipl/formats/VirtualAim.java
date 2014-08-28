@@ -2358,18 +2358,18 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
     /**
      * Reads in the given path and loads the first slice
      */
-    public boolean ReadAim(final String inpath, final boolean onlyHeader) {
+    public boolean ReadAim(final ArgumentList.TypedPath inpath, final boolean onlyHeader) {
         int zlen = 0;
         // Initialize the Fields here so they can be filled
         pos = new D3int();
         offset = new D3int();
-        elSize = new D3float(0.0014, 0.0014, 0.0014);
+        elSize = new D3float(1,1,1);
 
         ShortScaleFactor = 1.0f;
         isSigned = false;
 
-        String spath = inpath.toUpperCase();
-        String localpath = inpath;
+        String spath = inpath.getPath().toUpperCase();
+        ArgumentList.TypedPath localpath = inpath;
         // Get rid of any semicolons stupid ass vms
         if (spath.lastIndexOf(";") > 0) {
 
@@ -2386,7 +2386,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
             imglist = new File[1];
             // For tifdirectory files we can copy them locally first
             localpath = localLoadingRead(inpath);
-            imglist[0] = new File(localpath);
+            imglist[0] = new File(localpath.getPath());
             final ImageDecoder dec = parseTifStack(true);
             try {
                 appendProcLog("Reading in Layered Tiff: " + inpath
@@ -2426,7 +2426,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
             return true;
         } else {
             layertiff = false;
-            final TImg cImg = DirectoryReader.ChooseBest(inpath).getImage();
+            final TImg cImg = DirectoryReader.ChooseBest(inpath.getPath()).getImage();
             WrapTImg(cImg);
             return true;
         }

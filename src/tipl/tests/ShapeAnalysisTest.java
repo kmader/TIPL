@@ -70,8 +70,8 @@ public class ShapeAnalysisTest {
         SparkGlobal.getContext(this.getClass().getName());
         TIPLGlobal.setDebug(TIPLGlobal.DEBUG_ALL);
         if (TIPLGlobal.getDebug()) {
-            TImgTools.WriteTImg(layeredImage, "layered.tif");
-            TImgTools.WriteTImg(diagonalPlane, "diagonal.tif");
+            TImgTools.WriteTImg(layeredImage, TIPLTestingLibrary.createTestImage("layered.tif"));
+            TImgTools.WriteTImg(diagonalPlane, TIPLTestingLibrary.createTestImage("diagonal.tif"));
         }
 
     }

@@ -71,7 +71,7 @@ public class HildThickness extends Thickness {
 			final ArgumentList.TypedPath histoFile) {
 		final TImg thickmapAim = DTO(TImgTools.ReadTImg(inAimFile));
 		TImgTools.WriteTImg(thickmapAim,outAimFile);
-		GrayAnalysis.StartHistogram(thickmapAim, histoFile.getPath() + ".csv");
+		GrayAnalysis.StartHistogram(thickmapAim, histoFile.append( ".csv"));
 		return true;
 	}
 
@@ -102,14 +102,14 @@ public class HildThickness extends Thickness {
 		if (outAimFile.length() > 0)
 			TImgTools.WriteTImg(mapAims[1],outAimFile);
 		if (histoFile.length() > 0)
-			GrayAnalysis.StartHistogram(mapAims[1], histoFile + ".tsv");
+			GrayAnalysis.StartHistogram(mapAims[1], histoFile.append( ".tsv"));
 		if (profileFile.length() > 0) {
 			GrayAnalysis.StartZProfile(mapAims[1], maskAim, profileFile
-					+ "_z.tsv", 0.1f);
+					.append("_z.tsv"), 0.1f);
 			GrayAnalysis.StartRProfile(mapAims[1], maskAim, profileFile
-					+ "_r.tsv", 0.1f);
+					.append( "_r.tsv"), 0.1f);
 			GrayAnalysis.StartRCylProfile(mapAims[1], maskAim, profileFile
-					+ "_rcyl.tsv", 0.1f);
+					.append("_rcyl.tsv"), 0.1f);
 		}
 		return true;
 	}
@@ -153,12 +153,12 @@ public class HildThickness extends Thickness {
 				+ HildThickness.kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 		final ArgumentParser p =  TIPLGlobal.activeParser(args);
-		final String inAimFile = p.getOptionString("in", "",
+		final ArgumentList.TypedPath inAimFile = p.getOptionPath("in", "",
 				"In image to calculate the thickness map of");
 
-		String defOutName = inAimFile;
-		if (inAimFile.lastIndexOf(".") > 0)
-			defOutName = defOutName.substring(0, inAimFile.lastIndexOf("."));
+		String defOutName = inAimFile.getPath();
+		if (defOutName.lastIndexOf(".") > 0)
+			defOutName = defOutName.substring(0, defOutName.lastIndexOf("."));
 		final ArgumentList.TypedPath outDistFile = p.getOptionPath("distmap", defOutName
 				+ "_dist.tif", "Output distance map");
 		final ArgumentList.TypedPath outAimFile = p.getOptionPath("thickmap", defOutName

@@ -268,7 +268,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      * @param aName   name of analysis in the output file (header column prefix)
      */
     @Deprecated
-    public GrayAnalysis(final TImgRO inDMap, final String inName,
+    public GrayAnalysis(final TImgRO inDMap, final ArgumentList.TypedPath inName,
                         final ArgumentList.TypedPath outName, final String aName) {
         LoadImages(new TImgRO[]{inDMap});
         analysisName = aName;
@@ -486,8 +486,8 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
         if (justHistogram) {
             GrayAnalysis junk = new GrayAnalysis();
 
-            String ArgumentList.TypedPath = p.getOptionPath("file", "gfilt.tif", "Name of the file to run a histogram on");
-            String ArgumentList.TypedPath = p.getOptionPath("csv", "gfilt.csv", "Name of the output file");
+            final ArgumentList.TypedPath infile= p.getOptionPath("file", "gfilt.tif", "Name of the file to run a histogram on");
+            final ArgumentList.TypedPath outFile = p.getOptionPath("csv", "gfilt.csv", "Name of the output file");
             boolean usefloat = p.getOptionBoolean("usefloat", false, "use scaled float values for bins");
             boolean removeBlanks = p.getOptionBoolean("removeblanks", false, "remove blank fields");
 
@@ -924,7 +924,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartRProfile(final TImgRO inGfilt, final TImgRO inMask,
-                                     final String outFile, final float threshVal) {
+                                     final ArgumentList.TypedPath outFile, final float threshVal) {
         final FImage maskedF = new FImage.MaskablePFImage(inMask,
                 new PureFImage.RImage(inMask, 3));
         maskedF.useMask = true;
@@ -976,7 +976,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      * @param outFile
      *            path and name of output file
      */
-    public static void StartZProfile(final TImgRO inGfilt, final String outFile,
+    public static void StartZProfile(final TImgRO inGfilt, final ArgumentList.TypedPath outFile,
                                      final float threshVal) {
         StartFProfile(inGfilt, new PureFImage.ZImage(inGfilt, 1), outFile,
                 threshVal);
@@ -994,7 +994,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartZProfile(final TImgRO inGfilt, final TImgRO inMask,
-                                     final String outFile, final float threshVal) {
+                                     final ArgumentList.TypedPath outFile, final float threshVal) {
         final PureFImage maskedF = new PureFImage.ZImage(inMask, 1);
         // maskedF.useMask=true;
 
@@ -1253,7 +1253,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
         fbins = inArgs.getOptionInt(prefix + "fmin", fbins, "Number of bines for float binning of value image");
 
         analysisName = inArgs.getOptionString(prefix + "analysis", analysisName, "Name of analysis");
-        insName = inArgs.getOptionString(prefix + "insert", insName, "insert results into an existing csv");
+        insName = inArgs.getOptionPath(prefix + "insert", insName, "insert results into an existing csv");
 
 
         if (useComma)
@@ -1388,7 +1388,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
                 }
 
             }
-            final FileWriter out = new FileWriter(csvName, false);
+            final FileWriter out = new FileWriter(csvName.getPath(), false);
             out.write(headerStr);
             out.flush();
             out.close();
@@ -1502,7 +1502,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
     public void writeOutputToCSV(GrayVoxels[] gvArray, boolean useInsert, int startingIndex, boolean useLabel) {
         try {
 
-            final FileWriter out = new FileWriter(csvName, true);
+            final FileWriter out = new FileWriter(csvName.getPath(), true);
             if (useInsert) {
 
                 final CSVFile insFile = CSVFile.FromPath(insName, 2);

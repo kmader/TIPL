@@ -2,6 +2,7 @@ package tipl.blocks;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.TIPLGlobal;
@@ -31,7 +32,7 @@ public class GrowRegions extends BaseTIPLBlock {
 			AnalyzePhase.ShapeAndNeighborAnalysis {
 		public final boolean useGrownLabel = true;
 		public int fillType = 0;
-		public GrownShapeNeighborAnalysis(String phName) {
+		public GrownShapeNeighborAnalysis(ArgumentList.TypedPath phName) {
 			super(phName);
 		}
 		@Override
@@ -59,7 +60,7 @@ public class GrowRegions extends BaseTIPLBlock {
 	public String phaseName;
 	protected boolean writeShapeTensor;
 	protected double sphKernelRadius;
-	protected GrownShapeNeighborAnalysis SNA= new GrownShapeNeighborAnalysis("TOTALLY INVALID");
+	protected GrownShapeNeighborAnalysis SNA= new GrownShapeNeighborAnalysis(new ArgumentList.TypedPath("TOTALLY INVALID"));
 	public final IBlockImage[] inImages = new IBlockImage[] {
 			new BlockImage("labels", "label.tif", "Labeled image", true),
 			new BlockImage("mask", "mask.tif", "Mask Image", true) };
@@ -117,7 +118,7 @@ public class GrowRegions extends BaseTIPLBlock {
 
 	@Override
 	public ArgumentParser setParameterBlock(final ArgumentParser p) {
-		phaseName = p.getOptionString("phase", "filled_labels", "Phase name");
+		phaseName = p.getOptionPath("phase", "filled_labels", "Phase name");
 		SNA = new GrownShapeNeighborAnalysis(phaseName);
 		SNA.fillType = p
 				.getOptionInt(

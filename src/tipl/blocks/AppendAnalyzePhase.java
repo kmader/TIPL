@@ -7,6 +7,7 @@ import tipl.blocks.AnalyzePhase.ShapeAndNeighborAnalysis;
 import tipl.blocks.ITIPLBlock.BlockImage;
 import tipl.blocks.ITIPLBlock.IBlockImage;
 import tipl.formats.TImg;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.TImgTools;
 
@@ -46,8 +47,8 @@ public class AppendAnalyzePhase extends AnalyzePhase {
     
     @Override
     public ArgumentParser setParameterBlock(final ArgumentParser inp) {
-    	String seedFileName = inp.getOptionString(prefix + "seedfile", "seedfile.csv", "Shape file to append");
-        phaseName = inp.getOptionString(prefix + "phase", "phase2", "Phase name");
+    	ArgumentList.TypedPath seedFileName = inp.getOptionPath(prefix + "seedfile", "seedfile.csv", "Shape file to append");
+    	ArgumentList.TypedPath phase = inp.getOptionPath(prefix + "phase", "phase2", "Phase name");
         SNA = new ShapeAndNeighborAnalysis(seedFileName,phaseName);
         final ArgumentParser p = SNA.getNeighborPlugin().setParameter(inp,
                 prefix);

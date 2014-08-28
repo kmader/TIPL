@@ -51,7 +51,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
      */
     protected float threshVal = 0;
     protected String analysisName = "GrayAnalysis2D";
-    protected String gfiltName = "";
+    protected ArgumentList.TypedPath gfiltName = new ArgumentList.TypedPath("");
     TImg gfiltAim;
     double totVox = 0;
     double totSum = 0;
@@ -100,7 +100,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
                 "Run Profile Command");
         ga2.setParameter(p, "");
         if (doProfile) {
-            final String aimName = p.getOptionString("input", "",
+            final ArgumentList.TypedPath aimName = p.getOptionPath("input", "",
                     "Input Aim-File"); // CSV file is a needed parameter
 
             final int profileMode = p.getOptionInt("profilemode", 0,
@@ -130,7 +130,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
 
             }
         } else {
-            final String gfiltName = p.getOptionString("float", "",
+            final ArgumentList.TypedPath gfiltName = p.getOptionPath("float", "",
                     "The value channel"); // gfilt is a given parameter
 
             if (gfiltName.length() > 0) ga2.gfiltAim = TImgTools.ReadTImg(gfiltName);
@@ -154,7 +154,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
      */
     public static void StartFProfile(final TImg inGfilt,
                                      final FImage profImageA, final FImage profImageB,
-                                     final String outFile, final float threshVal, final int fbinsA,
+                                     final ArgumentList.TypedPath outFile, final float threshVal, final int fbinsA,
                                      final int fbinsB) {
         final GrayAnalysis2D newGray = new GrayAnalysis2D();
         GrayAnalysis2D.doPreload = false;
@@ -192,7 +192,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
      */
     public static void StartFProfile(final TImg inGfilt,
                                      final PureFImage profImageA, final PureFImage profImageB,
-                                     final String outFile, final float threshVal, final int fbinsA,
+                                     final ArgumentList.TypedPath outFile, final float threshVal, final int fbinsA,
                                      final int fbinsB) {
         final GrayAnalysis2D newGray = new GrayAnalysis2D();
         GrayAnalysis2D.doPreload = false;
@@ -226,7 +226,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
      * @param outFile  path and name of output file
      */
     public static void StartHistogram(final TImg mapA, final TImg mapB,
-                                      final TImg gfiltAim, final String outFile) {
+                                      final TImg gfiltAim, final ArgumentList.TypedPath outFile) {
         final GrayAnalysis2D newGray = new GrayAnalysis2D();
 
         newGray.dmapA.LoadData(mapA);
@@ -245,7 +245,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
      * @param inGfilt value file to histogram
      * @param outFile path and name of output file
      */
-    public static void StartPolePlot(final TImg inGfilt, final String outFile,
+    public static void StartPolePlot(final TImg inGfilt, final ArgumentList.TypedPath outFile,
                                      final float threshVal, final int fbins) {
         final TImg cachedGfilt = TImgTools.WrapTImgRO(TImgTools
                 .CacheImage(inGfilt));
@@ -263,7 +263,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
      * @param outFile path and name of output file
      */
     public static void StartRThProfile(final TImg inGfilt,
-                                       final String outFile, final float threshVal, final int fbins) {
+                                       final ArgumentList.TypedPath outFile, final float threshVal, final int fbins) {
         final TImg cachedGfilt = TImgTools.WrapTImgRO(TImgTools
                 .CacheImage(inGfilt));
         final PureFImage cFImgA = new PureFImage.RImageCyl(cachedGfilt, 3);
@@ -280,7 +280,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
      * @param inGfilt value file to histogram
      * @param outFile path and name of output file
      */
-    public static void StartRZProfile(final TImg inGfilt, final String outFile,
+    public static void StartRZProfile(final TImg inGfilt, final ArgumentList.TypedPath outFile,
                                       final float threshVal, final int fbins) {
         final TImg cachedGfilt = TImgTools.WrapTImgRO(TImgTools
                 .CacheImage(inGfilt));
@@ -299,7 +299,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
      * @param outFile path and name of output file
      */
     public static void StartThZProfile(final TImg inGfilt,
-                                       final String outFile, final float threshVal, final int fbins) {
+                                       final ArgumentList.TypedPath outFile, final float threshVal, final int fbins) {
         final TImg cachedGfilt = TImgTools.WrapTImgRO(TImgTools
                 .CacheImage(inGfilt));
         final PureFImage cFImgA = new PureFImage.ThetaImageCyl(cachedGfilt, 3);
@@ -318,7 +318,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
         // Float Binning Settings
         dmapA.getArguments(p, prefix + "a", " of MapA (rows) ");
         dmapB.getArguments(p, prefix + "b", " of MapB (columns)");
-        outCsvName = p.getOptionString(prefix + "csv", outCsvName,
+        outCsvName = p.getOptionPath(prefix + "csv", outCsvName,
                 "Output csv filename"); // CSV file is a needed parameter
 
         profileAsList = p.getOptionBoolean(prefix + "aslist", profileAsList,
@@ -345,18 +345,18 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
         final TImg.TImgFull fullGfilt = new TImg.TImgFull(gfiltAim);
         if (gfiltAim != null) {
             switch (gfiltAim.getImageType()) {
-                case 0:
-                case 1:
+                case TImgTools.IMAGETYPE_CHAR:
+                case TImgTools.IMAGETYPE_SHORT:
                     final short[] sgfiltSlice = fullGfilt
                             .getShortArray(sliceNumber);
                     gfiltSlice = new int[sgfiltSlice.length];
                     for (int cIndex = 0; cIndex < sgfiltSlice.length; cIndex++)
                         gfiltSlice[cIndex] = sgfiltSlice[cIndex];
                     break;
-                case 2:
+                case TImgTools.IMAGETYPE_INT:
                     gfiltSlice = fullGfilt.getIntArray(sliceNumber);
                     break;
-                case 3:
+                case TImgTools.IMAGETYPE_FLOAT:
                     fgfiltSlice = fullGfilt.getFloatArray(sliceNumber);
                     break;
                 default:
@@ -575,7 +575,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
          */
         public int fbins = DEFAULTBINS;
         boolean valuesWaiting = false;
-        String ObjName = "";
+        ArgumentList.TypedPath ObjName = new ArgumentList.TypedPath("");
         Future<double[]> psvals = null;
 
         public DiscreteReader() {
@@ -627,7 +627,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
 
         public void getArguments(final ArgumentParser p, final String prefix,
                                  final String suffix) {
-            ObjName = p.getOptionString(prefix + "_file", "",
+            ObjName = p.getOptionPath(prefix + "_file", "",
                     "Name of map aim file to open," + suffix);
             fmin = p.getOptionDouble(prefix + "_fmin", 0,
                     "The minimum value to use for rebinning," + suffix);

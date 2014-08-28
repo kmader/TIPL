@@ -5,6 +5,7 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.tools.GrayAnalysis;
 import tipl.tools.Neighbors;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.TIPLPluginManager;
@@ -28,10 +29,10 @@ public class AnalyzePhase extends BaseTIPLBlock {
     };
     public String prefix;
     public int minVoxCount;
-	public String phaseName;
+	public ArgumentList.TypedPath phaseName;
 	// public double sphKernelRadius;
 	public boolean writeShapeTensor;
-    protected ShapeAndNeighborAnalysis SNA = new ShapeAndNeighborAnalysis("NOT INITIALIZED");
+    protected ShapeAndNeighborAnalysis SNA = new ShapeAndNeighborAnalysis(new ArgumentList.TypedPath("NOT INITIALIZED"));
     ITIPLPluginIO CL = TIPLPluginManager.createFirstPluginIO("ComponentLabel");
 
     public AnalyzePhase() {
@@ -112,7 +113,7 @@ public class AnalyzePhase extends BaseTIPLBlock {
     	minVoxCount = p.getOptionInt(prefix + "minvoxcount", 1, "Minimum voxel count");
         // sphKernelRadius=p.getOptionDouble("sphkernelradius",1.74,"Radius of spherical kernel to use for component labeling: vertex sharing is sqrt(3)*r, edge sharing is sqrt(2)*r,face sharing is 1*r ");
         writeShapeTensor = p.getOptionBoolean(prefix + "shapetensor", true, "Include Shape Tensor");
-        phaseName = p.getOptionString(prefix + "phase", "phase1", "Phase name");
+        phaseName = p.getOptionPath(prefix + "phase", "phase1", "Phase name");
         SNA = new ShapeAndNeighborAnalysis(phaseName);
         final ArgumentParser p2 = SNA.getNeighborPlugin().setParameter(p,
                 prefix);
@@ -129,28 +130,28 @@ public class AnalyzePhase extends BaseTIPLBlock {
     public static class ShapeAndNeighborAnalysis {
         public final boolean useGrownLabel = false;
         ITIPLPluginIO myNH = new Neighbors();
-        public ShapeAndNeighborAnalysis(String phName) {
-        	seedCSVFile=phName+"_1.csv";
-        	densCSVFile=phName+"_2.csv";
-        	nhCSVFile=phName+"_3.csv";
-        	edgeCSVFile=phName + "_edge.csv";
+        public ShapeAndNeighborAnalysis(ArgumentList.TypedPath phName) {
+        	seedCSVFile=phName.append("_1.csv");
+        	densCSVFile=phName.append("_2.csv");
+        	nhCSVFile=phName.append("_3.csv");
+        	edgeCSVFile=phName.append("_edge.csv");
         	appendMode=false;
         	this.phName=phName;
         }
         
-        public ShapeAndNeighborAnalysis(String seedFile, String phName) {
+        public ShapeAndNeighborAnalysis(ArgumentList.TypedPath seedFile, ArgumentList.TypedPath phName) {
         	seedCSVFile=seedFile;
-        	densCSVFile=phName+"_2.csv";
-        	nhCSVFile=phName+"_3.csv";
-        	edgeCSVFile=phName + "_edge.csv";
+        	densCSVFile=phName.append("_2.csv");
+        	nhCSVFile=phName.append("_3.csv");
+        	edgeCSVFile=phName.append("_edge.csv");
         	appendMode=true;
         	this.phName=phName;
         }
-        final protected String phName;
-        final protected String seedCSVFile;
-        final protected String densCSVFile;
-        final protected String nhCSVFile;
-        final protected String edgeCSVFile;
+        final protected ArgumentList.TypedPath phName;
+        final protected ArgumentList.TypedPath seedCSVFile;
+        final protected ArgumentList.TypedPath densCSVFile;
+        final protected ArgumentList.TypedPath nhCSVFile;
+        final protected ArgumentList.TypedPath edgeCSVFile;
         
         /**
          * appendMode means the file is appended rather than created (skip LacunaAnalysis Step)

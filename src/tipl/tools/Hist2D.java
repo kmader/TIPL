@@ -1,9 +1,9 @@
 package tipl.tools;
 
-//import java.awt.*;
-//import java.awt.image.*;
-//import java.awt.image.ColorModel.*;
+
 import java.io.FileWriter;
+
+import tipl.util.ArgumentList;
 
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
@@ -148,7 +148,7 @@ public class Hist2D extends BaseTIPLPlugin {
 	String headerString = "";
 
 	String headerStr = "";
-	protected String outCsvName = "2dhistout.csv";
+	protected ArgumentList.TypedPath outCsvName = new ArgumentList.TypedPath("2dhistout.csv");
 
 	String insName = "N/A";
 	boolean asList = false;
@@ -301,7 +301,7 @@ public class Hist2D extends BaseTIPLPlugin {
 					+ " 	    " + imPos.z + "\n";
 			headerStr += "El_size_mm: 		" + imElSize.x + "	" + imElSize.y + "	"
 					+ imElSize.z + "\n";
-			final FileWriter out = new FileWriter(outCsvName, false);
+			final FileWriter out = new FileWriter(outCsvName.getPath(), false);
 			out.write(headerStr);
 			out.flush();
 			out.close();
@@ -316,7 +316,7 @@ public class Hist2D extends BaseTIPLPlugin {
 	protected boolean writeHistogram(final String extraInfo) {
 		try {
 
-			final FileWriter out = new FileWriter(outCsvName, true);
+			final FileWriter out = new FileWriter(outCsvName.getPath(), true);
 			headerStr = "";
 			headerStr += "Total Number of voxels 	:" + totVox;
 			headerStr += extraInfo + "\n";
