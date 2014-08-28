@@ -41,13 +41,13 @@ public class cVoronoi extends VoronoiTransform {
         p.hasOption("debug");
 
         // Parse the filenames
-        final String labelsAimName = p.getOptionString("labels", "",
+        final ArgumentList.TypedPath labelsAimName = p.getOptionPath("labels", "",
                 "Name labeled object input file");
-        final String maskAimName = p.getOptionString("mask", "",
+        final ArgumentList.TypedPath maskAimName = p.getOptionPath("mask", "",
                 "Name of the mask output file");
-        final String vorVolumesName = p.getOptionString("vorvols", "",
+        final ArgumentList.TypedPath vorVolumesName = p.getOptionPath("vorvols", "",
                 "Name of voronoi volumes output file");
-        final String vorDistancesName = p.getOptionString("vordist", "",
+        final ArgumentList.TypedPath vorDistancesName = p.getOptionPath("vordist", "",
                 "Name of voronoi distances output file (distance from label");
         final boolean leaveVox = p.getOptionBoolean("leavevox",
                 "Leave original voxels");

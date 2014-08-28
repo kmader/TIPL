@@ -1011,6 +1011,9 @@ public class TImgTools {
 	 public static boolean RemoveTImgFromCache(final String path) {
 		 return getStorage().RemoveTImgFromCache(path);
 	 }
+	 public static boolean RemoveTImgFromCache(final ArgumentList.TypedPath path) {
+		 return getStorage().RemoveTImgFromCache(path.getPath());
+	 }
 
 	 /**
 	  * The size in bytes of each datatype
@@ -1057,7 +1060,7 @@ public class TImgTools {
 	  * @param filename path of the saved file
 	  */
 	 public static void WriteBackground(final TImgRO inImg,
-			 final String filename) {
+			 final ArgumentList.TypedPath filename) {
 		 new Thread(new Runnable() {
 			 @Override
 			 public void run() {
@@ -1077,11 +1080,11 @@ public class TImgTools {
 	  * @param path
 	  * @return success
 	  */
-	 public static boolean WriteTImg(final TImgRO curImg, final String path) {
+	 public static boolean WriteTImg(final TImgRO curImg, final ArgumentList.TypedPath path) {
 		 return WriteTImg(curImg, path, false);
 	 }
 
-	 public static boolean WriteTImg(final TImgRO curImg, final String path,
+	 public static boolean WriteTImg(final TImgRO curImg, final ArgumentList.TypedPath path,
 			 final boolean saveToCache) {
 		 TIPLGlobal.getUsage().registerImage(path, curImg.getDim().toString(), curImg + "");
 		 return getStorage().writeTImg(curImg, path, saveToCache);

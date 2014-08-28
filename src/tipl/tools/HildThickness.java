@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
@@ -66,11 +67,11 @@ public class HildThickness extends Thickness {
 	 * @param histoFile
 	 *            the name of the csv histogram file to write
 	 */
-	public static boolean DTO(final String inAimFile, final String outAimFile,
-			final String histoFile) {
+	public static boolean DTO(final ArgumentList.TypedPath inAimFile, final ArgumentList.TypedPath outAimFile,
+			final ArgumentList.TypedPath histoFile) {
 		final TImg thickmapAim = DTO(TImgTools.ReadTImg(inAimFile));
 		TImgTools.WriteTImg(thickmapAim,outAimFile);
-		GrayAnalysis.StartHistogram(thickmapAim, histoFile + ".csv");
+		GrayAnalysis.StartHistogram(thickmapAim, histoFile.getPath() + ".csv");
 		return true;
 	}
 
@@ -91,9 +92,9 @@ public class HildThickness extends Thickness {
 	 * @param profileFile
 	 *            the name of the file to write with the profile information
 	 */
-	public static boolean DTO(final String inAimFile, final String outDistFile,
-			final String outAimFile, final String histoFile,
-			final String profileFile) {
+	public static boolean DTO(final ArgumentList.TypedPath inAimFile, final ArgumentList.TypedPath outDistFile,
+			final ArgumentList.TypedPath outAimFile, final ArgumentList.TypedPath histoFile,
+			final ArgumentList.TypedPath profileFile) {
 		final TImg maskAim = TImgTools.ReadTImg(inAimFile);
 		final TImg[] mapAims = DTOD(maskAim);
 		if (outDistFile.length() > 0)
@@ -158,13 +159,13 @@ public class HildThickness extends Thickness {
 		String defOutName = inAimFile;
 		if (inAimFile.lastIndexOf(".") > 0)
 			defOutName = defOutName.substring(0, inAimFile.lastIndexOf("."));
-		final String outDistFile = p.getOptionString("distmap", defOutName
+		final ArgumentList.TypedPath outDistFile = p.getOptionPath("distmap", defOutName
 				+ "_dist.tif", "Output distance map");
-		final String outAimFile = p.getOptionString("thickmap", defOutName
+		final ArgumentList.TypedPath outAimFile = p.getOptionPath("thickmap", defOutName
 				+ "_dto.tif", "Output thickness map");
-		final String histoFile = p.getOptionString("csv", defOutName + "_dto",
+		final ArgumentList.TypedPath histoFile = p.getOptionPath("csv", defOutName + "_dto",
 				"Histogram of thickness values");
-		final String profileFile = p.getOptionString("profile", histoFile+"_z",
+		final ArgumentList.TypedPath profileFile = p.getOptionPath("profile", histoFile+"_z",
 				"Profile of thickness values");
 
 		final boolean runAsJob = p

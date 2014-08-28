@@ -4,6 +4,7 @@
 package tipl.blocks;
 
 import tipl.formats.TImgRO;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 
 /**
@@ -21,17 +22,17 @@ public interface ITIPLBlock {
 		protected final String name;
 		protected final String desc;
 		protected final boolean isess;
-		protected final String dname;
+		protected final ArgumentList.TypedPath dname;
 
 		public BlockImage(final String iName, final String iDesc,
 				final boolean essential) {
 			name = iName;
 			desc = iDesc;
 			isess = essential;
-			dname = "";
+			dname = new ArgumentList.TypedPath("");
 		}
 
-		public BlockImage(final String iName, final String defName,
+		public BlockImage(final String iName, final ArgumentList.TypedPath defName,
 				final String iDesc, final boolean essential) {
 			name = iName;
 			desc = iDesc;
@@ -40,7 +41,7 @@ public interface ITIPLBlock {
 		}
 
 		@Override
-		public String getDefaultValue() {
+		public ArgumentList.TypedPath getDefaultValue() {
 			return dname;
 		}
 
@@ -67,7 +68,7 @@ public interface ITIPLBlock {
 		 * 
 		 * @return default filename or path
 		 */
-		public String getDefaultValue();
+		public ArgumentList.TypedPath getDefaultValue();
 
 		/**
 		 * simple description of the image
@@ -131,7 +132,7 @@ public interface ITIPLBlock {
 	 * @param argument
 	 * @return file/path name
 	 */
-	public String getFileParameter(String argument);
+	public ArgumentList.TypedPath getFileParameter(String argument);
 	/**
 	 * get an input file (handles loading and everything in a consistent manner and returns null if the image is empty 
 	 * @param argument image argument name

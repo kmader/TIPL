@@ -24,10 +24,12 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
+
 import scala.Tuple2;
 import scala.Tuple3;
 import scala.concurrent.duration.Duration;
 import tipl.formats.TImgRO;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
@@ -51,8 +53,9 @@ public class IOTests {
     protected static int range = 3;
     protected static int maximumSlice = 100;
 
-    public static JavaPairRDD<Integer, int[]> ReadIntImg(final JavaSparkContext jsc, final String localImgName) {
-        final String imgName = (new File(localImgName)).getAbsolutePath();
+    public static JavaPairRDD<Integer, int[]> ReadIntImg(final JavaSparkContext jsc, final ArgumentList.TypedPath localImgName) {
+       
+    	final ArgumentList.TypedPath imgName = localImgName.makeAbsPath();
         TImgRO cImg = TImgTools.ReadTImg(imgName);
         final int sliceCount = cImg.getDim().z;
 
@@ -174,7 +177,7 @@ public class IOTests {
     public static void main(String[] args) throws Exception {
         ArgumentParser p = TIPLGlobal.activeParser(args);
         final String masterName = p.getOptionString("master", "local[4]", "Name of the master node for Spark");
-        final String imagePath = p.getOptionPath("path", "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory) to read in");
+        final ArgumentList.TypedPath imagePath = p.getOptionPath("path", "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory) to read in");
         range = p.getOptionInt("range", range, "The range to use for the filter");
         maximumSlice = p.getOptionInt("maxs", maximumSlice, "The maximum slice to keep");
         p.checkForInvalid();

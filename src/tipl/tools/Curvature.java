@@ -127,7 +127,7 @@ public class Curvature extends BaseTIPLPluginIO {
         System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 
         final ArgumentParser p = TIPLGlobal.activeParser(args);
-        final String inputFile = p.getOptionString("input", "",
+        final ArgumentList.TypedPath inputFile = p.getOptionPath("input", "",
                 "Input distance map image");
 
         // boolean doPeel =
@@ -142,7 +142,7 @@ public class Curvature extends BaseTIPLPluginIO {
                         "thresh",
                         0.5,
                         "Threshold for processing data (1.0 is only full points, 0.5 is all values which round to a full point))");
-        final String outputFile = p.getOptionString("output", "curvemap.tif",
+        final ArgumentList.TypedPath outputFile = p.getOptionPath("output", "curvemap.tif",
                 "Output thickness image");
 
         if (p.hasOption("?")) {

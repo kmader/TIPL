@@ -7,6 +7,8 @@ import tipl.formats.VirtualAim;
 import tipl.settings.FilterSettings;
 import tipl.tools.*;
 import tipl.util.*;
+// doesn't make sense to declare this function again
+import static tipl.blocks.BaseTIPLBlock.tryOpenImagePath;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -761,7 +763,7 @@ public class UFEM implements Runnable {
         // [parallel], [10,11,12,13] - Lacuna Shape Analysis, 14 - Lacuna
         // Neighbor Analysis, [15,16] - Canal Shape Analysis, 17 - Canal
         // Neighbor Analysis
-        if (!tryOpenAimFile(gfiltAimFile)) {
+        if (!tryOpenImagePath(gfiltAimFile)) {
             stageList += ",1";
             // Filtering is not that import if other stages are there then just
             // filter and continue
@@ -769,48 +771,48 @@ public class UFEM implements Runnable {
         }
         // For the intial steps if they are missing the entire analysis probably
         // needs to be redone
-        if (!tryOpenAimFile(boneAimFile)) {
+        if (!tryOpenImagePath(boneAimFile)) {
             for (int cstg = 2; cstg <= (singleStep ? 2 : LASTSTAGE); cstg++)
                 stageList += "," + cstg;
             doFixMasks = false; // contour will be run anyways
             return;
         }
 
-        if (!tryOpenAimFile(porosAimFile)) {
+        if (!tryOpenImagePath(porosAimFile)) {
             for (int cstg = 3; cstg <= (singleStep ? 3 : LASTSTAGE); cstg++)
                 stageList += "," + cstg;
             doFixMasks = false; // contour will be run anyways
             return;
         }
 
-        if (!tryOpenAimFile(maskAimFile)) {
+        if (!tryOpenImagePath(maskAimFile)) {
             for (int cstg = 4; cstg <= (singleStep ? 4 : LASTSTAGE); cstg++)
                 stageList += "," + cstg;
             doFixMasks = false; // contour will be run anyways
             return;
         }
 
-        if (!tryOpenAimFile(maskdistAimFile)) {
+        if (!tryOpenImagePath(maskdistAimFile)) {
             stageList += ",5";
         }
 
-        if (!(tryOpenAimFile(lmaskAimFile) & tryOpenAimFile(cmaskAimFile))) {
+        if (!(tryOpenImagePath(lmaskAimFile) & tryOpenImagePath(cmaskAimFile))) {
             for (int cstg = 6; cstg <= (singleStep ? 6 : LASTSTAGE); cstg++)
                 stageList += "," + cstg;
             return;
         }
 
-        if (!(tryOpenAimFile(lacunAimFile) & tryOpenAimFile(canalAimFile))) {
+        if (!(tryOpenImagePath(lacunAimFile) & tryOpenImagePath(canalAimFile))) {
             for (int cstg = 7; cstg <= (singleStep ? 7 : LASTSTAGE); cstg++)
                 stageList += "," + cstg;
             return;
         }
 
-        if (!(tryOpenAimFile(canalVolsAimFile) & tryOpenAimFile(canalDistAimFile))) {
+        if (!(tryOpenImagePath(canalVolsAimFile) & tryOpenImagePath(canalDistAimFile))) {
             stageList += ",8";
         }
 
-        if (!tryOpenAimFile(lacunVolsAimFile)) {
+        if (!tryOpenImagePath(lacunVolsAimFile)) {
             stageList += ",9";
         }
 
@@ -1037,8 +1039,9 @@ public class UFEM implements Runnable {
 
                 TIPLGlobal.runGC();
                 // The code for mask data
-                for (final String imgFile : imgListBW) {
-                    if (tryOpenAimFile(imgFile)) {
+                for (final String imgFileStr : imgListBW) {
+                	ArgumentList.TypedPath imgFile = new ArgumentList.TypedPath(imgFileStr);
+                    if (tryOpenImagePath(imgFile)) {
                         TImg tempAim = TImgTools.ReadTImg(imgFile);
 
                         tempAim = peelAim(tempAim, maskAim, 0, true);
@@ -1048,8 +1051,9 @@ public class UFEM implements Runnable {
                     }
                 }
                 // Te code for color data
-                for (final String imgFile : imgListColor) {
-                    if (tryOpenAimFile(imgFile)) {
+                for (final String imgFileStr : imgListColor) {
+                	ArgumentList.TypedPath imgFile = new ArgumentList.TypedPath(imgFileStr);
+                    if (tryOpenImagePath(imgFile)) {
                         TImg tempAim = TImgTools.ReadTImg(imgFile);
                         tempAim = peelAim(tempAim, maskAim, 0);
                         TImgTools.WriteTImg(tempAim, imgFile);
@@ -1399,35 +1403,7 @@ public class UFEM implements Runnable {
         submittedJobs++;
     }
 
-    /**
-     * Attempts to load the aim file with the given name (usually tif stack) and
-     * returns whether or not something has gone wrong during this loading
-     *
-     * @param filename Path and name of the file/directory to open
-     */
-    public boolean tryOpenAimFile(final String filename) {
 
-        TImg tempAim = null;
-        if (filename.length() > 0) {
-            System.out.println("Trying to open ... " + filename);
-        } else {
-            System.out
-                    .println("Filename is empty, assuming that it is not essential and proceeding carefully!! ... ");
-            return true;
-        }
-
-        try {
-            tempAim = TImgTools.ReadTImg(filename);
-            if (tempAim.getDim().prod() > 0)
-                guessDim = tempAim.getDim();
-            return (tempAim.isGood());
-        } catch (final Exception e) {
-            tempAim = null;
-            TIPLGlobal.runGC();
-            return false;
-        }
-
-    }
 
     protected void ufemThread(final int threadTask) {
         smcOperation = threadTask;

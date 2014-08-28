@@ -3,6 +3,7 @@ package tipl.tools;
 import java.util.Date;
 
 import tipl.formats.TImg;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPlugin;
 import tipl.util.TIPLGlobal;
@@ -28,17 +29,14 @@ public class kVoronoiShrink extends kVoronoi {
 		System.out.println(" Dilates and  v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 		final ArgumentParser p = TIPLGlobal.activeParser(args);
-
-		p.hasOption("debug");
-
 		// Parse the filenames
-		final String labelsAimName = p.getOptionString("labels", "",
+		final ArgumentList.TypedPath labelsAimName = p.getOptionPath("labels", "",
 				"Name labeled object input file");
-		final String maskAimName = p.getOptionString("mask", "",
+		final ArgumentList.TypedPath maskAimName = p.getOptionPath("mask", "",
 				"Name of the mask output file");
-		final String vorVolumesName = p.getOptionString("vorvols", "",
+		final ArgumentList.TypedPath vorVolumesName = p.getOptionPath("vorvols", "",
 				"Name of voronoi volumes output file");
-		final String vorDistancesName = p.getOptionString("vordist", "",
+		final ArgumentList.TypedPath vorDistancesName = p.getOptionPath("vordist", "",
 				"Name of voronoi distances output file (distance from label");
 
 		if (p.hasOption("?")) {

@@ -2,6 +2,7 @@ package tipl.tools;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
@@ -47,10 +48,10 @@ public class Peel extends BaseTIPLPluginMult {
 		System.out.println(" Counts Peel for given images v" + kVer);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 		final ArgumentParser p = TIPLGlobal.activeParser(args);
-		final String inputFile = p.getOptionString("input", "", "Input image");
-		final String maskFile = p.getOptionString("mask", "",
+		final ArgumentList.TypedPath inputFile = p.getOptionPath("input", "", "Input image");
+		final ArgumentList.TypedPath maskFile = p.getOptionPath("mask", "",
 				"Input mask image");
-		final String outputFile = p.getOptionString("output", "",
+		final ArgumentList.TypedPath outputFile = p.getOptionPath("output", "",
 				"Peeled image");
 		final int peelS = p.getOptionInt("peelS", 1, "Peel Layers");
 		final boolean isMask = p.getOptionBoolean("ismask",

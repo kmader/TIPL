@@ -407,7 +407,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
 
     @Override
     public String getSampleName() {
-        return path;
+        return path.getPath();
     }
     
     @Override
@@ -704,7 +704,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      */
     protected static class ReadSlice<W> implements
             PairFunction<Integer, D3int, TImgBlock<W>> {
-        protected final String imgPath;
+        protected final ArgumentList.TypedPath imgPath;
         protected final int imgType;
         protected final D3int imgPos;
         protected final D3int sliceDim;
@@ -718,13 +718,13 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
          * @param imPos   the starting position of the image
          * @param imgDim  the dimensions of the image
          */
-        public ReadSlice(String imgName, int inType, final D3int imPos,
+        public ReadSlice(ArgumentList.TypedPath imgName, int inType, final D3int imPos,
                          final D3int imgDim) {
             this.imgPos = imPos;
             this.sliceDim = new D3int(imgDim.x, imgDim.y, 1);
             // this is important since spark instances do not know the current
             // working directory
-            this.imgPath = (new File(imgName)).getAbsolutePath();
+            this.imgPath = imgName.makeAbsPath();
             this.imgType = inType;
         }
 

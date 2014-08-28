@@ -747,6 +747,14 @@ public class ArgumentList {
         	final String newPath = (new File(getPath())).getAbsolutePath(); 
         	return new TypedPath(newPath,this);
         }
+        /** 
+         * Add a filename to a directory
+         * @param fileName the name of the file
+         * @return the directory
+         */
+        public TypedPath append(String fileName) {
+        	return new TypedPath(getPath()+fileName,this);
+        }
     }
 
     /**

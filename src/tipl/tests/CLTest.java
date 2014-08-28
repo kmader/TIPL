@@ -210,7 +210,7 @@ public class CLTest {
 
         testImg = TestPosFunctions
                 .wrapIt(10, new TestPosFunctions.DiagonalLineFunction());
-        TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
+        
         CL = makeCL(testImg);
         CL.setParameter("-kernel=2 -sphradius=1.00");
         CL.execute();

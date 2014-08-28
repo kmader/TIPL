@@ -2181,18 +2181,18 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
     /**
      * create a copy of the desired file and return the path
      */
-    protected String localLoadingRead(final String inpath) {
+    protected ArgumentList.TypedPath localLoadingRead(final ArgumentList.TypedPath inpath) {
         if (!scratchLoading)
             return inpath;
         try {
             final File f = File.createTempFile("virtAIM-", "", new File(
-                    scratchDirectory));
-            scratchFilename = scratchDirectory + "/" + f.getName();
+                    scratchDirectory.getPath()));
+            scratchFilename = scratchDirectory.append( "/" + f.getName());
             try {
-                TIPLGlobal.copyFile(new File(inpath), f);
+                TIPLGlobal.copyFile(new File(inpath.getPath()), f);
             } catch (final Exception e) {
                 e.printStackTrace();
-                scratchFilename = "";
+                scratchFilename = new ArgumentList.TypedPath("");
                 System.out.println("Could not write local file :"
                         + scratchFilename + ", proceeding normally with:"
                         + inpath);
@@ -2200,7 +2200,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
             }
         } catch (final Exception e) {
             e.printStackTrace();
-            scratchFilename = "";
+            scratchFilename = new ArgumentList.TypedPath("");
             System.out
                     .println("Could not create local int :" + scratchDirectory
                             + ", proceeding normally with:" + inpath);

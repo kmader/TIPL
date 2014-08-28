@@ -332,8 +332,8 @@ public class TIPLGlobal {
     	if (!delName.isLocal()) throw new IllegalArgumentException("File must be local for delete function to work:"+delName.summary());
     	
         curRuntime.addShutdownHook(new Thread() {
-            public boolean MyDeleteFile(final String file, final String whoDel) {
-                final File f1 = new File(file);
+            public boolean SimpleDeleteFunction(final ArgumentList.TypedPath file, final String whoDel) {
+                final File f1 = new File(file.getPath());
                 final boolean success = f1.delete();
                 if (!success) {
                     System.out.println(whoDel + "\t" + "ERROR:" + file
@@ -345,12 +345,11 @@ public class TIPLGlobal {
                     return true;
                 }
             }
-
             @Override
             public void run() {
                 System.out
                         .println("SHUTHOOK\tChecking to ensure that all temp-files have been deleted");
-                MyDeleteFile(delName, "SHUTHOOK");
+                SimpleDeleteFunction(delName, "SHUTHOOK");
             }
         });
     }
@@ -378,13 +377,11 @@ public class TIPLGlobal {
     public static synchronized void returnCores(final int finishedCores) {
         availableCores += finishedCores;
     }
-
+    public static boolean tryOpen(final String filename) { return tryOpen(new ArgumentList.TypedPath(filename));}
     /**
      * Function to try and open an aim file, return true if it is successful
      */
-    public static boolean tryOpen(final String filename) {
-
-        VirtualAim tempAim = null;
+    public static boolean tryOpen(final ArgumentList.TypedPath filename) {
         if (filename.length() > 0) {
             System.out.println("Trying to open ... " + filename);
         } else {
@@ -394,10 +391,9 @@ public class TIPLGlobal {
         }
 
         try {
-            tempAim = new VirtualAim(filename);
-            return (tempAim.ischGuet);
+        	// needs to have positive dimensions
+           return (TImgTools.ReadTImg(filename).getDim().prod()>0);
         } catch (final Exception e) {
-            tempAim = null;
             TIPLGlobal.runGC();
             return false;
         }

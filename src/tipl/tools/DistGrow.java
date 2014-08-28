@@ -2,6 +2,7 @@ package tipl.tools;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
@@ -37,13 +38,13 @@ public class DistGrow extends BaseTIPLPluginIO {
 		p.getOptionFloat("mindistthresh", 0.1f,
 				"Minimum difference between two distance map values in order to roll down");
 
-		final String distmapAimFile = p.getOptionString("distmap", "",
+		final ArgumentList.TypedPath distmapAimFile = p.getOptionPath("distmap", "",
 				"Name of the distance map");
-		final String inlabelsAimFile = p.getOptionString("inlabels", "",
+		final ArgumentList.TypedPath inlabelsAimFile = p.getOptionPath("inlabels", "",
 				"Name of the starting labels");
-		final String outlabelsAimFile = p.getOptionString("outlabels",
+		final ArgumentList.TypedPath outlabelsAimFile = p.getOptionPath("outlabels",
 				"dg_labels.tif", "Name of the output labels");
-		final String maskAimFile = p.getOptionString("mask", "",
+		final ArgumentList.TypedPath maskAimFile = p.getOptionPath("mask", "",
 				"Name of the mask output file");
 
 		if (p.hasOption("?") || (distmapAimFile.length() < 1)) {

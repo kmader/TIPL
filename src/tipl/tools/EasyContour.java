@@ -70,12 +70,12 @@ public class EasyContour extends BaseTIPLPluginBW {
         System.out.println(" Contours (and peels) given images v" + kVer);
         System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
         final ArgumentParser p = TIPLGlobal.activeParser(args);
-        final String maskFile = p.getOptionString("input", "",
+        final ArgumentList.TypedPath maskFile = p.getOptionPath("input", "",
                 "Input mask image for contouring");
-        final String inputFile = p.getOptionString("target", "", "Input image");
-        final String outputMaskFile = p.getOptionString("contour", "",
+        final ArgumentList.TypedPath inputFile = p.getOptionPath("target", "", "Input image");
+        final ArgumentList.TypedPath outputMaskFile = p.getOptionPath("contour", "",
                 "contour image");
-        final String outputFile = p.getOptionString("output", "",
+        final ArgumentList.TypedPath outputFile = p.getOptionPath("output", "",
                 "Peeled image");
         final int ContourSteps = p.getOptionInt("contoursteps", 48,
                 "Number of steps to use for the contouring of the mask");

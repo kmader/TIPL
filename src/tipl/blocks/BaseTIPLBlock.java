@@ -304,7 +304,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	 * @param filename
 	 *            Path and name of the file/directory to open
 	 */
-	public static boolean tryOpenImagePath(final String filename) {
+	public static boolean tryOpenImagePath(final ArgumentList.TypedPath filename) {
 
 		TImg tempAim = null; // TImg (should be, but currently that eats way too much computer time)
 		if (filename.length() > 0) {
