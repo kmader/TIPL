@@ -664,7 +664,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
             return img.getOffset();
         }
 
-        public String getPath() {
+        public ArgumentList.TypedPath getPath() {
             return img.getPath();
         }
 

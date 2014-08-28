@@ -117,10 +117,10 @@ public class CSVFile {
 	 * @param _filename file to read
 	 * @param _headerlines number of header lines
 	 */
-	public static CSVFile FromPath(final String _filename, final int _headerlines) {
-		String filename = _filename;
+	public static CSVFile FromPath(final ArgumentList.TypedPath _filename, final int _headerlines) {
+		ArgumentList.TypedPath filename = _filename;
 		try {
-			File file = new File(_filename);
+			File file = new File(_filename.getPath());
 			return new CSVFile(new BufReadWrap(new BufferedReader(new FileReader(file))),_headerlines);
 		} catch (final Exception e) {
 			System.out.println("File cannot be opened? Does it exist");

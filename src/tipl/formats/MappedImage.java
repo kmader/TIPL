@@ -3,6 +3,8 @@
  */
 package tipl.formats;
 
+import tipl.util.ArgumentList;
+import tipl.util.ArgumentList.TypedPath;
 import tipl.util.ArgumentParser;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
@@ -17,7 +19,7 @@ import java.util.HashMap;
  */
 
 public class MappedImage extends FuncImage {
-    public final static String kVer = "130822_001";
+    public final static String kVer = "140828_002";
     protected StationaryVoxelFunction svf;
 
     /**
@@ -157,49 +159,6 @@ public class MappedImage extends FuncImage {
         p.checkForInvalid();
     }
 
-    public static void main(final String[] args) {
-
-        System.out.println("MappedImage v" + kVer);
-        System.out.println("Maps an Image");
-        System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-        final ArgumentParser p = TIPLGlobal.activeParser(args);
-        final String inputFile = p.getOptionString("convert", "",
-                "Aim File to Convert");
-        final String outputFile = p.getOptionString("output", "",
-                "Output Aim File (.raw, .tif, directory/, etc)");
-        final String mapping = p.getOptionString("mapping", "",
-                "Mapping to apply (in1:out1,in2:out2)");
-        final boolean passthrough = p.getOptionBoolean("passthrough",
-                "Allow other values to pass through");
-        final double defValue = p.getOptionDouble("defaultval", 0.0,
-                "Default value for values not in the map");
-
-        if (inputFile.length() > 0) {
-            System.out.println("Loading " + inputFile + " ...");
-            final VirtualAim inputAim = new VirtualAim(inputFile);
-            System.out.println("Dim:" + inputAim.getDim());
-            inputAim.setPos(p.getOptionD3int("cpos", inputAim.getPos(),
-                    "Change Starting Position"));
-            inputAim.setOffset(p.getOptionD3int("coffset",
-                    inputAim.getOffset(), "Change Offset"));
-            inputAim.setElSize(p.getOptionD3float("celsize",
-                    inputAim.getElSize(), "Change Element Size"));
-
-            checkHelp(p);
-
-            if (outputFile.length() > 0) { // Write output File
-                inputAim.getIntAim();
-                final TImgRO mappedAim = new SimpleMapImage(inputAim, 2, mapping,
-                        passthrough, defValue);
-                System.out.println("Writing " + outputFile + " ...");
-                TImgTools.WriteTImg(mappedAim, outputFile);
-            }
-        } else {
-            checkHelp(p);
-        }
-
-    }
-
     public static StationaryVoxelFunction StringToSVF(final String invalues,
                                                       final boolean passThrough, final double defValue) {
         final String[] subValues = invalues.split(",");
@@ -272,8 +231,8 @@ public class MappedImage extends FuncImage {
     }
 
     @Override
-    public String getPath() {
-        return svf.name() + " @ " + templateData.getPath();
+    public TypedPath getPath() {
+        return ArgumentList.TypedPath.virtualPath(svf.name() + " @ " + templateData.getPath());
     }
 
     @Override

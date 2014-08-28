@@ -20,10 +20,12 @@ import java.util.HashMap;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 import net.java.sezpoz.Indexable;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
+import tipl.util.TImgTools;
 
 // Logging
 /**
@@ -41,7 +43,7 @@ public abstract class DirectoryReader implements TReader {
 	}
 
 	public static abstract interface DRFactory {
-		public DirectoryReader get(String path);
+		public DirectoryReader get(ArgumentList.TypedPath path);
 
 		public FileFilter getFilter();
 	}
@@ -60,7 +62,7 @@ public abstract class DirectoryReader implements TReader {
 		return current;
 	}
 
-	final static String version = "21-10-2013";
+	final static String version = "28-08-2014";
 
 
 	/**
@@ -71,7 +73,7 @@ public abstract class DirectoryReader implements TReader {
 	 *            folder path name
 	 * @return best suited directory reader
 	 */
-	public static DirectoryReader ChooseBest(final String path) {
+	public static DirectoryReader ChooseBest(final ArgumentList.TypedPath path) {
 		HashMap<FileFilter, DRFactory> allFacts;
 		try {
 			allFacts = getAllFactories();
@@ -102,8 +104,8 @@ public abstract class DirectoryReader implements TReader {
 	 * the number of matches for each filter. The filter with the most matches
 	 * is then returned or an exception is thrown
 	 **/
-	public static int FilterCount(final String path, final FileFilter cFilter) {
-		final File dir = new File(path);
+	public static int FilterCount(final ArgumentList.TypedPath path, final FileFilter cFilter) {
+		final File dir = new File(path.getPath());
 		final File[] imglist = dir.listFiles(cFilter);
 		final int zlen = imglist.length;
 		String tempName = "None";
@@ -119,14 +121,13 @@ public abstract class DirectoryReader implements TReader {
 	public static void main(final ArgumentParser p) {
 		System.out.println("DirectoryReader Tool v" + version);
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final String inputFile = p.getOptionString("input", "",
+		final ArgumentList.TypedPath inputFile = p.getOptionPath("input", "",
 				"Directory to Convert");
-		final String outputFile = p.getOptionString("output", "test.tif",
+		final ArgumentList.TypedPath outputFile = p.getOptionPath("output", "test.tif",
 				"Output File");
 		try {
 			final DirectoryReader cdirReader = ChooseBest(inputFile);
-			final VirtualAim outputAim = new VirtualAim(cdirReader.getImage());
-			outputAim.WriteAim(outputFile);
+			TImgTools.WriteTImg(cdirReader.getImage(), outputFile);
 		} catch (final Exception e) {
 			System.out.println("Error converting or reading slice");
 			e.printStackTrace();
@@ -145,7 +146,7 @@ public abstract class DirectoryReader implements TReader {
 	protected D3int offset = new D3int(0, 0, 0);
 	protected float ShortScaleFactor = 1.0f;
 	private final String procLog = "";
-	final private String dirPath;
+	final private ArgumentList.TypedPath dirPath;
 
 	final private TSliceFactory tsf;
 	private final boolean signedValue = true;
@@ -153,10 +154,10 @@ public abstract class DirectoryReader implements TReader {
 	private int imageType=-1;
 
 
-	public DirectoryReader(final String path, final FileFilter filter,
+	public DirectoryReader(final ArgumentList.TypedPath path, final FileFilter filter,
 			final TSliceFactory itsf) throws IOException {
 		dirPath = path;
-		final File dir = new File(path);
+		final File dir = new File(path.getPath());
 		imglist = dir.listFiles(filter);
 		final int zlen = imglist.length;
 		dim = new D3int(-1, -1, zlen);
@@ -222,8 +223,7 @@ public abstract class DirectoryReader implements TReader {
 	 * 
 	 * @see tipl.formats.TImg#getPath()
 	 */
-	public String getPath() {
-		// TODO Auto-generated method stub
+	public ArgumentList.TypedPath getPath() {
 		return dirPath;
 	}
 
@@ -244,7 +244,6 @@ public abstract class DirectoryReader implements TReader {
 	 */
 	@Override
 	public String getProcLog() {
-		// TODO Auto-generated method stub
 		return procLog;
 	}
 
@@ -322,7 +321,6 @@ public abstract class DirectoryReader implements TReader {
 	 */
 	@Override
 	public TReader.TSliceReader ReadSlice(final int slice) throws IOException {
-		// TODO Auto-generated method stub
 		if (slice >= imglist.length) {
 			throw new IOException("Exceeds bound!!!" + slice + " of "
 					+ imglist.length);
@@ -381,7 +379,7 @@ public abstract class DirectoryReader implements TReader {
 	 * @see tipl.formats.TReader#SetupReader(java.lang.String)
 	 */
 	@Override
-	public void SetupReader(final String inPath) {
+	public void SetupReader(final ArgumentList.TypedPath inPath) {
 		// TODO Auto-generated method stub
 
 	}

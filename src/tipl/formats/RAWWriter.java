@@ -1,5 +1,6 @@
 package tipl.formats;
 
+import tipl.util.ArgumentList;
 import tipl.util.TIPLGlobal;
 
 import java.io.BufferedWriter;
@@ -13,7 +14,7 @@ import java.nio.ByteBuffer;
  */
 public class RAWWriter implements TWriter {
     OutputStream os;
-    String rawName;
+    ArgumentList.TypedPath rawName;
     TImg outImg;
     int rawType;
 
@@ -27,11 +28,11 @@ public class RAWWriter implements TWriter {
     }
 
     @Override
-    public void SetupWriter(final TImg inImg, final String outpath) {
+    public void SetupWriter(final TImg inImg, final ArgumentList.TypedPath outpath) {
         outImg = inImg;
         rawName = outpath;
         try {
-            os = new FileOutputStream(outpath);
+            os = new FileOutputStream(outpath.getPath());
         } catch (final Exception e) {
             System.out.println(writerName() + ": Cannot write raw file "
                     + outpath);

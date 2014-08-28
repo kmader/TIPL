@@ -71,7 +71,7 @@ public class Neighbors extends BaseTIPLPluginIO {
                 "Output neighbor count image");
         final ArgumentList.TypedPath voxcountimageAim = p.getOptionPath("voximage", "",
                 "Output voxel neighbor count image");
-        final String outCSV = p.getOptionString("csv", "",
+        final ArgumentList.TypedPath outCSV = p.getOptionPath("csv", "",
                 "Output neighbor edge file");
         
         nbor.setParameter(p);
@@ -223,7 +223,7 @@ public class Neighbors extends BaseTIPLPluginIO {
     @Override
     public boolean execute(final String command, final Object cObj) {
         if (command.equalsIgnoreCase("WriteNeighborList"))
-            return WriteNeighborList((String) cObj);
+            return WriteNeighborList((ArgumentList.TypedPath) cObj);
 
         return super.execute(command, cObj);
     }

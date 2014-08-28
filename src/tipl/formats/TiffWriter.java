@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import tipl.util.ArgumentList;
 import tipl.util.D3int;
 import tipl.util.TImgBlock;
 import tipl.util.TImgTools;
@@ -31,15 +32,15 @@ public class TiffWriter implements TSliceWriter {
 	@TSliceWriter.DWriter(name = "Tiff Folder",type="tif")
 	final public static DWFactory myFactory = new DWFactory() {
 		@Override
-		public TSliceWriter get(final TImgRO outFile,final String path,int outType) {
+		public TSliceWriter get(final TImgRO outFile,final ArgumentList.TypedPath path,int outType) {
 			TSliceWriter outWriter=new TiffWriter();
 			outWriter.SetupWriter(outFile, path, outType);
 			return outWriter;
 		}
 	};
-	protected String plPath="";
+	protected ArgumentList.TypedPath plPath=new ArgumentList.TypedPath("");
 
-	protected String outpath="";
+	protected ArgumentList.TypedPath outpath=new ArgumentList.TypedPath("");
 	protected D3int dim=new D3int(-1,-1,1);
 	protected int cType=-1;
 	protected TImgHeader theader;
@@ -51,13 +52,13 @@ public class TiffWriter implements TSliceWriter {
 	public static boolean writeFailureThrowsError=true;
 	
 	@Override
-	public void SetupWriter(TImgRO imageToSave, String outputPath, int outType) {
-		final boolean makeFolder = (new File(outputPath)).mkdir();
+	public void SetupWriter(TImgRO imageToSave, ArgumentList.TypedPath outputPath, int outType) {
+		final boolean makeFolder = (new File(outputPath.getPath())).mkdir();
 		if (makeFolder) {
 			System.out.println("Directory: " + outputPath + " created");
 		}
 		outpath=outputPath;
-		plPath = outputPath + "/procLog.txt";
+		plPath = outputPath.append("/procLog.txt");
 		dim=imageToSave.getDim();
 		
 		if (outType==-1) biType=imageToSave.getImageType();
@@ -84,7 +85,7 @@ public class TiffWriter implements TSliceWriter {
 		final FileWriter fstream;
 		final BufferedWriter out;
 		try {
-			fstream = new FileWriter(plPath);
+			fstream = new FileWriter(plPath.getPath());
 			out = new BufferedWriter(fstream);
 			out.write(theader.getProcLog());
 			// Close the output stream

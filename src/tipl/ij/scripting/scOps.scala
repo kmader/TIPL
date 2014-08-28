@@ -23,7 +23,7 @@ object scOps {
 	  
 	  def show() = {
 	    val ip = tipl.ij.TImgToImagePlus.MakeImagePlus(inImg)
-	    ip.show(inImg.getPath())
+	    ip.show(inImg.getPath().getPath())
 	  }
 	  
 	  def show3D() = {

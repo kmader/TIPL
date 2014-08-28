@@ -165,7 +165,6 @@ public class FilterTests {
 				new TestPosFunctions.SinglePointFunction(5, 5, 5),TImgTools.IMAGETYPE_FLOAT);
 		// make sure the single point function is ok
 		TIPLTestingLibrary.doPointsMatch(pointImage, 5, 5, 5, 1f, 0.01f);
-		if (saveImages) TImgTools.WriteTImg(pointImage,"/Users/mader/Dropbox/TIPL/temp_testing/pointImage.tif");
 
 		final TImgRO progImage = TestPosFunctions.wrapItAs(10,
 				new TestPosFunctions.ProgZImage(),3);
@@ -178,7 +177,7 @@ public class FilterTests {
 		int layerWidth=3;
 		final TImgRO sheetImage = TestPosFunctions.wrapItAs(boxSize,
 				new TestPosFunctions.SphericalLayeredImage(boxSize/2, boxSize/2, boxSize/2, 0, 1, layerWidth),TImgTools.IMAGETYPE_FLOAT);
-		if (saveImages)	TImgTools.WriteTImg(sheetImage,"/Users/mader/Dropbox/TIPL/temp_testing/sheetImage.tif");		
+		
 	}
 
 	/** 
@@ -198,7 +197,6 @@ public class FilterTests {
 		RS.execute();
 
 		TImgRO outImg = RS.ExportImages(sheetImage)[0];
-		if (saveImages) TImgTools.WriteTImg(outImg,"/Users/mader/Dropbox/TIPL/temp_testing/sheet_"+RS.getPluginName()+".tif");
 		
 		TIPLTestingLibrary.doSliceMeanValueMatch(outImg, 5, .411, 0.01);
 		
@@ -233,8 +231,7 @@ public class FilterTests {
 		RS.setParameter("-upfactor=2,2,2 -downfactor=2,2,2 -filter="+FilterSettings.GAUSSIAN+" -filtersetting=1");
 		RS.execute();
 		outImg = RS.ExportImages(pointImage)[0];
-		if (saveImages) TImgTools.WriteTImg(outImg,"/Users/mader/Dropbox/TIPL/temp_testing/point_"+RS.getPluginName()+".tif");
-
+	
 		TIPLTestingLibrary.doPointsMatch(outImg, 2, 2, 2, .0f, 0.01f);
 		TIPLTestingLibrary.doPointsMatch(outImg, 5, 5, 5, .18f, 0.01f);
 
@@ -245,8 +242,7 @@ public class FilterTests {
 		RS.setParameter("-upfactor=1,1,1 -downfactor=2,2,2 -filter="+FilterSettings.GAUSSIAN+" -filtersetting=0.5");
 		RS.execute();
 		outImg = RS.ExportImages(pointImage)[0];
-		if (saveImages) TImgTools.WriteTImg(outImg,"/Users/mader/Dropbox/TIPL/temp_testing/point_ds_"+RS.getPluginName()+".tif");
-
+	
 		TIPLTestingLibrary.doPointsMatch(outImg, 3, 3, 3, 0.89f, 0.01f);
 	}
 

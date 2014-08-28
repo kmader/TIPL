@@ -487,7 +487,7 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 																	// argument
 																	// from info
 				if (args.hasOption(carg)) {
-					final String curFile = args.getOptionAsString(carg);
+					final ArgumentList.TypedPath curFile = new ArgumentList.TypedPath(args.getOptionAsString(carg));
 					if (!tryOpenImagePath(curFile)) {
 						System.out.println("Not ready for block " + toString()
 								+ ", file:" + carg + "=" + curFile

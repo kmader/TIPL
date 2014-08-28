@@ -81,7 +81,7 @@ public class TIPLStorage implements ITIPLStorage {
 		if (readFromCache)
 			if (cachedImages.containsKey(path))
 				return cachedImages.get(path).get();
-		final TImg curImg = new VirtualAim(path.getPath());
+		final TImg curImg = new VirtualAim(new ArgumentList.TypedPath(path));
 		if (saveToCache)
 			cachedImages.put(path.getPath(), new ITIPLStorage.StampedObj<TImg>(curImg));
 		return curImg;
@@ -124,7 +124,7 @@ public class TIPLStorage implements ITIPLStorage {
 	 * @param saveToCache
 	 * @return success
 	 */
-	public boolean writeTImg(final TImgRO curImg, final String path,
+	public boolean writeTImg(final TImgRO curImg, final ArgumentList.TypedPath path,
 			final boolean saveToCache) {
 
 		try {
@@ -132,15 +132,15 @@ public class TIPLStorage implements ITIPLStorage {
 			 * Otherwise it gets in an infinite loop wrapping virtualaims in virtualaims
 			 */
 			if (curImg instanceof VirtualAim)
-				((VirtualAim) curImg).WriteAim(path);
+				((VirtualAim) curImg).WriteAim(path.getPath());
 			else
-				VirtualAim.TImgToVirtualAim(curImg).WriteAim(path);
+				VirtualAim.TImgToVirtualAim(curImg).WriteAim(path.getPath());
 			if (saveToCache)
-				cachedImages.put(path, new ITIPLStorage.StampedObj<TImg>(wrapTImgRO(curImg)));
+				cachedImages.put(path.getPath(), new ITIPLStorage.StampedObj<TImg>(wrapTImgRO(curImg)));
 			return true;
 		} catch (final Exception e) {
 			System.err.println("Image: " + curImg.getSampleName() + " @ "
-					+ curImg + ", could not be written to " + path);
+					+ curImg + ", could not be written to " + path.summary());
 			e.printStackTrace();
 			return false;
 		}

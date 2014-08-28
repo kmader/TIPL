@@ -16,6 +16,7 @@ import java.nio.channels.FileChannel;
 
 import javax.media.jai.PlanarImage;
 
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
@@ -189,7 +190,7 @@ public class TiffFolder extends DirectoryReader {
 	@DirectoryReader.DReader(name = "tiff")
 	final public static DRFactory readerFactory = new DRFactory() {
 		@Override
-		public DirectoryReader get(final String path) {
+		public DirectoryReader get(final ArgumentList.TypedPath path) {
 			try {
 				return new TiffFolder(path,tifFilter,"tiff");
 			} catch (final Exception e) {
@@ -222,7 +223,7 @@ public class TiffFolder extends DirectoryReader {
 	@DirectoryReader.DReader(name = "jpeg")
 	final public static DRFactory jpreaderFactory = new DRFactory() {
 		@Override
-		public DirectoryReader get(final String path) {
+		public DirectoryReader get(final ArgumentList.TypedPath path) {
 			try {
 				return new TiffFolder(path,jpegFilter,"jpeg");
 			} catch (final Exception e) {
@@ -237,33 +238,11 @@ public class TiffFolder extends DirectoryReader {
 			return TiffFolder.jpegFilter;
 		}
 	};
-	
-	public static void main(final ArgumentParser p) {
-		System.out.println("TiffFolder Tool v" + VirtualAim.kVer);
-		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final String inputFile = p.getOptionString("input", "",
-				"Aim File to Convert");
-		final String outputFile = p.getOptionString("output", "test.tif",
-				"Aim File to Convert");
-		try {
-			final TiffFolder inputAim = new TiffFolder(inputFile,tifFilter,"main");
-			final VirtualAim bob = new VirtualAim(inputAim.getImage());
-			bob.WriteAim(outputFile);
-		} catch (final Exception e) {
-			System.out.println("Error converting or reading slice");
-			e.printStackTrace();
-		}
-
-	}
-
-	public static void main(final String[] args) {
-		main(TIPLGlobal.activeParser(args));
-	}
 	/** 
 	 * operating as a tiff or jpeg folder
 	 */
 	protected final String pluginMode;
-	public TiffFolder(final String path,final FileFilter ffilter,final String mode) throws IOException {
+	public TiffFolder(final ArgumentList.TypedPath path,final FileFilter ffilter,final String mode) throws IOException {
 		super(path, ffilter, new TiffSliceFactory());
 		pluginMode=mode;
 

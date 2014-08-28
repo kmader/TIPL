@@ -305,7 +305,7 @@ public class SGEJob {
      * code to set the defaults to the beamline cluster values
      */
     public void setBeamlineCluster() {
-        qsubPath = "/gridware/sge/bin/lx24-amd64/qsub";
+        qsubPath = new ArgumentList.TypedPath("/gridware/sge/bin/lx24-amd64/qsub");
         includeSGERAM = false;
         queueName = "tomcat_smp_standard.q";
 
@@ -358,13 +358,13 @@ public class SGEJob {
 
         jobName = p.getOptionString(argPrefix + "jobname", jobName,
                 "Name of job");
-        logName = p.getOptionString(argPrefix + "logname", jobName + ".log",
+        logName = p.getOptionPath(argPrefix + "logname", jobName + ".log",
                 "Name for log files");
         memoryFactor = p
                 .getOptionDouble(argPrefix + "memoryfactor", memoryFactor,
                         "Number of times the image size needed (stored as integer in megabytes)");
 
-        final String inFile = p.getOptionString(argPrefix + "memoryfromaim",
+        final ArgumentList.TypedPath inFile = p.getOptionPath(argPrefix + "memoryfromaim",
                 "", "File to use to estimate memory");
         if (inFile.length() > 0)
             setJavaMemory(memEstimate(TImgTools.ReadTImg(inFile).getDim()));
@@ -411,7 +411,7 @@ public class SGEJob {
 
     protected void submitJob(final String cmdToRun) {
         final String jobInfo = createHeader() + setupJava();
-        String ePath = qsubPath;
+        String ePath = qsubPath.getPath();
         if (waitForJob)
             ePath += " -sync y";
         System.out.println("JobSubmissionStatus:"

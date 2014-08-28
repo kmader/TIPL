@@ -155,8 +155,9 @@ public class IOTests {
         return outString;
     }
 
-    public static Result sendTImgTest(final JavaSparkContext jsc, final String imgName) {
+    public static Result sendTImgTest(final JavaSparkContext jsc, final ArgumentList.TypedPath imgName) {
         final int maxSlice = maximumSlice;
+        
         JavaPairRDD<Integer, int[]> dataSet = ReadIntImg(jsc, imgName).filter(new Function<Tuple2<Integer, int[]>, Boolean>() {
             @Override
             public Boolean call(Tuple2<Integer, int[]> arg0) throws Exception {

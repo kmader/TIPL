@@ -8,6 +8,7 @@ import org.junit.Test;
 import tipl.formats.MappedImage;
 import tipl.formats.TImgRO;
 import tipl.tools.EasyContour;
+import tipl.util.ArgumentList;
 import tipl.util.TImgTools;
 
 /**
@@ -15,7 +16,7 @@ import tipl.util.TImgTools;
  * 
  */
 public class EasyContourTests {
-	public static final String testDir="/Users/mader/Dropbox/TIPL/test/ec_tests/";
+	public static final ArgumentList.TypedPath testDir=TIPLTestingLibrary.createTestImage("/Users/mader/Dropbox/TIPL/test/ec_tests/");
 	protected static EasyContour makeEC(final TImgRO inImage) {
 		final EasyContour EC = new EasyContour(inImage);
 		//EC.LoadImages(new TImgRO[] { inImage });
@@ -35,7 +36,7 @@ public class EasyContourTests {
 		ec.usePolygon(4);
 		ec.execute();
 		final TImgRO outImage = ec.ExportImages(simpleSphereImg)[0];
-		TImgTools.WriteTImg(outImage, testDir+testName+"_poly.tif");
+		TImgTools.WriteTImg(outImage, testDir.append(testName+"_poly.tif"));
 		
 	}
 	/**
@@ -49,7 +50,7 @@ public class EasyContourTests {
 		ec.usePolygon(4);
 		ec.execute();
 		final TImgRO outImage = ec.ExportImages(invSph)[0];
-		TImgTools.WriteTImg(outImage, testDir+testName+"_poly2.tif");
+		TImgTools.WriteTImg(outImage, testDir.append(testName+"_poly2.tif"));
 		
 	}
 	
@@ -65,7 +66,7 @@ public class EasyContourTests {
 		
 		ec.execute();
 		final TImgRO outImage = ec.ExportImages(simpleSphereImg)[0];
-		TImgTools.WriteTImg(outImage, testDir+testName+"_fixed.tif");
+		TImgTools.WriteTImg(outImage, testDir.append(testName+"_fixed.tif"));
 		
 	}
 	

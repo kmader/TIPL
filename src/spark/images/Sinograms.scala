@@ -9,6 +9,7 @@ import tipl.util.TImgTools
 import tipl.spark.SparkGlobal
 import breeze.linalg._
 import tipl.util.D3int
+import tipl.util.ArgumentList
 import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.linalg.{ Matrix, Matrices }
@@ -17,7 +18,7 @@ import org.apache.spark.mllib.linalg.distributed.{ IndexedRow, IndexedRowMatrix,
 /**
  * Class to hold the basic settings
  */
-@serializable case class SinogramSettings(imgPath: String, savePath: String, checkpointResults: Boolean, maxDarkVal: Double, maxProjVal: Double, minFlatVal: Double, maxSino: Int)
+@serializable case class SinogramSettings(imgPath: String, savePath: ArgumentList.TypedPath, checkpointResults: Boolean, maxDarkVal: Double, maxProjVal: Double, minFlatVal: Double, maxSino: Int)
 // format for storing image statistics
 @serializable case class imstats(min: Double, mean: Double, max: Double)
 /**

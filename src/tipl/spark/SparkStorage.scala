@@ -7,6 +7,7 @@ import tipl.formats.TImgRO
 import tipl.formats.TImg
 import tipl.util.ITIPLStorage
 import tipl.spark.IOOps._
+import tipl.util.ArgumentList
 
 /**
  * A SparkBased version of the Storage Module which loads and processes images using Spark instead of the old VirtualAim basis
@@ -24,9 +25,9 @@ class SSTImg(baseImg: TImgRO) extends  TImg.ATImg(baseImg, baseImg.getImageType)
 }
 
 abstract class SparkStorage extends ITIPLStorage {
-  override def readTImg(path: String, readFromCache: Boolean, saveToCache: Boolean): TImg = {
+  override def readTImg(path: ArgumentList.TypedPath, readFromCache: Boolean, saveToCache: Boolean): TImg = {
     val sc = SparkGlobal.getContext().sc
-    val bf = sc.byteFolder(path + "/*.tif") // keep it compatible with the older version
+    val bf = sc.byteFolder(path.append("/*.tif").getPath) // keep it compatible with the older version
 
 
     val tifLoad = bf.toTiffSlices

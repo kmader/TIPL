@@ -20,12 +20,13 @@ import tipl.spark.ShapeAnalysis
 import java.io.BufferedWriter
 import java.io.FileWriter
 import tipl.tools.GrayVoxels
+import tipl.util.ArgumentList
 // ~/Dropbox/Informatics/spark/bin/spark-submit --class spark.images.CellTracking --executor-memory 4G --driver-memory 4G /Users/mader/Dropbox/tipl/build/TIPL_core.jar -tif=/Volumes/MacDisk/AeroFS/VardanData/ForKevin_VA/3D/Spheroid2/GFP 
 // sparksubmit --class spark.images.CellTrackingSingle /afs/psi.ch/project/tipl/jar/TIPL_core.jar -tif=/gpfs/home/mader/SpheriodData/3D/Spheroid2/GFP/  -@masternode=spark://merlinc60:7077 -@sparkmemory=5G -cache -threshvalue=5000
 /**
  * Class to hold the basic settings
  */
-@serializable case class CellTrackingSettings(imgPath: String, savePath: String, checkpointResults: Boolean, cacheInput: Boolean, forcePartitions: Int, maxIters: Int, threshValue: Double)
+@serializable case class CellTrackingSettings(imgPath: ArgumentList.TypedPath, savePath: ArgumentList.TypedPath, checkpointResults: Boolean, cacheInput: Boolean, forcePartitions: Int, maxIters: Int, threshValue: Double)
 // format for storing image statistics
 @serializable case class cellImstats(min: Double, mean: Double, max: Double)
 /**
@@ -45,7 +46,7 @@ object CellTrackingCommon {
     val maxIters = p.getOptionInt("maxiters", Integer.MAX_VALUE, "Maximum number of iterations for component labeling")
     val smallestObjSize = p.getOptionInt("smallestobj", 0, "Smallest objects to keep")
 
-    (CellTrackingSettings(imgPath + "/*" + imgSuffix, savePath, checkpointResults, cacheInput, forcePartitions, maxIters, threshValue), p)
+    (CellTrackingSettings(imgPath.append("/*" + imgSuffix), savePath, checkpointResults, cacheInput, forcePartitions, maxIters, threshValue), p)
   }
   // calculate statistics for an array
   def arrStats(inArr: Array[Double]) = cellImstats(inArr.min, inArr.sum / (1.0 * inArr.length), inArr.max)
@@ -136,7 +137,7 @@ object CellTrackingSingle {
     val sc = SparkGlobal.getContext("CellTrackingTool").sc
 
     // read in a directory of tiffs (as a live stream)
-    val tiffSlices = sc.tiffFolder(settings.imgPath)
+    val tiffSlices = sc.tiffFolder(settings.imgPath.getPath)
 
     // read the number from the filename
     val parseFilename = "(.*)GFP([0-9]*)[.]tif".r
@@ -196,7 +197,7 @@ object CellTrackingStreaming {
     p.checkForInvalid()
     val ssc = SparkGlobal.getContext("CellTrackingTool").sc.toStreaming(30)
     // read in a directory of tiffs (as a live stream)
-    val tiffSlices = ssc.tiffFolder(settings.imgPath).filter(_._1 contains ".tif")
+    val tiffSlices = ssc.tiffFolder(settings.imgPath.getPath()).filter(_._1 contains ".tif")
     // read the values as arrays of doubles
     val doubleSlices = tiffSlices.loadAsValues
 

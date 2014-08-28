@@ -3,6 +3,7 @@ package tipl.blocks;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.tools.GrayAnalysis;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.TIPLPluginManager;
@@ -103,14 +104,11 @@ public class ThicknessBlock extends BaseTIPLBlock {
 		}
 		
 		if (histoFile.length() > 0)
-			GrayAnalysis.StartHistogram(thickOut[0], histoFile + ".tsv");
+			GrayAnalysis.StartHistogram(thickOut[0], histoFile.append(".tsv"));
 		if (profileFile.length() > 0) {
-			GrayAnalysis.StartZProfile(thickOut[0], threshImg, profileFile
-					+ "_z.tsv", 0.1f);
-			GrayAnalysis.StartRProfile(thickOut[0], threshImg, profileFile
-					+ "_r.tsv", 0.1f);
-			GrayAnalysis.StartRCylProfile(thickOut[0], threshImg, profileFile
-					+ "_rcyl.tsv", 0.1f);
+			GrayAnalysis.StartZProfile(thickOut[0], threshImg, profileFile.append( "_z.tsv"), 0.1f);
+			GrayAnalysis.StartRProfile(thickOut[0], threshImg, profileFile.append("_r.tsv"), 0.1f);
+			GrayAnalysis.StartRCylProfile(thickOut[0], threshImg, profileFile.append( "_rcyl.tsv"), 0.1f);
 		}
 
 		return true;
@@ -135,14 +133,14 @@ public class ThicknessBlock extends BaseTIPLBlock {
 		prefix=newPrefix;
 
 	}
-	protected String histoFile="thickmap_dto";
-	protected String profileFile="thickmap_dto";
+	protected ArgumentList.TypedPath histoFile=new ArgumentList.TypedPath("thickmap_dto");
+	protected ArgumentList.TypedPath profileFile=new ArgumentList.TypedPath("thickmap_dto");
 	@Override
 	public ArgumentParser setParameterBlock(final ArgumentParser p) {
 		distPlugin.setParameter(p,prefix);
 		thickPlugin.setParameter(p,prefix);
-		histoFile = p.getOptionString("csv", histoFile,"Histogram of thickness values");
-		profileFile = p.getOptionString("profile",profileFile,"Profile of thickness values");
+		histoFile = p.getOptionPath("csv", histoFile,"Histogram of thickness values");
+		profileFile = p.getOptionPath("profile",profileFile,"Profile of thickness values");
 		
 		return p;
 	}

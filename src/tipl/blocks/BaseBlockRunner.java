@@ -9,6 +9,7 @@ import java.util.List;
 
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentDialog;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.SGEJob;
 import tipl.util.TIPLGlobal;
@@ -80,7 +81,7 @@ public class BaseBlockRunner implements IBlockRunner,ITIPLBlock {
 	}
 
 	@Override
-	public String getFileParameter(String argument) {
+	public ArgumentList.TypedPath getFileParameter(String argument) {
 		// TODO Auto-generated method stub
 		return null;
 	}

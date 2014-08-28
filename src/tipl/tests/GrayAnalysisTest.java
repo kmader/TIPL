@@ -39,7 +39,7 @@ public class GrayAnalysisTest {
         System.out.println(lineNo + "\t" + outString);
     }
 
-    protected static int[] checkFile(String fileName, boolean verbose) {
+    protected static int[] checkFile(ArgumentList.TypedPath fileName, boolean verbose) {
 
         int[] rowCols = new int[2];
         final CSVFile insFile = CSVFile.FromPath(fileName, 2);
@@ -90,7 +90,7 @@ public class GrayAnalysisTest {
         return cGA;
     }
 
-    static final protected String[] tempFiles() {
+    static final protected ArgumentList.TypedPath[] tempFiles() {
         return new ArgumentList.TypedPath[]{tempFilePathCSV, tempFilePath, tempFilePath2};
     }
 
@@ -114,7 +114,7 @@ public class GrayAnalysisTest {
      */
     @AfterClass
     public static void deleteTempFiles() {
-        for (String cFile : tempFiles()) {
+        for (ArgumentList.TypedPath cFile : tempFiles()) {
             if (doDelete) TIPLGlobal.DeleteFile(cFile);
             else System.out.println("Want to delete:: " + cFile);
         }
@@ -189,7 +189,7 @@ public class GrayAnalysisTest {
         }
 
         // check the output file itself
-        int[] rowCols = checkFile(tempFilePathCSV.getPath(), true);
+        int[] rowCols = checkFile(tempFilePathCSV, true);
         assertEquals(4, rowCols[0]);
         assertEquals(3, rowCols[1]);
 
@@ -212,7 +212,7 @@ public class GrayAnalysisTest {
         assertEquals(5, ((Long) cGA.getInfo("groups")).longValue());
 
         // check the output file itself
-        int[] rowCols = checkFile(tempFilePath.getPath(), false);
+        int[] rowCols = checkFile(tempFilePath, false);
         assertEquals(5, rowCols[0]);
         assertEquals(40, rowCols[1]);
 
@@ -232,7 +232,7 @@ public class GrayAnalysisTest {
         assertEquals(5, ((Long) cGA.getInfo("groups")).longValue());
 
         // check the output file itself
-        int[] rowCols = checkFile(tempFilePath2.getPath(), true);
+        int[] rowCols = checkFile(tempFilePath2, true);
         assertEquals(5, rowCols[0]);
         assertEquals(44, rowCols[1]);
 

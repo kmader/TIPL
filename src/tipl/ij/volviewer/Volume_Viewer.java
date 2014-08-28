@@ -35,6 +35,7 @@ import javax.swing.JFrame;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.ij.TImgToImagePlus;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.ITIPLPlugin;
@@ -177,7 +178,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 		return join(a, ", ");
 	}
 
-	protected String snapshotPath = "";
+	protected ArgumentList.TypedPath snapshotPath = new ArgumentList.TypedPath("");
 	protected boolean customRange = false;
 	protected String animatedVariable = "";
 	protected double animatedStart = 0, animatedEnd = 1;
@@ -313,7 +314,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 		ArgumentParser cArgs = TIPLGlobal.activeParser(args);
 		Volume_Viewer vv = new Volume_Viewer();
 		
-		String inpath = cArgs.getOptionPath("input", "", "Image to be opened");
+		ArgumentList.TypedPath inpath = cArgs.getOptionPath("input", "", "Image to be opened");
 		
 		vv.setParameter(cArgs, "");
 		boolean runAsJob = cArgs.getOptionBoolean("sge:runasjob",
@@ -398,7 +399,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 			double curValue = animatedStart;
 			double stepSize = (animatedEnd - animatedStart)
 					/ (animatedSteps - 1);
-			String rootName = snapshotPath;
+			ArgumentList.TypedPath rootName = snapshotPath;
 			String cAnimatedArgument = "-" + animatedVariable + "=";
 			ExecutorService myPool = TIPLGlobal.requestSimpleES();
 			final Volume finalVol = vol;
@@ -407,7 +408,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 			
 			for (int i = 0; i < animatedSteps; i++) {
 				ArgumentParser p = setParameter(cAnimatedArgument + curValue
-						+ " -output=" + rootName + "_"
+						+ " -output=" + rootName.getPath() + "_"
 						+ String.format("%04d", i) + ".tiff");
 				p.checkForInvalid();
 				final String finalArgs = p.toString();
@@ -482,7 +483,7 @@ public final class Volume_Viewer implements PlugIn, ITIPLPluginIn {
 				}
 			} while (!control.isReady);
 			if (snapshotPath.length() > 0)
-				gui.imageRegion.saveToImageFile(snapshotPath, this.toString());
+				gui.imageRegion.saveToImageFile(snapshotPath.getPath(), this.toString());
 			else
 				gui.imageRegion.saveToImage();
 

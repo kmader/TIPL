@@ -111,7 +111,7 @@ public class UFOAM {
 
         ufiltAimFile = p.getOptionPath("ufilt", "", "Input unfiltered image");
         outputDirectory = p
-                .getOptionString(
+                .getOptionPath(
                         "outdir",
                         "",
                         "Directory to save all the output files in, overwrites defaults but not user inputs");
@@ -816,7 +816,7 @@ public class UFOAM {
                         + " ...");
                 nbor.execute();
                 System.out.println("Writing csv neigbhor-list ...");
-                nbor.WriteNeighborList(clporCsv + "_edge.csv");
+                nbor.WriteNeighborList(clporCsv.append("_edge.csv"));
                 labelnhAim = nbor.ExportCountImageAim(bubblelabelsAim);
                 GrayAnalysis.AddRegionColumn(bubblelabelsAim, labelnhAim,
                         nameVersion(clporCsv, 1), nameVersion(clporCsv, 2),

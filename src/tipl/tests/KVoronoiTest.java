@@ -65,10 +65,6 @@ public class KVoronoiTest {
     public void setUp() {
         SparkGlobal.getContext(this.getClass().getName());
         TIPLGlobal.setDebug(TIPLGlobal.DEBUG_OFF);
-        if (TIPLGlobal.getDebug()) {
-            TImgTools.WriteTImg(layeredImage, "layered.tif");
-            TImgTools.WriteTImg(diagonalPlane, "diagonal.tif");
-        }
 
     }
 

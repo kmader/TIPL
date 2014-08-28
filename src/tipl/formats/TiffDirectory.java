@@ -4,8 +4,10 @@
 package tipl.formats;
 
 import com.sun.media.jai.codec.*;
+
 import tipl.formats.TiffFolder.TIFSliceReader;
 import tipl.util.*;
+import tipl.util.ArgumentList.TypedPath;
 
 import java.awt.image.RenderedImage;
 import java.io.File;
@@ -23,7 +25,7 @@ public class TiffDirectory implements TImg {
     private final int TAG_ISSIGNED = 994;
     private final File imgFile;
     final private ImageDecoder dec;
-    final private String dirPath;
+    final private ArgumentList.TypedPath dirPath;
     /**
      * Whether or not to use compression should be used when writing data
      */
@@ -42,9 +44,9 @@ public class TiffDirectory implements TImg {
     private boolean signedValue = true;
     private int imageType;
 
-    public TiffDirectory(final String path) throws IOException {
+    public TiffDirectory(final ArgumentList.TypedPath path) throws IOException {
         dirPath = path;
-        imgFile = new File(path);
+        imgFile = new File(path.getPath());
 
         final SeekableStream s = new FileSeekableStream(imgFile);
 
@@ -72,14 +74,14 @@ public class TiffDirectory implements TImg {
     public static void main(final ArgumentParser p) {
         System.out.println("TifDirectory Tool v" + VirtualAim.kVer);
         System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-        final String inputFile = p.getOptionString("input", "",
+        final ArgumentList.TypedPath inputFile = p.getOptionPath("input", "",
                 "Aim File to Convert");
-        final String outputFile = p.getOptionString("output", "test.tif",
+        final ArgumentList.TypedPath outputFile = p.getOptionPath("output", "test.tif",
                 "Aim File to Convert");
         try {
             final TiffDirectory inputAim = new TiffDirectory(inputFile);
             final VirtualAim bob = new VirtualAim(inputAim);
-            bob.WriteAim(outputFile);
+            TImgTools.WriteTImg(bob, outputFile);
         } catch (final Exception e) {
             System.out.println("Error converting or reading slice");
             e.printStackTrace();
@@ -204,7 +206,7 @@ public class TiffDirectory implements TImg {
      * @see tipl.formats.TImg#getPath()
      */
     @Override
-    public String getPath() {
+    public TypedPath getPath() {
         // TODO Auto-generated method stub
         return dirPath;
     }
@@ -259,8 +261,7 @@ public class TiffDirectory implements TImg {
      */
     @Override
     public String getSampleName() {
-        // TODO Auto-generated method stub
-        return dirPath;
+        return dirPath.getPath();
     }
 
     /*

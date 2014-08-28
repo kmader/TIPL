@@ -9,6 +9,7 @@ import ij.ImagePlus;
 import ij.gui.HistogramWindow;
 import tipl.ij.TImgToImagePlus;
 import tipl.util.*;
+import tipl.util.ArgumentList.TypedPath;
 
 import javax.media.jai.PlanarImage;
 
@@ -34,11 +35,11 @@ import java.util.List;
 public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         TImgRO.CanExport {
 
-    public static final String kVer = "131025_045";
+    public static final String kVer = "140828_046";
     /**
      * Scratch directory for local-loading
      */
-    public static ArgumentList.TypedPath scratchDirectory = "/home/scratch/";
+    public static ArgumentList.TypedPath scratchDirectory = new ArgumentList.TypedPath("/home/scratch/");
     /**
      * Should the data be copied to scratch first and then read to avoid
      * random-access (tif) to gpfs
@@ -288,11 +289,12 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
      * Creates a new, Aim from the path (either tiff directory or layered tif
      * file given in path
      */
-    public VirtualAim(final String path) {
+    @Deprecated
+    public VirtualAim(final ArgumentList.TypedPath path) {
         ReadAim(path, false);
     }
-
-    public VirtualAim(final String path, final boolean onlyHeader) {
+    @Deprecated
+    public VirtualAim(final ArgumentList.TypedPath path, final boolean onlyHeader) {
         ReadAim(path, onlyHeader);
     }
 
@@ -324,19 +326,15 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
         VirtualAim inputAim = null;
 
-        final String inputFile = p.getOptionString("convert", "",
+        final ArgumentList.TypedPath inputFile = p.getOptionPath("convert", "",
                 "Aim File to Convert");
-        final String previewFile = p.getOptionString("preview", "",
+        final ArgumentList.TypedPath previewFile = p.getOptionPath("preview", "",
                 "Aim File to Preview");
-        String outputFile = "";
+        ArgumentList.TypedPath outputFile = new  ArgumentList.TypedPath("");
         if (inputFile.length() > 0) {
 
-            outputFile = p.getOptionString("output", "",
+            outputFile = p.getOptionPath("output", "",
                     "Output Aim File (.raw, .tif, directory/, etc)");
-            VirtualAim.scratchLoading = p.getOptionBoolean("local",
-                    "Load image data from local filesystems");
-            VirtualAim.scratchDirectory = p.getOptionString("localdir",
-                    "/home/scratch/", "Directory to save local data to");
 
             System.out.println("Loading " + inputFile + " ...");
 
@@ -356,7 +354,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
                 ShowInfo(p);
             if (outputFile.length() > 0) { // Write output File
                 System.out.println("Writing " + outputFile + " ...");
-                inputAim.WriteAim(outputFile);
+                TImgTools.WriteTImg(inputAim, outputFile);
             }
         } else if (previewFile.length() > 0) {
             VirtualAim previewAim = null;
@@ -435,31 +433,31 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
                 fpixels = new float[sliceLen];
 
                 switch (imageType) {
-                    case 0:
+                    case TImgTools.IMAGETYPE_CHAR:
                         for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
                             fpixels[cIndex - outPos] = (aimByte[cIndex] + (isSigned ? maxVal / 2
                                     : 0))
                                     * ShortScaleFactor;
                         }
                         break;
-                    case 1:
+                    case TImgTools.IMAGETYPE_SHORT:
                         for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
                             fpixels[cIndex - outPos] = (aimShort[cIndex] + (isSigned ? maxVal / 2
                                     : 0))
                                     * ShortScaleFactor;
                         }
                         break;
-                    case 2:
+                    case TImgTools.IMAGETYPE_INT:
                         for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
                             fpixels[cIndex - outPos] = (aimInt[cIndex] + (isSigned ? maxVal / 2
                                     : 0))
                                     * ShortScaleFactor;
                         }
                         break;
-                    case 3:
+                    case TImgTools.IMAGETYPE_FLOAT:
                         System.arraycopy(aimFloat, outPos, fpixels, outPos - outPos, outPos + sliceLen - outPos);
                         break;
-                    case 10:
+                    case TImgTools.IMAGETYPE_BOOL:
                         for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
                             if (aimMask[cIndex])
                                 fpixels[cIndex - outPos] = 1.0f;
@@ -498,35 +496,35 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
                 // values)
 
                 switch (imageType) {
-                    case 0:
+                    case TImgTools.IMAGETYPE_CHAR:
                         for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
                             pixels[cIndex - outPos] = (aimByte[cIndex])
                                     + (isSigned ? maxVal / 2 : 0);
 
                         }
                         break;
-                    case 1:
+                    case TImgTools.IMAGETYPE_SHORT:
                         for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
                             pixels[cIndex - outPos] = (aimShort[cIndex])
                                     + (isSigned ? maxVal / 2 : 0);
                             // sliceAvg+=pixels[cIndex-outPos];
                         }
                         break;
-                    case 2:
+                    case TImgTools.IMAGETYPE_INT:
                         for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
                             pixels[cIndex - outPos] = aimInt[cIndex]
                                     + (isSigned ? maxVal / 2 : 0);
                             // sliceAvg+=pixels[cIndex-outPos];
                         }
                         break;
-                    case 3:
+                    case TImgTools.IMAGETYPE_FLOAT:
                         for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
                             pixels[cIndex - outPos] = (int) (aimFloat[cIndex] / ShortScaleFactor)
                                     + (isSigned ? maxVal / 2 : 0);
                             // sliceAvg+=pixels[cIndex-outPos];
                         }
                         break;
-                    case 10:
+                    case TImgTools.IMAGETYPE_BOOL:
                         for (int cIndex = outPos; cIndex < (outPos + sliceLen); cIndex++) {
                             if (aimMask[cIndex])
                                 pixels[cIndex - outPos] = maxVal;
@@ -577,12 +575,12 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
     public void CacheFullImage() {
         getAimImage();
     }
-
-    public boolean CheckSizes(final String otherAimFile) {
+    @Deprecated
+    public boolean CheckSizes(final ArgumentList.TypedPath otherAimFile) {
         final VirtualAim otherVA = new VirtualAim(otherAimFile, true);
         return CheckSizes(otherVA);
     }
-
+    @Deprecated
     public boolean CheckSizes(final TImgRO otherVA) {
         return TImgTools.CheckSizes2(otherVA, this);
     }
@@ -793,19 +791,19 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         // Delete old data
         if (fullAimLoaded) {
             switch (fullAimLoadedAs) {
-                case 0:
+                case TImgTools.IMAGETYPE_CHAR:
                     aimByte = null;
                     break;
-                case 1:
+                case TImgTools.IMAGETYPE_SHORT:
                     aimShort = null;
                     break;
-                case 2:
+                case TImgTools.IMAGETYPE_INT:
                     aimInt = null;
                     break;
-                case 3:
+                case TImgTools.IMAGETYPE_FLOAT:
                     aimFloat = null;
                     break;
-                case 10:
+                case TImgTools.IMAGETYPE_BOOL:
                     aimMask = null;
                     break;
                 default:
@@ -818,19 +816,19 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         fullAimLoadedAs = asType;
         imageType = asType;
         switch (asType) {
-            case 0:
+            case TImgTools.IMAGETYPE_CHAR:
                 dataName = "Byte";
                 break;
-            case 1:
+            case TImgTools.IMAGETYPE_SHORT:
                 dataName = "Short";
                 break;
-            case 2:
+            case TImgTools.IMAGETYPE_INT:
                 dataName = "Int";
                 break;
-            case 3:
+            case TImgTools.IMAGETYPE_FLOAT:
                 dataName = "Float";
                 break;
-            case 10:
+            case TImgTools.IMAGETYPE_BOOL:
                 dataName = "Mask";
                 break;
         }
@@ -848,35 +846,35 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         final int het = dim.y;
         if (!fullAimLoaded) {
             switch (asType) {
-                case 10:
+                case TImgTools.IMAGETYPE_BOOL:
                     for (int n = bSlice; n < tSlice; n++) {
                         final int outPos = n * wid * het;
                         final boolean[] gbool = getBoolArray(n);
                         imaskCopy(gbool, outPos, wid * het);
                     }
                     break;
-                case 0:
+                case TImgTools.IMAGETYPE_CHAR:
                     for (int n = bSlice; n < tSlice; n++) {
                         final int outPos = n * wid * het;
                         final char[] gb = getByteArray(n);
                         ibyteCopy(gb, outPos, wid * het);
                     }
                     break;
-                case 1:
+                case TImgTools.IMAGETYPE_SHORT:
                     for (int n = bSlice; n < tSlice; n++) {
                         final int outPos = n * wid * het;
                         final short[] gs = getShortArray(n);
                         ishortCopy(gs, outPos, wid * het);
                     }
                     break;
-                case 2:
+                case TImgTools.IMAGETYPE_INT:
                     for (int n = bSlice; n < tSlice; n++) {
                         final int outPos = n * wid * het;
                         final int[] gi = getIntArray(n);
                         iintCopy(gi, outPos, wid * het);
                     }
                     break;
-                case 3:
+                case TImgTools.IMAGETYPE_FLOAT:
                     for (int n = bSlice; n < tSlice; n++) {
                         final int outPos = n * wid * het;
                         final float[] gf = getFloatArray(n);
@@ -889,7 +887,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
             final int bPos = bSlice * wid * het;
             final int tPos = tSlice * wid * het;
             switch (asType) {
-                case 0:
+                case TImgTools.IMAGETYPE_CHAR:
                     if (fullAimLoadedAs == 1) {
                         for (int cIndex = bPos; cIndex < tPos; cIndex++)
                             aimByte[cIndex] = (char) aimShort[cIndex];
@@ -905,7 +903,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
                             aimByte[cIndex] = (char) (aimMask[cIndex] ? 127 : 0);
                     }
                     break;
-                case 1:
+                case TImgTools.IMAGETYPE_SHORT:
                     if (fullAimLoadedAs == 0) {
                         for (int cIndex = bPos; cIndex < tPos; cIndex++)
                             aimShort[cIndex] = (short) aimByte[cIndex];
@@ -921,7 +919,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
                             aimShort[cIndex] = (short) (aimMask[cIndex] ? 127 : 0);
                     }
                     break;
-                case 2:
+                case TImgTools.IMAGETYPE_INT:
                     if (fullAimLoadedAs == 0) {
                         for (int cIndex = bPos; cIndex < tPos; cIndex++)
                             aimInt[cIndex] = (aimByte[cIndex]);
@@ -937,7 +935,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
                             aimInt[cIndex] = (aimMask[cIndex] ? 127 : 0);
                     }
                     break;
-                case 3:
+                case TImgTools.IMAGETYPE_FLOAT:
                     if (fullAimLoadedAs == 0) {
                         for (int cIndex = bPos; cIndex < tPos; cIndex++)
                             aimFloat[cIndex] = (aimByte[cIndex]) * ShortScaleFactor;
@@ -953,7 +951,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
                             aimFloat[cIndex] = (aimMask[cIndex] ? 1.0f : 0.0f);
                     }
                     break;
-                case 10:
+                case TImgTools.IMAGETYPE_BOOL:
                     if (fullAimLoadedAs == 0) {
                         for (int cIndex = bPos; cIndex < tPos; cIndex++)
                             aimMask[cIndex] = aimByte[cIndex] > 0;
@@ -1279,8 +1277,8 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
     }
 
     @Override
-    public String getPath() {
-        return aimPath;
+    public TypedPath getPath() {
+        return new ArgumentList.TypedPath(aimPath);
     }
 
     public void GetPoints() {
@@ -1290,25 +1288,25 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
     public void GetPoints(final int minValue, final int maxValue,
                           final int startSlice) {
         switch (this.imageType) {
-            case 0:
+            case TImgTools.IMAGETYPE_CHAR:
                 if (debugMode)
                     System.out.println("Getting Points from Byte Array From "
                             + minValue + "->" + maxValue);
                 GetBytePoints(minValue, maxValue, startSlice);
                 break;
-            case 1:
+            case TImgTools.IMAGETYPE_SHORT:
                 if (debugMode)
                     System.out.println("Getting Points from Short Array From "
                             + minValue + "->" + maxValue);
                 GetShortPoints((short) minValue, (short) maxValue, startSlice);
                 break;
-            case 2:
+            case TImgTools.IMAGETYPE_INT:
                 if (debugMode)
                     System.out.println("Getting Points from Integer Array From "
                             + minValue + "->" + maxValue);
                 GetIntPoints(minValue, maxValue, startSlice);
                 break;
-            case 3:
+            case TImgTools.IMAGETYPE_FLOAT:
                 if (debugMode)
                     System.out.println("Float Not Implemented Yet");
                 break;
@@ -1322,32 +1320,30 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         valueList = null;
         valueList = new Vector<Float>(pList.size());
 
-        // for (int i=0;i<pList.size();i++) {
         while (itr.hasNext()) {
-            final Float[] curPt = itr.next();// pList.elementAt(i);
+            final Float[] curPt = itr.next();
             final int curX = (int) curPt[0].floatValue() - pos.x;
             final int curY = (int) curPt[1].floatValue() - pos.y;
             final int curZ = (int) curPt[2].floatValue() - pos.z;
-            // Debugging Message Only
-            // System.out.println("VirtualAim : Fetching - "+curX+","+curY+","+curZ);
+
             char[] gb = null;
             short[] gs = null;
             int[] gi = null;
             float[] gf = null;
             switch (imageType) {
-                case 0:
+                case TImgTools.IMAGETYPE_CHAR:
                     gb = getByteArray(curZ);
                     cgLength = gb.length;
                     break;
-                case 1:
+                case TImgTools.IMAGETYPE_SHORT:
                     gs = getShortArray(curZ);
                     cgLength = gs.length;
                     break;
-                case 2:
+                case TImgTools.IMAGETYPE_INT:
                     gi = getIntArray(curZ);
                     cgLength = gi.length;
                     break;
-                case 3:
+                case TImgTools.IMAGETYPE_FLOAT:
                     gf = getFloatArray(curZ);
                     cgLength = gf.length;
                     break;
@@ -1357,16 +1353,16 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 
             if ((arrNum < cgLength) && (arrNum >= 0)) {
                 switch (imageType) {
-                    case 0:
+                    case TImgTools.IMAGETYPE_CHAR:
                         valueList.add((float) gb[arrNum]);
                         break;
-                    case 1:
+                    case TImgTools.IMAGETYPE_SHORT:
                         valueList.add(gs[arrNum] * ShortScaleFactor);
                         break;
-                    case 2:
+                    case TImgTools.IMAGETYPE_INT:
                         valueList.add((float) gi[arrNum]);
                         break;
-                    case 3:
+                    case TImgTools.IMAGETYPE_FLOAT:
                         valueList.add(gf[arrNum]);
                         break;
                 }
@@ -1818,19 +1814,19 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         final int imgVoxCnt = dim.x * dim.y;
 
         switch (imageType) {
-            case 10:
+            case TImgTools.IMAGETYPE_BOOL:
                 aimMask = (boolean[]) TImgTools.watchBigAlloc(TImgTools.IMAGETYPE_BOOL, imgVoxCnt * dim.z);
                 break;
-            case 0:
+            case TImgTools.IMAGETYPE_CHAR:
                 aimByte = (char[]) TImgTools.watchBigAlloc(TImgTools.IMAGETYPE_CHAR, imgVoxCnt * dim.z);
                 break;
-            case 1:
+            case TImgTools.IMAGETYPE_SHORT:
                 aimShort = (short[]) TImgTools.watchBigAlloc(TImgTools.IMAGETYPE_SHORT, imgVoxCnt * dim.z);
                 break;
-            case 2:
+            case TImgTools.IMAGETYPE_INT:
                 aimInt = (int[]) TImgTools.watchBigAlloc(TImgTools.IMAGETYPE_INT, imgVoxCnt * dim.z);
                 break;
-            case 3:
+            case TImgTools.IMAGETYPE_FLOAT:
                 aimFloat = (float[]) TImgTools.watchBigAlloc(TImgTools.IMAGETYPE_FLOAT, imgVoxCnt * dim.z);
                 break;
             default:
@@ -1915,19 +1911,19 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 
         // Pre allocate array and read in data
         switch (imageType) {
-            case 10:
+            case TImgTools.IMAGETYPE_BOOL:
                 aimMask = new boolean[imgVoxCnt * dim.z];
                 break;
-            case 0:
+            case TImgTools.IMAGETYPE_CHAR:
                 aimByte = new char[imgVoxCnt * dim.z];
                 break;
-            case 1:
+            case TImgTools.IMAGETYPE_SHORT:
                 aimShort = new short[imgVoxCnt * dim.z];
                 break;
-            case 2:
+            case TImgTools.IMAGETYPE_INT:
                 aimInt = new int[imgVoxCnt * dim.z];
                 break;
-            case 3:
+            case TImgTools.IMAGETYPE_FLOAT:
                 aimFloat = new float[imgVoxCnt * dim.z];
                 break;
             default:
@@ -1939,23 +1935,23 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         int cPos = 0;
         for (int i = 0; i < dim.z; i++) {
             switch (imageType) {
-                case 10:
+                case TImgTools.IMAGETYPE_BOOL:
                     final char[] bstack = (char[]) stack[i];
                     for (int j = 0; j < imgVoxCnt; j++)
                         aimMask[cPos + j] = (bstack[j] > 0);
                     break;
-                case 0:
+                case TImgTools.IMAGETYPE_CHAR:
                     System.arraycopy(stack[i], 0, aimByte, cPos, imgVoxCnt);
                     break;
-                case 1:
+                case TImgTools.IMAGETYPE_SHORT:
                     System.arraycopy(stack[i], 0, aimShort, cPos, imgVoxCnt);
                     break;
-                case 2:
+                case TImgTools.IMAGETYPE_INT:
                     final short[] sstack = (short[]) stack[i];
                     for (int j = 0; j < imgVoxCnt; j++)
                         aimInt[cPos + j] = (sstack[j]);
                     break;
-                case 3:
+                case TImgTools.IMAGETYPE_FLOAT:
                     System.arraycopy(stack[i], 0, aimFloat, cPos, imgVoxCnt);
                     break;
                 default:
@@ -2025,19 +2021,19 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 
             int maxVal = 65536;
             switch (imageType) {
-                case 0:
+                case TImgTools.IMAGETYPE_CHAR:
                     for (int cIndex = outPos; cIndex < (outPos + dim.x * dim.y); cIndex++)
                         gi[cIndex - outPos] = (aimByte[cIndex]);
                     maxVal = 255;
                     break;
-                case 1:
+                case TImgTools.IMAGETYPE_SHORT:
                     for (int cIndex = outPos; cIndex < (outPos + dim.x * dim.y); cIndex++)
                         gi[cIndex - outPos] = aimShort[cIndex];
                     break;
-                case 2:
+                case TImgTools.IMAGETYPE_INT:
                     System.arraycopy(aimInt, outPos, gi, outPos - outPos, outPos + dim.x * dim.y - outPos);
                     break;
-                case 10:
+                case TImgTools.IMAGETYPE_BOOL:
                     for (int cIndex = outPos; cIndex < (outPos + dim.x * dim.y); cIndex++)
                         if (aimMask[cIndex])
                             gi[cIndex - outPos] = 255;
@@ -2057,15 +2053,15 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         if (useTImg) {
             final TImg.TImgFull fullBaseTImg = new TImg.TImgFull(baseTImg);
             switch (asType) {
-                case 0:
+                case TImgTools.IMAGETYPE_CHAR:
                     return fullBaseTImg.getByteArray(slice);
-                case 1:
+                case TImgTools.IMAGETYPE_SHORT:
                     return fullBaseTImg.getShortArray(slice);
-                case 2:
+                case TImgTools.IMAGETYPE_INT:
                     return fullBaseTImg.getIntArray(slice);
-                case 3:
+                case TImgTools.IMAGETYPE_FLOAT:
                     return fullBaseTImg.getFloatArray(slice);
-                case 10:
+                case TImgTools.IMAGETYPE_BOOL:
                     return fullBaseTImg.getBoolArray(slice);
                 default:
                     System.out.println("TImg -- Not supported!" + imageType);
@@ -2122,21 +2118,21 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         width = dim.x;
         height = dim.y;
         switch (imageType) {
-            case 0:
-            case 10:
+            case TImgTools.IMAGETYPE_CHAR:
+            case TImgTools.IMAGETYPE_BOOL:
                 for (int i = 0; i < dim.z; i++)
                     stack[i] = new byte[imgVoxCnt];
                 getByteAim();
 
                 break;
-            case 1:
-            case 2:
+            case TImgTools.IMAGETYPE_SHORT:
+            case TImgTools.IMAGETYPE_INT:
                 for (int i = 0; i < dim.z; i++)
                     stack[i] = new short[imgVoxCnt];
                 getShortAim();
 
                 break;
-            case 3:
+            case TImgTools.IMAGETYPE_FLOAT:
                 for (int i = 0; i < dim.z; i++)
                     stack[i] = new float[imgVoxCnt];
                 getFloatAim();
@@ -2151,19 +2147,19 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         System.out.println("Copying Slices...");
         for (int i = 0; i < dim.z; i++) {
             switch (imageType) {
-                case 0:
-                case 10:
+                case TImgTools.IMAGETYPE_CHAR:
+                case TImgTools.IMAGETYPE_BOOL:
                     // new approach converts char to byte
                     for (int j = 0; j < imgVoxCnt; j++)
                         ((byte[]) stack[i])[j] = (byte) aimByte[cPos + j];
                     // old approach
                     // System.arraycopy(aimByte,cPos,stack[i],0,imgVoxCnt);
                     break;
-                case 1:
-                case 2:
+                case TImgTools.IMAGETYPE_SHORT:
+                case TImgTools.IMAGETYPE_INT:
                     System.arraycopy(aimShort, cPos, stack[i], 0, imgVoxCnt);
                     break;
-                case 3:
+                case TImgTools.IMAGETYPE_FLOAT:
                     System.arraycopy(aimFloat, cPos, stack[i], 0, imgVoxCnt);
                     break;
                 default:
@@ -2426,14 +2422,14 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
             return true;
         } else {
             layertiff = false;
-            final TImg cImg = DirectoryReader.ChooseBest(inpath.getPath()).getImage();
+            final TImg cImg = DirectoryReader.ChooseBest(inpath).getImage();
             WrapTImg(cImg);
             return true;
         }
 
         if (zlen > 0) {
-            aimPath = inpath;
-            sampleName = inpath;
+            aimPath = inpath.getPath();
+            sampleName = inpath.summary();
             ParseAimHeader();
             ischGuet = true;
             return true;
@@ -2514,22 +2510,22 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 
             System.out.println("Created...");
             switch (imageType) {
-                case 0:
+                case TImgTools.IMAGETYPE_CHAR:
                     curImPlus.getProcessor().setMinAndMax(Byte.MIN_VALUE,
                             Byte.MAX_VALUE);
                     break;
-                case 1:
+                case TImgTools.IMAGETYPE_SHORT:
                     curImPlus.getProcessor().setMinAndMax(Short.MIN_VALUE,
                             Short.MAX_VALUE);
-                case 2:
+                case TImgTools.IMAGETYPE_INT:
                     curImPlus.getProcessor().setMinAndMax(Integer.MIN_VALUE,
                             Integer.MAX_VALUE);
                     break;
-                case 3:
-                    curImPlus.getProcessor().setMinAndMax(-Double.MAX_VALUE,
-                            Double.MAX_VALUE);
+                case TImgTools.IMAGETYPE_FLOAT:
+                    curImPlus.getProcessor().setMinAndMax(-Float.MAX_VALUE,
+                            Float.MAX_VALUE);
                     break;
-                case 10:
+                case TImgTools.IMAGETYPE_BOOL:
                     curImPlus.getProcessor().setMinAndMax(0, 1);
                     break;
 
@@ -2594,6 +2590,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
      *                fully in the BufferedImage documentation
      */
     public void WriteAim(final String outpath, final int outType) {
+    	ArgumentList.TypedPath optp = new ArgumentList.TypedPath(outpath);
         int biType;
         TWriter outWriter;
         if (outType == -1)
@@ -2612,16 +2609,16 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
 
         int cType = BufferedImage.TYPE_CUSTOM;
 
-        if (biType == 0)
+        if (biType == TImgTools.IMAGETYPE_CHAR)
             cType = BufferedImage.TYPE_BYTE_GRAY;
-        if (biType == 1)
+        if (biType == TImgTools.IMAGETYPE_SHORT)
             cType = BufferedImage.TYPE_USHORT_GRAY;
-        if (biType == 2)
+        if (biType == TImgTools.IMAGETYPE_INT)
             cType = BufferedImage.TYPE_USHORT_GRAY;
-        if (biType == 3)
+        if (biType == TImgTools.IMAGETYPE_FLOAT)
             cType = BufferedImage.TYPE_CUSTOM; // Since we cant write 32bit
         // floats, lets fake it
-        if (biType == 10)
+        if (biType == TImgTools.IMAGETYPE_BOOL)
             cType = BufferedImage.TYPE_BYTE_GRAY;
         // if (biType==10) cType=BufferedImage.TYPE_BYTE_BINARY; // not
         // compatible with imagej output
@@ -2629,7 +2626,7 @@ public class VirtualAim implements TImg, TImgRO.TImgOld, TImgRO.FullReadable,
         if (outpath.endsWith(".raw") || outpath.endsWith(".RAW")) {
             System.out.println("Writing raw: " + outpath);
             outWriter = new RAWWriter(biType);
-            outWriter.SetupWriter(this, outpath);
+            outWriter.SetupWriter(this, optp);
             outWriter.Write();
             plPath = outpath + ".pl.txt";
         } else if (outpath.endsWith(".tif") || outpath.endsWith(".TIF")) {

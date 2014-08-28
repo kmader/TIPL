@@ -57,7 +57,7 @@ public class GrowRegions extends BaseTIPLBlock {
 	}
 
 	public String prefix;
-	public String phaseName;
+	public ArgumentList.TypedPath phaseName;
 	protected boolean writeShapeTensor;
 	protected double sphKernelRadius;
 	protected GrownShapeNeighborAnalysis SNA= new GrownShapeNeighborAnalysis(new ArgumentList.TypedPath("TOTALLY INVALID"));

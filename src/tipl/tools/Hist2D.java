@@ -279,14 +279,14 @@ public class Hist2D extends BaseTIPLPlugin {
 	 * Actually runs the GrayAnalysis2D code on the dataset, can be run inside
 	 * of a thread
 	 */
-	protected boolean writeHeader(final String sampName, final String sampPath,
-			final String greyName) {
+	protected boolean writeHeader(final String sampName, final ArgumentList.TypedPath sampPath,
+			final ArgumentList.TypedPath greyName) {
 		return writeHeader(sampName, sampPath, greyName, new D3int(-1),
 				new D3int(-1), new D3int(-1), new D3float(0, 0, 0));
 	}
 
-	protected boolean writeHeader(final String sampName, final String sampPath,
-			final String greyName, final D3int imDim, final D3int imOffset,
+	protected boolean writeHeader(final String sampName, final ArgumentList.TypedPath sampPath,
+			final ArgumentList.TypedPath greyName, final D3int imDim, final D3int imOffset,
 			final D3int imPos, final D3float imElSize) {
 		try {
 			headerStr += analysisName + " Histogram2D \n";

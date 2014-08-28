@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import tipl.util.ArgumentList;
+import tipl.util.ArgumentList.TypedPath;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.ITIPLStorage;
@@ -17,7 +18,7 @@ public interface TReader extends Serializable {
 		protected D3int offset = new D3int(0, 0, 0);
 		protected D3int pos = new D3int(0, 0, 0);
 		protected D3float elSize = new D3float(1, 1, 1);
-		protected String path = "";
+		protected ArgumentList.TypedPath path = new ArgumentList.TypedPath("");
 		final protected String procLog = "";
 		protected int imageType;
 		protected int maxVal;
@@ -66,7 +67,7 @@ public interface TReader extends Serializable {
 		}
 
 		@Override
-		public String getPath() {
+		public ArgumentList.TypedPath getPath() {
 			// TODO Auto-generated method stub
 			return path;
 		}
@@ -85,7 +86,7 @@ public interface TReader extends Serializable {
 		@Override
 		public String getSampleName() {
 			// TODO Auto-generated method stub
-			return path;
+			return path.getPath();
 		}
 
 		@Override
@@ -164,8 +165,8 @@ public interface TReader extends Serializable {
 		}
 
 		@Override
-		public String getPath() {
-			return cReader.readerName();
+		public TypedPath getPath() {
+			return cReader.getPath();
 		}
 
 		@Override
@@ -345,7 +346,7 @@ public interface TReader extends Serializable {
 		public D3int getOffset();
 
 		/** The path of the data (whatever it might be) */
-		public String getPath();
+		public ArgumentList.TypedPath getPath();
 
 		/**
 		 * The position of the bottom leftmost voxel in the image in real space,
@@ -419,6 +420,8 @@ public interface TReader extends Serializable {
 	public float getShortScaleFactor();
 
 	public boolean getSigned();
+	
+	public ArgumentList.TypedPath getPath();
 
 	/**
 	 * Can the writer be run in parallel (multiple threads processing different

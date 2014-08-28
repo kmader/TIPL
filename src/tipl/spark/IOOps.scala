@@ -263,19 +263,21 @@ object IOOps {
   }
   
   import tipl.tools.GrayAnalysis
+  import tipl.util.ArgumentList
   /**
    * Allow strings to be read in directly as images
    */
-  implicit class TIPLString(val baseString: String) {
-    lazy val sc = SparkGlobal.getContext(baseString).sc
+  implicit class TIPLString(val inString: String) {
+    lazy val sc = SparkGlobal.getContext(inString).sc
+    val baseString = new ArgumentList.TypedPath(inString)
     def readAsTImg() = TImgTools.ReadTImg(baseString)
-    def readTiff() = sc.tiffFolder(baseString)
-    def addDensityColumn(inImg: TImgRO,outName: String="",analysisName: String = "Density") = {
-      val outfileName = if(outName.length<1) baseString+"_dens.csv" else outName
+    def readTiff() = sc.tiffFolder(inString)
+    def addDensityColumn(inImg: TImgRO,outName: ArgumentList.TypedPath=new ArgumentList.TypedPath(""),analysisName: String = "Density") = {
+      val outfileName = if(outName.length<1) baseString.append("_dens.csv") else outName
       GrayAnalysis.AddDensityColumn(inImg,baseString,outfileName,analysisName)
     }
-    def addRegionColumn(labImg: TImgRO,regImg: TImgRO ,outName: String="",analysisName: String = "Density") = {
-      val outfileName = if(outName.length<1) baseString+"_dens.csv" else outName
+    def addRegionColumn(labImg: TImgRO,regImg: TImgRO ,outName: ArgumentList.TypedPath=new ArgumentList.TypedPath(""),analysisName: String = "Density") = {
+      val outfileName = if(outName.length<1) baseString.append("_dens.csv") else outName
       GrayAnalysis.AddRegionColumn(labImg,regImg,baseString,outfileName,analysisName)
     } 
   }

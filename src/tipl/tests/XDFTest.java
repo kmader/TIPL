@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import tipl.formats.TImgRO;
 import tipl.tools.XDF;
+import tipl.util.ArgumentList;
 import tipl.util.ITIPLPluginIO;
 import tipl.util.TImgTools;
 
@@ -17,7 +18,7 @@ import tipl.util.TImgTools;
  * 
  */
 public class XDFTest {
-	public static final String testDir="/Users/mader/Dropbox/TIPL/test/xdf_tests/";
+	public static final ArgumentList.TypedPath testDir=TIPLTestingLibrary.createTestImage("/Users/mader/Dropbox/TIPL/test/xdf_tests/");
 	protected static ITIPLPluginIO makeXDF(final TImgRO inImage) {
 		final ITIPLPluginIO XF = new XDF();
 		XF.LoadImages(new TImgRO[] { inImage });
@@ -51,7 +52,7 @@ public class XDFTest {
 		XF.setParameter("-iter=2000 -rdfsize=20,20,20");
 		XF.execute();
 		final TImgRO outImage = XF.ExportImages(testImg)[0];
-		TImgTools.WriteTImg(outImage, testDir+testName+"_img.tif");
+		TImgTools.WriteTImg(outImage, testDir.append(testName+"_img.tif"));
 		fail("Not yet implemented"); // TODO
 	}
 	
@@ -66,20 +67,20 @@ public class XDFTest {
 				10, 10, 10); 
 		final TImgRO testImg = TestPosFunctions
 				.wrapIt(150, new TestPosFunctions.BGPlusPhase(bgLayers, densePart, 3) );
-		TImgTools.WriteTImg(testImg, testDir+testName+"_img.tif");
+		TImgTools.WriteTImg(testImg, testDir.append(testName+"_img.tif"));
 		ITIPLPluginIO XF = makeXDF(testImg);
 		XF.setParameter("-iter=2000 -rdfsize=30,30,30 -asint -inphase=3 -outphase=1");
 		XF.execute();
 		final TImgRO outImage = XF.ExportImages(testImg)[0];
-		TImgTools.WriteTImg(outImage, testDir+testName+"_rdf_31.tif");
-		XDF.WriteHistograms(((XDF) XF), TImgTools.makeTImgExportable(testImg), testDir+testName+"rdf_31");
+		TImgTools.WriteTImg(outImage, testDir.append(testName+"_rdf_31.tif"));
+		XDF.WriteHistograms(((XDF) XF), TImgTools.makeTImgExportable(testImg), testDir.append(testName+"rdf_31"));
 		
 		 XF = makeXDF(testImg);
 		XF.setParameter("-iter=2000 -rdfsize=30,30,30 -asint -inphase=3 -outphase=2");
 		XF.execute();
 		final TImgRO outImage2 = XF.ExportImages(testImg)[0];
-		TImgTools.WriteTImg(outImage2, testDir+testName+"_rdf_32.tif");
-		XDF.WriteHistograms(((XDF) XF), TImgTools.makeTImgExportable(testImg), testDir+testName+"_rdf_32");
+		TImgTools.WriteTImg(outImage2, testDir.append(testName+"_rdf_32.tif"));
+		XDF.WriteHistograms(((XDF) XF), TImgTools.makeTImgExportable(testImg), testDir.append(testName+"_rdf_32"));
 		fail("Not yet implemented"); // TODO
 	}
 	
@@ -101,7 +102,7 @@ public class XDFTest {
 		XF.setParameter("-iter=10000 -rdfsize=30,30,0 -valueImageType=3 -usesurface");
 		XF.execute();
 		final TImgRO outImage = XF.ExportImages(sphImg)[0];
-		TImgTools.WriteTImg(outImage, testDir+testName+"_rdf.tif");
+		TImgTools.WriteTImg(outImage, testDir.append(testName+"_rdf.tif"));
 		
 		fail("Not yet implemented"); // TODO
 	}
@@ -124,7 +125,7 @@ public class XDFTest {
 		XF.setParameter("-iter=500 -rdfsize=30,30,0 -valueImageType=2 -outphase=2");
 		XF.execute();
 		final TImgRO outImage = XF.ExportImages(sphImg)[0];
-		TImgTools.WriteTImg(outImage, testDir+testName+"_rdf.tif");
+		TImgTools.WriteTImg(outImage, testDir.append(testName+"_rdf.tif"));
 		
 		fail("Not yet implemented"); // TODO
 	}

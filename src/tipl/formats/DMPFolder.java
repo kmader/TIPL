@@ -8,6 +8,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
@@ -100,7 +101,7 @@ public class DMPFolder extends DirectoryReader {
 
 	}
 
-	final static String version = "08-03-2013";
+	final static String version = "08-29-2014";
 	final static private FileFilter dmpFilter = new FileFilter() {
 		@Override
 		public boolean accept(final File file) {
@@ -117,7 +118,7 @@ public class DMPFolder extends DirectoryReader {
 	@DirectoryReader.DReader(name = "DMP")
 	final public static DRFactory myFactory = new DRFactory() {
 		@Override
-		public DirectoryReader get(final String path) {
+		public DirectoryReader get(final ArgumentList.TypedPath path) {
 			try {
 				return new DMPFolder(path);
 			} catch (final Exception e) {
@@ -133,37 +134,15 @@ public class DMPFolder extends DirectoryReader {
 		}
 	};
 
-	public static void main(final ArgumentParser p) {
-		System.out.println("DMPFolder Tool v" + VirtualAim.kVer);
 
-		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-		final String inputFile = p.getOptionString("input", "",
-				"Aim File to Convert");
-		final String outputFile = p.getOptionString("output", "test.tif",
-				"Aim File to Convert");
-		try {
-			final DirectoryReader inputAim = new DMPFolder(inputFile);
-			final VirtualAim bob = new VirtualAim(inputAim.getImage());
-			bob.WriteAim(outputFile);
-		} catch (final Exception e) {
-			System.out.println("Error converting or reading slice");
-			e.printStackTrace();
-		}
-
-	}
-
-	public static void main(final String[] args) {
-		main(TIPLGlobal.activeParser(args));
-	}
-
-	public DMPFolder(final String path) throws IOException {
+	public DMPFolder(final ArgumentList.TypedPath path) throws IOException {
 		super(path, dmpFilter, new DMPSliceFactory());
 
 	}
 
 	@Override
 	public int getImageType() {
-		return 3;
+		return TImgTools.IMAGETYPE_FLOAT;
 	}
 
 	/*

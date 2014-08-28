@@ -2,6 +2,8 @@ package tipl.formats;
 
 import java.io.Serializable;
 
+import tipl.util.ArgumentList.TypedPath;
+import tipl.util.ArgumentList;
 import tipl.util.TImgTools;
 
 /**
@@ -119,8 +121,8 @@ public class FImage extends FuncImage {
 	}
 
 	@Override
-	public String getPath() {
-		return vf.name() + " @ " + templateData.getPath();
+	public TypedPath getPath() {
+		return ArgumentList.TypedPath.virtualPath(vf.name() + " @ " + templateData.getPath());
 	}
 
 	@Override

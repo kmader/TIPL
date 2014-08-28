@@ -179,8 +179,8 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
     protected String dlmChar = "\t";
     protected String headerString = "";
     protected String headerStr = "";
-    protected ArgumentList.TypedPath csvName = "";
-    protected ArgumentList.TypedPath insName = "";
+    protected ArgumentList.TypedPath csvName = new ArgumentList.TypedPath("");
+    protected ArgumentList.TypedPath insName = new ArgumentList.TypedPath("");
     protected String gfiltName = "";
     protected GrayVoxels[] intGvArray = new GrayVoxels[0];
     boolean useCount;
@@ -204,7 +204,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
         if (useGFILT)
             gfiltName = p.getOptionAsString("gfilt"); // gfilt is a given
         // parameter
-        csvName = p.getOptionAsString("csv"); // CSV file is a needed parameter
+        csvName = p.getOptionPath("csv","",""); // CSV file is a needed parameter
 
 
         System.out.println("Map Aim: " + mapName);
@@ -662,7 +662,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartFProfile(final TImgRO inGfilt,
-                                     final PureFImage profImage, final String outFile,
+                                     final PureFImage profImage, final ArgumentList.TypedPath outFile,
                                      final float threshVal, final int fbins) {
         final GrayAnalysis newGray = new GrayAnalysis();
         newGray.mapA = profImage;
@@ -904,7 +904,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      * @param outFile
      *            path and name of output file
      */
-    public static void StartRProfile(final TImgRO inGfilt, final String outFile,
+    public static void StartRProfile(final TImgRO inGfilt, final ArgumentList.TypedPath outFile,
                                      final float threshVal) {
         final PureFImage cFImg = new PureFImage.RImage(inGfilt, 3);
         final double[] rng = cFImg.getRange();
@@ -943,7 +943,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartThetaCylProfile(final TImgRO inGfilt,
-                                            final String outFile, final float threshVal) {
+                                            final ArgumentList.TypedPath outFile, final float threshVal) {
         final PureFImage cFImg = new PureFImage.ThetaImageCyl(inGfilt, 3);
         StartFProfile(inGfilt, cFImg, outFile, threshVal, 1000);
     }
@@ -960,7 +960,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      *            path and name of output file
      */
     public static void StartThetaCylProfile(final TImgRO inGfilt,
-                                            final TImgRO inMask, final String outFile, final float threshVal) {
+                                            final TImgRO inMask, final ArgumentList.TypedPath outFile, final float threshVal) {
         final FImage maskedF = new FImage.MaskablePFImage(inMask,
                 new PureFImage.ThetaImageCyl(inMask, 3));
         maskedF.useMask = true;

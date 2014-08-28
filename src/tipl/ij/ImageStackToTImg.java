@@ -8,6 +8,8 @@ import ij.ImageStack;
 import ij.measure.Calibration;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.util.ArgumentList.TypedPath;
+import tipl.util.ArgumentList;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.ITIPLStorage;
@@ -209,8 +211,8 @@ public class ImageStackToTImg implements TImg {
      * @see tipl.formats.TImgRO#getPath()
      */
     @Override
-    public String getPath() {
-        return this.toString();
+    public TypedPath getPath() {
+        return ArgumentList.TypedPath.virtualPath(this.toString());
     }
 
     /* (non-Javadoc)

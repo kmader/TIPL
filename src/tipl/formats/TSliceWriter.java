@@ -11,6 +11,7 @@ import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 import net.java.sezpoz.Indexable;
 import tipl.util.ArgumentList.TypedPath;
+import tipl.util.ArgumentList;
 import tipl.util.TImgBlock;
 
 /**
@@ -38,7 +39,7 @@ public interface TSliceWriter extends Serializable {
 		 * @param imgType the type of image to write (default -1)
 		 * @return the instance of the writer, after setup has been run and header written
 		 */
-		public TSliceWriter get(TImgRO imageData,String path,int imgType);
+		public TSliceWriter get(TImgRO imageData,ArgumentList.TypedPath path,int imgType);
 	}
 	/**
 	 * Since TSliceWriter is an interface and since this isnt java8 I need a subclass to have static functions
@@ -76,13 +77,13 @@ public interface TSliceWriter extends Serializable {
 
 			}
 			System.out.println("Loaded "+TSliceWriter.class.getName()+" Plugins:");
-			for(String cFilter: allFacts.keySet()) return allFacts.get(cFilter).get(outImage,path.getPath(),imgType);
+			for(String cFilter: allFacts.keySet()) return allFacts.get(cFilter).get(outImage,path,imgType);
 			throw new IllegalArgumentException("No matching filters found:"+path);
 		}
 	}
 
 	/** The command to initialize the writer */
-	public void SetupWriter(TImgRO imgToSave, String outputPath, int outType);
+	public void SetupWriter(TImgRO imgToSave, ArgumentList.TypedPath outputPath, int outType);
 
 	/** write just the header */
 	public void WriteHeader();

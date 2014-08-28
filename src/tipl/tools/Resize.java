@@ -2,6 +2,7 @@ package tipl.tools;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
@@ -129,12 +130,12 @@ public class Resize extends BaseTIPLPluginMult {
 		System.out.println(" Resizes Aim files based on given criteria");
 		System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 		ArgumentParser p = TIPLGlobal.activeParser(args);
-		final String inputFile = p.getOptionString("input", "",
+		final ArgumentList.TypedPath inputFile = p.getOptionPath("input", "",
 				"Input masked image");
-		final String matchFile = p.getOptionString("mask", "",
+		final ArgumentList.TypedPath matchFile = p.getOptionPath("mask", "",
 				"Matching masked image");
 		final ITIPLPluginIO RS = new Resize();
-		final String outputFile = p.getOptionString("output", "resized.tif",
+		final ArgumentList.TypedPath outputFile = p.getOptionPath("output", "resized.tif",
 				"Output resized image");
 		p = RS.setParameter(p, "");
 		if (p.hasOption("?")) {

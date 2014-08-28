@@ -57,7 +57,6 @@ public class ResizeTest {
 	public static void testSlicesMatchBool(final PluginInfo idPlugin,final TImgRO testImg) {
 		// offset lines
 
-		if (TIPLGlobal.getDebug()) TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Slices Match in BW");
 		ITIPLPluginIO RS = makeRS(idPlugin,testImg);
 
@@ -87,7 +86,6 @@ public class ResizeTest {
 	public static void testSlicesMatchInt(final PluginInfo idPlugin,final TImgRO testImg) {
 		// offset lines
 
-		if (TIPLGlobal.getDebug()) TImgTools.WriteTImg(testImg, "/Users/mader/Dropbox/test.tif");
 		System.out.println("Testing Slices Match");
 		ITIPLPluginIO RS = makeRS(idPlugin,testImg);
 

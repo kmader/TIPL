@@ -496,7 +496,7 @@ public class UFEM implements Runnable {
 
     protected static void makeProfiles(final TImg datAim, final TImg mskAim,
                                        final ArgumentList.TypedPath fileroot) {
-        GrayAnalysis.StartThetaCylProfile(datAim, mskAim, fileroot + "_th.txt",
+        GrayAnalysis.StartThetaCylProfile(datAim, mskAim, fileroot.append("_th.txt"),
                 0.1f);
         GrayAnalysis.StartZProfile(datAim, mskAim, fileroot.append( "_z.txt"), 0.1f);
         GrayAnalysis2D.StartRZProfile(datAim, fileroot.append( "_rz.txt"), 0.1f, 1000);
@@ -1005,21 +1005,19 @@ public class UFEM implements Runnable {
                 boneAim = null;
                 break;
             case 40:
-                final String[] imgListBW = {porosAimFile, lmaskAimFile,
+                final ArgumentList.TypedPath[] imgListBW = {porosAimFile, lmaskAimFile,
                         cmaskAimFile};
-                final String[] imgListColor = {lacunAimFile, canalAimFile};
+                final ArgumentList.TypedPath[] imgListColor = {lacunAimFile, canalAimFile};
                 System.out
                         .println("Begin Special Stage, Recontouring and Mask Repairing...");
 
                 // Make Backups
-                for (final String imgFileStr : imgListBW)
+                for (final ArgumentList.TypedPath imgFile : imgListBW)
                 {
-                	ArgumentList.TypedPath imgFile = new ArgumentList.TypedPath(imgFileStr);
-                    TIPLGlobal.copyFile(imgFile, originalName(imgFile));
+                	TIPLGlobal.copyFile(imgFile, originalName(imgFile));
                 }
-                for (final String imgFileStr : imgListColor)
+                for (final ArgumentList.TypedPath imgFile : imgListColor)
                 {
-                	ArgumentList.TypedPath imgFile = new ArgumentList.TypedPath(imgFileStr);
                 	TIPLGlobal.copyFile(imgFile, originalName(imgFile));
                 }
                 TIPLGlobal.copyFile(boneAimFile, originalName(boneAimFile));
@@ -1045,8 +1043,8 @@ public class UFEM implements Runnable {
 
                 TIPLGlobal.runGC();
                 // The code for mask data
-                for (final String imgFileStr : imgListBW) {
-                	ArgumentList.TypedPath imgFile = new ArgumentList.TypedPath(imgFileStr);
+                for (final ArgumentList.TypedPath imgFile : imgListBW) {
+                	
                     if (tryOpenImagePath(imgFile)) {
                         TImg tempAim = TImgTools.ReadTImg(imgFile);
 
@@ -1057,8 +1055,8 @@ public class UFEM implements Runnable {
                     }
                 }
                 // Te code for color data
-                for (final String imgFileStr : imgListColor) {
-                	ArgumentList.TypedPath imgFile = new ArgumentList.TypedPath(imgFileStr);
+                for (final ArgumentList.TypedPath imgFile : imgListColor) {
+                	
                     if (tryOpenImagePath(imgFile)) {
                         TImg tempAim = TImgTools.ReadTImg(imgFile);
                         tempAim = peelAim(tempAim, maskAim, 0);
@@ -1278,7 +1276,7 @@ public class UFEM implements Runnable {
                 cdtoAim = HildThickness.DTO(cmaskAim);
                 cmaskAim = null;
                 TImgTools.WriteTImg(cdtoAim, cdtoAimFile);
-                GrayAnalysis.StartHistogram(cdtoAim, cdtoAimFile + ".csv");
+                GrayAnalysis.StartHistogram(cdtoAim, cdtoAimFile.append(".csv"));
 
                 if (canalAim == null)
                     canalAim = TImgTools.ReadTImg(canalAimFile);

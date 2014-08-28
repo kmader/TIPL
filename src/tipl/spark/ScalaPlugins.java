@@ -53,6 +53,7 @@ public final class ScalaPlugins {
 			return new SResize();
 		}
 	};
+	
 }
 
 

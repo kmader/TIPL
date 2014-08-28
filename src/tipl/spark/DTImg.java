@@ -125,7 +125,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @return
      */
     protected static <U> JavaPairRDD<D3int, TImgBlock<U>> ImportImageSerial(
-            final JavaSparkContext jsc, final String imgName, final int imgType) {
+            final JavaSparkContext jsc, final ArgumentList.TypedPath imgName, final int imgType) {
         assert (TImgTools.isValidType(imgType));
         final TImgRO cImg = TImgTools.ReadTImg(imgName, false, true);
         final D3int imgDim = cImg.getDim();
@@ -198,7 +198,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      */
     static public <Fc> DTImg<Fc> WrapRDD(TImgTools.HasDimensions parent, JavaPairRDD<D3int, TImgBlock<Fc>> newImage,
                                          int imgType) {
-        DTImg<Fc> outImage = new DTImg<Fc>(parent, newImage, imgType, ArgumentList.TypedPath.virtualPath(newImage.toString()),false);
+        DTImg<Fc> outImage = new DTImg<Fc>(parent, newImage, imgType, ArgumentList.TypedPath.virtualPath(newImage.toString()));
         return outImage;
     }
 
@@ -227,7 +227,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      */
     static public <Fc> DTImg<Fc> ConvertTImg(JavaSparkContext jsc, final TImgRO inImage, int imgType) {
         JavaPairRDD<D3int, TImgBlock<Fc>> newImage = MigrateImage(jsc, inImage, imgType);
-        return new DTImg<Fc>(inImage, newImage, imgType, inImage);
+        return new DTImg<Fc>(inImage, newImage, imgType, inImage.getPath());
     }
 
     static public <Fc> DTImg<Fc> ReadObjectFile(JavaSparkContext jsc, final ArgumentList.TypedPath imgName, int imgType) {

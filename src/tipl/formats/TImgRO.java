@@ -1,11 +1,15 @@
 package tipl.formats;
 
+import tipl.util.ArgumentList.TypedPath;
+import tipl.util.ArgumentList;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+
+import tipl.util.ArgumentList.TypedPath;
 
 /**
  * A Read-only TImg (the full TImg is a subinterface of this) useful for
@@ -29,7 +33,7 @@ public interface TImgRO extends TImgTools.HasDimensions, Serializable {
     /**
      * The path of the data (whatever it might be)
      */
-    public String getPath();
+    public TypedPath getPath();
 
     public Object getPolyImage(int sliceNumber, int asType);
 
@@ -242,9 +246,9 @@ public interface TImgRO extends TImgTools.HasDimensions, Serializable {
          * @see tipl.formats.TImgRO#getPath()
          */
         @Override
-        public String getPath() {
+        public TypedPath getPath() {
             // TODO Auto-generated method stub
-            return "";
+            return ArgumentList.TypedPath.virtualPath(this.toString());
         }
         
         /* (non-Javadoc)

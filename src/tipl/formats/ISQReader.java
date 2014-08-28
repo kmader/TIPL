@@ -7,6 +7,7 @@ import java.io.RandomAccessFile;
 import java.util.Hashtable;
 
 import tipl.util.ArgumentList;
+import tipl.util.ArgumentList.TypedPath;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
@@ -142,7 +143,7 @@ public class ISQReader implements TReader {
 
 	@Override
 	public int getImageType() {
-		return 1;
+		return TImgTools.IMAGETYPE_SHORT;
 	} // only short aims are supported right now
 
 	@Override
@@ -258,9 +259,10 @@ public class ISQReader implements TReader {
 					+ iSlice);
 		}
 	}
-
+	protected ArgumentList.TypedPath inPath = ArgumentList.TypedPath.virtualPath("");
 	@Override
 	public void SetupReader(final ArgumentList.TypedPath inPath) {
+		this.inPath = inPath;
 		try {
 			iFile = new File(inPath.getPath());
 		} catch (final Exception e) {
@@ -268,6 +270,11 @@ public class ISQReader implements TReader {
 			e.printStackTrace();
 		}
 
+	}
+
+	@Override
+	public TypedPath getPath() {
+		return inPath;
 	}
 
 }

@@ -93,7 +93,7 @@ public interface ITIPLStorage {
 	 * @param path
 	 * @return
 	 */
-	public boolean writeTImg(final TImgRO outImg,final String path,boolean saveToCache);
+	public boolean writeTImg(final TImgRO outImg,final ArgumentList.TypedPath path,boolean saveToCache);
 	/**
 	 * Write a TImg with all of the appropriate parameters
 	 * 

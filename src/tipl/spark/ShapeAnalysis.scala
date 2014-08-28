@@ -15,6 +15,7 @@ import tipl.formats.TImgRO
 import tipl.tools.GrayVoxels
 import tipl.util.ITIPLPlugin
 import tipl.spark.TypeMacros._
+import tipl.util.ArgumentList
 
 /**
  * A spark based code to perform shape analysis similarly to the code provided GrayAnalysis
@@ -33,12 +34,12 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
 
   override def setParameter(p: ArgumentParser, prefix: String): ArgumentParser = {
     analysisName = p.getOptionString(prefix + "analysis", analysisName, "Name of analysis")
-    outputName = p.getOptionString(prefix + "csvname", outputName, "Name of analysis")
+    outputName = p.getOptionPath(prefix + "csvname", outputName, "Name of analysis")
     return p
   }
 
   var analysisName = "Shape"
-  var outputName = "output.csv"
+  var outputName = new ArgumentList.TypedPath("output.csv")
 
   override def getPluginName() = {
     "ShapeAnalysis:Spark"

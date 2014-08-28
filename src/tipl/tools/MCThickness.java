@@ -42,10 +42,10 @@ public class MCThickness extends Thickness {
 	 *            the name of the csv histogram file to write
 	 */
 	public static boolean DTO(final ArgumentList.TypedPath inAimFile, final ArgumentList.TypedPath outAimFile,
-			final String histoFile) {
+			final ArgumentList.TypedPath histoFile) {
 		final TImg thickmapAim = DTO(TImgTools.ReadTImg(inAimFile));
 		TImgTools.WriteTImg(thickmapAim,outAimFile);
-		GrayAnalysis.StartHistogram(thickmapAim, histoFile + ".csv");
+		GrayAnalysis.StartHistogram(thickmapAim, histoFile.append(".csv"));
 		return true;
 	}
 

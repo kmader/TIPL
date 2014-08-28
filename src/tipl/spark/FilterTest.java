@@ -6,12 +6,14 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
+
 import scala.Tuple2;
 import scala.Tuple3;
 import tipl.formats.TImgRO;
 import tipl.tests.TestPosFunctions;
 import tipl.tools.BaseTIPLPluginIn;
 import tipl.util.ArgumentList.TypedPath;
+import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.TImgBlock;
@@ -76,7 +78,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
     public static void main(String[] args) {
         ArgumentParser p = SparkGlobal.activeParser(args);
 
-        final String imagePath = p.getOptionPath("path", "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory) to read in");
+        final ArgumentList.TypedPath imagePath = p.getOptionPath("path", "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory) to read in");
         int boxSize = p.getOptionInt("boxsize", 8, "The dimension of the image used for the analysis");
 
         final TImgRO testImg = TestPosFunctions.wrapIt(boxSize,

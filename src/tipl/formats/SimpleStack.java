@@ -7,6 +7,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import tipl.formats.TImgRO.TImgStack;
+import tipl.util.ArgumentList.TypedPath;
+import tipl.util.ArgumentList;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.ITIPLStorage;
@@ -161,9 +163,9 @@ public class SimpleStack<T> extends TImgStack implements Serializable {
 	 * @see tipl.formats.TImgRO#getPath()
 	 */
 	@Override
-	public String getPath() {
+	public TypedPath getPath() {
 		// TODO Auto-generated method stub
-		return getSampleName();
+		return ArgumentList.TypedPath.virtualPath(getSampleName());
 	}
 
 	/*

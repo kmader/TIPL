@@ -1,5 +1,6 @@
 package tipl.formats;
 
+import tipl.util.ArgumentList.TypedPath;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
@@ -115,7 +116,7 @@ public abstract class FuncImage implements TImgRO {
 	}
 
 	@Override
-	public abstract String getPath();
+	public abstract TypedPath getPath();
 
 	@Override
 	public Object getPolyImage(final int isliceNumber, final int asType) {

@@ -1086,7 +1086,7 @@ public class TImgTools {
 
 	 public static boolean WriteTImg(final TImgRO curImg, final ArgumentList.TypedPath path,
 			 final boolean saveToCache) {
-		 TIPLGlobal.getUsage().registerImage(path, curImg.getDim().toString(), curImg + "");
+		 TIPLGlobal.getUsage().registerImage(path.getPath(), curImg.getDim().toString(), curImg + "");
 		 return getStorage().writeTImg(curImg, path, saveToCache);
 	 }
 
