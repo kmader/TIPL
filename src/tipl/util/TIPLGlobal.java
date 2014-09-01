@@ -46,7 +46,7 @@ public class TIPLGlobal {
      * number of cores available for processing tasks
      */
     public static int availableCores = curRuntime.availableProcessors();
-    public static int IJmode = ImageJ.NO_SHOW;
+    public static int IJmode = ImageJ.EMBEDDED;
     /**
      * the maximum number of cores allowed to be reading files simultaneously
      */

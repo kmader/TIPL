@@ -9,10 +9,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+
+import org.reflections.Reflections;
 
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 import net.java.sezpoz.Indexable;
+
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.tools.Resize;
@@ -44,6 +49,8 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 		String[] outputNames();
 		
 	}
+	
+	
 	/**
 	 * The static method to create a new TIPLBlock 
 	 * @author mader
@@ -52,6 +59,46 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	public static abstract interface TIPLBlockFactory {
 		public ITIPLBlock get();
 	}
+	
+	public static abstract class BlockMaker implements TIPLBlockFactory {
+		protected abstract ITIPLBlock make() throws InstantiationException, IllegalAccessException;
+		public ITIPLBlock get() {
+			try {
+				return make();
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+				throw new IllegalArgumentException(e+" cannot be initiated");
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+				throw new IllegalArgumentException(e+" cannot be accessed");
+			}
+		}
+	}
+	
+	/**
+	 * Gets the list of all the blocks available in the tipl library
+	 * @return a dictionary of all blocks
+	 */
+	public static Map<String,BlockMaker> getBlockList() {
+		Reflections reflections = new Reflections("tipl.blocks"); 
+		Set<Class<? extends ITIPLBlock>> classes = reflections.getSubTypesOf(ITIPLBlock.class);
+		HashMap<String,BlockMaker> blocks = new HashMap<String,BlockMaker>();
+		for(final Class<? extends ITIPLBlock> curClass : classes) {
+			if (TIPLGlobal.getDebug()) System.out.println("tipl:Loading Class:"+curClass.getName());
+			blocks.put(curClass.getCanonicalName(),
+					new BlockMaker() {
+						@Override
+						protected ITIPLBlock make()
+								throws InstantiationException,
+								IllegalAccessException {
+							return curClass.newInstance();
+						}			
+			});
+		}
+		return blocks;
+	}
+	
+
 	/**
 	 * Get a list of all the block factories that exist
 	 * @return
