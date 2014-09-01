@@ -820,6 +820,23 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
             saveLabel(tf, label);
         return asGUI(tf);
     }
+    protected Container currentLayer = this;
+    public void setCurrentLayer(Container curLayer) {
+    	currentLayer = curLayer;
+    }
+    public void resetCurrentLayer() {
+    	currentLayer = this;
+    }
+    /** 
+     * This version allows subpanels to be used seamlessly without modifying every single command here
+     */
+    @Override
+    public Component add(Component curObj) {
+    	if ((currentLayer == null) || (currentLayer == this)) return super.add(curObj);
+    	else return currentLayer.add(curObj);
+    }
+    
+    
 
     /**
      * Adds an 8 column text field.

@@ -25,7 +25,7 @@ public class TImgTools {
 	 * the values define the types of various images and should be used instead of hardcoded values
 	 * Type refers to binary or stored values
 	 */
-	
+
 	public static final int IMAGETYPE_BOOL = 10;
 	public static final int IMAGETYPE_CHAR = 0;
 	public static final int IMAGETYPE_SHORT = 1;
@@ -36,14 +36,16 @@ public class TImgTools {
 	public static final int IMAGETYPE_SPECTRAL = 6;
 	public static final int IMAGETYPE_GLOB = 7;
 	public static final int IMAGETYPE_LONG = 8;
+	public static final int IMAGETYPE_RGB = 9;
 	/** 
 	 * A list of all supported image types
 	 */
 	public static final int[] IMAGETYPES = new int[] {
-		IMAGETYPE_BOOL, IMAGETYPE_CHAR, IMAGETYPE_SHORT, IMAGETYPE_INT, IMAGETYPE_DOUBLE, IMAGETYPE_LONG
+		IMAGETYPE_BOOL, IMAGETYPE_CHAR, IMAGETYPE_SHORT, IMAGETYPE_INT, IMAGETYPE_DOUBLE, IMAGETYPE_LONG,
+		IMAGETYPE_RGB
 	};
-	public static final String IMAGETYPE_HELP = "(boolean image/1bit=" + IMAGETYPE_BOOL + ", character image/8bit=" + IMAGETYPE_CHAR + ", short image/16bit=" + IMAGETYPE_SHORT + ", integer image/32bit=" + IMAGETYPE_INT + ", float image/32bit=" + IMAGETYPE_FLOAT + ", double image/64bit="+IMAGETYPE_DOUBLE+", long image/64bit="+IMAGETYPE_LONG+")";
-	
+	public static final String IMAGETYPE_HELP = "(boolean image/1bit=" + IMAGETYPE_BOOL + ", character image/8bit=" + IMAGETYPE_CHAR + ", short image/16bit=" + IMAGETYPE_SHORT + ", integer image/32bit=" + IMAGETYPE_INT + ", float image/32bit=" + IMAGETYPE_FLOAT + ", double image/64bit="+IMAGETYPE_DOUBLE+", long image/64bit="+IMAGETYPE_LONG+", RGB image/24bit-byte[3]="+IMAGETYPE_RGB+")";
+
 	/**
 	 * Image class refers to the information which is being stored in the image (distinct values from imagetype)
 	 */
@@ -51,7 +53,7 @@ public class TImgTools {
 	public static final int IMAGECLASS_LABEL = 101;
 	public static final int IMAGECLASS_VALUE = 102;
 	public static final int IMAGECLASS_OTHER = 103;
-	
+
 	/**
 	 * Convert a type to a class of image (makes processing easier)
 	 * @param type the IMAGETYPE of the data coming in
@@ -68,12 +70,14 @@ public class TImgTools {
 			return IMAGECLASS_LABEL;
 		case IMAGETYPE_FLOAT:
 		case IMAGETYPE_DOUBLE:
+		case IMAGETYPE_RGB:
 			return IMAGECLASS_VALUE;
+
 		default:
 			if (TIPLGlobal.getDebug()) System.out.println("Warning: ImageType ("+type+") is unknown and is being labeled as other");
 			return IMAGECLASS_OTHER;
-			
-			
+
+
 		}
 	}
 	/**
@@ -89,7 +93,7 @@ public class TImgTools {
 	public static int SPEED_MEMORY = 4;
 	protected static ITIPLStorage storageBackend = null;
 	public static boolean useSparkStorage = false;
-	
+
 	/**
 	 * get the current backend for storage / memory management, if none exists create a new one
 	 *
@@ -98,7 +102,7 @@ public class TImgTools {
 	public static ITIPLStorage getStorage() {
 		if (storageBackend == null) {
 			if(!useSparkStorage) storageBackend = new TIPLStorage();
-			
+
 		}
 		return storageBackend;
 	}
@@ -131,10 +135,10 @@ public class TImgTools {
 	 * @param desiredType
 	 * @return
 	 */
-    static public final TImg ChangeImageType(final TImgRO inImg, final int desiredType) {
-    	assert isValidType(desiredType);
-    	return new TImg.ATImg(inImg,desiredType) {
-    		final private TImgRO hiddenImg = inImg;
+	static public final TImg ChangeImageType(final TImgRO inImg, final int desiredType) {
+		assert isValidType(desiredType);
+		return new TImg.ATImg(inImg,desiredType) {
+			final private TImgRO hiddenImg = inImg;
 			@Override
 			public Object getPolyImage(int sliceNumber, int asType) {
 				return inImg.getPolyImage(sliceNumber, asType);
@@ -144,10 +148,10 @@ public class TImgTools {
 			public String getSampleName() {
 				return inImg.getSampleName();
 			}
-    		
-    	};
-    }
-	
+
+		};
+	}
+
 
 	/**
 	 * The general function for comparing the dimensions of two TImg class
@@ -197,7 +201,7 @@ public class TImgTools {
 				inType, outType, isSigned,
 				shortScaleFactor, 127);
 	}
-	
+
 	/**
 	 * Generic function for converting array types
 	 *
@@ -214,14 +218,20 @@ public class TImgTools {
 	public static Object convertArrayType(final Object inArray,
 			final int inType, final int outType, final boolean isSigned,
 			final float shortScaleFactor, final int maxVal) {
+		
 		final int autoInType = identifySliceType(inArray);
-		assert (inType==autoInType); // make sure it is what it says it is
+		if(autoInType>0) assert (inType==autoInType); // make sure it is what it says it is
+		// save time if it is the same
+		if(inType==outType) return inArray;
 		assert isValidType(inType);
 		assert isValidType(outType);
-		
+
 		switch (inType) {
 		case IMAGETYPE_CHAR: // byte
 			return convertCharArray((char[]) inArray, outType, isSigned,
+					shortScaleFactor, maxVal);
+		case IMAGETYPE_RGB: // rgb array
+			return convertRGBArray((byte[][]) inArray, outType, isSigned,
 					shortScaleFactor, maxVal);
 		case IMAGETYPE_SHORT: // short
 			return convertShortArray((short[]) inArray, outType, isSigned,
@@ -240,6 +250,7 @@ public class TImgTools {
 					shortScaleFactor);
 		case IMAGETYPE_BOOL: // boolean
 			return convertBooleanArray((boolean[]) inArray, outType);
+
 		}
 		return inArray;
 	}
@@ -256,6 +267,16 @@ public class TImgTools {
 				if (gf[i])
 					gb[i] = 127;
 			return gb;
+		case IMAGETYPE_RGB: // RGB
+			final byte[][] grgb = new byte[sliceSize][3];
+			for (int i = 0; i < sliceSize; i++)
+				if (gf[i])
+				{
+					grgb[i][0] = 127;
+					grgb[i][1] = 127;
+					grgb[i][2] = 127;
+				}
+			return grgb;
 		case IMAGETYPE_SHORT: // Short
 			// Read short data type in
 			final short[] gs = new short[sliceSize];
@@ -308,6 +329,15 @@ public class TImgTools {
 		switch (asType) {
 		case IMAGETYPE_CHAR: // Char
 			return gs;
+		case IMAGETYPE_RGB: // RGB
+			final byte[][] grgb = new byte[sliceSize][3];
+			for (int i = 0; i < sliceSize; i++)
+			{
+				grgb[i][0] = (byte) gs[i];
+				grgb[i][1] = grgb[i][0];
+				grgb[i][2] = grgb[i][0];
+			}
+			return grgb;
 		case IMAGETYPE_SHORT: // Short
 			// Read short data type in
 			final short[] gshort = new short[sliceSize];
@@ -334,7 +364,7 @@ public class TImgTools {
 				gf[i] = (gs[i] - (isSigned ? maxVal / 2.0f : 0.0f))
 				* shortScaleFactor;
 			return gf;
-			
+
 		case IMAGETYPE_DOUBLE: // Float - Long
 			final double[] gd = new double[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
@@ -354,6 +384,24 @@ public class TImgTools {
 		}
 	}
 
+	
+	@Deprecated
+	private static Object convertRGBArray(final byte[][] grgb, final int asType,
+			final boolean isSigned, final float shortScaleFactor,
+			final int maxVal) {
+		// convert it to a char array and spit it back
+		final int sliceSize = grgb.length;
+
+			final char[] gchar = new char[sliceSize];
+			for (int i = 0; i < sliceSize; i++)
+			{	
+				long meanValue = (grgb[i][0]+grgb[i][1]+grgb[i][2])/3;
+				gchar[i] = (char) meanValue;
+			}
+			return convertCharArray(gchar, asType,
+					isSigned, shortScaleFactor, maxVal);
+	}
+
 	@Deprecated
 	private static Object convertFloatArray(final float[] gf, final int asType,
 			final boolean isSigned, final float shortScaleFactor) {
@@ -366,6 +414,16 @@ public class TImgTools {
 				gb[i] = (char) ((gf[i] / shortScaleFactor) + (isSigned ? 127
 						: 0));
 			return gb;
+		case IMAGETYPE_RGB: // RGB
+			final byte[][] grgb = new byte[sliceSize][3];
+			for (int i = 0; i < sliceSize; i++)
+			{
+				grgb[i][0] = (byte) ((gf[i] / shortScaleFactor) + (isSigned ? 127
+						: 0));
+						grgb[i][1] = grgb[i][0];
+						grgb[i][2] = grgb[i][0];
+			}
+			return grgb;
 		case IMAGETYPE_SHORT: // Short
 			// Read short data type in
 			final short[] gs = new short[sliceSize];
@@ -417,6 +475,16 @@ public class TImgTools {
 				gb[i] = (char) ((gf[i] / shortScaleFactor) + (isSigned ? 127
 						: 0));
 			return gb;
+		case IMAGETYPE_RGB: // RGB
+			final byte[][] grgb = new byte[sliceSize][3];
+			for (int i = 0; i < sliceSize; i++)
+			{
+				grgb[i][0] = (byte) ((gf[i] / shortScaleFactor) + (isSigned ? 127
+						: 0));
+						grgb[i][1] = grgb[i][0];
+						grgb[i][2] = grgb[i][0];
+			}
+			return grgb;
 		case IMAGETYPE_SHORT: // Short
 			// Read short data type in
 			final short[] gs = new short[sliceSize];
@@ -459,23 +527,26 @@ public class TImgTools {
 
 	@Deprecated
 	private static Object convertIntArray(final int[] gi, final int asType,
-			final boolean isSigned, final float ShortScaleFactor) {
-		return convertIntArray(gi, asType, isSigned, ShortScaleFactor, 65536);
-	}
-
-	@Deprecated
-	private static Object convertIntArray(final int[] gi, final int asType,
 			final boolean isSigned, final float ShortScaleFactor,
 			final int maxVal) {
 		final int sliceSize = gi.length;
 		switch (asType) {
 		case IMAGETYPE_CHAR: // Char
-		final char[] gb = new char[sliceSize];
-		for (int i = 0; i < sliceSize; i++) {
-			gb[i] = (char) gi[i];
-		}
+			final char[] gb = new char[sliceSize];
+			for (int i = 0; i < sliceSize; i++) {
+				gb[i] = (char) gi[i];
+			}
 
-		return gb;
+			return gb;
+		case IMAGETYPE_RGB: // RGB
+			final byte[][] grgb = new byte[sliceSize][3];
+			for (int i = 0; i < sliceSize; i++)
+			{
+				grgb[i][0] = (byte) gi[i];
+				grgb[i][1] = grgb[i][0];
+				grgb[i][2] = grgb[i][0];
+			}
+			return grgb;
 
 		case IMAGETYPE_SHORT: // Short
 			// Read short data type in
@@ -534,7 +605,15 @@ public class TImgTools {
 			}
 
 			return gb;
-
+		case IMAGETYPE_RGB: // RGB
+			final byte[][] grgb = new byte[sliceSize][3];
+			for (int i = 0; i < sliceSize; i++)
+			{
+				grgb[i][0] = (byte) gi[i];
+				grgb[i][1] = grgb[i][0];
+				grgb[i][2] = grgb[i][0];
+			}
+			return grgb;
 		case IMAGETYPE_SHORT: // Short
 			final short[] gs = new short[sliceSize];
 			for (int i = 0; i < sliceSize; i++)
@@ -598,7 +677,15 @@ public class TImgTools {
 			}
 
 			return gb;
-
+		case IMAGETYPE_RGB: // RGB
+			final byte[][] grgb = new byte[sliceSize][3];
+			for (int i = 0; i < sliceSize; i++)
+			{
+				grgb[i][0] = (byte) gs[i];
+				grgb[i][1] = grgb[i][0];
+				grgb[i][2] = grgb[i][0];
+			}
+			return grgb;
 		case IMAGETYPE_SHORT: // Short
 			// Read short data type in
 
@@ -726,446 +813,454 @@ public class TImgTools {
 	 * Get a double array of the x,y,z position given a current slice index and
 	 * current slice
 	 */
-	 public static Double[] getXYZVecFromVec(final D3int vecPos,
-			 final D3int vecDim, final int cIndex, final int cSlice) {
+	public static Double[] getXYZVecFromVec(final D3int vecPos,
+			final D3int vecDim, final int cIndex, final int cSlice) {
 		final D3float npos = getRXYZFromVec(vecPos, vecDim, cIndex, cSlice);
 		final Double[] cPos = new Double[3];
 		cPos[0] = npos.x;
 		cPos[1] = npos.y;
 		cPos[2] = npos.z;
 		return cPos;
-	 }
+	}
 
-	 /**
-	  * Get a double array of the x,y,z position given a current slice index and
-	  * current slice
-	  */
-	 public static Double[] getXYZVecFromVec(final HasDimensions inImg,
-			 final int cIndex, final int cSlice) {
-		 return getXYZVecFromVec(inImg.getPos(), inImg.getDim(), cIndex, cSlice);
-	 }
+	/**
+	 * Get a double array of the x,y,z position given a current slice index and
+	 * current slice
+	 */
+	public static Double[] getXYZVecFromVec(final HasDimensions inImg,
+			final int cIndex, final int cSlice) {
+		return getXYZVecFromVec(inImg.getPos(), inImg.getDim(), cIndex, cSlice);
+	}
 
-	 /**
-	  * Calculate the type of object it is from the slice information
-	  * (getPolyImage, etc)
-	  *
-	  * @param iData a slice from the image (usually an array)
-	  * @return the type of the object
-	  */
-	 public static int identifySliceType(final Object iData) {
-		 if (iData instanceof boolean[])
-			 return TImgTools.IMAGETYPE_BOOL;
-		 if (iData instanceof char[])
-			 return TImgTools.IMAGETYPE_CHAR;
-		 if (iData instanceof short[])
-			 return TImgTools.IMAGETYPE_SHORT;
-		 if (iData instanceof int[])
-			 return TImgTools.IMAGETYPE_INT;
-		 if (iData instanceof float[])
-			 return TImgTools.IMAGETYPE_FLOAT;
-		 if (iData instanceof double[])
-			 return TImgTools.IMAGETYPE_DOUBLE;
-		 if (iData instanceof long[])
-			 return TImgTools.IMAGETYPE_LONG;
-		 if (iData instanceof scala.Int[]) 
-			 throw new IllegalArgumentException("Scala types are not acceptable image types!");
-		 throw new IllegalArgumentException("Type of object:" + iData
-				 + " cannot be determined!! Proceed with extreme caution");
-	 }
-	 /**
-	  * convert any known array type to an array of doubles (good enough for labels or values)
-	  * @param inSlice
-	  * @return slice as an array of double
-	  */
-	 public static double[] convertArrayDouble(Object inSlice) {
-		 final int type = identifySliceType(inSlice);
-		 return (double[]) convertArrayType(inSlice,type,IMAGETYPE_DOUBLE);
-	 }
-	 
+	/**
+	 * Calculate the type of object it is from the slice information
+	 * (getPolyImage, etc)
+	 *
+	 * @param iData a slice from the image (usually an array)
+	 * @return the type of the object
+	 */
+	public static int identifySliceType(final Object iData) {
+		if (iData instanceof boolean[])
+			return TImgTools.IMAGETYPE_BOOL;
+		if (iData instanceof char[])
+			return TImgTools.IMAGETYPE_CHAR;
+		if (iData instanceof short[])
+			return TImgTools.IMAGETYPE_SHORT;
+		if (iData instanceof int[])
+			return TImgTools.IMAGETYPE_INT;
+		if (iData instanceof float[])
+			return TImgTools.IMAGETYPE_FLOAT;
+		if (iData instanceof double[])
+			return TImgTools.IMAGETYPE_DOUBLE;
+		if (iData instanceof long[])
+			return TImgTools.IMAGETYPE_LONG;
+		if (iData instanceof byte[][]) 
+			return TImgTools.IMAGETYPE_RGB;
+		if (iData instanceof scala.Int[]) 
+			throw new IllegalArgumentException("Scala types are not acceptable image types!");
+		throw new IllegalArgumentException("Type of object:" + iData
+				+ " cannot be determined!! Proceed with extreme caution");
+	}
+	/**
+	 * convert any known array type to an array of doubles (good enough for labels or values)
+	 * @param inSlice
+	 * @return slice as an array of double
+	 */
+	public static double[] convertArrayDouble(Object inSlice) {
+		final int type = identifySliceType(inSlice);
+		return (double[]) convertArrayType(inSlice,type,IMAGETYPE_DOUBLE);
+	}
 
-	 /**
-	  * Calculate the type of object it is from the type name
-	  *
-	  * @param inType the type of the object
-	  * @return the normal name for the slice type
-	  */
-	 public static String getImageTypeName(final int inType) {
-		 assert (isValidType(inType));
-		 switch (inType) {
-		 case IMAGETYPE_BOOL:
-			 return "1bit";
-		 case IMAGETYPE_CHAR:
-			 return "8bit";
-		 case IMAGETYPE_SHORT:
-			 return "16bit";
-		 case IMAGETYPE_INT:
-			 return "32bit-integer";
-		 case IMAGETYPE_LONG:
-			 return "64bit-long";
-		 case IMAGETYPE_FLOAT:
-			 return "32bit-float";
-		 case IMAGETYPE_DOUBLE:
-			 return "64bit-double";
-		 default:
-			 return throwImageTypeError(inType);
-		 }
-	 }
-	 /**
-	  * A standard error for typing problems
-	  * @param inType
-	  */
-	 public static String throwImageTypeError(int inType) {
-		 throw new IllegalArgumentException("Type of object:" + inType+ " is not known, program cannot continue"); 
-	 }
 
-	 /**
-	  * get the range of values for a given image type
-	  *
-	  * @param inType
-	  * @return
-	  */
-	 public static double[] identifyTypeRange(final int inType) {
-		 assert (isValidType(inType));
-		 switch (inType) {
-		 case IMAGETYPE_BOOL:
-			 return new double[]{0, 1};
-		 case IMAGETYPE_CHAR:
-			 return new double[]{0, 127};
-		 case IMAGETYPE_SHORT:
-			 return new double[]{Short.MIN_VALUE, Short.MAX_VALUE};
-		 case IMAGETYPE_INT:
-			 return new double[]{Integer.MIN_VALUE, Integer.MAX_VALUE};
-		 case IMAGETYPE_LONG:
-			 return new double[]{Long.MIN_VALUE, Long.MAX_VALUE};
-		 case IMAGETYPE_FLOAT:
-			 return new double[]{Float.MIN_VALUE, Float.MAX_VALUE};
-		 case IMAGETYPE_DOUBLE:
-			 return new double[]{Double.MIN_VALUE, Double.MAX_VALUE};
-		 default:
-			 throw new IllegalArgumentException("Type of object:" + inType
-					 + " cannot be determined!! Proceed with extreme caution");
-		 }
-	 }
+	/**
+	 * Calculate the type of object it is from the type name
+	 *
+	 * @param inType the type of the object
+	 * @return the normal name for the slice type
+	 */
+	public static String getImageTypeName(final int inType) {
+		assert (isValidType(inType));
+		switch (inType) {
+		case IMAGETYPE_BOOL:
+			return "1bit";
+		case IMAGETYPE_CHAR:
+			return "8bit";
+		case IMAGETYPE_SHORT:
+			return "16bit";
+		case IMAGETYPE_INT:
+			return "32bit-integer";
+		case IMAGETYPE_LONG:
+			return "64bit-long";
+		case IMAGETYPE_FLOAT:
+			return "32bit-float";
+		case IMAGETYPE_DOUBLE:
+			return "64bit-double";
+		case IMAGETYPE_RGB:
+			return "24bit-rgb image";
+		default:
+			return throwImageTypeError(inType);
+		}
+	}
+	/**
+	 * A standard error for typing problems
+	 * @param inType
+	 */
+	public static String throwImageTypeError(int inType) {
+		throw new IllegalArgumentException("Type of object:" + inType+ " is not known, program cannot continue"); 
+	}
 
-	 /**
-	  * calculate how much memory is used when allocating large arrays
-	  *
-	  * @param inType
-	  * @param arrSize
-	  * @return
-	  */
-	 public static Object watchBigAlloc(int inType, int arrSize) {
-		 long usedBefore = TIPLGlobal.getUsedMB();
-		 Object out = bigAlloc(inType, arrSize);
-		 long usedAfter = TIPLGlobal.getUsedMB();
-		 long expectedSize = (long) (arrSize / (1024.0 * 1024.0) * typeSize(inType));
-		 if (TIPLGlobal.getDebugLevel() >= TIPLGlobal.DEBUG_GC)
-			 System.out.println("Alloc: " + getImageTypeName(inType) + ":[" + (arrSize / 1e6) + "M], used " + (usedAfter - usedBefore) + " (E:" + expectedSize + "), free:" + TIPLGlobal.getFreeMB());
+	/**
+	 * get the range of values for a given image type
+	 *
+	 * @param inType
+	 * @return
+	 */
+	public static double[] identifyTypeRange(final int inType) {
+		assert (isValidType(inType));
+		switch (inType) {
+		case IMAGETYPE_BOOL:
+			return new double[]{0, 1};
+		case IMAGETYPE_CHAR:
+			return new double[]{0, 127};
+		case IMAGETYPE_SHORT:
+			return new double[]{Short.MIN_VALUE, Short.MAX_VALUE};
+		case IMAGETYPE_INT:
+			return new double[]{Integer.MIN_VALUE, Integer.MAX_VALUE};
+		case IMAGETYPE_LONG:
+			return new double[]{Long.MIN_VALUE, Long.MAX_VALUE};
+		case IMAGETYPE_FLOAT:
+			return new double[]{Float.MIN_VALUE, Float.MAX_VALUE};
+		case IMAGETYPE_DOUBLE:
+			return new double[]{Double.MIN_VALUE, Double.MAX_VALUE};
+		default:
+			throw new IllegalArgumentException("Range of object:" + inType
+					+ " cannot be determined!! Proceed with extreme caution");
+		}
+	}
 
-		 return out;
-	 }
+	/**
+	 * calculate how much memory is used when allocating large arrays
+	 *
+	 * @param inType
+	 * @param arrSize
+	 * @return
+	 */
+	public static Object watchBigAlloc(int inType, int arrSize) {
+		long usedBefore = TIPLGlobal.getUsedMB();
+		Object out = bigAlloc(inType, arrSize);
+		long usedAfter = TIPLGlobal.getUsedMB();
+		long expectedSize = (long) (arrSize / (1024.0 * 1024.0) * typeSize(inType));
+		if (TIPLGlobal.getDebugLevel() >= TIPLGlobal.DEBUG_GC)
+			System.out.println("Alloc: " + getImageTypeName(inType) + ":[" + (arrSize / 1e6) + "M], used " + (usedAfter - usedBefore) + " (E:" + expectedSize + "), free:" + TIPLGlobal.getFreeMB());
 
-	 /**
-	  * allocate large arrays (important for old model)
-	  *
-	  * @param inType
-	  * @param arrSize
-	  * @return
-	  */
-	 protected static Object bigAlloc(int inType, int arrSize) {
-		 assert (isValidType(inType));
-		 try {
-			 switch (inType) {
-			 case IMAGETYPE_BOOL:
-				 return new boolean[arrSize];
-			 case IMAGETYPE_CHAR:
-				 return new char[arrSize];
-			 case IMAGETYPE_SHORT:
-				 return new short[arrSize];
-			 case IMAGETYPE_INT:
-				 return new int[arrSize];
-			 case IMAGETYPE_FLOAT:
-				 return new float[arrSize];
-			 case IMAGETYPE_DOUBLE:
-				 return new double[arrSize];
-			 case IMAGETYPE_LONG:
-				 return new long[arrSize];
-			 default:
-				 throw new IllegalArgumentException("Type of object:" + inType
-						 + " cannot be determined!! Proceed with extreme caution");
-			 }
-		 } catch (Exception e) {
-			 e.printStackTrace();
-			 throw new IllegalArgumentException("Allocation Failed:Type:" + inType + " [" + arrSize + "]" + "\n" + e.getMessage());
-		 }
-	 }
+		return out;
+	}
 
-	 /**
-	  * Check to see if the type chosen is valid
-	  *
-	  * @param asType the type to check
-	  * @return true if valid otherwise false
-	  */
-	 public static boolean isValidType(final int asType) {
-		 if (asType == IMAGETYPE_BOOL) return true;
-		 if (asType == IMAGETYPE_CHAR) return true;
-		 if (asType == IMAGETYPE_INT) return true;
-		 if (asType == IMAGETYPE_FLOAT) return true;
-		 if (asType == IMAGETYPE_SHORT) return true;
-		 if (TIPLGlobal.getDebug())
-			 System.err.println("Double and long type images are not yet fully supported, proceed with caution:" + asType);
-		 if (asType == IMAGETYPE_DOUBLE) return true;
-		 if (asType == IMAGETYPE_LONG) return true;
-		 return false;
-	 }
+	/**
+	 * allocate large arrays (important for old model)
+	 *
+	 * @param inType
+	 * @param arrSize
+	 * @return
+	 */
+	protected static Object bigAlloc(int inType, int arrSize) {
+		assert (isValidType(inType));
+		try {
+			switch (inType) {
+			case IMAGETYPE_BOOL:
+				return new boolean[arrSize];
+			case IMAGETYPE_CHAR:
+				return new char[arrSize];
+			case IMAGETYPE_SHORT:
+				return new short[arrSize];
+			case IMAGETYPE_INT:
+				return new int[arrSize];
+			case IMAGETYPE_FLOAT:
+				return new float[arrSize];
+			case IMAGETYPE_DOUBLE:
+				return new double[arrSize];
+			case IMAGETYPE_LONG:
+				return new long[arrSize];
+			case IMAGETYPE_RGB:
+				return new byte[arrSize][3];
+			default:
+				throw new IllegalArgumentException("Allocation of object:" + inType
+						+ " cannot be made!! Proceed with extreme caution");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new IllegalArgumentException("Allocation Failed:Type:" + inType + " [" + arrSize + "]" + "\n" + e.getMessage());
+		}
+	}
 
-	 /**
-	  * A method to implement the inheritance functionality to a standard TImgRO
-	  * currently uses VirtualAim, but this will be fixed soon
-	  *
-	  * @param inImg
-	  * @return an exportable version of inImg
-	  */
-	 public static TImgRO.CanExport makeTImgExportable(final TImgRO inImg) {
-		 return WrapTImgRO(inImg);
-	 }
+	/**
+	 * Check to see if the type chosen is valid
+	 *
+	 * @param asType the type to check
+	 * @return true if valid otherwise false
+	 */
+	public static boolean isValidType(final int asType) {
+		if (asType == IMAGETYPE_BOOL) return true;
+		if (asType == IMAGETYPE_CHAR) return true;
+		if (asType == IMAGETYPE_INT) return true;
+		if (asType == IMAGETYPE_FLOAT) return true;
+		if (asType == IMAGETYPE_SHORT) return true;
+		if (TIPLGlobal.getDebug())
+			System.err.println("Double and long type images are not yet fully supported, proceed with caution:" + asType);
+		if (asType == IMAGETYPE_DOUBLE) return true;
+		if (asType == IMAGETYPE_LONG) return true;
+		return false;
+	}
 
-	 /**
-	  * A method to implement the full array reading functionality to a standard
-	  * TImgRO currently uses VirtualAim, but this will be fixed soon
-	  *
-	  * @param inImg
-	  * @return a fullreadable version of inImg
-	  */
-	 @Deprecated
-	 public static FullReadable makeTImgFullReadable(final TImgRO inImg) {
-		 return VirtualAim.TImgToVirtualAim(inImg);
-	 }
+	/**
+	 * A method to implement the inheritance functionality to a standard TImgRO
+	 * currently uses VirtualAim, but this will be fixed soon
+	 *
+	 * @param inImg
+	 * @return an exportable version of inImg
+	 */
+	public static TImgRO.CanExport makeTImgExportable(final TImgRO inImg) {
+		return WrapTImgRO(inImg);
+	}
 
-	 /**
-	  * Copy the size of one TImg to another *
-	  */
-	 public static void mirrorImage(final HasDimensions inData,
-			 final ChangesDimensions outData) {
-		 outData.setPos(inData.getPos());
-		 outData.setOffset(inData.getOffset());
-		 outData.setDim(inData.getDim());
-		 outData.setElSize(inData.getElSize());
-		 outData.appendProcLog(inData.getProcLog());
-		 outData.setShortScaleFactor(inData.getShortScaleFactor());
-	 }
-	 @Deprecated
-	 public static TImg ReadTImg(final String path) {
+	/**
+	 * A method to implement the full array reading functionality to a standard
+	 * TImgRO currently uses VirtualAim, but this will be fixed soon
+	 *
+	 * @param inImg
+	 * @return a fullreadable version of inImg
+	 */
+	@Deprecated
+	public static FullReadable makeTImgFullReadable(final TImgRO inImg) {
+		return VirtualAim.TImgToVirtualAim(inImg);
+	}
+
+	/**
+	 * Copy the size of one TImg to another *
+	 */
+	public static void mirrorImage(final HasDimensions inData,
+			final ChangesDimensions outData) {
+		outData.setPos(inData.getPos());
+		outData.setOffset(inData.getOffset());
+		outData.setDim(inData.getDim());
+		outData.setElSize(inData.getElSize());
+		outData.appendProcLog(inData.getProcLog());
+		outData.setShortScaleFactor(inData.getShortScaleFactor());
+	}
+	@Deprecated
+	public static TImg ReadTImg(final String path) {
 		return ReadTImg(new TypedPath(path));
-	 }
-	 public static TImg ReadTImg(final TypedPath path) {
-		 TImg outImg = getStorage().readTImg(path);
-		 TIPLGlobal.getUsage().registerImage(path.getPath(), outImg.getDim().toString(), "read");
-		 return outImg;
-	 }
+	}
+	public static TImg ReadTImg(final TypedPath path) {
+		TImg outImg = getStorage().readTImg(path);
+		TIPLGlobal.getUsage().registerImage(path.getPath(), outImg.getDim().toString(), "read");
+		return outImg;
+	}
 
-	 /**
-	  * Read a single slice from the image and make sure the image is retained in the cache
-	  *
-	  * @param path        the path to the image
-	  * @param sliceNumber the number of the slice
-	  * @param imgType     the type of the image
-	  * @return the object containing the slice as whatever it should be
-	  */
-	 public static Object ReadTImgSlice(final TypedPath path, final int sliceNumber, final int imgType) {
-		 assert (isValidType(imgType));
-		 return ReadTImg(path, true, true).getPolyImage(sliceNumber, imgType);
-	 }
+	/**
+	 * Read a single slice from the image and make sure the image is retained in the cache
+	 *
+	 * @param path        the path to the image
+	 * @param sliceNumber the number of the slice
+	 * @param imgType     the type of the image
+	 * @return the object containing the slice as whatever it should be
+	 */
+	public static Object ReadTImgSlice(final TypedPath path, final int sliceNumber, final int imgType) {
+		assert (isValidType(imgType));
+		return ReadTImg(path, true, true).getPolyImage(sliceNumber, imgType);
+	}
 
-	 /**
-	  * Read an image and save it to the global cache for later retrival (must
-	  * then be manually deleted)
-	  *
-	  * @param path
-	  * @param readFromCache check the cache to see if the image is already present
-	  * @param saveToCache   put the image into the cache after it has been read
-	  * @return loaded image
-	  */
-	 public static TImg ReadTImg(final TypedPath path, final boolean readFromCache,
-			 final boolean saveToCache) {
-		 TImg outImg = getStorage().readTImg(path, readFromCache, saveToCache);
-		 TIPLGlobal.getUsage().registerImage(path.toString(), outImg.getDim().toString(), "read");
-		 return outImg;
-	 }
-	 
-	 /**
-	  * Read an image and save it to the global cache for later retrival (must
-	  * then be manually deleted)
-	  *
-	  * @param path
-	  * @param readFromCache check the cache to see if the image is already present
-	  * @param saveToCache   put the image into the cache after it has been read
-	  * @return loaded image
-	  */
-	 @Deprecated
-	 public static TImg ReadTImg(final String path, final boolean readFromCache,
-			 final boolean saveToCache) {
-		 return ReadTImg(new TypedPath(path), readFromCache, saveToCache);
-	 }
+	/**
+	 * Read an image and save it to the global cache for later retrival (must
+	 * then be manually deleted)
+	 *
+	 * @param path
+	 * @param readFromCache check the cache to see if the image is already present
+	 * @param saveToCache   put the image into the cache after it has been read
+	 * @return loaded image
+	 */
+	public static TImg ReadTImg(final TypedPath path, final boolean readFromCache,
+			final boolean saveToCache) {
+		TImg outImg = getStorage().readTImg(path, readFromCache, saveToCache);
+		TIPLGlobal.getUsage().registerImage(path.toString(), outImg.getDim().toString(), "read");
+		return outImg;
+	}
 
-	 public static boolean RemoveTImgFromCache(final String path) {
-		 return getStorage().RemoveTImgFromCache(path);
-	 }
-	 public static boolean RemoveTImgFromCache(final TypedPath path) {
-		 return getStorage().RemoveTImgFromCache(path.getPath());
-	 }
+	/**
+	 * Read an image and save it to the global cache for later retrival (must
+	 * then be manually deleted)
+	 *
+	 * @param path
+	 * @param readFromCache check the cache to see if the image is already present
+	 * @param saveToCache   put the image into the cache after it has been read
+	 * @return loaded image
+	 */
+	@Deprecated
+	public static TImg ReadTImg(final String path, final boolean readFromCache,
+			final boolean saveToCache) {
+		return ReadTImg(new TypedPath(path), readFromCache, saveToCache);
+	}
 
-	 /**
-	  * The size in bytes of each datatype
-	  *
-	  * @param inType
-	  * @return size in bytes
-	  */
-	 public static long typeSize(final int inType) {
-		 assert isValidType(inType);
-		 switch (inType) {
-		 case IMAGETYPE_CHAR:
-			 return 1;
-		 case IMAGETYPE_SHORT:
-			 return 2;
-		 case IMAGETYPE_INT:
-			 return 4;
-		 case IMAGETYPE_FLOAT:
-			 return 4;
-		 case IMAGETYPE_DOUBLE:
-			 return 8;
-		 case IMAGETYPE_LONG:
-			 return 8;
-		 case IMAGETYPE_BOOL:
-			 return 1;
-		 }
-		 return -1;
-	 }
+	public static boolean RemoveTImgFromCache(final String path) {
+		return getStorage().RemoveTImgFromCache(path);
+	}
+	public static boolean RemoveTImgFromCache(final TypedPath path) {
+		return getStorage().RemoveTImgFromCache(path.getPath());
+	}
 
-	 /**
-	  * For wrapping a TImgRO object so that it can be changed
-	  *
-	  * @param inImage
-	  * @return
-	  */
-	 public static TImg WrapTImgRO(final TImgRO inImage) {
-		 return getStorage().wrapTImgRO(inImage);
-	 }
+	/**
+	 * The size in bytes of each datatype
+	 *
+	 * @param inType
+	 * @return size in bytes
+	 */
+	public static long typeSize(final int inType) {
+		assert isValidType(inType);
+		switch (inType) {
+		case IMAGETYPE_CHAR:
+			return 1;
+		case IMAGETYPE_SHORT:
+			return 2;
+		case IMAGETYPE_INT:
+			return 4;
+		case IMAGETYPE_RGB:
+			return 3;
+		case IMAGETYPE_FLOAT:
+			return 4;
+		case IMAGETYPE_DOUBLE:
+			return 8;
+		case IMAGETYPE_LONG:
+			return 8;
+		case IMAGETYPE_BOOL:
+			return 1;
+		}
+		return -1;
+	}
 
-	 /**
-	  * Starts a new thread to save the current image without interrupting other
-	  * processings. The thread then closes when the saving operation is complete
-	  *
-	  * @param inImg    name of the file to save
-	  * @param filename path of the saved file
-	  */
-	 public static void WriteBackground(final TImgRO inImg,
-			 final TypedPath filename) {
-		 new Thread(new Runnable() {
-			 @Override
-			 public void run() {
-				 System.out.println("BG Save Started for Image:" + inImg
-						 + " to path:" + filename);
-				 TImgTools.WriteTImg(inImg, filename);
-			 }
-		 }).start();
+	/**
+	 * For wrapping a TImgRO object so that it can be changed
+	 *
+	 * @param inImage
+	 * @return
+	 */
+	public static TImg WrapTImgRO(final TImgRO inImage) {
+		return getStorage().wrapTImgRO(inImage);
+	}
 
-	 }
+	/**
+	 * Starts a new thread to save the current image without interrupting other
+	 * processings. The thread then closes when the saving operation is complete
+	 *
+	 * @param inImg    name of the file to save
+	 * @param filename path of the saved file
+	 */
+	public static void WriteBackground(final TImgRO inImg,
+			final TypedPath filename) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				System.out.println("BG Save Started for Image:" + inImg
+						+ " to path:" + filename);
+				TImgTools.WriteTImg(inImg, filename);
+			}
+		}).start();
 
-	 /**
-	  * Method to write an image to disk and return whether or not it was
-	  * successful
-	  *
-	  * @param curImg
-	  * @param path
-	  * @return success
-	  */
-	 public static boolean WriteTImg(final TImgRO curImg, final TypedPath path) {
-		 return WriteTImg(curImg, path, false);
-	 }
+	}
 
-	 public static boolean WriteTImg(final TImgRO curImg, final TypedPath path,
-			 final boolean saveToCache) {
-		 TIPLGlobal.getUsage().registerImage(path.getPath(), curImg.getDim().toString(), curImg + "");
-		 return getStorage().writeTImg(curImg, path, saveToCache);
-	 }
+	/**
+	 * Method to write an image to disk and return whether or not it was
+	 * successful
+	 *
+	 * @param curImg
+	 * @param path
+	 * @return success
+	 */
+	public static boolean WriteTImg(final TImgRO curImg, final TypedPath path) {
+		return WriteTImg(curImg, path, false);
+	}
 
-	 /**
-	  * Write a TImg with all of the appropriate parameters
-	  *
-	  * @param inImg
-	  * @param outpath
-	  * @param outType
-	  * @param scaleVal
-	  * @param IisSigned
-	  * @param toCache   should the output value be cached
-	  */
-	 @Deprecated
-	 public static void WriteTImg(final TImgRO inImg, final TypedPath outpath,
-			 final int outType, final float scaleVal, final boolean IisSigned, final boolean toCache) {
-		 TIPLGlobal.getUsage().registerImage(outpath.getPath(), inImg.getDim().toString(), inImg + ", " + outType);
+	public static boolean WriteTImg(final TImgRO curImg, final TypedPath path,
+			final boolean saveToCache) {
+		TIPLGlobal.getUsage().registerImage(path.getPath(), curImg.getDim().toString(), curImg + "");
+		return getStorage().writeTImg(curImg, path, saveToCache);
+	}
 
-		 getStorage().writeTImg(inImg, outpath, outType, scaleVal, IisSigned, toCache);
-	 }
+	/**
+	 * Write a TImg with all of the appropriate parameters
+	 *
+	 * @param inImg
+	 * @param outpath
+	 * @param outType
+	 * @param scaleVal
+	 * @param IisSigned
+	 * @param toCache   should the output value be cached
+	 */
+	@Deprecated
+	public static void WriteTImg(final TImgRO inImg, final TypedPath outpath,
+			final int outType, final float scaleVal, final boolean IisSigned, final boolean toCache) {
+		TIPLGlobal.getUsage().registerImage(outpath.getPath(), inImg.getDim().toString(), inImg + ", " + outType);
+
+		getStorage().writeTImg(inImg, outpath, outType, scaleVal, IisSigned, toCache);
+	}
 
 
-	 /**
-	  * put just the relevant dimension reading code in a separate interface
-	  * since it is sometimes passed to objects to create create new images
-	  * where the dimensions but not the content is important
-	  *
-	  * @author mader
-	  */
-	 public static interface ChangesDimensions extends HasDimensions {
-		 /**
-		  * add a line to the procedure log *
-		  */
-		 public String appendProcLog(String inData);
+	/**
+	 * put just the relevant dimension reading code in a separate interface
+	 * since it is sometimes passed to objects to create create new images
+	 * where the dimensions but not the content is important
+	 *
+	 * @author mader
+	 */
+	public static interface ChangesDimensions extends HasDimensions {
+		/**
+		 * add a line to the procedure log *
+		 */
+		public String appendProcLog(String inData);
 
-		 /**
-		  * The size of the image
-		  */
-		 public void setDim(D3int inData);
+		/**
+		 * The size of the image
+		 */
+		public void setDim(D3int inData);
 
-		 /**
-		  * The element size (in mm) of a voxel
-		  */
-		 public void setElSize(D3float inData);
+		/**
+		 * The element size (in mm) of a voxel
+		 */
+		public void setElSize(D3float inData);
 
-		 /**
-		  * The size of the border around the image which does not contain valid
-		  * voxel data
-		  */
-		 public void setOffset(D3int inData);
+		/**
+		 * The size of the border around the image which does not contain valid
+		 * voxel data
+		 */
+		public void setOffset(D3int inData);
 
-		 /**
-		  * The position of the bottom leftmost voxel in the image in real space,
-		  * only needed for ROIs
-		  */
-		 public void setPos(D3int inData);
+		/**
+		 * The position of the bottom leftmost voxel in the image in real space,
+		 * only needed for ROIs
+		 */
+		public void setPos(D3int inData);
 
-		 /**
-		  * A function to set the short scale factor used to convert shorts to
-		  * double and back
-		  *
-		  * @param ssf
-		  */
-		 public void setShortScaleFactor(float ssf);
+		/**
+		 * A function to set the short scale factor used to convert shorts to
+		 * double and back
+		 *
+		 * @param ssf
+		 */
+		public void setShortScaleFactor(float ssf);
 
-	 }
-	 /**
-	  * Make an editable dimensions object from a static one
-	  * @param inObj a static hasdimensions object
-	  * @return an editable changedimensions object
-	  */
-	 public static ChangesDimensions MakeEditable(final HasDimensions inObj) {
-		 return new ChangesDimensions() {
+	}
+	/**
+	 * Make an editable dimensions object from a static one
+	 * @param inObj a static hasdimensions object
+	 * @return an editable changedimensions object
+	 */
+	public static ChangesDimensions MakeEditable(final HasDimensions inObj) {
+		return new ChangesDimensions() {
 			D3int dim = new D3int(inObj.getDim());
 			D3int pos = new D3int(inObj.getPos());
 			D3int offset = new D3int(inObj.getOffset());
 			D3float elSize = new D3float(inObj.getElSize());
 			String procLog = inObj.getProcLog();
-			
+
 			@Override
 			public D3int getDim() {return dim;}
 
@@ -1183,7 +1278,7 @@ public class TImgTools {
 			float ssf = inObj.getShortScaleFactor();
 			@Override
 			public float getShortScaleFactor() {return ssf;}
-			
+
 			@Override
 			public String appendProcLog(String inData) {
 				procLog+="\n"+inData;
@@ -1204,56 +1299,56 @@ public class TImgTools {
 
 			@Override
 			public void setShortScaleFactor(float ssf) {this.ssf=ssf;}
-			 
-		 };
-	 }
-	 /**
-	  * put just the relevant dimension reading code in a seperate interface
-	  *
-	  * @author mader
-	  */
-	 public static interface HasDimensions {
-		 /**
-		  * The size of the image
-		  */
-		 public D3int getDim();
 
-		 /**
-		  * The element size (in mm) of a voxel
-		  */
-		 public D3float getElSize();
+		};
+	}
+	/**
+	 * put just the relevant dimension reading code in a seperate interface
+	 *
+	 * @author mader
+	 */
+	public static interface HasDimensions {
+		/**
+		 * The size of the image
+		 */
+		public D3int getDim();
 
-		 /**
-		  * The size of the border around the image which does not contain valid
-		  * voxel data
-		  */
-		 public D3int getOffset();
+		/**
+		 * The element size (in mm) of a voxel
+		 */
+		public D3float getElSize();
 
-		 /**
-		  * The position of the bottom leftmost voxel in the image in real space,
-		  * only needed for ROIs
-		  */
-		 public D3int getPos();
+		/**
+		 * The size of the border around the image which does not contain valid
+		 * voxel data
+		 */
+		public D3int getOffset();
 
-		 /**
-		  * Procedure Log, string containing past operations and information on
-		  * the aim-file
-		  */
-		 public String getProcLog();
+		/**
+		 * The position of the bottom leftmost voxel in the image in real space,
+		 * only needed for ROIs
+		 */
+		public D3int getPos();
 
-		 /**
-		  * A function to change the short scale factor used to convert shorts to
-		  * double and back
-		  *
-		  * @return
-		  */
-		 public float getShortScaleFactor();
-		 
+		/**
+		 * Procedure Log, string containing past operations and information on
+		 * the aim-file
+		 */
+		public String getProcLog();
 
-	 }
-	 
-	 public static HasDimensions SimpleDimensions(final D3int dim, final D3float elSize,final  D3int pos) {
-		 return new HasDimensions() {
+		/**
+		 * A function to change the short scale factor used to convert shorts to
+		 * double and back
+		 *
+		 * @return
+		 */
+		public float getShortScaleFactor();
+
+
+	}
+
+	public static HasDimensions SimpleDimensions(final D3int dim, final D3float elSize,final  D3int pos) {
+		return new HasDimensions() {
 			@Override
 			public D3int getDim() {return dim;}
 
@@ -1275,7 +1370,7 @@ public class TImgTools {
 			public float getShortScaleFactor() {
 				return 1;
 			} 
-			 
-		 };
-	 }
+
+		};
+	}
 }
