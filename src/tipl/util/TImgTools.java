@@ -557,7 +557,6 @@ public class TImgTools {
 
 		case IMAGETYPE_INT: // Spec / Int
 			// Read integer data type in
-
 			return gi;
 
 		case IMAGETYPE_LONG:
