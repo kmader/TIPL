@@ -3,19 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>sipl</groupId>
   <artifactId>sipl</artifactId>
-    <groupId>org.apache.spark</groupId>
-  <artifactId>spark-parent</artifactId>
-  <version>1.1.0-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>Spark Project Parent POM</name>
-  <url>http://spark.apache.org/</url>
-  <licenses>
-    <license>
-      <name>Apache 2.0 License</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
+  <name>SIPL Parent POM</name>
+  <url>http://www.4quant.com/</url>
+
   <scm>
     <connection>scm:git:git@bitbucket.org/skicavs/tipl.git</connection>
     <developerConnection>scm:git:https://skicavs@bitbucket.org/skicavs/tipl.git</developerConnection>
@@ -34,7 +26,7 @@
   </developers>
   <issueManagement>
     <system>Bitbucket</system>
-    <url>https://bitbucket.org/skicavs/tipl/issues?status=new&status=open</url>
+    <url>https://bitbucket.org/skicavs/tipl/issues</url>
   </issueManagement>
 
   <prerequisites>
@@ -45,10 +37,7 @@
     <module>core</module>
     <module>spark</module>
   </modules>
-  <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
-  <name>tipl</name>
-  <url>http://www.4quant.com</url>
+
   <repositories>
     <repository>
       <id>maven-repo</id>
