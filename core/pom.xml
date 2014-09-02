@@ -58,8 +58,8 @@
 </dependency>
     <dependency>
 	    <groupId>org.apache.spark</groupId>
-	    <artifactId>spark-core_2.10</artifactId>
-	    <version>1.0.2</version>
+	    <artifactId>spark-core_${scala.binary.version}</artifactId>
+	    <version>${spark.version}</version>
     </dependency>
 
   </dependencies>
@@ -70,6 +70,7 @@
     <scala.macros.version>2.0.1</scala.macros.version>
        <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
+    <spark.version>1.0.2</spark.version>
 </properties>
     <build>
     <outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>
