@@ -1,0 +1,68 @@
+#!/bin/bash
+# test experimental 
+# 
+# This script uses the tight integration of openmpi-1.4.3-intel-12.1 in SGE
+# using the parallel environment (PE) "orte".  
+# This script must be used only with qsub command - do NOT run it as a stand-alone 
+# shell script because it will start all processes on the local node.   
+# Define your job name, parallel environment with the number of slots, and run time: 
+#$ -cwd
+#$ -j y
+#$ -pe smp 2
+#$ -M kevinmader+merlinsge@gmail.com
+#$ -m ae
+#$ -o UFEMbatch.log
+#$ -l mem_free=22G,ram=11G,s_rt=07:00:00,h_rt=07:00:00
+###################################################
+# Fix the SGE environment-handling bug (bash):
+source /usr/share/Modules/init/sh
+export -n -f module
+
+
+# Load the environment modules for this job (the order may be important): 
+
+###################################################
+# Set the environment variables:
+
+export CLASSPATH=/gpfs/home/mader/jar/jai_imageio.jar:/gpfs/home/mader/jar/jai_core.jar:/gpfs/home/mader/jar/Jama.jar:/gpfs/home/mader/jar/jai_codec.jar:/gpfs/home/mader/jar/ShapeTools.jar:/gpfs/home/mader/jar/TIPLScripts.jar:/gpfs/home/mader/jar/Fiji.app/jars/ij.jar
+JCMD="/gpfs/home/mader/jvm/bin/java"
+JARGS="-d64 -Xmx14G -Xms13G" 
+
+##############
+# BEGIN DEBUG 
+# Print the SGE environment on master host: 
+echo "================================================================"
+echo "=== SGE job  JOB_NAME=$JOB_NAME  JOB_ID=$JOB_ID"
+echo "================================================================"
+echo DATE=`date`
+echo HOSTNAME=`hostname`
+echo PWD=`pwd`
+echo "NSLOTS=$NSLOTS"
+echo "PE_HOSTFILE=$PE_HOSTFILE"
+cat $PE_HOSTFILE
+free -m
+echo "================================================================"
+ulimit -a
+echo "================================================================"
+echo "=======================Valeri Test ============================="
+for i in `seq 1 16` ; do
+    cmd="$JCMD -Xmx${i}G -version"
+    echo $cmd
+    $cmd
+    cmd="java -Xmx${i}G -version"
+    echo $cmd
+    $cmd
+done
+echo "====================Valeri Memory List==========================" 
+ps -eo pid,ppid,user,%cpu,%mem,vsz,rss,fname
+echo "================================================================"
+echo "Running environment: $@"
+echo "================================================================"
+echo "Running Program"
+TIPLCMD="UFEM -maxcores=2 -resample -downsampleFactor=1 -gauss -scriptMulticore=1 -ufilt=$@"
+UFEMCMD="$JCMD $JARGS $TIPLCMD"
+echo "$UFEMCMD"
+$UFEMCMD
+echo "+++++ UFEM Complete Running CLPOR "
+
+###################################################
