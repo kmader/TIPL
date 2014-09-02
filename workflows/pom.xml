@@ -2,12 +2,12 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>quant.tipl</groupId>
-  <artifactId>tipl-jython</artifactId>
+  <artifactId>tipl-workflows</artifactId>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
-  <name>jython</name>
+  <name>workflows</name>
   <url>http://www.4quant.com</url>
-  <parent>
+    <parent>
     <groupId>quant.tipl</groupId>
     <artifactId>quant-tipl</artifactId>
     <version>1.0-SNAPSHOT</version>
@@ -20,28 +20,14 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-core_${scala.binary.version}</artifactId>
-      <version>${spark.version}</version>
-    </dependency>
             <dependency>
          <groupId>quant.tipl</groupId>
-      <artifactId>tipl-spark</artifactId>
+      <artifactId>tipl-core</artifactId>
   <version>1.0-SNAPSHOT</version>
     </dependency>
-    <dependency>
-	<groupId>org.python</groupId>
-	    <artifactId>jython</artifactId>
-	    <version>2.7-b3</version>
-    </dependency>
-<dependency>
-  <groupId>net.imagej</groupId>
-  <artifactId>ij</artifactId>
-  <version>1.48r</version>
-</dependency>
-  </dependencies>
 
+   
+  </dependencies>
   <properties>
     <scala.version>2.10.4</scala.version>
     <java.version>1.6</java.version>
