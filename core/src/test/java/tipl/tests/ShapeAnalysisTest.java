@@ -6,7 +6,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import tipl.formats.TImgRO;
-import tipl.spark.SparkGlobal;
 import tipl.util.ITIPLPluginIn;
 import tipl.util.TIPLGlobal;
 import tipl.util.TIPLPluginManager;
@@ -67,7 +66,7 @@ public class ShapeAnalysisTest {
 
     @Before
     public void setUp() {
-        SparkGlobal.getContext(this.getClass().getName());
+
         TIPLGlobal.setDebug(TIPLGlobal.DEBUG_ALL);
         if (TIPLGlobal.getDebug()) {
             TImgTools.WriteTImg(layeredImage, TIPLTestingLibrary.createTestImage("layered.tif"));

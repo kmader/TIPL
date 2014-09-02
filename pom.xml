@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>sipl</groupId>
-  <artifactId>sipl</artifactId>
+  <groupId>quant.tipl</groupId>
+  <artifactId>quant-tipl</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>SIPL Parent POM</name>
@@ -37,7 +37,14 @@
     <module>core</module>
     <module>spark</module>
   </modules>
-
+<properties>
+    <scala.version>2.10.4</scala.version>
+    <java.version>1.6</java.version>
+    <scala.binary.version>2.10</scala.binary.version>
+    <scala.macros.version>2.0.1</scala.macros.version>
+       <PermGen>64m</PermGen>
+    <MaxPermGen>512m</MaxPermGen>
+</properties>
   <repositories>
     <repository>
       <id>maven-repo</id>

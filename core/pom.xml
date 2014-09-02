@@ -1,12 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>quant.tipl.core</groupId>
-  <artifactId>tipl.core</artifactId>
+  <groupId>quant.tipl</groupId>
+  <artifactId>tipl-core</artifactId>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
   <name>core</name>
-  <url>http://maven.apache.org</url>
+  <url>http://www.4quant.com</url>
 
   <dependencies>
 
@@ -56,7 +56,6 @@
 	 <scope>system</scope>
     <systemPath>/Users/mader/Dropbox/tipl_maven/libraries/lambdaj-with-dependencies.jar</systemPath>
 </dependency>
-    
     <dependency>
 	    <groupId>org.apache.spark</groupId>
 	    <artifactId>spark-core_2.10</artifactId>
@@ -64,4 +63,29 @@
     </dependency>
 
   </dependencies>
+  <properties>
+    <scala.version>2.10.4</scala.version>
+    <java.version>1.6</java.version>
+    <scala.binary.version>2.10</scala.binary.version>
+    <scala.macros.version>2.0.1</scala.macros.version>
+       <PermGen>64m</PermGen>
+    <MaxPermGen>512m</MaxPermGen>
+</properties>
+    <build>
+    <outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>
+    <testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>
+    <plugins>
+      <plugin>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest-maven-plugin</artifactId>
+        <configuration>
+          <environmentVariables>
+            <SPARK_HOME>${basedir}/..</SPARK_HOME>
+            <SPARK_TESTING>1</SPARK_TESTING>
+            <SPARK_CLASSPATH>${spark.classpath}</SPARK_CLASSPATH>
+          </environmentVariables>
+        </configuration>
+      </plugin>
+          </plugins>
+            </build>
 </project>

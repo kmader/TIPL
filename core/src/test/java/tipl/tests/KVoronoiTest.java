@@ -6,7 +6,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import tipl.formats.TImgRO;
-import tipl.spark.SparkGlobal;
 import tipl.util.*;
 import tipl.util.TIPLPluginManager.PluginInfo;
 
@@ -63,7 +62,6 @@ public class KVoronoiTest {
 
     @Before
     public void setUp() {
-        SparkGlobal.getContext(this.getClass().getName());
         TIPLGlobal.setDebug(TIPLGlobal.DEBUG_OFF);
 
     }
