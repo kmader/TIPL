@@ -1,42 +1,34 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>quant.tipl</groupId>
-  <artifactId>tipl-workflows</artifactId>
-  <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
-  <name>workflows</name>
-  <url>http://www.4quant.com</url>
-    <parent>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <groupId>quant.tipl</groupId>
-    <artifactId>quant-tipl</artifactId>
+    <artifactId>tipl-workflows</artifactId>
+    <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-            <dependency>
-         <groupId>quant.tipl</groupId>
-      <artifactId>tipl-core</artifactId>
-  <version>1.0-SNAPSHOT</version>
-    </dependency>
+    <name>workflows</name>
+    <url>http://www.4quant.com</url>
+    <parent>
+        <groupId>quant.tipl</groupId>
+        <artifactId>quant-tipl</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-core</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
 
-   
-  </dependencies>
-  <properties>
-    <scala.version>2.10.4</scala.version>
-    <java.version>1.6</java.version>
-    <scala.binary.version>2.10</scala.binary.version>
-    <scala.macros.version>2.0.1</scala.macros.version>
-    <spark.version>1.0.2</spark.version>
-       <PermGen>64m</PermGen>
-    <MaxPermGen>512m</MaxPermGen>
-</properties>
+
+    </dependencies>
+
 </project>
 
 

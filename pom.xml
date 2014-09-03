@@ -1,123 +1,124 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>quant.tipl</groupId>
-  <artifactId>quant-tipl</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  <name>SIPL Parent</name>
-  <url>http://www.4quant.com/</url>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>quant.tipl</groupId>
+    <artifactId>quant-tipl</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>SIPL Parent</name>
+    <url>http://www.4quant.com/</url>
 
-  <scm>
-    <connection>scm:git:git@bitbucket.org/skicavs/tipl.git</connection>
-    <developerConnection>scm:git:https://skicavs@bitbucket.org/skicavs/tipl.git</developerConnection>
-    <url>scm:git:skicavs@bitbucket.org/skicavs/tipl.git</url>
-    <tag>maven</tag>
-  </scm>
-  <developers>
-    <developer>
-      <id>skicavs</id>
-      <name>Kevin Mader</name>
-      <email>kevinmader@gmail.com</email>
-      <url>kmader.github.io</url>
-      <organization>4Quant</organization>
-      <organizationUrl>http://www.4quant.com</organizationUrl>
-    </developer>
-  </developers>
-  <issueManagement>
-    <system>Bitbucket</system>
-    <url>https://bitbucket.org/skicavs/tipl/issues</url>
-  </issueManagement>
+    <scm>
+        <connection>scm:git:git@bitbucket.org/skicavs/tipl.git</connection>
+        <developerConnection>scm:git:https://skicavs@bitbucket.org/skicavs/tipl.git</developerConnection>
+        <url>scm:git:skicavs@bitbucket.org/skicavs/tipl.git</url>
+        <tag>maven</tag>
+    </scm>
+    <developers>
+        <developer>
+            <id>skicavs</id>
+            <name>Kevin Mader</name>
+            <email>kevinmader@gmail.com</email>
+            <url>kmader.github.io</url>
+            <organization>4Quant</organization>
+            <organizationUrl>http://www.4quant.com</organizationUrl>
+        </developer>
+    </developers>
+    <issueManagement>
+        <system>Bitbucket</system>
+        <url>https://bitbucket.org/skicavs/tipl/issues</url>
+    </issueManagement>
 
-  <prerequisites>
-    <maven>3.0.4</maven>
-  </prerequisites>
+    <prerequisites>
+        <maven>3.0.4</maven>
+    </prerequisites>
 
-  <modules>
-    <module>core</module>
-    <module>ccgeom</module>
-    <module>workflows</module>
-    <module>spark</module>
-    <module>volviewer</module>
-    <module>jython</module>
-  </modules>
-<properties>
-    <scala.version>2.10.4</scala.version>
-    <java.version>1.6</java.version>
-    <scala.binary.version>2.10</scala.binary.version>
-    <scala.macros.version>2.0.1</scala.macros.version>
+    <modules>
+        <module>core</module>
+        <module>ccgeom</module>
+        <module>workflows</module>
+        <module>spark</module>
+        <module>volviewer</module>
+        <module>jython</module>
+    </modules>
+    <properties>
+        <scala.version>2.10.4</scala.version>
+        <java.version>1.6</java.version>
+        <scala.binary.version>2.10</scala.binary.version>
+        <scala.macros.version>2.0.1</scala.macros.version>
         <spark.version>1.0.2</spark.version>
-       <PermGen>64m</PermGen>
-    <MaxPermGen>512m</MaxPermGen>
-</properties>
-  <repositories>
-    <repository>
-      <id>maven-repo</id>
-      <!-- This should be at top, it makes maven try the central repo first and then others and hence faster dep resolution -->
-      <name>Maven Repository</name>
-      <!-- HTTPS is unavailable for Maven Central -->
-      <url>http://repo.maven.apache.org/maven2</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>apache-repo</id>
-      <name>Apache Repository</name>
-      <url>https://repository.apache.org/content/repositories/releases</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    
-    <repository>
-      <id>cloudera-repo</id>
-      <name>Cloudera Repository</name>
-      <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>mapr-repo</id>
-      <name>MapR Repository</name>
-      <url>http://repository.mapr.com/maven</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>spring-releases</id>
-      <name>Spring Release Repository</name>
-      <url>http://repo.spring.io/libs-release</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
+        <javadoc.skip>false</javadoc.skip>
+        <PermGen>64m</PermGen>
+        <MaxPermGen>512m</MaxPermGen>
+    </properties>
+    <repositories>
+        <repository>
+            <id>maven-repo</id>
+            <!-- This should be at top, it makes maven try the central repo first and then others and hence faster dep resolution -->
+            <name>Maven Repository</name>
+            <!-- HTTPS is unavailable for Maven Central -->
+            <url>http://repo.maven.apache.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>apache-repo</id>
+            <name>Apache Repository</name>
+            <url>https://repository.apache.org/content/repositories/releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+
+        <repository>
+            <id>cloudera-repo</id>
+            <name>Cloudera Repository</name>
+            <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>mapr-repo</id>
+            <name>MapR Repository</name>
+            <url>http://repository.mapr.com/maven</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>spring-releases</id>
+            <name>Spring Release Repository</name>
+            <url>http://repo.spring.io/libs-release</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
         <repository>
             <id>scala-tools.org</id>
             <name>Scala-tools Maven2 Repository</name>
             <url>http://scala-tools.org/repo-releases</url>
         </repository>
-  		<repository>
-			<id>imagej.public</id>
-			<url>http://maven.imagej.net/content/groups/public</url>
-		</repository>
+        <repository>
+            <id>imagej.public</id>
+            <url>http://maven.imagej.net/content/groups/public</url>
+        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -126,17 +127,17 @@
             <url>http://scala-tools.org/repo-releases</url>
         </pluginRepository>
     </pluginRepositories>
-  
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
 
-  </dependencies>
-  <build>
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+    <build>
         <plugins>
             <plugin>
                 <groupId>org.scala-tools</groupId>
@@ -158,32 +159,32 @@
                 </configuration>
             </plugin>
             <plugin>
-<groupId>org.apache.maven.plugins</groupId>
-<artifactId>maven-javadoc-plugin</artifactId>
-<configuration>
-<skip>${javadoc.skip}</skip>
-</configuration>
-<executions>
-<execution>
-<id>attach-javadocs</id>
-<goals>
-<goal>jar</goal>
-</goals>
-</execution>
-</executions>
-</plugin>
-<plugin>
-<groupId>org.apache.maven.plugins</groupId>
-<artifactId>maven-source-plugin</artifactId>
-<executions>
-<execution>
-<id>attach-sources</id>
-<goals>
-<goal>jar</goal>
-</goals>
-</execution>
-</executions>
-</plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <skip>${javadoc.skip}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
