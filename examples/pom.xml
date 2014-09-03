@@ -2,9 +2,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>quant.tipl</groupId>
-    <artifactId>tipl-spark</artifactId>
+    <artifactId>tipl-examples</artifactId>
     <packaging>jar</packaging>
-    <name>spark</name>
+    <version>${tipl.version}</version>
+    <name>examples</name>
     <url>http://www.4quant.com</url>
     <parent>
         <groupId>quant.tipl</groupId>
@@ -26,22 +27,17 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-repl_${scala.binary.version}</artifactId>
-            <version>${spark.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
             <artifactId>spark-mllib_${scala.binary.version}</artifactId>
             <version>${spark.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_${scala.binary.version}</artifactId>
+            <artifactId>spark-streaming_${scala.binary.version}</artifactId>
             <version>${spark.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming_${scala.binary.version}</artifactId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
             <version>${spark.version}</version>
         </dependency>
         <dependency>
@@ -51,12 +47,7 @@
         </dependency>
         <dependency>
             <groupId>quant.tipl</groupId>
-            <artifactId>tipl-ccgeom</artifactId>
-            <version>${tipl.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>quant.tipl</groupId>
-            <artifactId>tipl-volviewer</artifactId>
+            <artifactId>tipl-spark</artifactId>
             <version>${tipl.version}</version>
         </dependency>
 

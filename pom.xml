@@ -40,18 +40,29 @@
         <module>spark</module>
         <module>volviewer</module>
         <module>jython</module>
+        <module>examples</module>
     </modules>
     <properties>
         <scala.version>2.10.4</scala.version>
         <java.version>1.6</java.version>
+
         <scala.binary.version>2.10</scala.binary.version>
         <scala.macros.version>2.0.1</scala.macros.version>
         <spark.version>1.0.2</spark.version>
         <javadoc.skip>false</javadoc.skip>
-        <PermGen>64m</PermGen>
-        <MaxPermGen>512m</MaxPermGen>
+        <java.memory.min>-Xms1G</java.memory.min>
+        <java.memory.max>-Xmx2G</java.memory.max>
+
+        <PermGen>256m</PermGen>
+        <MaxPermGen>1024m</MaxPermGen>
+        <tipl.version>1.0-SNAPSHOT</tipl.version>
     </properties>
     <repositories>
+        <!-- Force imagej repsository for imageio/jai -->
+        <repository>
+            <id>imagej.public</id>
+            <url>http://maven.imagej.net/content/groups/public</url>
+        </repository>
         <repository>
             <id>maven-repo</id>
             <!-- This should be at top, it makes maven try the central repo first and then others and hence faster dep resolution -->
@@ -77,6 +88,7 @@
             </snapshots>
         </repository>
 
+
         <repository>
             <id>cloudera-repo</id>
             <name>Cloudera Repository</name>
@@ -88,17 +100,7 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>mapr-repo</id>
-            <name>MapR Repository</name>
-            <url>http://repository.mapr.com/maven</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
+
         <repository>
             <id>spring-releases</id>
             <name>Spring Release Repository</name>
@@ -115,10 +117,8 @@
             <name>Scala-tools Maven2 Repository</name>
             <url>http://scala-tools.org/repo-releases</url>
         </repository>
-        <repository>
-            <id>imagej.public</id>
-            <url>http://maven.imagej.net/content/groups/public</url>
-        </repository>
+
+
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -140,24 +140,67 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.1.6</version>
                 <executions>
                     <execution>
+                        <id>scala-compile-first</id>
+                        <phase>process-resources</phase>
                         <goals>
                             <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>scala-test-compile-first</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
                             <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>attach-scaladocs</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>doc-jar</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
-                    <sourceDir>src/main/java</sourceDir>
+                    <scalaVersion>${scala.version}</scalaVersion>
+                  <!--  <recompileMode>incremental</recompileMode>
+                    <useZincServer>true</useZincServer> -->
+                    <args>
+                        <arg>-unchecked</arg>
+                        <arg>-deprecation</arg>
+                        <arg>-feature</arg>
+                        <arg>-language:postfixOps</arg>
+                    </args>
                     <jvmArgs>
-                        <jvmArg>-Xms64m</jvmArg>
-                        <jvmArg>-Xmx1024m</jvmArg>
+                        <jvmArg>${java.memory.min}</jvmArg>
+                        <jvmArg>${java.memory.max}</jvmArg>
+                        <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
+                        <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
                     </jvmArgs>
+                    <javacArgs>
+                        <javacArg>-source</javacArg>
+                        <javacArg>${java.version}</javacArg>
+                        <javacArg>-target</javacArg>
+                        <javacArg>${java.version}</javacArg>
+                    </javacArgs>
+                    <!-- The following plugin is required to use quasiquotes in Scala 2.10 and is used
+                         by Spark SQL for code generation. -->
+                    <compilerPlugins>
+                        <compilerPlugin>
+                            <groupId>org.scalamacros</groupId>
+                            <artifactId>paradise_${scala.version}</artifactId>
+                            <version>${scala.macros.version}</version>
+                        </compilerPlugin>
+                    </compilerPlugins>
                 </configuration>
             </plugin>
+
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -185,6 +228,32 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.scalastyle</groupId>
+                <artifactId>scalastyle-maven-plugin</artifactId>
+                <version>0.4.0</version>
+                <configuration>
+                    <verbose>false</verbose>
+                    <failOnViolation>true</failOnViolation>
+                    <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                    <failOnWarning>false</failOnWarning>
+                    <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
+                    <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
+                    <configLocation>scalastyle-config.xml</configLocation>
+                    <outputFile>scalastyle-output.xml</outputFile>
+                    <outputEncoding>UTF-8</outputEncoding>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
+
     </build>
 </project>

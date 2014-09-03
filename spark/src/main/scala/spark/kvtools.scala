@@ -8,7 +8,7 @@ import tipl.util.D3int
 
 
 object kvtools extends Serializable {
-  def main(args: Array[String]) = {
+  def main(args: Array[String]): Unit = {
     val p = SparkGlobal.activeParser(args)
     val sc = SparkGlobal.getContext("FilterTool")
     runFilter(sc, args(1), true)
