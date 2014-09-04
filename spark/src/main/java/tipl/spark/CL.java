@@ -35,12 +35,13 @@ import static ch.lambdaj.Lambda.*;
  */
 @SuppressWarnings("serial")
 public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],int[]> {
+    /**
     @TIPLPluginManager.PluginInfo(pluginType = "ComponentLabel",
             desc = "Spark-based component labeling",
             sliceBased = false,
             maximumSize = -1,
             bytesPerVoxel = 3,
-            sparkBased = true)
+            sparkBased = true) **/
     final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
         @Override
         public ITIPLPlugin get() {

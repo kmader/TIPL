@@ -19,6 +19,7 @@
             <version>3.8.1</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.binary.version}</artifactId>
@@ -58,6 +59,20 @@
             <groupId>quant.tipl</groupId>
             <artifactId>tipl-volviewer</artifactId>
             <version>${tipl.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>stupid.fiji.scripting.shit</groupId>
+            <artifactId>abstractinterpreter</artifactId>
+            <version>99.0</version>
+            <scope>system</scope>
+            <systemPath>/Users/mader/Dropbox/tipl/tipl-libraries/fiji-integration/fiji-scripting.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>stupid.fiji.scripting.shit</groupId>
+            <artifactId>commonlibs</artifactId>
+            <version>99.0</version>
+            <scope>system</scope>
+            <systemPath>/Users/mader/Dropbox/tipl/tipl-libraries/fiji-integration/ij-core.jar</systemPath>
         </dependency>
 
     </dependencies>

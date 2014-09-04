@@ -44,7 +44,7 @@
     </modules>
     <properties>
         <scala.version>2.10.4</scala.version>
-        <java.version>1.6</java.version>
+        <java.version>1.7</java.version>
 
         <scala.binary.version>2.10</scala.binary.version>
         <scala.macros.version>2.0.1</scala.macros.version>
@@ -128,7 +128,7 @@
         </pluginRepository>
     </pluginRepositories>
 
-    <dependencies>
+   <!-- <dependencies>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -136,14 +136,14 @@
             <scope>test</scope>
         </dependency>
 
-    </dependencies>
+    </dependencies> -->
     <build>
         <plugins>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>3.1.6</version>
-                <executions>
+                <version>3.2.0</version>
+                <!-- <executions>
                     <execution>
                         <id>scala-compile-first</id>
                         <phase>process-resources</phase>
@@ -165,9 +165,11 @@
                             <goal>doc-jar</goal>
                         </goals>
                     </execution>
-                </executions>
+                </executions> -->
                 <configuration>
                     <scalaVersion>${scala.version}</scalaVersion>
+                    <source>1.7</source>
+                    <target>1.7</target>
                   <!--  <recompileMode>incremental</recompileMode>
                     <useZincServer>true</useZincServer> -->
                     <args>
@@ -182,12 +184,12 @@
                         <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
                         <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
                     </jvmArgs>
-                    <javacArgs>
+                    <!-- <javacArgs>
                         <javacArg>-source</javacArg>
                         <javacArg>${java.version}</javacArg>
                         <javacArg>-target</javacArg>
                         <javacArg>${java.version}</javacArg>
-                    </javacArgs>
+                    </javacArgs> -->
                     <!-- The following plugin is required to use quasiquotes in Scala 2.10 and is used
                          by Spark SQL for code generation. -->
                     <compilerPlugins>
@@ -228,6 +230,7 @@
                     </execution>
                 </executions>
             </plugin>
+           <!-- This is not needed until everything else runs smoothly
             <plugin>
                 <groupId>org.scalastyle</groupId>
                 <artifactId>scalastyle-maven-plugin</artifactId>
@@ -252,6 +255,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
 
         </plugins>
 
