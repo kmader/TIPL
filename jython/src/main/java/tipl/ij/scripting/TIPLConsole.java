@@ -23,7 +23,7 @@ import org.python.core.PyDictionary;
 import org.python.core.PyObject;
 import org.python.core.PySystemState;
 import org.python.util.PythonInterpreter;
-import org.scijava.plugin.Plugin;
+//import org.scijava.plugin.Plugin;
 
 import common.AbstractInterpreter;
 
@@ -155,7 +155,8 @@ public class TIPLConsole extends AbstractInterpreter {
 
 
 
-       @Plugin(type=ScriptLanguage.class)
+       /**
+        @Plugin(type=ScriptLanguage.class)
         public class TIPLScriptLanguage extends AdaptedScriptLanguage
         {
           public TIPLScriptLanguage()
@@ -172,7 +173,7 @@ public class TIPLConsole extends AbstractInterpreter {
           {
             return new TIPLScriptEngine();
           }
-        }
+        } **/
         
         
         public class TIPLScriptEngine extends AbstractScriptEngine

@@ -1,19 +1,21 @@
 /**
  *
  */
-package tipl.spark;
+package tipl.util;
 
-import tipl.tools.Resize;
+import tipl.spark.SResize;
+import tipl.spark.SKVoronoi;
+import tipl.spark.ShapeAnalysis;
+import tipl.spark.SFilterScale;
 import tipl.util.ITIPLPlugin;
 import tipl.util.TIPLPluginManager;
 
 /**
- * A temporary hack of a plugin to load scala-based plugins into the plugin manager
+ * A temporary hack of a plugin to have all plugins annotations in the same file / module in TIPL
  *
  * @author mader
  */
-public final class ScalaPlugins {
-/**
+public final class TIPLPluginAnnotation {
     @TIPLPluginManager.PluginInfo(pluginType = "ShapeAnalysis",
             desc = "Spark-based shape analysis",
             sliceBased = false, sparkBased = true)
@@ -53,7 +55,6 @@ public final class ScalaPlugins {
 			return new SResize();
 		}
 	};
-    **/
 }
 
 

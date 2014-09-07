@@ -23,11 +23,10 @@ import tipl.util.TypedPath
  *
  */
 class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
-  /**
+
   @TIPLPluginManager.PluginInfo(pluginType = "ShapeAnalysis",
     desc = "Spark-based shape analysis",
     sliceBased = false, sparkBased = true)
-  **/
   val myFactory: TIPLPluginManager.TIPLPluginFactory = new TIPLPluginManager.TIPLPluginFactory() {
     override def get(): ITIPLPlugin = {
       return new ShapeAnalysis;

@@ -39,6 +39,7 @@
         <module>workflows</module>
         <module>spark</module>
         <module>volviewer</module>
+        <module>integration</module>
         <module>jython</module>
         <module>examples</module>
     </modules>
@@ -143,7 +144,7 @@
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
                 <version>3.2.0</version>
-                <!-- <executions>
+                <executions>
                     <execution>
                         <id>scala-compile-first</id>
                         <phase>process-resources</phase>
@@ -151,6 +152,8 @@
                             <goal>compile</goal>
                         </goals>
                     </execution>
+                    </executions>
+                     <!--
                     <execution>
                         <id>scala-test-compile-first</id>
                         <phase>process-test-resources</phase>

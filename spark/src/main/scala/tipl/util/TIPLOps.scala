@@ -26,7 +26,7 @@ import tipl.spark.SparkGlobal
 
 /**
  * An extension of TImgRO to make the available filters show up
- */ls
+ */
 
 object TIPLOps {
   trait NeighborhoodOperation[T, U] {
