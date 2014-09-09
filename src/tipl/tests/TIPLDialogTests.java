@@ -3,9 +3,12 @@ package tipl.tests;
 import static org.junit.Assert.*;
 
 import java.awt.CardLayout;
+import java.awt.GridLayout;
 import java.awt.Panel;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,6 +30,7 @@ public class TIPLDialogTests {
 	@Before
 	public void setUp() throws Exception {
 		curDialog = new TIPLDialog("TestSuite:"+this);
+		curDialog.createNewLayer("Blank");
 		curDialog.addMessage("Hello");
 	}
 
@@ -36,20 +40,17 @@ public class TIPLDialogTests {
 
 	@Test
 	public final void testAddPanelPanel() {
-		Panel myPanel = new Panel(new CardLayout());
-		myPanel.setBackground(java.awt.Color.RED);
-		curDialog.addPanel(myPanel);
-		curDialog.setCurrentLayer(myPanel);
-		curDialog.addMessage("Hello from:"+myPanel);
-		curDialog.resetCurrentLayer();
 		
-		Panel myPanel2 = new Panel(new CardLayout());
-		myPanel2.setBackground(java.awt.Color.BLUE);
-		curDialog.addPanel(myPanel2);
-		curDialog.setCurrentLayer(myPanel2);
-		curDialog.addMessage("Hello from:"+myPanel2);
+		curDialog.addMessage("Hello");
 		
-		curDialog.show();
+		curDialog.createNewLayer("Test");
+		curDialog.addMessage("Hello Test");
+		
+		curDialog.createNewLayer("Dog");
+		curDialog.addMessage("Hello dog");
+
+		
+		curDialog.NonBlockingShow();
 		while(curDialog.isVisible()) {
 			try {
 				Thread.currentThread().sleep(100);
@@ -58,11 +59,41 @@ public class TIPLDialogTests {
 			}
 		}
 	}
+	
+	@Test
+	public final void testAddJPanel() {
+		
+		
+		JTabbedPane jtbExample = new JTabbedPane();
+		JPanel jplInnerPanel1 = createInnerPanel("Tab 1 Contains Tooltip and Icon");
+		jtbExample.addTab("One", jplInnerPanel1);
+		jtbExample.setSelectedIndex(0);
+		JPanel jplInnerPanel2 = createInnerPanel("Tab 2 Contains Icon only");
+		jtbExample.addTab("Two", jplInnerPanel2);
+		curDialog.showDialog();
+		while(curDialog.isVisible()) {
+			try {
+				Thread.currentThread().sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	static protected JPanel createInnerPanel(String text) {
+		JPanel jplPanel = new JPanel();
+		JLabel jlbDisplay = new JLabel(text);
+		jlbDisplay.setHorizontalAlignment(JLabel.CENTER);
+		jplPanel.setLayout(new GridLayout(1, 1));
+		jplPanel.add(jlbDisplay);
+		return jplPanel;
+	}
 
 	@Test
 	public final void testAddPanelPanelIntInsets() {
 		curDialog.showDialog();
 		
 	}
+	
 
 }

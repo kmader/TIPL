@@ -3,8 +3,10 @@
  */
 package tipl.util;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Vector;
+
 
 // to make a dialog from the arguments
 
@@ -15,8 +17,13 @@ import java.util.Vector;
  *
  * @author mader
  */
-public class ArgumentList {
-    public final static ArgumentCallback emptyCallback = new ArgumentCallback() {
+
+public class ArgumentList implements Serializable {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 5651833083594630638L;
+	public final static ArgumentCallback emptyCallback = new ArgumentCallback() {
         @Override
         public Object valueSet(final Object value) {
             return value;
@@ -290,6 +297,19 @@ public class ArgumentList {
             }
         }
         options.put(opt, curObj);
+    }
+    /**
+     * Remove an object from the argument list
+     * @param opt the name of the argument to remove
+     * @return was the removal successful (did the object exist)
+     */
+    protected boolean removeArg(final String opt) {
+    	if (hasOption(opt)) {
+    		options.remove(opt);
+    		return true;
+    	}
+    	return false;
+    	
     }
 
     @Deprecated

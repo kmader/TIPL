@@ -80,6 +80,7 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
 			final String helpText) {
 		coreList = inList;
 		g = new TIPLDialog(title);
+		g.createNewLayer("Parameters");
 		g.addMessage(helpText, null, Color.red);
 		inList.processOptions(this);
 		if(showDialogs) g.showDialog();
@@ -113,12 +114,15 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
 		System.out.println(p);
 		return blockToRun.setParameter(p);
 	}
-
+	
 	protected GUIControl addD3Control(final String cName, final D3float cStat,
 			final String helpText) {
+		boolean oldPreventWrapping = g.preventWrapping;
+		g.preventWrapping=true;
 		final GUIControl x = addTextControl(helpText + ": " + cName + ".x", cStat.x, "help");
 		final GUIControl y = addTextControl(cName + ".y", cStat.y, "");
 		final GUIControl z = addTextControl(cName + ".z", cStat.z, "");
+		g.preventWrapping=oldPreventWrapping;
 		return new GUIControl() {
 
 			@Override

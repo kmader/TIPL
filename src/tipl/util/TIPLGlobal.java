@@ -132,7 +132,7 @@ public class TIPLGlobal {
     }
 
     public static ArgumentParser activeParser(String[] args) {
-        return activeParser(new ArgumentParser(args, true));
+        return activeParser(ArgumentParser.CreateArgumentParser(args));
     }
     
     public static ArgumentParser activeParser(String rawArgs) {

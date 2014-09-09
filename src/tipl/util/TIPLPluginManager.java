@@ -145,10 +145,12 @@ public class TIPLPluginManager {
 		return filter(having(on(PluginInfo.class).pluginType(),equalToIgnoringCase(pluginType)),getAllPlugins());
 	}
 	public static List<PluginInfo> getPluginsBySize(final List<PluginInfo> inList,long voxelCount) {
-		return filter(having(on(PluginInfo.class).maximumSize(),
-				either(greaterThan(voxelCount)).
-				or(lessThan(0L))), // either larger than the voxel count or negative 1
-				inList);
+		List<PluginInfo> bigEnough = filter(having(on(PluginInfo.class).maximumSize(),
+				greaterThan(voxelCount)),inList);
+		List<PluginInfo> sizeIndependent = filter(having(on(PluginInfo.class).maximumSize(),		
+				lessThan(0L)),inList); // either larger than the voxel count or negative 1
+		bigEnough.addAll(sizeIndependent);
+		return bigEnough;
 	}
 	/** 
 	 * get the fastest plugin (by speed rank)

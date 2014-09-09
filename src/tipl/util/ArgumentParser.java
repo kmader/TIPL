@@ -1,5 +1,14 @@
 package tipl.util;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
+
+
 
 // to make a dialog from the arguments
 
@@ -22,12 +31,34 @@ package tipl.util;
  *         v1 Start
  */
 public class ArgumentParser extends ArgumentList {
-    public static String kVer = "14-08-2013 v4";
+    public static String kVer = "09-09-2014 v5";
 
     protected ArgumentParser(final ArgumentList inArgs) {
         super(inArgs);
     }
+    /**
+     * A function to parse command line arguments from strings to argument objects
+     * and add them to the list
+     * @param curList the argumentlist object to add them to
+     * @param curArg the current argument string
+     * @param index the current index
+     */
+    private static void parseAndAddCommandLineArgument(ArgumentList curList,String curArg, int index) {
+    	if (curArg.trim().startsWith("-") || curArg.trim().startsWith("/")) {
+            final int loc = curArg.indexOf("=");
+            final String keyRaw = (loc > 0) ? curArg.substring(1, loc)
+                    : curArg.substring(1);
 
+            final String value = (loc > 0) ? curArg.substring(loc + 1)
+                    : "";
+            final String key = formatKey(keyRaw);
+            curList.putArg(key, new ArgumentList.GenericArgument(key, value));
+
+        } else if (curArg.trim().length()>0) {
+            // FLAT_0 is unreachable since the key is uppercase
+            curList.putArg("FLAT_" + index, new ArgumentList.EmptyArgument(curArg));
+        }
+    }
     /**
      * Creates a new arguments parser class from the standard string array input
      * to the static main function in a Java Class
@@ -37,22 +68,9 @@ public class ArgumentParser extends ArgumentList {
      *                         (use TIPLGlobal.activeParser instead)
      */
     @Deprecated
-    public ArgumentParser(final String[] args, boolean iKnowWhatImDoing) {
+    private ArgumentParser(final String[] args, boolean iKnowWhatImDoing) {
         for (int i = 0; i < args.length; i++) {
-            if (args[i].trim().startsWith("-") || args[i].trim().startsWith("/")) {
-                final int loc = args[i].indexOf("=");
-                final String keyRaw = (loc > 0) ? args[i].substring(1, loc)
-                        : args[i].substring(1);
-
-                final String value = (loc > 0) ? args[i].substring(loc + 1)
-                        : "";
-                final String key = formatKey(keyRaw);
-                putArg(key, new ArgumentList.GenericArgument(key, value));
-
-            } else if (args[i].trim().length()>0) {
-                // FLAT_0 is unreachable since the key is uppercase
-                putArg("FLAT_" + i, new ArgumentList.EmptyArgument(args[i]));
-            }
+        	parseAndAddCommandLineArgument(this,args[i],i);
         }
     }
 
@@ -71,12 +89,89 @@ public class ArgumentParser extends ArgumentList {
         final String opt = formatKey(inOpt);
         putArg(opt, new ArgumentList.GenericArgument(opt, value));
     }
+    public static void CheckSaveParameters(ArgumentParser p) {
+    	System.out.println("Looking for Save Argument: "+saveArg);
+    	if (p.hasOption(saveArg)) {
+    		TypedPath savePath = p.getOptionPath(saveArg, "", "Save the parameters to a text file");
+    		p.removeArg(saveArg); // should only be performed once
+    		SaveParameters(p,savePath);
+    	}
+    }
+    final public static String saveArg = "@saveparams";
+    /**
+     * Save the parameters into a text file
+     * @param p the parameter object
+     * @param path the file to save to
+     */
+    public static void SaveParameters(ArgumentParser p,TypedPath path) {
+    	FileWriter out;
+		try {
+			out = new FileWriter(path.getPath(), false);
+			out.write(p.toString("\n"));
+	    	out.close();	
+		} catch (IOException e) {
+			System.err.println(path+" could not be written becasue of "+e);
+			e.printStackTrace();
+		}
+    }
+    /**
+     * Create a new argument parser
+     * @param args the string arguments to parse
+     * @param checkLoading check to see if there is an object to load before doing anything else
+     * @return a new argumentparser object
+     */
+    public static ArgumentParser CreateArgumentParser(final String[] args,boolean checkLoading) {
+    	final ArgumentParser newParser = new ArgumentParser(args,true);
+    	if (checkLoading) {
+    		System.out.println("Looking for Load Argument: "+loadArg);
+        	if (newParser.hasOption(loadArg)) {
+        		TypedPath loadPath = newParser.getOptionPath(loadArg, "", "Load the parameters from a text file");
+        		newParser.removeArg(saveArg); // should only be performed once
+        		boolean append = true;
+        		if (newParser.hasOption(loadArg+".append")) {
+        			append = newParser.getOptionBoolean(loadArg+".append",append, "Append current arguments when loading new ones");
+        			newParser.removeArg(loadArg+".append");
+        		}
+        		return LoadParameters(newParser,loadPath,append);
+        	}
+    	}
+    	return newParser;
+    }
+    public static ArgumentParser CreateArgumentParser(final String[] args) {
+    	return CreateArgumentParser(args,true);
+    }
+    final public static String loadArg = "@loadparams";
+    public static ArgumentParser LoadParameters(final ArgumentParser p,TypedPath path,boolean append) {
+    	final ArgumentParser out;
+    	if(append) {
+    		out = p;
+    	} else {
+    		out = new ArgumentParser(new String[]{},true);
+    	}
+    	// Now read in the file
+    	BufferedReader inFile;
+		try {
+			inFile = new BufferedReader(new FileReader(new File(path.getPath())));
+	    	String rline;
+	    	int index = 0;
+				while ((rline = inFile.readLine()) != null) {
+					parseAndAddCommandLineArgument(out,rline.trim(),index++);
+				}
+		} catch (Exception e) {
+			System.err.println(path+" could not be written becasue of "+e);
+			e.printStackTrace();
+		}
+		
 
+    	return out;
+    }
     /**
      * checks for parameters (no = sign and just bare arguments) and unrequested
      * (generic) arguments and throws an exception
      */
     public void checkForInvalid() {
+    	// run check as part of validation
+    	CheckSaveParameters(this);
         String outText = "Checking for extraneous or invalid parameters...\n";
         outText += "Arguments:" + toString() + "\n";
         final int[] vDist = getDistribution();

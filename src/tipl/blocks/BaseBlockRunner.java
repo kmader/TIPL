@@ -220,7 +220,9 @@ public class BaseBlockRunner implements IBlockRunner,ITIPLBlock {
 				blockIndex++;
 			}
 			
-			p = cr.setParameter(p.subArguments("blocknames", true).subArguments("simplenames",true));
+			//p = cr.setParameter(p.subArguments("blocknames", true).subArguments("simplenames",true));
+			
+			p = cr.setParameter(p);
 			
 			// code to enable running as a job
 			final boolean runAsJob = p

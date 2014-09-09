@@ -23,6 +23,10 @@ import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Vector;
 
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+
 /**
  * Mader: I have modified this class since the ImageJ version does not return
  * components and has all fields as private making subclassing a huge pain in
@@ -98,8 +102,8 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
 
     };
     private final static String previewRunning = "wait...";
-    private final GridBagLayout grid;
-    private final GridBagConstraints c;
+    private GridBagLayout grid;
+    private GridBagConstraints c;
     private final boolean macro;
     private final String macroOptions;
     private final String previewLabel = " Preview";
@@ -149,6 +153,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
                         : new Frame());
     }
 
+
     /**
      * Creates a new TIPLDialog using the specified title and parent frame.
      */
@@ -161,6 +166,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         }
         // if (IJ.isLinux())
         // setBackground(new Color(238, 238, 238));
+
         grid = new GridBagLayout();
         c = new GridBagConstraints();
         setLayout(grid);
@@ -169,7 +175,13 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         addKeyListener(this);
         addWindowListener(this);
         setResizable(true);
+		
     }
+	static protected JPanel createInnerPanel(String text) {
+		JPanel jplPanel = new JPanel();
+        jplPanel.setLayout(new GridBagLayout());
+		return jplPanel;
+	}
 
     public static GUIControl asGUI(final Checkbox f) {
         return new CallbackGUIControlWithMouse() {
@@ -349,7 +361,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         c.anchor = GridBagConstraints.WEST;
         c.insets = getInsets(10, 0, 0, 0);
         grid.setConstraints(panel, c);
-        add(panel);
+        addComponents(new Component[]{panel});
         y++;
     }
 
@@ -365,7 +377,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         String label2 = label;
         if (label2.indexOf('_') != -1)
             label2 = label2.replace('_', ' ');
-        final Label theLabel = makeLabel(label2);
+        final Component theLabel = makeLabelComponent(label2);
         c.gridx = 0;
         c.gridy = y;
         c.anchor = GridBagConstraints.EAST;
@@ -376,7 +388,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         } else
             c.insets = getInsets(0, 0, 5, 0);
         grid.setConstraints(theLabel, c);
-        add(theLabel);
+
         final Choice thisChoice = new Choice();
         thisChoice.addKeyListener(this);
         thisChoice.addItemListener(this);
@@ -386,7 +398,8 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         c.gridy = y;
         c.anchor = GridBagConstraints.WEST;
         grid.setConstraints(thisChoice, c);
-        add(thisChoice);
+
+        addComponents(new Component[]{theLabel,thisChoice});
         choice.addElement(thisChoice);
         if (Recorder.record || macro)
             saveLabel(thisChoice, label);
@@ -437,17 +450,30 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
     public void addMessage(final String text, final Font font) {
         addMessage(text, font, null);
     }
-
+    static protected int maxLineLength=40;
+    
+    protected static Component makeLabelComponent(final String intext) {
+    	String text = intext;
+    	 if (IJ.isMacintosh())
+             text += " ";
+    	if ((text.indexOf('\n') >= 0) || (text.length()>maxLineLength)) {
+    		System.out.println("Making fancy label");
+    					String newText = "<html>";
+    					
+    					for(int i=maxLineLength;i<text.length();i+=maxLineLength) {
+    						newText+=text.substring(i-maxLineLength,i)+"<br>";
+    					}
+    					newText+="</html>";
+    		            return new JLabel(newText);
+    		        } else
+    		           return new Label(text);
+    }
     /**
      * Adds a message consisting of one or more lines of text, which will be
      * displayed using the specified font and color.
      */
     public void addMessage(final String text, final Font font, final Color color) {
-        theLabel = null;
-        if (text.indexOf('\n') >= 0)
-            theLabel = new MultiLineLabel(text);
-        else
-            theLabel = new Label(text);
+        theLabel = makeLabelComponent(text);
         // theLabel.addKeyListener(this);
         c.gridx = 0;
         c.gridy = y;
@@ -460,7 +486,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
             theLabel.setFont(font);
         if (color != null)
             theLabel.setForeground(color);
-        add(theLabel);
+        addComponents(new Component[]{theLabel});
         c.fill = GridBagConstraints.NONE;
         y++;
     }
@@ -485,7 +511,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         c.anchor = constraints;
         c.insets = insets;
         grid.setConstraints(panel, c);
-        add(panel);
+        addComponents(new Component[]{panel});
         y++;
     }
 
@@ -524,7 +550,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         c.anchor = GridBagConstraints.WEST;
         c.insets = new Insets(insets.top, insets.left, 0, 0);
         grid.setConstraints(panel, c);
-        add(panel);
+        addComponents(new Component[]{panel});
         if (Recorder.record || macro)
             saveLabel(cg, label);
         y++;
@@ -561,7 +587,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         c.anchor = GridBagConstraints.WEST;
         c.insets = getInsets(15, 20, 0, 0);
         grid.setConstraints(panel, c);
-        add(panel);
+        addComponents(new Component[]{panel});
         y++;
     }
 
@@ -614,7 +640,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         cb.setState(defaultValue);
         cb.addItemListener(this);
         cb.addKeyListener(this);
-        add(cb);
+        addComponents(new Component[]{cb});
         checkbox.addElement(cb);
         // ij.IJ.write("addCheckbox: "+ y+" "+cbIndex);
         if (!isPreview && (Recorder.record || macro)) // preview checkbox is not
@@ -655,7 +681,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         String label2 = label;
         if (label2.indexOf('_') != -1)
             label2 = label2.replace('_', ' ');
-        final Label theLabel = makeLabel(label2);
+        final Component theLabel = makeLabelComponent(label2);
         c.gridx = 0;
         c.gridy = y;
         c.anchor = GridBagConstraints.EAST;
@@ -735,14 +761,14 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         String label2 = label;
         if (label2.indexOf('_') != -1)
             label2 = label2.replace('_', ' ');
-        final Label theLabel = makeLabel(label2);
+        final Component theLabel = makeLabelComponent(label2);
         c.gridx = 0;
         c.gridy = y;
         c.anchor = GridBagConstraints.EAST;
         c.gridwidth = 1;
         c.insets = new Insets(0, 0, 3, 0);
         grid.setConstraints(theLabel, c);
-        add(theLabel);
+        
 
         if (slider == null) {
             slider = new Vector(5);
@@ -814,26 +840,71 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         c.anchor = GridBagConstraints.WEST;
         c.insets = new Insets(0, 0, 0, 0);
         grid.setConstraints(panel, c);
-        add(panel);
+        
+        addComponents(new Component[]{theLabel,panel});
         y++;
         if (Recorder.record || macro)
             saveLabel(tf, label);
         return asGUI(tf);
     }
+    
+    
+    /**
+     * the tabbed pane to be checking
+     */
+    protected JTabbedPane innerJTP=null;
+    public String panelName="Settings";
+    protected int curPanel = 0;
+    protected int objPerPanel = 10;
     protected Container currentLayer = this;
-    public void setCurrentLayer(Container curLayer) {
+    protected void setCurrentLayer(Container curLayer) {
     	currentLayer = curLayer;
+    }
+    /**
+     * Create a new panel to write into
+     * @param newLayerName
+     */
+    public void createNewLayer(String newLayerName) {
+    	if(innerJTP==null) {
+            innerJTP = new JTabbedPane();
+    		currentLayer = createInnerPanel(panelName);
+    		innerJTP.addTab(panelName, currentLayer);
+    		super.add(innerJTP);
+    	}
+    	currentLayer = createInnerPanel(newLayerName);
+    	innerJTP.addTab(newLayerName,currentLayer);
+        grid = new GridBagLayout();
+        c = new GridBagConstraints();
+        setLayout(grid);
+    	currentLayer.setLayout(grid);
     }
     public void resetCurrentLayer() {
     	currentLayer = this;
     }
+    protected int curObjCount=0;
+    protected boolean preventWrapping=false;
     /** 
      * This version allows subpanels to be used seamlessly without modifying every single command here
      */
+    public Component[] addComponents(Component[] curObjList) {
+    	Component[] outResults = new Component[curObjList.length];
+    	if ((currentLayer == null) || (currentLayer == this)) {
+    		for(int i=0;i<curObjList.length;i++) outResults[i]=super.add(curObjList[i]);
+    	} else {
+    		curObjCount++;
+    		if((curObjCount>objPerPanel) && (!preventWrapping)) {
+    			createNewLayer(panelName+" "+(curPanel++));
+    			curObjCount=0;
+    		}
+    		for(int i=0;i<curObjList.length;i++) outResults[i]=currentLayer.add(curObjList[i]);
+    	}
+    	return outResults;
+    }
+    
     @Override
+    @Deprecated
     public Component add(Component curObj) {
-    	if ((currentLayer == null) || (currentLayer == this)) return super.add(curObj);
-    	else return currentLayer.add(curObj);
+    	return addComponents(new Component[]{curObj})[0];
     }
     
     
@@ -861,7 +932,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         String label2 = label;
         if (label2.indexOf('_') != -1)
             label2 = label2.replace('_', ' ');
-        final Label theLabel = makeLabel(label2);
+        final Component theLabel = makeLabelComponent(label2);
         c.gridx = 0;
         c.gridy = y;
         c.anchor = GridBagConstraints.EAST;
@@ -1387,11 +1458,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
     public void keyTyped(final KeyEvent e) {
     }
 
-    private Label makeLabel(String label) {
-        if (IJ.isMacintosh())
-            label += " ";
-        return new Label(label);
-    }
+
 
     public void NonBlockingShow() {
         final Panel buttons = new Panel();
@@ -1439,7 +1506,7 @@ public class TIPLDialog extends Dialog implements ActionListener, TextListener,
         c.gridwidth = 2;
         c.insets = new Insets(15, 0, 0, 0);
         grid.setConstraints(buttons, c);
-        add(buttons);
+        super.add(buttons);
         if (IJ.isMacintosh())
             setResizable(false);
         pack();
