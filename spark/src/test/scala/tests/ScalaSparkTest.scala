@@ -25,7 +25,7 @@ object SparkFailureTest {
       val y = random * 2 - 1
       if(random<failureRate) {
         exCount+=1
-        throw new IllegalArgumentException("Random Exception Testing")
+        throw new InterruptedException("Random Exception Testing")
       }
       if (x*x + y*y < 1) 1 else 0
     }.reduce(_ + _)

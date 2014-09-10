@@ -1,7 +1,7 @@
 package tipl.util;
 
 import java.io.File;
-
+import java.io.Serializable;
 
 /**
  * Basically a fancy wrapper for a string class with added functionality
@@ -14,7 +14,7 @@ import java.io.File;
  *
  * @author mader
  */
-public class TypedPath {
+public class TypedPath implements Serializable {
     final protected String inStr;
     final protected String inType;
     
