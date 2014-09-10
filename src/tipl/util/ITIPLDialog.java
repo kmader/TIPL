@@ -42,7 +42,7 @@ public interface ITIPLDialog extends Serializable {
 	 * @param defaultItem
 	 * @return the handle of the control
 	 */
-	public ITIPLDialog.GUIControl addChoice(final String label, final String[] items,
+	public ITIPLDialog.GUIControl addChoice(final String label, final String helpText, final String[] items,
             final String defaultItem);
 	
 	/**
@@ -51,7 +51,7 @@ public interface ITIPLDialog extends Serializable {
      * @param label        the label
      * @param defaultValue the initial state
      */
-    public ITIPLDialog.GUIControl appendCheckbox(final String label,
+    public ITIPLDialog.GUIControl appendCheckbox(final String label,final String helpText,
                                      final boolean defaultValue); 
                                      
 	
@@ -63,7 +63,7 @@ public interface ITIPLDialog extends Serializable {
      * @param defaultValue value to be initially displayed
      * @param digits       number of digits to right of decimal point
      */
-    public ITIPLDialog.GUIControl appendNumericField(final String label,
+    public ITIPLDialog.GUIControl appendNumericField(final String label, final String helpText,
                                          final double defaultValue, final int digits);
     
     /**
@@ -76,7 +76,7 @@ public interface ITIPLDialog extends Serializable {
      * @param maxValue     the maximum value of the slider
      * @param defaultValue the initial value of the slider
      */
-    public ITIPLDialog.GUIControl appendSlider(final String label, double minValue,
+    public ITIPLDialog.GUIControl appendSlider(final String label, final String helpText, double minValue,
                                    double maxValue, double defaultValue);
 	
     /**
@@ -85,7 +85,7 @@ public interface ITIPLDialog extends Serializable {
      * @param label       the label
      * @param defaultText the text initially displayed
      */
-    public ITIPLDialog.GUIControl appendStringField(final String label,
+    public ITIPLDialog.GUIControl appendStringField(final String label,final String helpText,
                                         final String defaultText);
     
     /**
@@ -94,7 +94,7 @@ public interface ITIPLDialog extends Serializable {
      * @param label       the label
      * @param defaultPath the default value for the path
      */
-    public ITIPLDialog.GUIControl appendPathField(final String label,
+    public ITIPLDialog.GUIControl appendPathField(final String label,final String helpText,
                                         final TypedPath defaultText);
    
     /**

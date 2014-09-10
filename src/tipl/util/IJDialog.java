@@ -27,6 +27,8 @@ import java.util.Vector;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 
 /**
  * Mader: I have modified this class since the ImageJ version does not return
@@ -357,14 +359,8 @@ WindowListener,ITIPLDialog {
 		y++;
 	}
 
-	/**
-	 * Adds a popup menu.
-	 *
-	 * @param label       the label
-	 * @param items       the menu items
-	 * @param defaultItem the menu item initially selected
-	 */
-	public ITIPLDialog.GUIControl addChoice(final String label, final String[] items,
+	@Override
+	public ITIPLDialog.GUIControl addChoice(final String label,final String helpText, final String[] items,
 			final String defaultItem) {
 		String label2 = label;
 		if (label2.indexOf('_') != -1)
@@ -390,8 +386,14 @@ WindowListener,ITIPLDialog {
 		c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
 		grid.setConstraints(thisChoice, c);
+		
+		Component helpLab = makeLabelComponent(helpText);
+		c.gridx = 2;
+		c.gridy = y;
+		c.anchor = GridBagConstraints.WEST;
+		grid.setConstraints(helpLab, c);
 
-		addComponents(new Component[]{theLabel,thisChoice});
+		addComponents(new Component[]{theLabel,thisChoice,helpLab});
 		choice.addElement(thisChoice);
 		if (Recorder.record || macro)
 			saveLabel(thisChoice, label);
@@ -448,15 +450,24 @@ WindowListener,ITIPLDialog {
 		String text = intext;
 		if (IJ.isMacintosh())
 			text += " ";
+		
 		if ((text.indexOf('\n') >= 0) || (text.length()>maxLineLength)) {
-			System.out.println("Making fancy label");
+			
 			String newText = "<html>";
-
+			
 			for(int i=maxLineLength;i<text.length();i+=maxLineLength) {
 				newText+=text.substring(i-maxLineLength,i)+"<br>";
 			}
 			newText+="</html>";
-			return new JLabel(newText);
+			JTextArea jta = new JTextArea(text);
+			jta.setLineWrap(true);
+			jta.setWrapStyleWord(true);
+			
+			jta.setEditable(false);
+			jta.setOpaque(false);
+		    jta.setBorder(null);
+		    
+			return jta;
 		} else
 			return new Label(text);
 	}
@@ -595,9 +606,9 @@ WindowListener,ITIPLDialog {
 	}
 
 	@Override
-	public ITIPLDialog.GUIControl appendCheckbox(final String label,
+	public ITIPLDialog.GUIControl appendCheckbox(final String label, final String helpText,
 			final boolean defaultValue) {
-		return appendCheckbox(label, defaultValue, false);
+		return appendCheckbox(label,helpText, defaultValue, false);
 	}
 
 	/**
@@ -605,7 +616,7 @@ WindowListener,ITIPLDialog {
 	 * isPreview true, the checkbox can be referred to as previewCheckbox from
 	 * hereon.
 	 */
-	private ITIPLDialog.GUIControl appendCheckbox(final String label,
+	private ITIPLDialog.GUIControl appendCheckbox(final String label,final String helpText,
 			final boolean defaultValue, final boolean isPreview) {
 		String label2 = label;
 		if (label2.indexOf('_') != -1)
@@ -624,22 +635,30 @@ WindowListener,ITIPLDialog {
 		cb.setState(defaultValue);
 		cb.addItemListener(this);
 		cb.addKeyListener(this);
-		addComponents(new Component[]{cb});
+		
+		Component helpLabel = makeLabelComponent(helpText);
+		c.gridx = 2;
+		c.gridy = y;
+		c.anchor = GridBagConstraints.WEST;
+		grid.setConstraints(helpLabel, c);
+		
+		addComponents(new Component[]{cb,helpLabel});
 		checkbox.addElement(cb);
-		// ij.IJ.write("addCheckbox: "+ y+" "+cbIndex);
+		
 		if (!isPreview && (Recorder.record || macro)) // preview checkbox is not
 			// recordable
 			saveLabel(cb, label);
 		if (isPreview)
 			previewCheckbox = cb;
+		
 		y++;
 		return asGUI(cb);
 	}
 
 	@Override
-	public ITIPLDialog.GUIControl appendNumericField(final String label,
+	public ITIPLDialog.GUIControl appendNumericField(final String label, final String helpText,
 			final double defaultValue, final int digits) {
-		return appendNumericField(label, defaultValue, digits, 6, null);
+		return appendNumericField(label,helpText, defaultValue, digits, 6);
 	}
 
 	/**
@@ -652,9 +671,8 @@ WindowListener,ITIPLDialog {
 	 * @param columns      width of field in characters
 	 * @param units        a string displayed to the right of the field
 	 */
-	public ITIPLDialog.GUIControl appendNumericField(final String label,
-			final double defaultValue, final int digits, int columns,
-			final String units) {
+	public ITIPLDialog.GUIControl appendNumericField(final String label, final String helpText,
+			final double defaultValue, final int digits, int columns) {
 		String label2 = label;
 		if (label2.indexOf('_') != -1)
 			label2 = label2.replace('_', ' ');
@@ -695,17 +713,22 @@ WindowListener,ITIPLDialog {
 		tf.setEditable(true);
 		// if (firstNumericField) tf.selectAll();
 		firstNumericField = false;
-		if (units == null || units.equals("")) {
-			grid.setConstraints(tf, c);
-			add(tf);
-		} else {
+		
+		Component helpLabel = makeLabelComponent(helpText);
+		c.gridx = 2;
+		c.gridy = y;
+		c.anchor = GridBagConstraints.WEST;
+		grid.setConstraints(helpLabel, c);
+		
+		
+		
+		
 			final Panel panel = new Panel();
 			panel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
 			panel.add(tf);
-			panel.add(new Label(" " + units));
+			panel.add(helpLabel);
 			grid.setConstraints(panel, c);
-			add(panel);
-		}
+			addComponents(new Component[]{panel});
 		if (Recorder.record || macro)
 			saveLabel(tf, label);
 		y++;
@@ -713,7 +736,7 @@ WindowListener,ITIPLDialog {
 	}
 
 	@Override
-	public ITIPLDialog.GUIControl appendSlider(final String label, double minValue,
+	public ITIPLDialog.GUIControl appendSlider(final String label,final String helpText, double minValue,
 			double maxValue, double defaultValue) {
 		int columns = 4;
 		int digits = 0;
@@ -808,8 +831,16 @@ WindowListener,ITIPLDialog {
 		c.anchor = GridBagConstraints.WEST;
 		c.insets = new Insets(0, 0, 0, 0);
 		grid.setConstraints(panel, c);
+		
+		y++;
+		Component helpLab = makeLabelComponent(helpText);
+		c.gridx = 0;
+		c.gridy = y;
+		c.anchor = GridBagConstraints.WEST;
+		grid.setConstraints(helpLab, c);
+		
 
-		addComponents(new Component[]{theLabel,panel});
+		addComponents(new Component[]{theLabel,panel,helpLab});
 		y++;
 		if (Recorder.record || macro)
 			saveLabel(tf, label);
@@ -848,6 +879,15 @@ WindowListener,ITIPLDialog {
 	public void resetCurrentLayer() {
 		currentLayer = this;
 	}
+	/**
+	 * Replace the base layer with something else
+	 * @param newLayer
+	 */
+	public void injectLayer(Container newLayer) {
+		currentLayer = newLayer;
+		setWrapping(false);
+	}
+	
 	protected int curObjCount=0;
 	protected boolean canWrap=true;
 
@@ -887,9 +927,9 @@ WindowListener,ITIPLDialog {
 
 
 	@Override
-	public ITIPLDialog.GUIControl appendStringField(final String label,
+	public ITIPLDialog.GUIControl appendStringField(final String label,final String helpText,
 			final String defaultText) {
-		return appendStringField(label, defaultText, 8);
+		return appendStringField(label,helpText, defaultText, 8);
 	}
 
 	/**
@@ -899,7 +939,7 @@ WindowListener,ITIPLDialog {
 	 * @param defaultText text initially displayed
 	 * @param columns     width of the text field
 	 */
-	public ITIPLDialog.GUIControl appendStringField(final String label,
+	public ITIPLDialog.GUIControl appendStringField(final String label,final String helpText,
 			final String defaultText, final int columns) {
 		String label2 = label;
 		if (label2.indexOf('_') != -1)
@@ -937,7 +977,14 @@ WindowListener,ITIPLDialog {
 		c.anchor = GridBagConstraints.WEST;
 		grid.setConstraints(tf, c);
 		tf.setEditable(true);
-		addComponents(new Component[]{theLabel,tf});
+		
+		Component helpLab = makeLabelComponent(helpText);
+		c.gridx = 2;
+		c.gridy = y;
+		c.anchor = GridBagConstraints.WEST;
+		grid.setConstraints(helpLab, c);
+		
+		addComponents(new Component[]{theLabel,tf,helpLab});
 		stringField.addElement(tf);
 		if (Recorder.record || macro)
 			saveLabel(tf, label);
@@ -947,7 +994,7 @@ WindowListener,ITIPLDialog {
 
 
 	@Override
-	public GUIControl appendPathField(String label, TypedPath defaultPath) {
+	public GUIControl appendPathField(String label, final String helpText, TypedPath defaultPath) {
 		final int columns = 20;
 		String label2 = label;
 		if (label2.indexOf('_') != -1)
@@ -994,6 +1041,7 @@ WindowListener,ITIPLDialog {
 					tf.setEditable(false);
 					tf.setEnabled(false);
 				}
+				notifyListeners(e);
 			}     	
 		});
 
@@ -1009,6 +1057,7 @@ WindowListener,ITIPLDialog {
 
 		thisChoice.addItem("Other...");
 		thisChoice.select("Other...");
+	
 		c.gridx = 1;
 		c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
@@ -1018,18 +1067,28 @@ WindowListener,ITIPLDialog {
 			tf.setBackground(Color.white);
 		tf.setEchoChar(echoChar);
 		echoChar = 0;
+		
+		Component helpLab = makeLabelComponent(helpText);
+		c.gridx = 2;
+		c.gridy = y;
+		c.anchor = GridBagConstraints.WEST;
+		grid.setConstraints(helpLab, c);
+		
+		
 		y++;
 		tf.addActionListener(this);
 		tf.addTextListener(this);
 		tf.addFocusListener(this);
 		tf.addKeyListener(this);
 		
+	
+		
 		c.gridx = 1;
 		c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
 		grid.setConstraints(tf, c);
 		tf.setEditable(true);
-		addComponents(new Component[]{theLabel,thisChoice,tf});
+		addComponents(new Component[]{theLabel,thisChoice,helpLab,tf});
 		stringField.addElement(tf);
 		if (Recorder.record || macro)
 			saveLabel(tf, label);

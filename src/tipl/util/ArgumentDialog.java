@@ -73,10 +73,16 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,ITIPLDialog.
 		});
 		return outDialog;
 	}
-	
-	public static ArgumentDialog appendFrame(final Frame parent,final ArgumentList inList, final String title,
+	/**
+	 * Adds the parameters to an existing dialog object
+	 * @param parentDialog the dialog object
+	 * @param inList the parameters to add
+	 * @param helpText help text (if any) to add
+	 * @return
+	 */
+	public static ArgumentDialog appendDialog(final ITIPLDialog parentDialog,final ArgumentList inList,
 			final String helpText) {
-		final ArgumentDialog outDialog = new ArgumentDialog(inList,title,helpText,parent);
+		final ArgumentDialog outDialog = new ArgumentDialog(parentDialog,inList,helpText);
 		outDialog.g.addDisposalTasks(new Runnable() {
 			@Override
 			public void run() { outDialog.shutdownFunctions();}
@@ -89,17 +95,18 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,ITIPLDialog.
 		coreList = inList;
 		g = new IJDialog(title);
 		g.createNewLayer("Parameters");
-		g.addMessage(helpText, null, Color.red);
+		if(helpText.length()>0) g.addMessage(helpText, null, Color.red);
 		inList.processOptions(this);
+		((IJDialog) g).setSize(1024,768);
 		if(showDialogs) g.showDialog();
 		
 	}
 
-	private ArgumentDialog(final ArgumentList inList, final String title,
-			final String helpText, final Frame parent) {
+	private ArgumentDialog(final ITIPLDialog parent,final ArgumentList inList,
+			final String helpText) {
 		coreList = inList;
-		g = new IJDialog(title,parent);
-		g.addMessage(helpText, null, Color.red);
+		g = parent;
+		if(helpText.length()>0) g.addMessage(helpText, null, Color.red);
 		inList.processOptions(this);
 		if(showDialogs) g.showDialog();
 	}
@@ -128,7 +135,7 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,ITIPLDialog.
 			final String helpText) {
 		boolean oldPreventWrapping = g.getWrapping();
 		g.setWrapping(true);
-		final ITIPLDialog.GUIControl x = addTextControl(helpText + ": " + cName + ".x", cStat.x, "help");
+		final ITIPLDialog.GUIControl x = addTextControl(cName + ".x", cStat.x, helpText);
 		final ITIPLDialog.GUIControl y = addTextControl(cName + ".y", cStat.y, "");
 		final ITIPLDialog.GUIControl z = addTextControl(cName + ".z", cStat.z, "");
 		g.setWrapping(oldPreventWrapping);
@@ -159,7 +166,7 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,ITIPLDialog.
 
 	protected ITIPLDialog.GUIControl addTextControl(final String cName,
 			final Object cValue, final String helpText) {
-		final ITIPLDialog.GUIControl f = g.appendStringField(cName, cValue.toString());
+		final ITIPLDialog.GUIControl f = g.appendStringField(cName,helpText, cValue.toString());
 		return f;
 	}
 	/**
@@ -215,46 +222,45 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,ITIPLDialog.
 
 	}
 	protected ITIPLDialog.GUIControl getControl(final ArgumentList.Argument cArgument) {
-		final String cName = cArgument.getName();
+		final String fName = cArgument.getName();
 		final String cHelp = cArgument.getHelpText();
-		final String fName = cName + " [" + cHelp + "]:";
 		final Object cValue = cArgument.getValue();
 		if (cArgument instanceof RangedArgument<?>) {
 			final RangedArgument rArg = (RangedArgument<?>) cArgument;
 			if (cValue instanceof Double) {
 				final double minValue = (Double) rArg.minVal;
 				final double maxValue = (Double) rArg.maxVal;
-				return g.appendSlider(fName, minValue, maxValue,
+				return g.appendSlider(fName,cHelp, minValue, maxValue,
 						(maxValue + minValue) / 2); 
 			}
 			if (cValue instanceof Integer) {
 				final int minValue = (Integer) rArg.minVal;
 				final int maxValue = (Integer) rArg.maxVal;
-				return g.appendSlider(fName, minValue, maxValue,
+				return g.appendSlider(fName,cHelp, minValue, maxValue,
 						(maxValue + minValue) / 2); 
 			}
 		} else if (cArgument instanceof ArgumentList.MultipleChoiceArgument) {
 			final  ArgumentList.MultipleChoiceArgument mca = ( ArgumentList.MultipleChoiceArgument) cArgument;
-			return g.addChoice(fName,mca.acceptableAnswers , cArgument.getValueAsString());
+			return g.addChoice(fName,cHelp,mca.acceptableAnswers , cArgument.getValueAsString());
 		} else if (cValue instanceof Double) {
-			return g.appendNumericField(fName, (Double) cValue,
+			return g.appendNumericField(fName,cHelp, (Double) cValue,
 					3);
 		} else if (cValue instanceof Integer) {
-			return g.appendNumericField(fName, (Integer) cValue, 0);
+			return g.appendNumericField(fName,cHelp, (Integer) cValue, 0);
 		} else if (cValue instanceof Boolean) {
 			final boolean cStat = (Boolean) cValue;
-			final ITIPLDialog.GUIControl cChecks = g.appendCheckbox(fName, cStat);
+			final ITIPLDialog.GUIControl cChecks = g.appendCheckbox(fName,cHelp, cStat);
 			cChecks.setValueCallback(cArgument.getCallback());
 			return cChecks;
 		} else if (cValue instanceof D3float) {
 			final D3float cStat = (D3float) cValue;
-			return addD3Control(cName, cStat, cHelp);
+			return addD3Control(fName, cStat, cHelp);
 		} else if (cValue instanceof TypedPath) {
-			return g.appendPathField(fName, (TypedPath) cValue);
+			return g.appendPathField(fName,cHelp, (TypedPath) cValue);
 		} else {
-			return g.appendStringField(fName, cArgument.getValueAsString());
+			return g.appendStringField(fName,cHelp, cArgument.getValueAsString());
 		}
-		throw new IllegalArgumentException(cName+" control should not be null "+cArgument);
+		throw new IllegalArgumentException(fName+" control should not be null "+cArgument);
 
 	}
 
