@@ -5,6 +5,10 @@ package tipl.tests;
 
 
 import static org.junit.Assert.assertEquals;
+import ij.IJ;
+import ij.ImageJ;
+import ij.ImagePlus;
+import ij.WindowManager;
 
 import org.junit.After;
 import org.junit.Before;
@@ -57,6 +61,19 @@ public class ADTester {
 		ArgumentParser p = ArgumentDialog.GUIBlock(cBlock);
 		p.checkForInvalid();
 	}
+	
+	/**
+	 * Test method for {@link tipl.util.ArgumentDialog#GUIBlock()}.
+	 */
+	@Test
+	public void testGUIBlockWithFrames() {
+		ImageJ ij = TIPLGlobal.getIJInstance();
+		ImagePlus curImage = IJ.createImage("TestImge1", 100, 100, 100, 8);
+		curImage.show();
+		//WindowManager.addWindow(curImage.getWindow());
+		testGUIBlock();
+	}
+	
 	/**
 	 * Test a multiblock runner
 	 */

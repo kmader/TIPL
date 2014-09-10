@@ -23,8 +23,8 @@ import tipl.util.ArgumentDialog;
 import tipl.util.ArgumentList;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
+import tipl.util.ITIPLDialog;
 import tipl.util.SGEJob;
-import tipl.util.TIPLDialog;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 import tipl.util.TypedPath;
@@ -34,7 +34,7 @@ import tipl.util.TypedPath;
  * @author mader
  *
  */
-public class InteractiveResize implements TIPLDialog.DialogInteraction {
+public class InteractiveResize implements ITIPLDialog.DialogInteraction {
 
 	public static void main(String[] args) {
 		InteractiveResize irObj = new InteractiveResize(args);
@@ -114,8 +114,8 @@ public class InteractiveResize implements TIPLDialog.DialogInteraction {
 	protected static class slicePreviewROI implements Runnable {
 		protected final TypedPath inPath;
 		protected ImagePlus curImage;
-		protected TIPLDialog.DialogInteraction diagPipe;
-		public slicePreviewROI(final TypedPath inPath, final TIPLDialog.DialogInteraction diagPipe) {
+		protected ITIPLDialog.DialogInteraction diagPipe;
+		public slicePreviewROI(final TypedPath inPath, final ITIPLDialog.DialogInteraction diagPipe) {
 			this.inPath=inPath;
 			this.diagPipe = diagPipe;
 		}

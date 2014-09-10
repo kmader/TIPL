@@ -13,7 +13,6 @@ import tipl.util.TIPLPluginManager;
  * @author mader
  */
 public final class ScalaPlugins {
-
     @TIPLPluginManager.PluginInfo(pluginType = "ShapeAnalysis",
             desc = "Spark-based shape analysis",
             sliceBased = false, sparkBased = true)

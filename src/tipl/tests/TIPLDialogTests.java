@@ -15,7 +15,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import tipl.util.TIPLDialog;
+import tipl.util.IJDialog;
 import tipl.util.TIPLGlobal;
 
 public class TIPLDialogTests {
@@ -26,10 +26,10 @@ public class TIPLDialogTests {
 		TIPLGlobal.activeParser("-@headless=false");
 			
 	}
-	protected TIPLDialog curDialog;
+	protected IJDialog curDialog;
 	@Before
 	public void setUp() throws Exception {
-		curDialog = new TIPLDialog("TestSuite:"+this);
+		curDialog = new IJDialog("TestSuite:"+this);
 		curDialog.createNewLayer("Blank");
 		curDialog.addMessage("Hello");
 	}

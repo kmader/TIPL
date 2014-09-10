@@ -7,7 +7,7 @@ import tipl.blocks.BaseTIPLBlock;
 import tipl.blocks.ITIPLBlock;
 import tipl.util.ArgumentList.ArgumentCallback;
 import tipl.util.ArgumentList.RangedArgument;
-import tipl.util.TIPLDialog.GUIControl;
+import tipl.util.ITIPLDialog.GUIControl;
 import ij.gui.DialogListener;
 import ij.gui.GenericDialog;
 
@@ -26,7 +26,7 @@ import org.apache.tools.ant.types.Commandline.Argument;
  *
  * @author mader
  */
-public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.DialogInteraction {
+public class ArgumentDialog implements ArgumentList.optionProcessor,ITIPLDialog.DialogInteraction {
 	/**
 	 * A Gui for the SGEJob console
 	 * @param className
@@ -54,7 +54,7 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
 
 	public static boolean showDialogs = !TIPLGlobal.isHeadless();
 	final protected ArgumentList coreList;
-	final protected TIPLDialog g;
+	final protected ITIPLDialog g;
 	final private LinkedHashMap<String, IArgumentBasedControl> controls = new LinkedHashMap<String, IArgumentBasedControl>();
 
 	/**
@@ -73,28 +73,37 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
 		});
 		return outDialog;
 	}
-
-
+	
+	public static ArgumentDialog appendFrame(final Frame parent,final ArgumentList inList, final String title,
+			final String helpText) {
+		final ArgumentDialog outDialog = new ArgumentDialog(inList,title,helpText,parent);
+		outDialog.g.addDisposalTasks(new Runnable() {
+			@Override
+			public void run() { outDialog.shutdownFunctions();}
+		});
+		return outDialog;
+	}
 
 	private ArgumentDialog(final ArgumentList inList, final String title,
 			final String helpText) {
 		coreList = inList;
-		g = new TIPLDialog(title);
+		g = new IJDialog(title);
 		g.createNewLayer("Parameters");
 		g.addMessage(helpText, null, Color.red);
 		inList.processOptions(this);
 		if(showDialogs) g.showDialog();
-
+		
 	}
 
 	private ArgumentDialog(final ArgumentList inList, final String title,
 			final String helpText, final Frame parent) {
 		coreList = inList;
-		g = new TIPLDialog(title,parent);
+		g = new IJDialog(title,parent);
 		g.addMessage(helpText, null, Color.red);
 		inList.processOptions(this);
 		if(showDialogs) g.showDialog();
 	}
+	
 
 	public static <T extends ITIPLBlock> ArgumentParser GUIBlock(final T blockToRun) {
 		return GUIBlock(blockToRun,TIPLGlobal.activeParser(new String[]{}));
@@ -115,15 +124,15 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
 		return blockToRun.setParameter(p);
 	}
 	
-	protected GUIControl addD3Control(final String cName, final D3float cStat,
+	protected ITIPLDialog.GUIControl addD3Control(final String cName, final D3float cStat,
 			final String helpText) {
-		boolean oldPreventWrapping = g.preventWrapping;
-		g.preventWrapping=true;
-		final GUIControl x = addTextControl(helpText + ": " + cName + ".x", cStat.x, "help");
-		final GUIControl y = addTextControl(cName + ".y", cStat.y, "");
-		final GUIControl z = addTextControl(cName + ".z", cStat.z, "");
-		g.preventWrapping=oldPreventWrapping;
-		return new GUIControl() {
+		boolean oldPreventWrapping = g.getWrapping();
+		g.setWrapping(true);
+		final ITIPLDialog.GUIControl x = addTextControl(helpText + ": " + cName + ".x", cStat.x, "help");
+		final ITIPLDialog.GUIControl y = addTextControl(cName + ".y", cStat.y, "");
+		final ITIPLDialog.GUIControl z = addTextControl(cName + ".z", cStat.z, "");
+		g.setWrapping(oldPreventWrapping);
+		return new ITIPLDialog.GUIControl() {
 
 			@Override
 			public String getValueAsString() {
@@ -148,9 +157,9 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
 		};	
 	}
 
-	protected GUIControl addTextControl(final String cName,
+	protected ITIPLDialog.GUIControl addTextControl(final String cName,
 			final Object cValue, final String helpText) {
-		final GUIControl f = g.appendStringField(cName, cValue.toString());
+		final ITIPLDialog.GUIControl f = g.appendStringField(cName, cValue.toString());
 		return f;
 	}
 	/**
@@ -158,7 +167,7 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
 	 * @author mader
 	 *
 	 */
-	public static interface IArgumentBasedControl extends GUIControl {
+	public static interface IArgumentBasedControl extends ITIPLDialog.GUIControl {
 		/** 
 		 * 
 		 * @return the argument value stored in the control
@@ -174,8 +183,8 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
 	public static class ArgumentBasedControl implements IArgumentBasedControl {
 		final private String cName;
 		final private ArgumentList.Argument cArg;
-		final private GUIControl guiC;
-		public ArgumentBasedControl(final String inName,final GUIControl wrapIt,final ArgumentList.Argument curArgument) {
+		final private ITIPLDialog.GUIControl guiC;
+		public ArgumentBasedControl(final String inName,final ITIPLDialog.GUIControl wrapIt,final ArgumentList.Argument curArgument) {
 			this.cName = inName;
 			this.guiC = wrapIt;
 			this.cArg = curArgument;
@@ -205,7 +214,7 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
 
 
 	}
-	protected GUIControl getControl(final ArgumentList.Argument cArgument) {
+	protected ITIPLDialog.GUIControl getControl(final ArgumentList.Argument cArgument) {
 		final String cName = cArgument.getName();
 		final String cHelp = cArgument.getHelpText();
 		final String fName = cName + " [" + cHelp + "]:";
@@ -234,12 +243,14 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
 			return g.appendNumericField(fName, (Integer) cValue, 0);
 		} else if (cValue instanceof Boolean) {
 			final boolean cStat = (Boolean) cValue;
-			final GUIControl cChecks = g.appendCheckbox(fName, cStat);
+			final ITIPLDialog.GUIControl cChecks = g.appendCheckbox(fName, cStat);
 			cChecks.setValueCallback(cArgument.getCallback());
 			return cChecks;
 		} else if (cValue instanceof D3float) {
 			final D3float cStat = (D3float) cValue;
 			return addD3Control(cName, cStat, cHelp);
+		} else if (cValue instanceof TypedPath) {
+			return g.appendPathField(fName, (TypedPath) cValue);
 		} else {
 			return g.appendStringField(fName, cArgument.getValueAsString());
 		}
@@ -247,14 +258,11 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,TIPLDialog.D
 
 	}
 
-	public void nbshow() {
-		g.NonBlockingShow();
-	}
 
 	@Override
 	public void process(final ArgumentList.Argument cArgument) {
 		final String cName = cArgument.getName();
-		GUIControl guiC = getControl(cArgument);
+		ITIPLDialog.GUIControl guiC = getControl(cArgument);
 		controls.put(cName, new ArgumentBasedControl(cName,guiC,cArgument));
 	}
 	public synchronized void waitOnDialog() {
