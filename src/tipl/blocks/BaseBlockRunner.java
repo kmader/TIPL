@@ -64,12 +64,16 @@ public class BaseBlockRunner implements IBlockRunner,ITIPLBlock {
 	 */
 	@Override
 	public ArgumentParser setParameter(final ArgumentParser p) {
+		p.createNewLayer(BaseBlockRunner.class.getSimpleName());
 		final boolean withGui = p.getOptionBoolean("gui",false,"Show a GUI for parameter adjustment");
 		ArgumentParser s=p;
 		if (withGui) {
 			s = ArgumentDialog.GUIBlock(this,p.subArguments("gui",true));
 		} 
-		for(ITIPLBlock cBlock : blockList) s=cBlock.setParameter(s);
+		for(ITIPLBlock cBlock : blockList) {
+			p.createNewLayer(cBlock.getClass().getSimpleName()+" "+cBlock.getPrefix());
+			s=cBlock.setParameter(s);
+		}
 
 		return s;
 	}
@@ -200,6 +204,7 @@ public class BaseBlockRunner implements IBlockRunner,ITIPLBlock {
 				}
 				ITIPLBlock cBlock = null;
 				try {
+					
 					cBlock = (ITIPLBlock) Class.forName(blockname).newInstance();
 					String blockClassName = cBlock.getClass().getSimpleName();
 					if(simpleNames) {

@@ -269,6 +269,7 @@ abstract public class SparkGlobal {
      * @return
      */
     static public ArgumentParser activeParser(ArgumentParser sp) {
+    	sp.createNewLayer("Spark Settings");
         masterName = sp.getOptionString("@masternode", getMasterName(), "The name of the master node to connect to");
         memorySettings = sp.getOptionString("@sparkmemory", memorySettings, "The memory per job");
         sparkLocal = sp.getOptionString("@sparklocal", sparkLocal, "The local drive to cache onto");

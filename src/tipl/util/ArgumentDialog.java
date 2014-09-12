@@ -26,7 +26,7 @@ import org.apache.tools.ant.types.Commandline.Argument;
  *
  * @author mader
  */
-public class ArgumentDialog implements ArgumentList.optionProcessor,ITIPLDialog.DialogInteraction {
+public class ArgumentDialog implements ArgumentList.iOptionProcessor,ITIPLDialog.DialogInteraction {
 	/**
 	 * A Gui for the SGEJob console
 	 * @param className
@@ -66,7 +66,7 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,ITIPLDialog.
 	 */
 	public static ArgumentDialog newDialog(final ArgumentList inList, final String title,
 			final String helpText) {
-		final ArgumentDialog outDialog = new ArgumentDialog(inList,title,helpText);
+		final ArgumentDialog outDialog = new ArgumentDialog(inList,title,helpText,true);
 		outDialog.g.addDisposalTasks(new Runnable() {
 			@Override
 			public void run() { outDialog.shutdownFunctions();}
@@ -91,13 +91,14 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,ITIPLDialog.
 	}
 
 	private ArgumentDialog(final ArgumentList inList, final String title,
-			final String helpText) {
+			final String helpText,boolean newLayer) {
 		coreList = inList;
 		g = new IJDialog(title);
-		g.createNewLayer("Parameters");
-		if(helpText.length()>0) g.addMessage(helpText, null, Color.red);
+		//if(newLayer) g.createNewLayer("Global Settings");
+		if(helpText.length()>0) g.addMessage(helpText, "", "red");
 		inList.processOptions(this);
-		((IJDialog) g).setSize(1024,768);
+		g.pack();
+		
 		if(showDialogs) g.showDialog();
 		
 	}
@@ -106,7 +107,7 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,ITIPLDialog.
 			final String helpText) {
 		coreList = inList;
 		g = parent;
-		if(helpText.length()>0) g.addMessage(helpText, null, Color.red);
+		if(helpText.length()>0) g.addMessage(helpText, "", "red");
 		inList.processOptions(this);
 		if(showDialogs) g.showDialog();
 	}
@@ -264,13 +265,19 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,ITIPLDialog.
 
 	}
 
-
+	// from the option parser code
 	@Override
 	public void process(final ArgumentList.Argument cArgument) {
 		final String cName = cArgument.getName();
 		ITIPLDialog.GUIControl guiC = getControl(cArgument);
 		controls.put(cName, new ArgumentBasedControl(cName,guiC,cArgument));
 	}
+	
+	@Override
+	public void setLayer(String currentLayer) {
+		g.createNewLayer(currentLayer);
+	}
+	
 	public synchronized void waitOnDialog() {
 		while(!properlyClosed) {
 			try {
@@ -333,5 +340,7 @@ public class ArgumentDialog implements ArgumentList.optionProcessor,ITIPLDialog.
 	public void show() {
 		g.showDialog();
 	}
+
+	
 
 }

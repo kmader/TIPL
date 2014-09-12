@@ -21,7 +21,9 @@ import ij.util.Tools;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.JLabel;
@@ -434,15 +436,15 @@ WindowListener,ITIPLDialog {
 	 * Adds a message consisting of one or more lines of text.
 	 */
 	public void addMessage(final String text) {
-		addMessage(text, null, null);
+		addMessage(text, "", "");
 	}
 
 	/**
 	 * Adds a message consisting of one or more lines of text, which will be
 	 * displayed using the specified font.
 	 */
-	public void addMessage(final String text, final Font font) {
-		addMessage(text, font, null);
+	public void addMessage(final String text, final String font) {
+		addMessage(text, font, "");
 	}
 	static protected int maxLineLength=40;
 
@@ -472,7 +474,7 @@ WindowListener,ITIPLDialog {
 			return new Label(text);
 	}
 	@Override
-	public void addMessage(final String text, final Font font, final Color color) {
+	public void addMessage(final String text, final String font, final String color) {
 		theLabel = makeLabelComponent(text);
 		// theLabel.addKeyListener(this);
 		c.gridx = 0;
@@ -482,10 +484,11 @@ WindowListener,ITIPLDialog {
 		c.insets = getInsets(text.equals("") ? 0 : 10, 20, 0, 0);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		grid.setConstraints(theLabel, c);
-		if (font != null)
-			theLabel.setFont(font);
-		if (color != null)
-			theLabel.setForeground(color);
+		if (font.length()>0)
+			theLabel.setFont(Font.getFont(font));
+		if (color.length()>0)
+			theLabel.setForeground(Color.getColor(color));
+
 		addComponents(new Component[]{theLabel});
 		c.fill = GridBagConstraints.NONE;
 		y++;
@@ -852,29 +855,38 @@ WindowListener,ITIPLDialog {
 	 * the tabbed pane to be checking
 	 */
 	protected JTabbedPane innerJTP=null;
-	public String panelName="Settings";
+	public String panelName="";
 	protected int curPanel = 0;
 	protected int objPerPanel = 10;
 	protected Container currentLayer = this;
-	protected void setCurrentLayer(Container curLayer) {
+	
+	protected Map<String,Container> layerList = new LinkedHashMap<String,Container>();
+	
+	protected void setCurrentLayer(Container curLayer,String curName) {
+		layerList.put(curName, curLayer);
 		currentLayer = curLayer;
 	}
-
+	
 	@Override
 	public void createNewLayer(String newLayerName) {
 		if(innerJTP==null) {
 			innerJTP = new JTabbedPane();
-			currentLayer = createInnerPanel(panelName);
-			innerJTP.addTab(panelName, currentLayer);
 			super.add(innerJTP);
 		}
-		currentLayer = createInnerPanel(newLayerName);
-		innerJTP.addTab(newLayerName,currentLayer);
-		grid = new GridBagLayout();
-		c = new GridBagConstraints();
-		y=0;
-		setLayout(grid);
-		currentLayer.setLayout(grid);
+		if (!layerList.containsKey(newLayerName)) {
+			currentLayer = createInnerPanel(newLayerName);
+			panelName=newLayerName;
+			layerList.put(panelName, currentLayer);
+			innerJTP.addTab(panelName,currentLayer);
+			grid = new GridBagLayout();
+			c = new GridBagConstraints();
+			y=0;
+			setLayout(grid);
+			currentLayer.setLayout(grid);
+		} else {
+			currentLayer = layerList.get(newLayerName);
+		}
+		
 	}
 	public void resetCurrentLayer() {
 		currentLayer = this;
@@ -904,10 +916,14 @@ WindowListener,ITIPLDialog {
 	 * This version allows subpanels to be used seamlessly without modifying every single command here
 	 */
 	public Component[] addComponents(Component[] curObjList) {
+		
 		Component[] outResults = new Component[curObjList.length];
 		if ((currentLayer == null) || (currentLayer == this)) {
+			System.out.println(currentLayer+" is missing, so writing components"+curObjList);
 			for(int i=0;i<curObjList.length;i++) outResults[i]=super.add(curObjList[i]);
+			
 		} else {
+			System.out.println("Writing objects to "+currentLayer+":"+curObjList);
 			curObjCount++;
 			if((curObjCount>objPerPanel) && (canWrap)) {
 				createNewLayer(panelName+" "+(curPanel++));

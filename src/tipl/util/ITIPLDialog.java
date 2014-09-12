@@ -3,8 +3,7 @@
  */
 package tipl.util;
 
-import java.awt.Color;
-import java.awt.Font;
+
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.Serializable;
@@ -33,7 +32,7 @@ public interface ITIPLDialog extends Serializable {
      * Adds a message consisting of one or more lines of text, which will be
      * displayed using the specified font and color.
      */
-    public void addMessage(final String text, final Font font, final Color color);
+    public void addMessage(final String text, final String font, final String color);
 	
 	/**
 	 * Add a choice menu
@@ -117,6 +116,10 @@ public interface ITIPLDialog extends Serializable {
      */
     public void createNewLayer(String newLayerName);
     
+    /**
+     * Resize the dialog after all components have been added (if needed)
+     */
+    public void pack();
     
 	/**
 	 * An interface for making passing back and forth arguments somewhat safer

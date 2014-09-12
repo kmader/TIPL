@@ -147,7 +147,8 @@ public class TIPLGlobal {
      * @return
      */
     public static ArgumentParser activeParser(ArgumentParser sp) {
-        VirtualAim.scratchDirectory = sp.getOptionPath("@localdir",
+        sp.createNewLayer("Global Settings");
+    	VirtualAim.scratchDirectory = sp.getOptionPath("@localdir",
                 VirtualAim.scratchDirectory, "Directory to save local data to");
         VirtualAim.scratchLoading = sp.getOptionBoolean("@local", VirtualAim.scratchLoading, "Load image data from local filesystems");
         TIPLGlobal.availableCores = sp.getOptionInt("@maxcores",
