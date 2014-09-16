@@ -85,7 +85,13 @@ public class UFOAM {
             rdfMILmode, writeShapeTensor, doFixCirc;
     String stageList;
     private SGEJob jobToRun = null;
-
+    /**
+     * Some other tools like parametersweep need to instantiate the class
+     */
+    public UFOAM() {
+    	runAsJob=false;
+    	
+    }
     public UFOAM(final ArgumentParser pIn) {
         p = pIn;
         GrayAnalysis.doPreload = true;
@@ -271,7 +277,7 @@ public class UFOAM {
             System.out.println(" Arguments::");
             System.out.println(" ");
             System.out.println(p.getHelp());
-            System.exit(0);
+            return;
         }
         p.checkForInvalid();
 

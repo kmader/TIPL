@@ -171,6 +171,7 @@ WindowListener,ITIPLDialog {
 		addKeyListener(this);
 		addWindowListener(this);
 		setResizable(true);
+		//this.setSize(1024,768);
 
 	}
 	static protected JPanel createInnerPanel(String text) {
@@ -388,7 +389,7 @@ WindowListener,ITIPLDialog {
 		c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
 		grid.setConstraints(thisChoice, c);
-		
+
 		Component helpLab = makeLabelComponent(helpText);
 		c.gridx = 2;
 		c.gridy = y;
@@ -452,11 +453,11 @@ WindowListener,ITIPLDialog {
 		String text = intext;
 		if (IJ.isMacintosh())
 			text += " ";
-		
+
 		if ((text.indexOf('\n') >= 0) || (text.length()>maxLineLength)) {
-			
+
 			String newText = "<html>";
-			
+
 			for(int i=maxLineLength;i<text.length();i+=maxLineLength) {
 				newText+=text.substring(i-maxLineLength,i)+"<br>";
 			}
@@ -464,11 +465,11 @@ WindowListener,ITIPLDialog {
 			JTextArea jta = new JTextArea(text);
 			jta.setLineWrap(true);
 			jta.setWrapStyleWord(true);
-			
+
 			jta.setEditable(false);
 			jta.setOpaque(false);
-		    jta.setBorder(null);
-		    
+			jta.setBorder(null);
+
 			return jta;
 		} else
 			return new Label(text);
@@ -498,7 +499,7 @@ WindowListener,ITIPLDialog {
 	 * Adds a Panel to the dialog.
 	 */
 	public void addPanel(final Panel panel) {
-		addPanel(panel, GridBagConstraints.WEST, new Insets(5, 0, 0, 0));
+		addPanel(panel, GridBagConstraints.EAST, new Insets(5, 0, 0, 0));
 	}
 
 	/**
@@ -638,22 +639,22 @@ WindowListener,ITIPLDialog {
 		cb.setState(defaultValue);
 		cb.addItemListener(this);
 		cb.addKeyListener(this);
-		
+
 		Component helpLabel = makeLabelComponent(helpText);
 		c.gridx = 2;
 		c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
 		grid.setConstraints(helpLabel, c);
-		
+
 		addComponents(new Component[]{cb,helpLabel});
 		checkbox.addElement(cb);
-		
+
 		if (!isPreview && (Recorder.record || macro)) // preview checkbox is not
 			// recordable
 			saveLabel(cb, label);
 		if (isPreview)
 			previewCheckbox = cb;
-		
+
 		y++;
 		return asGUI(cb);
 	}
@@ -716,22 +717,22 @@ WindowListener,ITIPLDialog {
 		tf.setEditable(true);
 		// if (firstNumericField) tf.selectAll();
 		firstNumericField = false;
-		
+
 		Component helpLabel = makeLabelComponent(helpText);
 		c.gridx = 2;
 		c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
 		grid.setConstraints(helpLabel, c);
-		
-		
-		
-		
-			final Panel panel = new Panel();
-			panel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
-			panel.add(tf);
-			panel.add(helpLabel);
-			grid.setConstraints(panel, c);
-			addComponents(new Component[]{panel});
+
+
+
+
+		final Panel panel = new Panel();
+		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		panel.add(tf);
+		panel.add(helpLabel);
+		grid.setConstraints(panel, c);
+		addComponents(new Component[]{panel});
 		if (Recorder.record || macro)
 			saveLabel(tf, label);
 		y++;
@@ -834,14 +835,14 @@ WindowListener,ITIPLDialog {
 		c.anchor = GridBagConstraints.WEST;
 		c.insets = new Insets(0, 0, 0, 0);
 		grid.setConstraints(panel, c);
-		
+
 		y++;
 		Component helpLab = makeLabelComponent(helpText);
 		c.gridx = 0;
 		c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
 		grid.setConstraints(helpLab, c);
-		
+
 
 		addComponents(new Component[]{theLabel,panel,helpLab});
 		y++;
@@ -859,14 +860,16 @@ WindowListener,ITIPLDialog {
 	protected int curPanel = 0;
 	protected int objPerPanel = 10;
 	protected Container currentLayer = this;
-	
+
 	protected Map<String,Container> layerList = new LinkedHashMap<String,Container>();
-	
+
 	protected void setCurrentLayer(Container curLayer,String curName) {
 		layerList.put(curName, curLayer);
 		currentLayer = curLayer;
 	}
-	
+
+
+
 	@Override
 	public void createNewLayer(String newLayerName) {
 		if(innerJTP==null) {
@@ -876,17 +879,30 @@ WindowListener,ITIPLDialog {
 		if (!layerList.containsKey(newLayerName)) {
 			currentLayer = createInnerPanel(newLayerName);
 			panelName=newLayerName;
+
 			layerList.put(panelName, currentLayer);
-			innerJTP.addTab(panelName,currentLayer);
+			// wrap each new layer in a scrolling pane before adding it
+			// the layer list though, doesn't need this since it just adds components
+			if (getWrapping()) {
+				innerJTP.addTab(panelName,currentLayer);
+			} else {
+				ScrollPane paneForLayer = new ScrollPane();
+				paneForLayer.setBounds(0,0,500,400);
+
+				paneForLayer.add(currentLayer);
+				innerJTP.addTab(panelName,paneForLayer);
+			}
+
 			grid = new GridBagLayout();
 			c = new GridBagConstraints();
 			y=0;
 			setLayout(grid);
+
 			currentLayer.setLayout(grid);
 		} else {
 			currentLayer = layerList.get(newLayerName);
 		}
-		
+
 	}
 	public void resetCurrentLayer() {
 		currentLayer = this;
@@ -899,9 +915,9 @@ WindowListener,ITIPLDialog {
 		currentLayer = newLayer;
 		setWrapping(false);
 	}
-	
+	public static boolean defaultWrapping = false;
 	protected int curObjCount=0;
-	protected boolean canWrap=true;
+	protected boolean canWrap=defaultWrapping;
 
 	@Override
 	public void setWrapping(final boolean canWrap) {
@@ -916,16 +932,16 @@ WindowListener,ITIPLDialog {
 	 * This version allows subpanels to be used seamlessly without modifying every single command here
 	 */
 	public Component[] addComponents(Component[] curObjList) {
-		
+
 		Component[] outResults = new Component[curObjList.length];
 		if ((currentLayer == null) || (currentLayer == this)) {
 			System.out.println(currentLayer+" is missing, so writing components"+curObjList);
 			for(int i=0;i<curObjList.length;i++) outResults[i]=super.add(curObjList[i]);
-			
+
 		} else {
 			System.out.println("Writing objects to "+currentLayer+":"+curObjList);
 			curObjCount++;
-			if((curObjCount>objPerPanel) && (canWrap)) {
+			if((curObjCount>objPerPanel) && (getWrapping())) {
 				createNewLayer(panelName+" "+(curPanel++));
 				curObjCount=0;
 			}
@@ -993,13 +1009,13 @@ WindowListener,ITIPLDialog {
 		c.anchor = GridBagConstraints.WEST;
 		grid.setConstraints(tf, c);
 		tf.setEditable(true);
-		
+
 		Component helpLab = makeLabelComponent(helpText);
 		c.gridx = 2;
 		c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
 		grid.setConstraints(helpLab, c);
-		
+
 		addComponents(new Component[]{theLabel,tf,helpLab});
 		stringField.addElement(tf);
 		if (Recorder.record || macro)
@@ -1073,7 +1089,7 @@ WindowListener,ITIPLDialog {
 
 		thisChoice.addItem("Other...");
 		thisChoice.select("Other...");
-	
+
 		c.gridx = 1;
 		c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
@@ -1083,22 +1099,22 @@ WindowListener,ITIPLDialog {
 			tf.setBackground(Color.white);
 		tf.setEchoChar(echoChar);
 		echoChar = 0;
-		
+
 		Component helpLab = makeLabelComponent(helpText);
 		c.gridx = 2;
 		c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
 		grid.setConstraints(helpLab, c);
-		
-		
+
+
 		y++;
 		tf.addActionListener(this);
 		tf.addTextListener(this);
 		tf.addFocusListener(this);
 		tf.addKeyListener(this);
-		
-	
-		
+
+
+
 		c.gridx = 1;
 		c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;

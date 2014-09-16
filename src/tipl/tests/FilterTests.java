@@ -3,7 +3,9 @@
  */
 package tipl.tests;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertSame;
 
 import java.util.Collection;
 import java.util.List;
@@ -108,7 +110,7 @@ public class FilterTests {
 	 * Test multiple filter iterations
 	 */
 	@Test
-	public void testOutMultiple() {
+	public void testOutMultipleDim() {
 		// offset lines
 		final TImgRO testImg = TestPosFunctions.wrapItAs(6,
 				new TestPosFunctions.LinesFunction(),TImgTools.IMAGETYPE_FLOAT);
@@ -139,6 +141,37 @@ public class FilterTests {
 		TImgRO outImg3 = RS.ExportImages(testImg)[0];
 
 		TIPLTestingLibrary.checkDim(outImg3, new D3int(6, 6, 6));
+	}
+	
+	@Test
+	public void testMultipleValue() {
+		// now change the dimensions and see if it still works
+		final TImgRO pointImage2 = TestPosFunctions.wrapItAs(10,
+				new TestPosFunctions.SinglePointFunction(6, 6, 6),TImgTools.IMAGETYPE_FLOAT);
+		ITIPLPluginIO RS = makeFilter(pluginId,pointImage2);
+		RS.setParameter("-upfactor=1,1,1 -downfactor=2,2,2 -filter="+FilterSettings.GAUSSIAN+" -filtersetting=0.5");
+		RS.execute();
+		TImgRO outImg = RS.ExportImages(pointImage2)[0];
+	
+		TIPLTestingLibrary.doPointsMatch(outImg, 3, 3, 3, 0.89f, 0.01f);
+		RS = makeFilter(pluginId,outImg);
+		RS.setParameter("-upfactor=1,1,1 -downfactor=3,3,3 -filter="+FilterSettings.GAUSSIAN+" -filtersetting=0.5");
+		RS.execute();
+		outImg = RS.ExportImages(outImg)[0];
+	
+		TIPLTestingLibrary.doPointsMatch(outImg, 1, 1, 1, 0.89f*0.89f, 0.01f);
+	}
+	
+	@Test 
+	public void testCheckType() {
+		// now change the dimensions and see if it still works
+		final TImgRO pointImage2 = TestPosFunctions.wrapItAs(10,
+				new TestPosFunctions.SinglePointFunction(6, 6, 6),TImgTools.IMAGETYPE_FLOAT);
+		ITIPLPluginIO RS = makeFilter(pluginId,pointImage2);
+		RS.setParameter("-upfactor=1,1,1 -downfactor=2,2,2 -filter="+FilterSettings.GAUSSIAN+" -filtersetting=0.5");
+		RS.execute();
+		int outtype = ((Integer) RS.getInfo("outtype")).intValue();
+		assertEquals(TImgTools.IMAGETYPE_FLOAT,outtype);
 	}
 
 	@Test
@@ -215,7 +248,7 @@ public class FilterTests {
 				new TestPosFunctions.SinglePointFunction(5, 5, 5),TImgTools.IMAGETYPE_FLOAT);
 		
 		ITIPLPluginIO RS = makeFilter(pluginId,pointImage);
-		RS.setParameter("-upfactor=2,2,2 -downfactor=2,2,2 -filter="+FilterSettings.GAUSSIAN+" -filtersetting=0.75");
+		RS.setParameter("-upfactor=2,2,2 -downfactor=2,2,2 -filter="+FilterSettings.GAUSSIAN+" -filtersetting=1");
 		RS.execute();
 
 		TImgRO outImg = RS.ExportImages(pointImage)[0];
@@ -223,8 +256,8 @@ public class FilterTests {
 
 		
 		TIPLTestingLibrary.doPointsMatch(outImg, 3, 3, 3, .01f, 0.01f);
-		TIPLTestingLibrary.doPointsMatch(outImg, 5, 5, 4, .016f, 0.01f);
-		TIPLTestingLibrary.doPointsMatch(outImg, 4, 4, 4, 5e-6f, 1e-5f);
+		TIPLTestingLibrary.doPointsMatch(outImg, 5, 5, 4, .068f, 0.01f);
+		TIPLTestingLibrary.doPointsMatch(outImg, 4, 4, 4, 0.00922f, 1e-5f);
 
 		// now change sigma and ensure it still works
 		RS = makeFilter(pluginId,pointImage);
@@ -243,7 +276,7 @@ public class FilterTests {
 		RS.execute();
 		outImg = RS.ExportImages(pointImage)[0];
 	
-		TIPLTestingLibrary.doPointsMatch(outImg, 3, 3, 3, 0.89f, 0.01f);
+		TIPLTestingLibrary.doPointsMatch(outImg, 3, 3, 2, 0.89f, 0.01f);
 	}
 
 	/**
@@ -269,6 +302,40 @@ public class FilterTests {
 		outImg = RS.ExportImages(gradImage)[0];
 		TIPLTestingLibrary.doPointsMatch(outImg, 2, 2, 2, 0.33f, 0.01f);
 
+	}
+	
+
+	/**
+	 * Test the gradient filter on a single point
+	 */
+	@Test
+	public void testOutGradient() {
+		// offset lines
+
+		final TImgRO gradImage = TestPosFunctions.wrapItAs(10,
+				new TestPosFunctions.ProgZImage(),TImgTools.IMAGETYPE_FLOAT);
+
+		ITIPLPluginIO RS = makeFilter(pluginId,gradImage);
+		RS.setParameter("-upfactor=2,2,2 -downfactor=2,2,2 -filter="+FilterSettings.GRADIENT);
+		RS.execute();
+		TImgRO outImg = RS.ExportImages(gradImage)[0];
+		TIPLTestingLibrary.doPointsMatch(outImg, 5, 5, 4, 0.33f, 0.01f);
+
+		// now change sigma and ensure it still works
+		RS = makeFilter(pluginId,gradImage);
+		RS.setParameter("-upfactor=1,1,1 -downfactor=2,2,2 -filter="+FilterSettings.GRADIENT);
+		RS.execute();
+		outImg = RS.ExportImages(gradImage)[0];
+		TIPLTestingLibrary.doPointsMatch(outImg, 5, 5, 5, 0.33f, 0.01f);
+
+	}
+	
+	/**
+	 * A special function (should normally be turned off) to get the name of the plugin since knowing [0] isn't useful in JUnit
+	 */
+	@Test
+	public void testName() {
+		assertSame(pluginId.desc(),"No expectations!");
 	}
 
 

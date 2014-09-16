@@ -46,6 +46,15 @@ public class FilterScale extends BaseTIPLPluginMult implements FilterSettings.Ha
 	};
 	
 	
+	
+    @Override
+    public Object getInfo(final String request) {
+        final String sr = request.trim().toLowerCase();
+        if (sr.equals("outtype"))
+            return new Integer(curSettings.oimageType);
+        
+        return super.getInfo(request);
+    }
 
 	/** Output aim length */
 	int itAimLength;

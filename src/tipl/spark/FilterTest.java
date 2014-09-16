@@ -178,7 +178,6 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
         System.out.println("CSV_OUT," + SparkGlobal.getMasterName() + "," + iters + "," +
                 filtImg.getDim().x + "," + filtImg.getDim().y + "," + filtImg.getDim().z + "," + mapTime + "," +
                 runTime + "," + mapOps + "," + SparkGlobal.maxCores + "," + SparkGlobal.getSparkPersistenceValue() + "," + SparkGlobal.useCompression);
-        jsc.stop();
     }
 
     @Override

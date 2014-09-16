@@ -3,12 +3,12 @@
  */
 package tipl.spark;
 
-import tipl.tools.Resize;
+
 import tipl.util.ITIPLPlugin;
 import tipl.util.TIPLPluginManager;
 
 /**
- * A temporary hack of a plugin to load scala-based plugins into the plugin manager
+ * A temporary hack of a plugin to load scala-based plugins into the sezpoz-based plugin manager
  *
  * @author mader
  */
@@ -23,7 +23,6 @@ public final class ScalaPlugins {
 
         }
     };
-    
     @TIPLPluginManager.PluginInfo(pluginType = "Filter",
     	    desc = "Spark-based filtering and scale",
     	    sliceBased = false, sparkBased = true)

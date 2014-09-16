@@ -130,6 +130,16 @@ public class TypedPath implements Serializable {
     	else throw new IllegalArgumentException("A file-based object cannot be created from:"+pathType+" paths");
     }
     
+    
+    public String getParent() {
+    	return makeAbsPath().getFile().getParent();
+    }
+    
+    public TypedPath changePath(String newPath) {
+    	return new TypedPath(newPath,getType(),getPathType());
+    }
+    
+    
     public int length() { return getPath().length();}
 
     public boolean isReadable() {

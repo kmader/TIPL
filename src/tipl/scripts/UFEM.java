@@ -137,7 +137,34 @@ public class UFEM implements Runnable {
             remEdgesRadius;
     private int smcOperation = 0;
     private volatile int ufemCores = 0;
-
+    /**
+     * ParameterSweeper needs to be able to instantiate the class to call the main
+     */
+    public UFEM() {
+    	final TypedPath emptyPath = new TypedPath("");
+        ufiltAimFile=emptyPath;
+        gfiltAimFile=emptyPath;
+        threshAimFile=emptyPath;
+        boneAimFile=emptyPath;
+        maskAimFile=emptyPath;
+        porosAimFile=emptyPath;
+        maskdistAimFile=emptyPath;
+        thickmapAimFile=emptyPath;
+        lmaskAimFile=emptyPath;
+        cmaskAimFile=emptyPath;
+        comboAimFile=emptyPath;
+        lacunAimFile=emptyPath;
+        canalAimFile=emptyPath;
+        lacunVolsAimFile=emptyPath;
+        lacunDistAimFile=emptyPath;
+        canalVolsAimFile=emptyPath;
+        canalDistAimFile=emptyPath;
+        cdtoAimFile=emptyPath;
+        cdtbAimFile=emptyPath;
+        mdtoAimFile=emptyPath;
+        runAsJob = false;
+        jobToRun = null;
+    }
     public UFEM(final ArgumentParser p) {
 
         stage = p

@@ -79,9 +79,10 @@ import scala.collection.GenTraversableOnce
   }
 
   override def getInfo(request: String): Object = {
-    val output = null
-    if (output == null) return super.getInfo(request);
-    else return output;
+    request.toLowerCase() match {
+      case "outtype" => return new java.lang.Integer(filtSettings.oimageType);
+      case _ => return super.getInfo(request);
+    }
   }
 
 

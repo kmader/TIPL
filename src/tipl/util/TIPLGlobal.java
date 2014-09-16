@@ -25,6 +25,7 @@ public class TIPLGlobal {
     public static final int DEBUG_BASIC = 1;
     private static int TIPLDebugLevel = DEBUG_BASIC;
     public static final int DEBUG_OFF = 0;
+    public static boolean useDaemonThreads = true;
     /**
      * so the threads do not need to manually be shutdown
      */
@@ -33,7 +34,7 @@ public class TIPLGlobal {
         public Thread newThread(final Runnable runnable) {
             final Thread thread = Executors.defaultThreadFactory().newThread(
                     runnable);
-            thread.setDaemon(true);
+            thread.setDaemon(useDaemonThreads);
             return thread;
         }
     };
@@ -130,15 +131,32 @@ public class TIPLGlobal {
     public static ExecutorService getIOExecutor() {
         return requestSimpleES(requestAvailableReaderCount());
     }
-
+    
+    /** 
+     * A factory to create a new parser
+     * 
+     * @author mader
+     *
+     */
+    public static interface ArgumentParserFactory {
+    	public ArgumentParser getParser(String[] args);
+    }
+    /**
+     * The factory to make a new argument parser (meant to be replaced 
+     */
+    public static ArgumentParserFactory defaultAPFactory = new ArgumentParserFactory() {
+		@Override
+		public ArgumentParser getParser(String[] args) {
+			return ArgumentParser.CreateArgumentParser(args);
+		}
+    };
     public static ArgumentParser activeParser(String[] args) {
-        return activeParser(ArgumentParser.CreateArgumentParser(args));
+        return activeParser(defaultAPFactory.getParser(args));
     }
     
     public static ArgumentParser activeParser(String rawArgs) {
         return activeParser(rawArgs.split("\\s"));
     }
-    
 
     /**
      * parser which actively changes local, maxcores, maxiothread and other TIPL wide parameters
@@ -163,7 +181,7 @@ public class TIPLGlobal {
                 "Debug level from " + DEBUG_OFF + " to " + DEBUG_ALL));
         
         System.setProperty("java.awt.headless", "" + sp.getOptionBoolean("@headless", isHeadless(), "Run TIPL in headless mode"));
-
+        sp.createNewLayer("Application Settings");
         //if (sp.hasOption("?")) System.out.println(sp.getHelp());
         return sp;//.subArguments("@");
     }
