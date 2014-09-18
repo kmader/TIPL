@@ -132,7 +132,7 @@ public class TIPLGlobal {
     }
 
     public static ArgumentParser activeParser(String[] args) {
-        return activeParser(new ArgumentParser(args, true));
+        return activeParser(ArgumentParser.CreateArgumentParser(args));
     }
     
     public static ArgumentParser activeParser(String rawArgs) {
@@ -147,7 +147,8 @@ public class TIPLGlobal {
      * @return
      */
     public static ArgumentParser activeParser(ArgumentParser sp) {
-        VirtualAim.scratchDirectory = sp.getOptionPath("@localdir",
+        sp.createNewLayer("Global Settings");
+    	VirtualAim.scratchDirectory = sp.getOptionPath("@localdir",
                 VirtualAim.scratchDirectory, "Directory to save local data to");
         VirtualAim.scratchLoading = sp.getOptionBoolean("@local", VirtualAim.scratchLoading, "Load image data from local filesystems");
         TIPLGlobal.availableCores = sp.getOptionInt("@maxcores",
@@ -162,7 +163,7 @@ public class TIPLGlobal {
                 "Debug level from " + DEBUG_OFF + " to " + DEBUG_ALL));
         
         System.setProperty("java.awt.headless", "" + sp.getOptionBoolean("@headless", isHeadless(), "Run TIPL in headless mode"));
-
+        sp.createNewLayer("Application Settings");
         //if (sp.hasOption("?")) System.out.println(sp.getHelp());
         return sp;//.subArguments("@");
     }

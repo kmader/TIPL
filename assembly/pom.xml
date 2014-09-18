@@ -64,6 +64,11 @@
         </dependency>
         <dependency>
             <groupId>quant.tipl</groupId>
+            <artifactId>tipl-integration</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>quant.tipl</groupId>
             <artifactId>tipl-volviewer</artifactId>
             <version>${project.version}</version>
         </dependency>

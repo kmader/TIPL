@@ -7,17 +7,12 @@
         <option name="compilerLibraryName" value="Maven: org.scala-lang:scala-compiler-bundle:2.10.4" />
         <option name="compilerOptions" value="-feature -language:postfixOps" />
         <option name="deprecationWarnings" value="true" />
-        <option name="pluginPaths">
-          <array>
-            <option value="$MAVEN_REPOSITORY$/org/scalamacros/paradise_2.10.4/2.0.1/paradise_2.10.4-2.0.1.jar" />
-          </array>
-        </option>
         <option name="uncheckedWarnings" value="true" />
         <option name="vmOptions" value="-Xms1G -Xmx2G -XX:PermSize=256m -XX:MaxPermSize=1024m" />
       </configuration>
     </facet>
   </component>
-  <component name="NewModuleRootManager" inherit-compiler-output="false">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_7" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">

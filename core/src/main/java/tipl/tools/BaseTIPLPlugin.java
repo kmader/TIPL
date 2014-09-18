@@ -31,7 +31,7 @@ abstract public class BaseTIPLPlugin implements ITIPLPlugin {
 	 * */
 	@Override
 	public ArgumentParser setParameter(final String p) {
-		final ArgumentParser t = setParameter(new ArgumentParser(p.split(" "),true));
+		final ArgumentParser t = setParameter(ArgumentParser.CreateArgumentParser(p.split(" ")));
 		t.checkForInvalid();
 		return t;
 	}
@@ -53,7 +53,7 @@ abstract public class BaseTIPLPlugin implements ITIPLPlugin {
 	 * Turn the string into an argumentparser and send it on through
 	 * */
 	public ArgumentParser setParameter(final String p, final String prefix) {
-		return setParameter(new ArgumentParser(p.split("\\s+"),true), prefix);
+		return setParameter(ArgumentParser.CreateArgumentParser(p.split("\\s+")), prefix);
 	}
 	
 	/**

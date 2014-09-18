@@ -129,17 +129,33 @@
         </pluginRepository>
     </pluginRepositories>
 
-   <!-- <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>test</scope>
-        </dependency>
+    <!-- <dependencies>
+         <dependency>
+             <groupId>junit</groupId>
+             <artifactId>junit</artifactId>
+             <version>3.8.1</version>
+             <scope>test</scope>
+         </dependency>
 
-    </dependencies> -->
+     </dependencies> -->
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.8</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.17</version>
+                <configuration>
+                    <!-- Uses scalatest instead -->
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
@@ -152,29 +168,31 @@
                             <goal>compile</goal>
                         </goals>
                     </execution>
-                    </executions>
-                     <!--
-                    <execution>
-                        <id>scala-test-compile-first</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>attach-scaladocs</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>doc-jar</goal>
-                        </goals>
-                    </execution>
-                </executions> -->
+
+                <!--
+               <execution>
+                   <id>scala-test-compile-first</id>
+                   <phase>process-test-resources</phase>
+                   <goals>
+                       <goal>testCompile</goal>
+                   </goals>
+               </execution>
+               -->
+               <execution>
+                   <id>attach-scaladocs</id>
+                   <phase>verify</phase>
+                   <goals>
+                       <goal>doc-jar</goal>
+                   </goals>
+               </execution>
+           </executions>
                 <configuration>
                     <scalaVersion>${scala.version}</scalaVersion>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                  <!--  <recompileMode>incremental</recompileMode>
-                    <useZincServer>true</useZincServer> -->
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>UTF-8</encoding>
+                    <!--  <recompileMode>incremental</recompileMode>
+                      <useZincServer>true</useZincServer> -->
                     <args>
                         <arg>-unchecked</arg>
                         <arg>-deprecation</arg>
@@ -195,15 +213,41 @@
                     </javacArgs> -->
                     <!-- The following plugin is required to use quasiquotes in Scala 2.10 and is used
                          by Spark SQL for code generation. -->
-                    <compilerPlugins>
+
+                   <!-- <compilerPlugins>
                         <compilerPlugin>
                             <groupId>org.scalamacros</groupId>
                             <artifactId>paradise_${scala.version}</artifactId>
                             <version>${scala.macros.version}</version>
                         </compilerPlugin>
-                    </compilerPlugins>
+                    </compilerPlugins> -->
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>UTF-8</encoding>
+                    <maxmem>1024m</maxmem>
+                    <fork>true</fork>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <phase>none</phase> <!-- skip the default compile since we dont need it -->
+                    </execution>
+                </executions>
+            </plugin>
+
 
 
             <plugin>
@@ -233,32 +277,32 @@
                     </execution>
                 </executions>
             </plugin>
-           <!-- This is not needed until everything else runs smoothly
-            <plugin>
-                <groupId>org.scalastyle</groupId>
-                <artifactId>scalastyle-maven-plugin</artifactId>
-                <version>0.4.0</version>
-                <configuration>
-                    <verbose>false</verbose>
-                    <failOnViolation>true</failOnViolation>
-                    <includeTestSourceDirectory>false</includeTestSourceDirectory>
-                    <failOnWarning>false</failOnWarning>
-                    <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
-                    <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
-                    <configLocation>scalastyle-config.xml</configLocation>
-                    <outputFile>scalastyle-output.xml</outputFile>
-                    <outputEncoding>UTF-8</outputEncoding>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            -->
+            <!-- This is not needed until everything else runs smoothly
+             <plugin>
+                 <groupId>org.scalastyle</groupId>
+                 <artifactId>scalastyle-maven-plugin</artifactId>
+                 <version>0.4.0</version>
+                 <configuration>
+                     <verbose>false</verbose>
+                     <failOnViolation>true</failOnViolation>
+                     <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                     <failOnWarning>false</failOnWarning>
+                     <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
+                     <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
+                     <configLocation>scalastyle-config.xml</configLocation>
+                     <outputFile>scalastyle-output.xml</outputFile>
+                     <outputEncoding>UTF-8</outputEncoding>
+                 </configuration>
+                 <executions>
+                     <execution>
+                         <phase>package</phase>
+                         <goals>
+                             <goal>check</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+             </plugin>
+             -->
 
         </plugins>
 

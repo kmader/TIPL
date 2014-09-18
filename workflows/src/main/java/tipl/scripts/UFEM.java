@@ -5,6 +5,7 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
 import tipl.settings.FilterSettings;
+import tipl.spark.SparkGlobal;
 import tipl.tools.*;
 import tipl.util.*;
 // doesn't make sense to declare this function again
@@ -137,7 +138,34 @@ public class UFEM implements Runnable {
             remEdgesRadius;
     private int smcOperation = 0;
     private volatile int ufemCores = 0;
-
+    /**
+     * ParameterSweeper needs to be able to instantiate the class to call the main
+     */
+    public UFEM() {
+        final TypedPath emptyPath = new TypedPath("");
+        ufiltAimFile=emptyPath;
+        gfiltAimFile=emptyPath;
+        threshAimFile=emptyPath;
+        boneAimFile=emptyPath;
+        maskAimFile=emptyPath;
+        porosAimFile=emptyPath;
+        maskdistAimFile=emptyPath;
+        thickmapAimFile=emptyPath;
+        lmaskAimFile=emptyPath;
+        cmaskAimFile=emptyPath;
+        comboAimFile=emptyPath;
+        lacunAimFile=emptyPath;
+        canalAimFile=emptyPath;
+        lacunVolsAimFile=emptyPath;
+        lacunDistAimFile=emptyPath;
+        canalVolsAimFile=emptyPath;
+        canalDistAimFile=emptyPath;
+        cdtoAimFile=emptyPath;
+        cdtbAimFile=emptyPath;
+        mdtoAimFile=emptyPath;
+        runAsJob = false;
+        jobToRun = null;
+    }
     public UFEM(final ArgumentParser p) {
 
         stage = p
@@ -440,26 +468,26 @@ public class UFEM implements Runnable {
     public static TImg filter(final TImg ufiltAim, final boolean doLaplace,
                               final boolean doGradient, final boolean doGauss, final boolean doMedian,
                               final int upsampleFactor, final int downsampleFactor) {
-        
-    	
+
+
         final ITIPLPluginIO fs = TIPLPluginManager.createBestPluginIO("Filter", new TImgRO[] {ufiltAim});
         fs.LoadImages( new TImgRO[] {ufiltAim});
         int filterMode = FilterSettings.NEAREST_NEIGHBOR;
         if (doMedian) {
             filterMode=FilterSettings.MEDIAN;
         } else if (doLaplace) {
-        	filterMode = FilterSettings.LAPLACE;
+            filterMode = FilterSettings.LAPLACE;
         } else if (doGradient) {
-        	filterMode = FilterSettings.GRADIENT;
+            filterMode = FilterSettings.GRADIENT;
         } else if (doGauss) {
-        	filterMode = FilterSettings.GAUSSIAN;
+            filterMode = FilterSettings.GAUSSIAN;
         }
-        
+
         final D3int ds = new D3int(downsampleFactor,downsampleFactor,downsampleFactor);
         final D3int up = new D3int(upsampleFactor,upsampleFactor,upsampleFactor);
         fs.setParameter("-upfactor="+up+" -downfactor="+ds+" -filter="+filterMode);
         fs.execute();
-        
+
         return fs.ExportImages(ufiltAim)[0];
     }
 
@@ -471,7 +499,7 @@ public class UFEM implements Runnable {
                 .println(" Runs Segmentation and Generates Distance Map Script v"
                         + UFEM.kVer);
         System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-        final ArgumentParser p = TIPLGlobal.activeParser(args);
+        final ArgumentParser p = SparkGlobal.activeParser(args);
         final UFEM cScript = new UFEM(p);
 
         p.checkForInvalid();
@@ -727,7 +755,7 @@ public class UFEM implements Runnable {
      * Code to make preview (slices every 20 slides of the data)
      */
     public void makePreview(final TypedPath previewName, final TImg previewData) {
-    	final int skipSlices=20;
+        final int skipSlices=20;
         final ITIPLPluginIO fs = TIPLPluginManager.createBestPluginIO("Filter", new TImgRO[] {previewData});
         fs.LoadImages( new TImgRO[] {previewData});
         fs.setParameter("-upfactor=1,1,1 -downfactor=1,1,"+skipSlices);
@@ -1014,11 +1042,11 @@ public class UFEM implements Runnable {
                 // Make Backups
                 for (final TypedPath imgFile : imgListBW)
                 {
-                	TIPLGlobal.copyFile(imgFile, originalName(imgFile));
+                    TIPLGlobal.copyFile(imgFile, originalName(imgFile));
                 }
                 for (final TypedPath imgFile : imgListColor)
                 {
-                	TIPLGlobal.copyFile(imgFile, originalName(imgFile));
+                    TIPLGlobal.copyFile(imgFile, originalName(imgFile));
                 }
                 TIPLGlobal.copyFile(boneAimFile, originalName(boneAimFile));
                 TIPLGlobal.copyFile(maskAimFile, originalName(maskAimFile));
@@ -1044,7 +1072,7 @@ public class UFEM implements Runnable {
                 TIPLGlobal.runGC();
                 // The code for mask data
                 for (final TypedPath imgFile : imgListBW) {
-                	
+
                     if (tryOpenImagePath(imgFile)) {
                         TImg tempAim = TImgTools.ReadTImg(imgFile);
 
@@ -1056,7 +1084,7 @@ public class UFEM implements Runnable {
                 }
                 // Te code for color data
                 for (final TypedPath imgFile : imgListColor) {
-                	
+
                     if (tryOpenImagePath(imgFile)) {
                         TImg tempAim = TImgTools.ReadTImg(imgFile);
                         tempAim = peelAim(tempAim, maskAim, 0);
@@ -1304,7 +1332,7 @@ public class UFEM implements Runnable {
                 System.out.println("Basic Mask Thickness Analysis ...");
                 if (maskdistAim == null)
                     maskdistAim = TImgTools.ReadTImg(maskdistAimFile);
-                
+
                 final ITIPLPluginIO MKT = TIPLPluginManager.createBestPluginIO("HildThickness", new TImg[] { maskdistAim });
                 MKT.LoadImages(new TImg[] { maskdistAim });
                 MKT.execute();
