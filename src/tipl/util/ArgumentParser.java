@@ -74,10 +74,6 @@ public class ArgumentParser extends ArgumentList {
         }
     }
 
-	/*
-     * protected ArgumentParser(LinkedHashMap<String,ArgumentList.Argument>
-	 * inOptions) { super(inOptions); }
-	 */
 
     /**
      * Creates a new arguments parser class from the standard string array input

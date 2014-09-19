@@ -5,6 +5,7 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
 import tipl.settings.FilterSettings;
+import tipl.spark.SparkGlobal;
 import tipl.tools.*;
 import tipl.util.*;
 // doesn't make sense to declare this function again
@@ -498,7 +499,7 @@ public class UFEM implements Runnable {
                 .println(" Runs Segmentation and Generates Distance Map Script v"
                         + UFEM.kVer);
         System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
-        final ArgumentParser p = TIPLGlobal.activeParser(args);
+        final ArgumentParser p = SparkGlobal.activeParser(args);
         final UFEM cScript = new UFEM(p);
 
         p.checkForInvalid();
