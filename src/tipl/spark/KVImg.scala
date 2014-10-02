@@ -36,7 +36,7 @@ import tipl.formats.TImg
 
     val sliceAsList = baseImg.filter(_._1.z == (sliceNumber + pos.z)).map {
       curElement: (D3int, T) =>
-        ((curElement._1.y - pos.y) * dim.x + curElement._1.x - pos.x, curElement._2);
+        ((curElement._1.y - pos.y) * dim.x + (curElement._1.x - pos.x), curElement._2);
     }.sortByKey(true)
     val tSlice = (0 until sliceSize).zip(new Array[T](sliceSize))
     // since particularly after thresholds many points are missing, we need to add them back before making a slice out of the data
@@ -76,8 +76,10 @@ import tipl.formats.TImg
 
   def toKVLong() =
     toKVAuto[Long](TImgTools.IMAGETYPE_LONG)
-
-  def toKVFloat() =
+  def toKVBoolean() =
+    toKVAuto[Boolean](TImgTools.IMAGETYPE_BOOL)
+  
+    def toKVFloat() =
     toKVAuto[Float](TImgTools.IMAGETYPE_FLOAT)
    def toKVDouble() =
     toKVAuto[Double](TImgTools.IMAGETYPE_DOUBLE)

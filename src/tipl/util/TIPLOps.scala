@@ -23,6 +23,7 @@ import tipl.spark.KVImg
 import tipl.formats.FImage
 import tipl.util.TImgTools
 import tipl.spark.SparkGlobal
+import scala.math.{sqrt,pow}
 
 /**
  * An extension of TImgRO to make the available filters show up
@@ -34,7 +35,7 @@ object TIPLOps {
 
   
   /**
-   * A version of D3float which can perform simple arithmatic
+   * A version of D3float which can perform simple math operations
    */
   @serializable implicit class RichD3float(ip: D3float) {
 	 def -(ip2: D3float) = {
@@ -46,6 +47,23 @@ object TIPLOps {
 	 def *(iv: Double) = {
 	   new D3float(ip.x*iv,ip.y*iv,ip.z*iv)
 	 }
+   def *(iv: D3float) = {
+     new D3float(ip.x*iv.x,ip.y*iv.y,ip.z*iv.z)
+   }
+   def /(iv: Double) = {
+     new D3float(ip.x/iv,ip.y/iv,ip.z/iv)
+   }
+   def /(iv: D3float) = {
+     new D3float(ip.x/iv.x,ip.y/iv.y,ip.z/iv.z)
+   }
+   def mag() = {
+     sqrt(pow(ip.x,2)+pow(ip.y,2)+pow(ip.z,2))
+   }
+   def <(iv: Double) = mag()<iv
+   def >(iv: Double) = mag()>iv
+   def ==(iv: Double) = mag()==iv
+   
+   
   }
 /**
    * A version of D3int which can perform simple arithmatic
