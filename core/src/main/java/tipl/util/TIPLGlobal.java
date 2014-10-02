@@ -25,6 +25,7 @@ public class TIPLGlobal {
     public static final int DEBUG_BASIC = 1;
     private static int TIPLDebugLevel = DEBUG_BASIC;
     public static final int DEBUG_OFF = 0;
+    public static boolean useDaemonThreads = true;
     /**
      * so the threads do not need to manually be shutdown
      */
@@ -33,7 +34,7 @@ public class TIPLGlobal {
         public Thread newThread(final Runnable runnable) {
             final Thread thread = Executors.defaultThreadFactory().newThread(
                     runnable);
-            thread.setDaemon(true);
+            thread.setDaemon(useDaemonThreads);
             return thread;
         }
     };
@@ -131,14 +132,31 @@ public class TIPLGlobal {
         return requestSimpleES(requestAvailableReaderCount());
     }
 
-    public static ArgumentParser activeParser(String[] args) {
-        return activeParser(ArgumentParser.CreateArgumentParser(args));
+    /**
+     * A factory to create a new parser
+     *
+     * @author mader
+     *
+     */
+    public static interface ArgumentParserFactory {
+        public ArgumentParser getParser(String[] args);
     }
-    
+    /**
+     * The factory to make a new argument parser (meant to be replaced 
+     */
+    public static ArgumentParserFactory defaultAPFactory = new ArgumentParserFactory() {
+        @Override
+        public ArgumentParser getParser(String[] args) {
+            return ArgumentParser.CreateArgumentParser(args);
+        }
+    };
+    public static ArgumentParser activeParser(String[] args) {
+        return activeParser(defaultAPFactory.getParser(args));
+    }
+
     public static ArgumentParser activeParser(String rawArgs) {
         return activeParser(rawArgs.split("\\s"));
     }
-    
 
     /**
      * parser which actively changes local, maxcores, maxiothread and other TIPL wide parameters
@@ -148,7 +166,7 @@ public class TIPLGlobal {
      */
     public static ArgumentParser activeParser(ArgumentParser sp) {
         sp.createNewLayer("Global Settings");
-    	VirtualAim.scratchDirectory = sp.getOptionPath("@localdir",
+        VirtualAim.scratchDirectory = sp.getOptionPath("@localdir",
                 VirtualAim.scratchDirectory, "Directory to save local data to");
         VirtualAim.scratchLoading = sp.getOptionBoolean("@local", VirtualAim.scratchLoading, "Load image data from local filesystems");
         TIPLGlobal.availableCores = sp.getOptionInt("@maxcores",
@@ -161,7 +179,7 @@ public class TIPLGlobal {
         TIPLGlobal.setDebug(sp.getOptionInt("@debug",
                 TIPLGlobal.getDebugLevel(),
                 "Debug level from " + DEBUG_OFF + " to " + DEBUG_ALL));
-        
+
         System.setProperty("java.awt.headless", "" + sp.getOptionBoolean("@headless", isHeadless(), "Run TIPL in headless mode"));
         sp.createNewLayer("Application Settings");
         //if (sp.hasOption("?")) System.out.println(sp.getHelp());
@@ -172,7 +190,7 @@ public class TIPLGlobal {
      * @return
      */
     public static boolean isHeadless() {
-    	return Boolean.parseBoolean(System.getProperty("java.awt.headless"));
+        return Boolean.parseBoolean(System.getProperty("java.awt.headless"));
     }
 
     /**
@@ -278,14 +296,14 @@ public class TIPLGlobal {
         }
 
     }
-    
+
     /**
      * Utility Function Section
      */
 
     public static void copyFile(final TypedPath sourceFile, final TypedPath destFile) {
         if (!sourceFile.isLocal() || !destFile.isLocal()) throw new IllegalArgumentException("Both source and destination files must be local for copy function to work:"+sourceFile.summary()+" -> "+destFile.summary());
-    	try {
+        try {
             copyFile(new File(sourceFile.getPath()), new File(destFile.getPath()));
         } catch (final Exception e) {
             e.printStackTrace();
@@ -294,9 +312,9 @@ public class TIPLGlobal {
             TIPLGlobal.runGC();
         }
     }
-    
+
     public static void copyFile(final String sourceFile, final String destFile) {
-       copyFile(new TypedPath(sourceFile),new TypedPath(destFile));
+        copyFile(new TypedPath(sourceFile),new TypedPath(destFile));
     }
 
     public static boolean DeleteFile(final TypedPath file) {
@@ -311,9 +329,9 @@ public class TIPLGlobal {
      * Delete files
      */
     public static boolean DeleteFile(final TypedPath file, final String whoDel) {
-    	if (!file.isLocal()) throw new IllegalArgumentException("File must be local for delete function to work:"+file.summary());
-    	
-    	final File f1 = new File(file.getPath());
+        if (!file.isLocal()) throw new IllegalArgumentException("File must be local for delete function to work:"+file.summary());
+
+        final File f1 = new File(file.getPath());
         final boolean success = f1.delete();
         if (!success) {
             System.out.println(whoDel + "\t" + "ERROR:" + file
@@ -330,8 +348,8 @@ public class TIPLGlobal {
      * should be delated when the runtime finishes
      */
     public static void DeleteTempAtFinish(final TypedPath delName) {
-    	if (!delName.isLocal()) throw new IllegalArgumentException("File must be local for delete function to work:"+delName.summary());
-    	
+        if (!delName.isLocal()) throw new IllegalArgumentException("File must be local for delete function to work:"+delName.summary());
+
         curRuntime.addShutdownHook(new Thread() {
             public boolean SimpleDeleteFunction(final TypedPath file, final String whoDel) {
                 final File f1 = new File(file.getPath());
@@ -392,8 +410,8 @@ public class TIPLGlobal {
         }
 
         try {
-        	// needs to have positive dimensions
-           return (TImgTools.ReadTImg(filename).getDim().prod()>0);
+            // needs to have positive dimensions
+            return (TImgTools.ReadTImg(filename).getDim().prod()>0);
         } catch (final Exception e) {
             TIPLGlobal.runGC();
             return false;
@@ -409,12 +427,12 @@ public class TIPLGlobal {
         if (IJcore == null) IJcore = new ImageJ(IJmode);
         return IJcore;
     }
-    
+
     public static void closeAllWindows() {
-    	ij.WindowManager.closeAllWindows();
-    	for(Window cWind: Window.getWindows()) {
-    		cWind.dispose();
-    	}
+        ij.WindowManager.closeAllWindows();
+        for(Window cWind: Window.getWindows()) {
+            cWind.dispose();
+        }
     }
 
     public static ITIPLUsage getUsage() {

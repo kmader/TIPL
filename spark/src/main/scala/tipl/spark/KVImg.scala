@@ -76,7 +76,8 @@ import tipl.formats.TImg
 
   def toKVLong() =
     toKVAuto[Long](TImgTools.IMAGETYPE_LONG)
-
+  def toKVBoolean() =
+    toKVAuto[Boolean](TImgTools.IMAGETYPE_BOOL)
   def toKVFloat() =
     toKVAuto[Float](TImgTools.IMAGETYPE_FLOAT)
    def toKVDouble() =

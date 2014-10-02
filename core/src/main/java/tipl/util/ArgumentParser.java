@@ -74,10 +74,6 @@ public class ArgumentParser extends ArgumentList {
         }
     }
 
-	/*
-     * protected ArgumentParser(LinkedHashMap<String,ArgumentList.Argument>
-	 * inOptions) { super(inOptions); }
-	 */
 
     /**
      * Creates a new arguments parser class from the standard string array input
@@ -480,6 +476,7 @@ return mcArg.getValue();
     public ArgumentParser subArguments(final String withoutText,boolean strict) {
         return new ArgumentParser(super.subArguments(withoutText,strict));
     }
+    
 
     /**
      * An interface for the setParameters function used in many different
@@ -496,6 +493,16 @@ return mcArg.getValue();
          * @return an argument parser with the given parameter set
          */
         public ArgumentParser setParameter(ArgumentParser p, String prefix);
+    }
+    /**
+     * An argument parser which can be customly generated
+     * @author mader
+     *
+     */
+    public static class CustomArgumentParser extends ArgumentParser {
+    	public CustomArgumentParser(String[] args) {
+    		super(args,true);
+    	}
     }
 
 }

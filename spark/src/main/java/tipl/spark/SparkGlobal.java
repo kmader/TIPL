@@ -79,6 +79,14 @@ abstract public class SparkGlobal {
         if (currentContext == null) currentContext = getContext("temporaryContext");
         return currentContext;
     }
+    /**
+     * For a stopping of the spark context (isn't really necessary)
+     * @note this is automatically done when the VM shutsdown but something else might find it useful
+     */
+    static public void stopContext() {
+    	if (currentContext!=null) currentContext.stop();
+    	currentContext = null;
+    }
 
     /**
      * Create or reuses the instance of the JavaSparkContext
@@ -269,6 +277,7 @@ abstract public class SparkGlobal {
      * @return
      */
     static public ArgumentParser activeParser(ArgumentParser sp) {
+    	sp.createNewLayer("Spark Settings");
         masterName = sp.getOptionString("@masternode", getMasterName(), "The name of the master node to connect to");
         memorySettings = sp.getOptionString("@sparkmemory", memorySettings, "The memory per job");
         sparkLocal = sp.getOptionString("@sparklocal", sparkLocal, "The local drive to cache onto");

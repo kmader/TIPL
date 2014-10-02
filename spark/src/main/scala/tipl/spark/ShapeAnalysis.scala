@@ -23,7 +23,6 @@ import tipl.util.TypedPath
  *
  */
 class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
-
   @TIPLPluginManager.PluginInfo(pluginType = "ShapeAnalysis",
     desc = "Spark-based shape analysis",
     sliceBased = false, sparkBased = true)

@@ -23,9 +23,9 @@ import tipl.util.TIPLOps.NeighborhoodOperation
   def createFromPureFun(sc: SparkContext, objToMirror: TImgTools.HasDimensions, inpf: PureFImage.PositionFunction): KVImg[Double] = {
     val objDim = objToMirror getDim
     val objPos = objToMirror getPos
-    val xrng = objPos.x to (objPos.x + objDim.x)
-    val yrng = objPos.y to (objPos.y + objDim.y)
-    val zrng = objPos.z to (objPos.z + objDim.z)
+    val xrng = objPos.x until (objPos.x + objDim.x)
+    val yrng = objPos.y until (objPos.y + objDim.y)
+    val zrng = objPos.z until (objPos.z + objDim.z)
     val wrappedImage = sc.parallelize(zrng). // parallelize over the slices
       flatMap(z => {
       for (x <- xrng; y <- yrng) // for each slice create each point in the image
