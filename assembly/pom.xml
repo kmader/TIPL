@@ -59,6 +59,11 @@
         </dependency>
         <dependency>
             <groupId>quant.tipl</groupId>
+            <artifactId>tipl-VIB</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>quant.tipl</groupId>
             <artifactId>tipl-workflows</artifactId>
             <version>${project.version}</version>
         </dependency>

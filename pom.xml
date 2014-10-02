@@ -36,6 +36,7 @@
     <modules>
         <module>core</module>
         <module>ccgeom</module>
+        <module>VIB-lib</module>
         <module>workflows</module>
         <module>spark</module>
         <module>volviewer</module>
