@@ -4,6 +4,7 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.settings.FilterSettings;
 import tipl.tools.*;
+import tipl.tools.Curvature;
 import tipl.util.*;
 
 import java.util.Date;

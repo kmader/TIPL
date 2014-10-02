@@ -33,7 +33,7 @@ import tipl.util.TImgBlock
  * @author mader
  *
  */
-class SResize extends BaseTIPLPluginIO {
+class   SResize extends BaseTIPLPluginIO {
 	var pOutDim = new D3int(-1,-1,-1)
 	var pOutPos = new D3int(-1,-1,-1)
 	var pFindEdge = false

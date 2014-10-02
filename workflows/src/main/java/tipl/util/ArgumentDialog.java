@@ -6,6 +6,7 @@ package tipl.util;
 import tipl.blocks.BaseTIPLBlock;
 import tipl.blocks.ITIPLBlock;
 import tipl.util.ArgumentList.ArgumentCallback;
+import tipl.util.ArgumentList.Argument;
 import tipl.util.ArgumentList.RangedArgument;
 import tipl.util.ITIPLDialog.GUIControl;
 import ij.gui.DialogListener;
@@ -18,7 +19,6 @@ import java.awt.event.WindowStateListener;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 
-import org.apache.tools.ant.types.Commandline.Argument;
 
 /**
  * A class to render an argument list as a dialog (based on the GenericDialog of

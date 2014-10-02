@@ -5,14 +5,14 @@
       <configuration>
         <option name="compilerLibraryLevel" value="Project" />
         <option name="compilerLibraryName" value="Maven: org.scala-lang:scala-compiler-bundle:2.10.4" />
-        <option name="compilerOptions" value="-feature -language:postfixOps" />
+        <option name="compilerOptions" value="-target:jvm-1.6" />
         <option name="deprecationWarnings" value="true" />
-        <option name="uncheckedWarnings" value="true" />
-        <option name="vmOptions" value="-Xms1G -Xmx2G -XX:PermSize=256m -XX:MaxPermSize=1024m" />
+        <option name="explainTypeErrors" value="true" />
+        <option name="vmOptions" value="" />
       </configuration>
     </facet>
   </component>
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_7" inherit-compiler-output="false">
+  <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
@@ -136,6 +136,7 @@
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.4" level="project" />
     <orderEntry type="library" name="Maven: org.spark-project:pyrolite:2.0.1" level="project" />
     <orderEntry type="library" name="Maven: net.sf.py4j:py4j:0.8.2.1" level="project" />
+    <orderEntry type="module" module-name="tipl-VIB" />
     <orderEntry type="module" module-name="tipl-spark" />
     <orderEntry type="library" name="Maven: org.apache.spark:spark-repl_2.10:1.1.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.apache.spark:spark-bagel_2.10:1.1.0" level="project" />

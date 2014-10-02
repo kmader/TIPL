@@ -25,10 +25,24 @@ cd ccgeom/
 git commit -m "$commitMessage"
 cd ../volviewer
 git commit -m "$commitMessage"
+cd ../VIB-lib/
+git commit -m "$commitMessage"
 cd ..
 git commit -m "$commitMessage"
 ```
 
+To push all
+
+```
+cd ccgeom/
+git push
+cd ../volviewer
+git push
+cd ../VIB-lib/
+git push
+cd ..
+git push
+```
 ## Building Notes
 The project is meant to be built in a Java first then Scala manner with the exception of a few files. Primarily ScalaPlugins.java which is used for loading the Plugins written in Scala into the SezPoz-based TIPLPluginManager. A simple space entered into this file and save will cause it to recompile after the scala code has been compiled resolving all errors.
 ## Updating Libraries
