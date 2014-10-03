@@ -26,7 +26,6 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static ch.lambdaj.Lambda.*;
 
 /**
  * CL performs iterative component labeling using a very simple label and merge algorithm
@@ -461,21 +460,32 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
             i++;
 
         }
-
+        List<Entry<Long,Long>> cGrp = new ArrayList<Entry<Long,Long>>(groupCount(labelImg).entrySet());
         // now sort by voxel count
-        Map<Long, Long> cGrp = groupCount(labelImg);
+        Collections.sort(
+                cGrp,
+                new Comparator<Entry<Long, Long>>() {
+
+                    @Override
+                    public int compare(Entry<Long, Long> o1, Entry<Long, Long> o2) {
+                        //TODO Make sure this is the right ordering
+                        return o1.getValue().compareTo(o2.getValue());
+                    }
+                }
+        );
+
         String curGrpSummary = "";
 
-        List<Entry<Long, Long>> finalMap = sort(cGrp.entrySet(), on(Map.Entry.class).getValue(), DESCENDING);
-        Map<Long, Long> reArrangement = new HashMap<Long, Long>(finalMap.size());
+
+        SortedMap<Long,Long> reArrangement = new TreeMap<Long,Long>();
         int outDex = 1;
-        for (Entry<Long, Long> cEntry : finalMap) {
+        for (Entry<Long, Long> cEntry : cGrp) {
             if (curGrpSummary.length() < 100)
                 curGrpSummary += cEntry.getKey() + "=>" + outDex + "\t" + cEntry.getValue() + " voxels\n";
             reArrangement.put(cEntry.getKey(), (long) outDex);
             outDex++;
         }
-        System.out.println("Final List:\n" + curGrpSummary + "\n Total Elements:\t" + reArrangement.size());
+        System.out.println("Final List:\n" + curGrpSummary + "\n Total Elements:\t" + cGrp.size());
         labelImg = mergeGroups(labelImg, reArrangement, to);
 
         final long runTime = System.currentTimeMillis() - start;

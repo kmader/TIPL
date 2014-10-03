@@ -67,14 +67,16 @@
             <artifactId>tipl-workflows</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>quant.tipl</groupId>
-            <artifactId>tipl-integration</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+
         <dependency>
             <groupId>quant.tipl</groupId>
             <artifactId>tipl-volviewer</artifactId>
+            <version>${project.version}</version>
+        </dependency>   
+        
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-integration</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -85,6 +87,13 @@
             <artifactId>tipl-jython</artifactId>
             <version>${project.version}</version>
         </dependency> -->
+        
+         <dependency>
+            <groupId>net.java.sezpoz</groupId>
+            <artifactId>sezpoz</artifactId>
+            <version>1.9</version>
+        </dependency>
+    
     </dependencies>
 
     <build>

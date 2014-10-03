@@ -4,7 +4,7 @@
     <facet type="scala" name="Scala">
       <configuration>
         <option name="compilerLibraryLevel" value="Project" />
-        <option name="compilerLibraryName" value="Maven: org.scala-lang:scala-compiler-bundle:2.10.3" />
+        <option name="compilerLibraryName" value="Maven: org.scala-lang:scala-compiler-bundle:2.10.4" />
         <option name="compilerOptions" value="-feature -language:postfixOps" />
         <option name="deprecationWarnings" value="true" />
         <option name="uncheckedWarnings" value="true" />
@@ -25,6 +25,7 @@
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:3.8.1" level="project" />
     <orderEntry type="module" module-name="tipl-core" />
     <orderEntry type="library" name="Maven: junit:junit-dep:4.10" level="project" />
+    <orderEntry type="library" name="Maven: org.hamcrest:hamcrest-core:1.1" level="project" />
     <orderEntry type="library" name="Maven: javax.media:jai-core:1.1.3" level="project" />
     <orderEntry type="library" name="Maven: io.scif:scifio-jai-imageio:1.1.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: com.sun.media:jai-codec:1.1.3" level="project" />
@@ -38,15 +39,6 @@
     <orderEntry type="library" name="Maven: org.mongodb:mongo-java-driver:2.12.3" level="project" />
     <orderEntry type="library" name="Maven: gov.nih.imagej:imagej:1.47" level="project" />
     <orderEntry type="library" name="Maven: net.java.sezpoz:sezpoz:1.9" level="project" />
-    <orderEntry type="module-library">
-      <library name="Maven: com.googlecode.lambdaj:lambdaj:2.3.3">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../libraries/lambdaj-with-dependencies.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="library" name="Maven: org.apache.spark:spark-core_2.10:1.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-client:1.0.4" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-core:1.0.4" level="project" />

@@ -20,12 +20,6 @@
             <groupId>junit</groupId>
             <artifactId>junit-dep</artifactId>
             <version>4.10</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hamcrest</groupId>
-                    <artifactId>hamcrest-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -63,6 +57,7 @@
             <artifactId>mongo-java-driver</artifactId>
             <version>2.12.3</version>
         </dependency>
+        
         <dependency>
             <groupId>gov.nih.imagej</groupId>
             <artifactId>imagej</artifactId>
@@ -74,13 +69,6 @@
             <version>1.9</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.googlecode.lambdaj</groupId>
-            <artifactId>lambdaj</artifactId>
-            <version>2.3.3</version>
-            <scope>system</scope>
-            <systemPath>/Users/mader/Dropbox/tipl_maven/libraries/lambdaj-with-dependencies.jar</systemPath>
-        </dependency>
 
         <dependency>
             <groupId>org.apache.spark</groupId>

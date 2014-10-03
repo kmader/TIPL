@@ -4,7 +4,7 @@
     <facet type="scala" name="Scala">
       <configuration>
         <option name="compilerLibraryLevel" value="Project" />
-        <option name="compilerLibraryName" value="Maven: org.scala-lang:scala-compiler-bundle:2.10.3" />
+        <option name="compilerLibraryName" value="Maven: org.scala-lang:scala-compiler-bundle:2.10.4" />
         <option name="compilerOptions" value="-feature -language:postfixOps" />
         <option name="deprecationWarnings" value="true" />
         <option name="uncheckedWarnings" value="true" />
@@ -24,8 +24,10 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" scope="TEST" name="Maven: junit:junit:3.8.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.10" level="project" />
+    <orderEntry type="library" name="Maven: org.hamcrest:hamcrest-core:1.1" level="project" />
     <orderEntry type="module" module-name="tipl-spark" />
+    <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.10.4" level="project" />
     <orderEntry type="library" name="Maven: org.apache.spark:spark-core_2.10:1.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-client:1.0.4" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-core:1.0.4" level="project" />
@@ -79,7 +81,6 @@
     <orderEntry type="library" name="Maven: org.xerial.snappy:snappy-java:1.0.5.3" level="project" />
     <orderEntry type="library" name="Maven: net.jpountz.lz4:lz4:1.2.0" level="project" />
     <orderEntry type="library" name="Maven: com.twitter:chill_2.10:0.3.6" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.10.4" level="project" />
     <orderEntry type="library" name="Maven: com.twitter:chill-java:0.3.6" level="project" />
     <orderEntry type="library" name="Maven: com.esotericsoftware.kryo:kryo:2.21" level="project" />
     <orderEntry type="library" name="Maven: com.esotericsoftware.reflectasm:reflectasm:shaded:1.07" level="project" />
@@ -155,15 +156,6 @@
     <orderEntry type="library" name="Maven: org.mongodb:mongo-java-driver:2.12.3" level="project" />
     <orderEntry type="library" name="Maven: gov.nih.imagej:imagej:1.47" level="project" />
     <orderEntry type="library" name="Maven: net.java.sezpoz:sezpoz:1.9" level="project" />
-    <orderEntry type="module-library">
-      <library name="Maven: com.googlecode.lambdaj:lambdaj:2.3.3">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../libraries/lambdaj-with-dependencies.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="module" module-name="tipl-ccgeom" />
     <orderEntry type="module" module-name="tipl-volviewer" />
     <orderEntry type="library" name="Maven: net.imagej:ij:1.49h" level="project" />

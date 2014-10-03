@@ -3,16 +3,6 @@
  */
 package tipl.util;
 
-import static ch.lambdaj.Lambda.DESCENDING;
-import static ch.lambdaj.Lambda.filter;
-import static ch.lambdaj.Lambda.having;
-import static ch.lambdaj.Lambda.on;
-import static ch.lambdaj.Lambda.sort;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.either;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.lessThan;
 import ij.IJ;
 import ij.gui.GenericDialog;
 
@@ -142,15 +132,21 @@ public class TIPLPluginManager {
 	 */
 	public static List<PluginInfo> getPluginsNamed(final String pluginType) 
 	{
-		return filter(having(on(PluginInfo.class).pluginType(),equalToIgnoringCase(pluginType)),getAllPlugins());
+        List<PluginInfo> outList = new ArrayList<PluginInfo>();
+        for(PluginInfo cPlug: getAllPlugins()) {
+            if (cPlug.pluginType().equalsIgnoreCase(pluginType))
+                outList.add(cPlug);
+        }
+        return outList;
 	}
 	public static List<PluginInfo> getPluginsBySize(final List<PluginInfo> inList,long voxelCount) {
-		List<PluginInfo> bigEnough = filter(having(on(PluginInfo.class).maximumSize(),
-				greaterThan(voxelCount)),inList);
-		List<PluginInfo> sizeIndependent = filter(having(on(PluginInfo.class).maximumSize(),		
-				lessThan(0L)),inList); // either larger than the voxel count or negative 1
-		bigEnough.addAll(sizeIndependent);
-		return bigEnough;
+		List<PluginInfo> outList = new ArrayList<PluginInfo>(inList.size());
+        for(PluginInfo cPlug: inList) {
+            if ((cPlug.maximumSize() > voxelCount) ||
+                    (cPlug.maximumSize() < 0))
+                outList.add(cPlug);
+        }
+		return outList;
 	}
 	/** 
 	 * get the fastest plugin (by speed rank)
@@ -158,8 +154,11 @@ public class TIPLPluginManager {
 	 * @return info for a single plugin
 	 */
 	public static PluginInfo getFastestPlugin(final List<PluginInfo> inList) {
-		List<PluginInfo> sortedPlugs=sort(inList,on(PluginInfo.class).speedRank(),DESCENDING);
-		return sortedPlugs.get(0);
+        PluginInfo fastestPlug = inList.get(0);
+        for(PluginInfo cPlug: inList) {
+            if (cPlug.speedRank()>fastestPlug.speedRank()) fastestPlug = cPlug;
+        }
+		return fastestPlug;
 	}
 	/** 
 	 * get the lowest memory usage plugin
@@ -167,8 +166,11 @@ public class TIPLPluginManager {
 	 * @return info for a single plugin
 	 */
 	public static PluginInfo getLowestMemoryPlugin(final List<PluginInfo> inList) {
-		List<PluginInfo> sortedPlugs=sort(inList,on(PluginInfo.class).bytesPerVoxel());
-		return sortedPlugs.get(0);
+        PluginInfo lowestPlug = inList.get(0);
+		for(PluginInfo cPlug: inList) {
+            if (cPlug.bytesPerVoxel()<lowestPlug.bytesPerVoxel()) lowestPlug = cPlug;
+        }
+		return lowestPlug;
 	}
 
 
@@ -176,33 +178,41 @@ public class TIPLPluginManager {
 		//TODO get size from other images at some point
 		List<PluginInfo> namedPlugins=getPluginsNamed(pluginType);
 		if (namedPlugins.size()<1) throw new IllegalArgumentException("No plugins of type:"+pluginType+" have been loaded, check classpath, and annotation setup");
+        String outPlugName;
 
-		String outPlugName = "Named Plugins Plugins for "+pluginType+" are: ";
-
-		for (PluginInfo cPlug : namedPlugins) outPlugName+=","+cPlug.toString();
-		if (TIPLGlobal.getDebug()) System.out.println(outPlugName);
+        if (TIPLGlobal.getDebug()) {
+            outPlugName = "Named Plugins Plugins for "+pluginType+" are: ";
+            for (PluginInfo cPlug : namedPlugins) outPlugName+=","+cPlug.toString();
+            System.out.println(outPlugName);
+        }
 
 		long imVoxCount=(long) inImages[0].getDim().prod();
 		List<PluginInfo> bestPlugins=getPluginsBySize(namedPlugins,imVoxCount);
 		if (bestPlugins.size()<1) throw new IllegalArgumentException("No plugins of type:"+pluginType+" can handle images sized:"+imVoxCount);
 
 
-		outPlugName = "Sized Plugins (>"+imVoxCount+") for "+pluginType+" are: ";
 
-		for (PluginInfo cPlug : bestPlugins) outPlugName+=","+cPlug.toString();
-		if (TIPLGlobal.getDebug()) System.out.println(outPlugName);
+		if (TIPLGlobal.getDebug()) {
+            outPlugName = "Sized Plugins (>"+imVoxCount+") for "+pluginType+" are: ";
+
+            for (PluginInfo cPlug : bestPlugins) outPlugName+=","+cPlug.toString();
+            System.out.println(outPlugName);
+        }
 
 		// remove spark plugins
-		List<PluginInfo> noSparkPlugins=filter(
-				having(on(PluginInfo.class).sparkBased(),is(false)),
-				bestPlugins);
+
+        List<PluginInfo> noSparkPlugins = new ArrayList<PluginInfo>(bestPlugins.size());
+        for(PluginInfo cPlug: bestPlugins) {
+            if (!cPlug.sparkBased())
+                noSparkPlugins.add(cPlug);
+        }
 		if (noSparkPlugins.size()<1) throw new IllegalArgumentException("No plugins of type:"+pluginType+" can handle images sized:"+imVoxCount+" can run without Spark");
 
-
-		outPlugName = "Available Plugins for "+pluginType+" are: ";
-
-		for (PluginInfo cPlug : noSparkPlugins) outPlugName+=","+cPlug.toString();
-		if (TIPLGlobal.getDebug()) System.out.println(outPlugName);
+		if (TIPLGlobal.getDebug()) {
+            outPlugName = "Available Plugins for "+pluginType+" are: ";
+            for (PluginInfo cPlug : noSparkPlugins) outPlugName+=","+cPlug.toString();
+            System.out.println(outPlugName);
+        }
 
 		return getFastestPlugin(noSparkPlugins);
 	}

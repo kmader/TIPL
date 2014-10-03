@@ -5,7 +5,7 @@
       <configuration>
         <option name="compileOrder" value="JavaThenScala" />
         <option name="compilerLibraryLevel" value="Project" />
-        <option name="compilerLibraryName" value="Maven: org.scala-lang:scala-compiler-bundle:2.10.3" />
+        <option name="compilerLibraryName" value="Maven: org.scala-lang:scala-compiler-bundle:2.10.4" />
         <option name="compilerOptions" value="-feature -language:postfixOps" />
         <option name="deprecationWarnings" value="true" />
         <option name="uncheckedWarnings" value="true" />
