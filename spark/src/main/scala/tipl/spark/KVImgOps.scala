@@ -19,7 +19,7 @@ import tipl.util.TIPLOps.NeighborhoodOperation
  * @author mader
  *
  */
-@serializable object KVImgOps {
+object KVImgOps extends Serializable {
   def createFromPureFun(sc: SparkContext, objToMirror: TImgTools.HasDimensions, inpf: PureFImage.PositionFunction): KVImg[Double] = {
     val objDim = objToMirror getDim
     val objPos = objToMirror getPos
@@ -45,7 +45,7 @@ import tipl.util.TIPLOps.NeighborhoodOperation
     }
   }
 
-  @serializable implicit class RichKvRDD[A <: Number](srd: RDD[(D3int, A)]) extends NeighborhoodOperation[(A, Boolean), A] {
+  implicit class RichKvRDD[A <: Number](srd: RDD[(D3int, A)]) extends NeighborhoodOperation[(A, Boolean), A] {
 
     /**
      * A generic voxel spread function for a given window size and kernel
@@ -126,13 +126,13 @@ import tipl.util.TIPLOps.NeighborhoodOperation
   /**
    * A class of a spread RDD image (after a flatMap/spread operation)
    */
-  @serializable implicit class SpreadRDD[A <: Number](srd: RDD[(D3int, Iterable[(A, Boolean)])]) {
+  implicit class SpreadRDD[A <: Number](srd: RDD[(D3int, Iterable[(A, Boolean)])]) {
     def collectPoints(coFun: (Iterable[(A, Boolean)] => A)) = {
       srd.mapValues(coFun)
     }
   }
 
-  @serializable implicit class RichKVImg[A <: Number](ip: KVImg[A]) {
+  implicit class RichKVImg[A <: Number](ip: KVImg[A]) {
     val srd = ip.getBaseImg
 
     def +[B <: Number](imgB: KVImg[B]): KVImg[Double] = {

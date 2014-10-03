@@ -37,7 +37,7 @@ object TIPLOps {
  /**
    * A version of D3float which can perform simple math operations
    */
-  @serializable implicit class RichD3float(ip: D3float) {
+  implicit class RichD3float(ip: D3float) {
 	 def -(ip2: D3float) = {
 	   new D3float(ip.x-ip2.x,ip.y-ip2.y,ip.z-ip2.z)
 	 }
@@ -68,7 +68,7 @@ object TIPLOps {
   /**
    * A version of D3int which can perform simple arithmatic
    */
-  @serializable implicit class RichD3int(ip: D3int) {
+  implicit class RichD3int(ip: D3int) {
     def -(ip2: D3int) = {
       new D3int(ip.x - ip2.x, ip.y - ip2.y, ip.z - ip2.z)
     }
@@ -82,6 +82,7 @@ object TIPLOps {
       new D3float(ip.x * iv, ip.y * iv, ip.z * iv)
     }
   }
+
   implicit class RichTImgList[T <: TImgRO](val inputImageList: Array[T]) {
     def pluginIO(name: String): ITIPLPluginIO = {
       TIPLPluginManager.createBestPluginIO[T](name, inputImageList)

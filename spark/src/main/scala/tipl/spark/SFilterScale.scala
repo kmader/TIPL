@@ -31,7 +31,7 @@ import scala.collection.GenTraversableOnce
  * @author mader
  *
  */
-@serializable class SFilterScale extends BaseTIPLPluginIO with FilterSettings.HasFilterSettings {
+class SFilterScale extends BaseTIPLPluginIO with FilterSettings.HasFilterSettings {
 
   private var filtSettings = new FilterSettings
   override def setFilterSettings(in: FilterSettings) = {filtSettings=in}

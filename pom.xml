@@ -46,6 +46,7 @@
     </modules>
     <properties>
         <scala.major>2.10</scala.major>
+        <scala.compile.version>2.10.4</scala.compile.version>
         <scala.version>2.10.4</scala.version>
         <java.version>1.6</java.version>
 
@@ -59,9 +60,12 @@
         <PermGen>256m</PermGen>
         <MaxPermGen>1024m</MaxPermGen>
         <tipl.version>1.0-SNAPSHOT</tipl.version>
+        <!-- NB: Specify formatting of the maven.build.timestamp property. -->
+        <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssZ</maven.build.timestamp.format>
     </properties>
     <repositories>
         <!-- Force imagej repsository for imageio/jai -->
+
         <repository>
             <id>imagej.public</id>
             <url>http://maven.imagej.net/content/groups/public</url>
@@ -122,6 +126,7 @@
         </repository>
 
 
+
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -131,70 +136,64 @@
         </pluginRepository>
     </pluginRepositories>
 
-    <!-- <dependencies>
-         <dependency>
-             <groupId>junit</groupId>
-             <artifactId>junit</artifactId>
-             <version>3.8.1</version>
-             <scope>test</scope>
-         </dependency>
-
-     </dependencies> -->
-    <dependencies>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>${scala.major}.4</version>
-        </dependency>
-    </dependencies>
 
     <build>
+        <defaultGoal>install</defaultGoal>
         <plugins>
-            <!--
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <encoding>UTF-8</encoding>
-
-                </configuration>
-
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.8</version>
             </plugin>
 
             <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.17</version>
+                <configuration>
+                    <!-- Uses scalatest instead -->
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
 
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.2.0</version>
                 <executions>
-                    <execution>
-                        <id>compile</id>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <phase>compile</phase>
-                    </execution>
 
                     <execution>
-                        <id>test-compile</id>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                        <phase>test-compile</phase>
-                    </execution>
-
-                    <execution>
+                        <id>scala-compile-first</id>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>compile</goal>
                         </goals>
                     </execution>
-                </executions>
+
+                <!--
+               <execution>
+                   <id>scala-test-compile-first</id>
+                   <phase>process-test-resources</phase>
+                   <goals>
+                       <goal>testCompile</goal>
+                   </goals>
+               </execution>
+               -->
+               <execution>
+                   <id>attach-scaladocs</id>
+                   <phase>verify</phase>
+                   <goals>
+                       <goal>doc-jar</goal>
+                   </goals>
+               </execution>
+           </executions>
                 <configuration>
-                    <scalaVersion>${scala.version}</scalaVersion>
+                    <scalaVersion>${scala.compile.version}</scalaVersion>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>UTF-8</encoding>
+                    <!--  <recompileMode>incremental</recompileMode>
+                      <useZincServer>true</useZincServer> -->
                     <args>
                         <arg>-unchecked</arg>
                         <arg>-deprecation</arg>
@@ -207,46 +206,128 @@
                         <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
                         <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
                     </jvmArgs>
+                     <javacArgs>
+                        <javacArg>-source</javacArg>
+                        <javacArg>${java.version}</javacArg>
+                        <javacArg>-target</javacArg>
+                        <javacArg>${java.version}</javacArg>
+                    </javacArgs>
+                    <!-- The following plugin is required to use quasiquotes in Scala 2.10 and is used
+                         by Spark SQL for code generation. -->
+
+                   <!-- <compilerPlugins>
+                        <compilerPlugin>
+                            <groupId>org.scalamacros</groupId>
+                            <artifactId>paradise_${scala.version}</artifactId>
+                            <version>${scala.macros.version}</version>
+                        </compilerPlugin>
+                    </compilerPlugins> -->
                 </configuration>
             </plugin>
-            -->
+
+
+
+
+
+            <!-- Do not need javadoc yet
             <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-                <version>3.1.6</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <recompileMode>incremental</recompileMode>
-                    <args>
-                        <arg>-deprecation</arg>
-                        <arg>-explaintypes</arg>
-                        <arg>-target:jvm-1.6</arg>
-                    </args>
+                    <skip>${javadoc.skip}</skip>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>scala-compile-first</id>
-                        <phase>process-resources</phase>
+                        <id>attach-javadocs</id>
                         <goals>
-                            <goal>add-source</goal>
-                            <goal>compile</goal>
+                            <goal>jar</goal>
                         </goals>
                     </execution>
+                </executions>
+            </plugin>
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
                     <execution>
-                        <id>scala-test-compile</id>
-                        <phase>process-test-resources</phase>
+                        <id>attach-sources</id>
                         <goals>
-                            <goal>add-source</goal>
-                            <goal>testCompile</goal>
+                            <goal>jar</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
 
 
+            <!-- use the the maven compiler plugin settings from http://davidb.github.io/scala-maven-plugin/example_java.html -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-        </plugins>
+            <!-- This is not needed until everything else runs smoothly
+             <plugin>
+                 <groupId>org.scalastyle</groupId>
+                 <artifactId>scalastyle-maven-plugin</artifactId>
+                 <version>0.4.0</version>
+                 <configuration>
+                     <verbose>false</verbose>
+                     <failOnViolation>true</failOnViolation>
+                     <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                     <failOnWarning>false</failOnWarning>
+                     <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
+                     <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
+                     <configLocation>scalastyle-config.xml</configLocation>
+                     <outputFile>scalastyle-output.xml</outputFile>
+                     <outputEncoding>UTF-8</outputEncoding>
+                 </configuration>
+                 <executions>
+                     <execution>
+                         <phase>package</phase>
+                         <goals>
+                             <goal>check</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+             </plugin>
+             -->
 
 
 
-    </build>
+                   <!-- Build Number Maven plugin -
+				     http://mojo.codehaus.org/buildnumber-maven-plugin/
+				     This plugin embeds a build number in the JAR manifest. -->
+                   <plugin>
+                       <groupId>org.codehaus.mojo</groupId>
+                       <artifactId>buildnumber-maven-plugin</artifactId>
+                       <version>1.3</version>
+                       <!-- Record SCM revision in manifest. -->
+                       <executions>
+                           <execution>
+                               <phase>validate</phase>
+                               <goals>
+                                   <goal>create</goal>
+                               </goals>
+                           </execution>
+                       </executions>
+                       <configuration>
+                           <getRevisionOnlyOnce>true</getRevisionOnlyOnce>
+                           <revisionOnScmFailure>UNKNOWN</revisionOnScmFailure>
+                       </configuration>
+                   </plugin>
+             </plugins>
+</build>
 </project>

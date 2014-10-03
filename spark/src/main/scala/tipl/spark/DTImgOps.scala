@@ -23,6 +23,7 @@ import tipl.formats.TImgRO
  *
  */
 object DTImgOps {
+
   private[spark] def DTImgToKVRDD(inImg: DTImg[_]) = {
     val imgType = inImg.getImageType
     inImg.getBaseImg.rdd.flatMap {
@@ -51,17 +52,19 @@ object DTImgOps {
     }
     new KVImg[V](inImg,inImg.getImageType,outImg)
   }
-  
-  @serializable implicit class RichDtRDD[A](srd: RDD[(D3int, TImgBlock[A])]) extends
+
+
+
+  implicit class RichDtRDD[A](srd: RDD[(D3int, TImgBlock[A])]) extends
   NeighborhoodOperation[TImgBlock[A], TImgBlock[A]] {
-    
-    val blockShift = (offset: D3int) => {
+
+   private[RichDtRDD] def blockShift(offset: D3int) = {
       (p: (D3int, TImgBlock[A])) => {
         val nPos = p._1 + offset
         (nPos, new TImgBlock[A](p._2.getClone(), nPos, offset))
       }
-
     }
+
    /**
      * Wrap a RDD as a DTImg
      * @param baseObj the image to mirror
@@ -127,25 +130,22 @@ object DTImgOps {
   /**
    * A class of a spread RDD image (after a flatMap/spread operation)
    */
-  @serializable implicit class SpreadRDD[A](srd: RDD[(D3int, Iterable[TImgBlock[A]])]) {
+  implicit class SpreadRDD[A](srd: RDD[(D3int, Iterable[TImgBlock[A]])]) extends Serializable {
     def collectSlices(windSize: D3int, kernel: Option[BaseTIPLPluginIn.morphKernel], coFun: (Iterable[TImgBlock[A]] => TImgBlock[A])) = {
       srd.mapValues(coFun)
     }
   }
 
-  @serializable implicit class RichDTImg[A](ip: DTImg[A]) {
+  implicit class RichDTImg[A](ip: DTImg[A]) extends Serializable {
 
     val srd = ip.getBaseImg.rdd
 
     /** a much simpler version of spreadSlices taking advantage of Scala's language features
       *
       */
-  
-    def spreadSlices(windSize: D3int) = {
-      srd.spreadSlices(windSize)
-    }
+    def spreadSlices(windSize: D3int) = srd.spreadSlices(windSize)
     
-    private[RichDTImg] def sizeCheck(inImg: HasDimensions) = {
+    def sizeCheck(inImg: HasDimensions) = {
       if(!TImgTools.CheckSizes2(ip, inImg)) throw new IllegalArgumentException("Image sizes must match! d1:"+ip.getDim+", p1:"+ip.getPos+"\t d2:"+inImg.getDim+" p2:"+inImg.getPos)
     }
     /** 
@@ -154,7 +154,7 @@ object DTImgOps {
      *  @param combFunc function to use to combine the two images
      *  
      */
-    private[RichDTImg] def combineImages[B](inImg: DTImg[B],combFunc: ((Double,Double) => Double)):
+    def combineImages[B](inImg: DTImg[B],combFunc: ((Double,Double) => Double)):
     DTImg[Array[Double]] = {
       sizeCheck(inImg)
       val aImg = ip.getBaseImg.rdd
@@ -176,6 +176,7 @@ object DTImgOps {
     def /[B](inImg: DTImg[B]) = combineImages(inImg,_/_)
 
   }
+
 /**
  * A smarter conversion function
  */

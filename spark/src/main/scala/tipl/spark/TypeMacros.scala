@@ -102,7 +102,7 @@ object TypeMacros {
     case _ => throw new IllegalArgumentException(outType + " is not a known image type")
   }
 
-  @serializable implicit class RichTImgRO[T <: TImgRO](cImg: T)(implicit lm: ClassTag[T]) {
+  implicit class RichTImgRO[T <: TImgRO](cImg: T)(implicit lm: ClassTag[T]) {
     def toKV(): KVImg[_] = {
       val ity = cImg.getImageType
       cImg match {

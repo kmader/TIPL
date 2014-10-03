@@ -15,8 +15,8 @@ import org.apache.hadoop.mapreduce.lib.input.CombineFileRecordReader
 /**
  *  The new (Hadoop 2.0) InputFormat for while binary files (not be to be confused with the recordreader itself)
  */
-@serializable abstract class BinaryFileInputFormat[T]
- extends CombineFileInputFormat[String,T]  {
+abstract class BinaryFileInputFormat[T]
+ extends CombineFileInputFormat[String,T] with Serializable  {
   override protected def isSplitable(context: JobContext, file: Path): Boolean = false
   /**
    * Allow minPartitions set by end-user in order to keep compatibility with old Hadoop API.
@@ -42,11 +42,11 @@ import org.apache.hadoop.mapreduce.lib.input.CombineFileRecordReader
  * out in a key-value pair, where the key is the file path and the value is the entire content of
  * the file as a TSliceReader (to keep the size information
  */
-@serializable abstract class BinaryRecordReader[T](
+abstract class BinaryRecordReader[T](
     split: CombineFileSplit,
     context: TaskAttemptContext,
     index: Integer)
-     extends RecordReader[String, T] {
+     extends RecordReader[String, T] with Serializable {
 
   private val path = split.getPath(index)
   private val fs = path.getFileSystem(context.getConfiguration)
@@ -85,14 +85,14 @@ import org.apache.hadoop.mapreduce.lib.input.CombineFileRecordReader
  * A demo class for extracting just the byte array itself
  */
 
-@serializable class ByteInputFormat extends BinaryFileInputFormat[Array[Byte]] {
+class ByteInputFormat extends BinaryFileInputFormat[Array[Byte]] {
  override def createRecordReader(split: InputSplit, taContext: TaskAttemptContext)= 
   {
     new CombineFileRecordReader[String,Array[Byte]](split.asInstanceOf[CombineFileSplit],taContext,classOf[ByteRecordReader])
   }
 }
 
-@serializable class ByteRecordReader(
+class ByteRecordReader(
     split: CombineFileSplit,
     context: TaskAttemptContext,
     index: Integer)

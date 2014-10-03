@@ -18,7 +18,7 @@ import tipl.formats.TImg
  * @author mader
  *
  */
-@serializable class KVImg[T](dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg: RDD[(D3int, T)])(implicit lm: ClassTag[T])
+class KVImg[T](dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg: RDD[(D3int, T)])(implicit lm: ClassTag[T])
   extends TImg.ATImg(dim, pos, elSize, imageType) with TImg {
 
   def this(inImg: TImgTools.HasDimensions, imageType: Int, baseImg: RDD[(D3int, T)])(implicit lm: ClassTag[T]) =
@@ -88,16 +88,16 @@ import tipl.formats.TImg
     import org.apache.spark.sql.SQLContext
     val sqlContext = new SQLContext(baseImg.sparkContext)
     // first convert the image to a double (it makes it easier for now, since otherwise sqlcontext goes crazy with javamirrors and type tags and all that
-    val schemaTab = sqlContext.createSchemaRDD(toKVDouble.getBaseImg.map{inRow => KVImgRowGeneric(inRow._1.x,inRow._1.y,inRow._1.z,inRow._2)})
+    val schemaTab = sqlContext.createSchemaRDD(toKVDouble.getBaseImg.map{inRow => KVImg.KVImgRowGeneric(inRow._1.x,inRow._1.y,inRow._1.z,inRow._2)})
     schemaTab.saveAsParquetFile(path)
   }
 
 
 }
 
-@serializable case class KVImgRowGeneric(x: Int, y: Int, z: Int, value: Double)
 
 object KVImg {
+  case class KVImgRowGeneric(x: Int, y: Int, z: Int, value: Double) extends Serializable
 
   def ConvertTImg(sc: SparkContext, inImg: TImgRO, imType: Int) = {
     val curImg = DTImg.ConvertTImg(sc, inImg, imType)

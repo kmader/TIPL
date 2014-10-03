@@ -11,7 +11,7 @@ import tipl.formats.TiffFolder
 /**
  * The new (Hadoop 2.0) InputFormat for tiff files (not be to be confused with the recordreader itself)
  */
-@serializable class TiffFileInputFormat extends BinaryFileInputFormat[TIFSliceReader] {
+class TiffFileInputFormat extends BinaryFileInputFormat[TIFSliceReader] {
   override def createRecordReader(split: InputSplit, taContext: TaskAttemptContext) = {
     new CombineFileRecordReader[String, TIFSliceReader](split.asInstanceOf[CombineFileSplit], taContext, classOf[TiffSliceRecordReader])
   }
@@ -22,7 +22,7 @@ import tipl.formats.TiffFolder
  * out in a key-value pair, where the key is the file path and the value is the entire content of
  * the file as a TSliceReader (to keep the size information
  */
-@serializable class TiffSliceRecordReader(
+class TiffSliceRecordReader(
                                            split: CombineFileSplit,
                                            context: TaskAttemptContext,
                                            index: Integer)

@@ -4,15 +4,15 @@
     <facet type="scala" name="Scala">
       <configuration>
         <option name="compilerLibraryLevel" value="Project" />
-        <option name="compilerLibraryName" value="Maven: org.scala-lang:scala-compiler-bundle:2.10.4" />
-        <option name="compilerOptions" value="-target:jvm-1.6" />
+        <option name="compilerLibraryName" value="Maven: org.scala-lang:scala-compiler-bundle:2.10.3" />
+        <option name="compilerOptions" value="-feature -language:postfixOps" />
         <option name="deprecationWarnings" value="true" />
-        <option name="explainTypeErrors" value="true" />
-        <option name="vmOptions" value="" />
+        <option name="uncheckedWarnings" value="true" />
+        <option name="vmOptions" value="-Xms1G -Xmx2G -XX:PermSize=256m -XX:MaxPermSize=1024m" />
       </configuration>
     </facet>
   </component>
-  <component name="NewModuleRootManager" inherit-compiler-output="false">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_6" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">

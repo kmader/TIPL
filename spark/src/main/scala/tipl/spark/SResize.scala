@@ -33,7 +33,7 @@ import tipl.util.TImgBlock
  * @author mader
  *
  */
-class   SResize extends BaseTIPLPluginIO {
+class SResize extends BaseTIPLPluginIO {
 	var pOutDim = new D3int(-1,-1,-1)
 	var pOutPos = new D3int(-1,-1,-1)
 	var pFindEdge = false
@@ -89,6 +89,9 @@ class   SResize extends BaseTIPLPluginIO {
 }
 
 object SResize {
+
+  case class sstats(minx: Int, maxx: Int, miny: Int, maxy: Int, count: Int)
+
   def applyResize[A](inImg: TImgRO, outDim: D3int, outPos: D3int, findEdge: Boolean)(implicit aa: ClassTag[A]) = {
     
     val imClass = TImgTools.imageTypeToClass(inImg.getImageType)
@@ -141,7 +144,7 @@ object SResize {
 	var finalPos = basePos+baseDim
     if(find_edges) {
 	  val imgObj = dImg.asDTBool.getBaseImg.rdd
-	  case class sstats(minx: Int, maxx: Int, miny: Int, maxy: Int, count: Int)
+
 	  val sliceStats = imgObj.map(inpt => (inpt._1.z,inpt._2)). // get rid of the d3int
 	  mapValues{
 	    inBlock =>

@@ -10,6 +10,6 @@ import tipl.formats.TImg
  * @author mader
  *
  */
-@serializable abstract class SDTImg[T](dim: D3int, pos: D3int, elSize: D3float, imageType: Int)(implicit lm: ClassTag[T])
+abstract class SDTImg[T](dim: D3int, pos: D3int, elSize: D3float, imageType: Int)(implicit lm: ClassTag[T])
   extends TImg.ATImg(dim, pos, elSize, imageType) with TImg {
 }
