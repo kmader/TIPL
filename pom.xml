@@ -279,7 +279,7 @@
                 </executions>
             </plugin>
 
-            <!-- This is not needed until everything else runs smoothly
+            <!-- This is not needed until everything else runs smoothly 
              <plugin>
                  <groupId>org.scalastyle</groupId>
                  <artifactId>scalastyle-maven-plugin</artifactId>

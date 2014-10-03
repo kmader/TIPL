@@ -48,7 +48,7 @@ object TypeMacros {
   }
 
   def castArrToDouble(inVal: Any, imType: Int): Array[Double] = imType match {
-    case IMAGETYPE_BOOL => inVal.asInstanceOf[Array[Boolean]].map { bval => if (bval) 1.0 else 0.0}
+    case IMAGETYPE_BOOL => inVal.asInstanceOf[Array[Boolean]].map { bval => if (bval) 1.0 else 0.0 }
     case IMAGETYPE_CHAR => inVal.asInstanceOf[Array[Byte]].map {
       _.doubleValue()
     }
@@ -132,45 +132,44 @@ object TypeMacros {
         case m: TImgRO => DTImg.ConvertTImg(SparkGlobal.getContext(), m, IMAGETYPE_INT)
       }
     }
-    def toDTLabels(): DTImg[Array[Long]] = DTImg.ConvertTImg(SparkGlobal.getContext,cImg,IMAGETYPE_LONG)
-    def toDTValues(): DTImg[Array[Double]] = DTImg.ConvertTImg(SparkGlobal.getContext,cImg,IMAGETYPE_DOUBLE)
-    def toDTBinary(): DTImg[Array[Boolean]] = DTImg.ConvertTImg(SparkGlobal.getContext,cImg,IMAGETYPE_BOOL)
+    def toDTLabels(): DTImg[Array[Long]] = DTImg.ConvertTImg(SparkGlobal.getContext, cImg, IMAGETYPE_LONG)
+    def toDTValues(): DTImg[Array[Double]] = DTImg.ConvertTImg(SparkGlobal.getContext, cImg, IMAGETYPE_DOUBLE)
+    def toDTBinary(): DTImg[Array[Boolean]] = DTImg.ConvertTImg(SparkGlobal.getContext, cImg, IMAGETYPE_BOOL)
   }
   /**
    * makeImgBlock
    * @param size is the length of the array
    * @param outType is the type of the output image
    */
-    def makeImgBlock(size: Int, outType: Int) = {
-      assert(isValidType(outType))
-      outType match {
-      	case IMAGETYPE_BOOL => new Array[Boolean](size)
-      	case IMAGETYPE_CHAR => new Array[Char](size)
-      	case IMAGETYPE_SHORT => new Array[Short](size)
-      	case IMAGETYPE_INT => new Array[Int](size)
-      	case IMAGETYPE_LONG => new Array[Long](size)
-      	case IMAGETYPE_FLOAT => new Array[Float](size)
-      	case IMAGETYPE_DOUBLE => new Array[Double](size)
-      	case _ => throw new IllegalArgumentException(outType + " is not a known image type")
-      }
+  def makeImgBlock(size: Int, outType: Int) = {
+    assert(isValidType(outType))
+    outType match {
+      case IMAGETYPE_BOOL => new Array[Boolean](size)
+      case IMAGETYPE_CHAR => new Array[Char](size)
+      case IMAGETYPE_SHORT => new Array[Short](size)
+      case IMAGETYPE_INT => new Array[Int](size)
+      case IMAGETYPE_LONG => new Array[Long](size)
+      case IMAGETYPE_FLOAT => new Array[Float](size)
+      case IMAGETYPE_DOUBLE => new Array[Double](size)
+      case _ => throw new IllegalArgumentException(outType + " is not a known image type")
     }
-    /**
-     * A setter method for arrays of the imagetype
-     */
-    def arraySetter(arr1: Any, arr1idx: Int, arr2: Any, arr2idx: Int,arrType: Int): Unit = {
-      assert(isValidType(arrType))
-      arrType match {
-      	case IMAGETYPE_BOOL => arr1.asInstanceOf[Array[Boolean]](arr1idx)=arr2.asInstanceOf[Array[Boolean]](arr2idx)
-      	case IMAGETYPE_CHAR => arr1.asInstanceOf[Array[Char]](arr1idx)=arr2.asInstanceOf[Array[Char]](arr2idx)
-      	case IMAGETYPE_SHORT => arr1.asInstanceOf[Array[Short]](arr1idx)=arr2.asInstanceOf[Array[Short]](arr2idx)
-      	case IMAGETYPE_INT => arr1.asInstanceOf[Array[Int]](arr1idx)=arr2.asInstanceOf[Array[Int]](arr2idx)
-      	case IMAGETYPE_LONG => arr1.asInstanceOf[Array[Long]](arr1idx)=arr2.asInstanceOf[Array[Long]](arr2idx)
-      	case IMAGETYPE_FLOAT => arr1.asInstanceOf[Array[Float]](arr1idx)=arr2.asInstanceOf[Array[Float]](arr2idx)
-      	case IMAGETYPE_DOUBLE => arr1.asInstanceOf[Array[Double]](arr1idx)=arr2.asInstanceOf[Array[Double]](arr2idx)
-      	case _ => throw new IllegalArgumentException(arrType + " is not a known image type")
-      }
+  }
+  /**
+   * A setter method for arrays of the imagetype
+   */
+  def arraySetter(arr1: Any, arr1idx: Int, arr2: Any, arr2idx: Int, arrType: Int): Unit = {
+    assert(isValidType(arrType))
+    arrType match {
+      case IMAGETYPE_BOOL => arr1.asInstanceOf[Array[Boolean]](arr1idx) = arr2.asInstanceOf[Array[Boolean]](arr2idx)
+      case IMAGETYPE_CHAR => arr1.asInstanceOf[Array[Char]](arr1idx) = arr2.asInstanceOf[Array[Char]](arr2idx)
+      case IMAGETYPE_SHORT => arr1.asInstanceOf[Array[Short]](arr1idx) = arr2.asInstanceOf[Array[Short]](arr2idx)
+      case IMAGETYPE_INT => arr1.asInstanceOf[Array[Int]](arr1idx) = arr2.asInstanceOf[Array[Int]](arr2idx)
+      case IMAGETYPE_LONG => arr1.asInstanceOf[Array[Long]](arr1idx) = arr2.asInstanceOf[Array[Long]](arr2idx)
+      case IMAGETYPE_FLOAT => arr1.asInstanceOf[Array[Float]](arr1idx) = arr2.asInstanceOf[Array[Float]](arr2idx)
+      case IMAGETYPE_DOUBLE => arr1.asInstanceOf[Array[Double]](arr1idx) = arr2.asInstanceOf[Array[Double]](arr2idx)
+      case _ => throw new IllegalArgumentException(arrType + " is not a known image type")
     }
-      
+  }
 
 }
 
