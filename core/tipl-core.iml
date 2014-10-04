@@ -36,7 +36,16 @@
     <orderEntry type="library" name="Maven: xml-apis:xml-apis:1.0.b2" level="project" />
     <orderEntry type="library" name="Maven: gov.nist.math:jama:1.0.3" level="project" />
     <orderEntry type="library" name="Maven: org.mongodb:mongo-java-driver:2.12.3" level="project" />
-    <orderEntry type="library" name="Maven: gov.nih.imagej:imagej:1.47" level="project" />
+    <orderEntry type="library" name="Maven: net.imagej:ij:1.49h" level="project" />
+    <orderEntry type="module-library">
+      <library name="Maven: com.sun:tools:1.4.2">
+        <CLASSES>
+          <root url="jar:///Library/Java/JavaVirtualMachines/jdk1.7.0_40.jdk/Contents/Home/lib/tools.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="library" name="Maven: net.java.sezpoz:sezpoz:1.9" level="project" />
     <orderEntry type="library" name="Maven: org.apache.spark:spark-core_2.10:1.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-client:1.0.4" level="project" />

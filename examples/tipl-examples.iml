@@ -150,15 +150,6 @@
     <orderEntry type="library" name="Maven: xml-apis:xml-apis:1.0.b2" level="project" />
     <orderEntry type="library" name="Maven: gov.nist.math:jama:1.0.3" level="project" />
     <orderEntry type="library" name="Maven: org.mongodb:mongo-java-driver:2.12.3" level="project" />
-    <orderEntry type="library" name="Maven: gov.nih.imagej:imagej:1.47" level="project" />
-    <orderEntry type="library" name="Maven: net.java.sezpoz:sezpoz:1.9" level="project" />
-    <orderEntry type="module" module-name="tipl-spark" />
-    <orderEntry type="library" name="Maven: org.apache.spark:spark-repl_2.10:1.1.0" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Maven: org.apache.spark:spark-bagel_2.10:1.1.0" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang:jline:2.10.4" level="project" />
-    <orderEntry type="library" name="Maven: org.fusesource.jansi:jansi:1.4" level="project" />
-    <orderEntry type="module" module-name="tipl-ccgeom" />
-    <orderEntry type="module" module-name="tipl-volviewer" />
     <orderEntry type="library" name="Maven: net.imagej:ij:1.49h" level="project" />
     <orderEntry type="module-library">
       <library name="Maven: com.sun:tools:1.4.2">
@@ -169,6 +160,14 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="Maven: net.java.sezpoz:sezpoz:1.9" level="project" />
+    <orderEntry type="module" module-name="tipl-spark" />
+    <orderEntry type="library" name="Maven: org.apache.spark:spark-repl_2.10:1.1.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.apache.spark:spark-bagel_2.10:1.1.0" level="project" />
+    <orderEntry type="library" name="Maven: org.scala-lang:jline:2.10.4" level="project" />
+    <orderEntry type="library" name="Maven: org.fusesource.jansi:jansi:1.4" level="project" />
+    <orderEntry type="module" module-name="tipl-ccgeom" />
+    <orderEntry type="module" module-name="tipl-volviewer" />
     <orderEntry type="module-library">
       <library name="Maven: stupid.fiji.scripting.shit:abstractinterpreter:99.0">
         <CLASSES>

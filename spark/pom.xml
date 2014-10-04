@@ -65,6 +65,7 @@
             <artifactId>tipl-volviewer</artifactId>
             <version>${tipl.version}</version>
         </dependency>
+
         <dependency>
             <groupId>stupid.fiji.scripting.shit</groupId>
             <artifactId>abstractinterpreter</artifactId>

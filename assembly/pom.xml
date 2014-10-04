@@ -80,13 +80,11 @@
             <version>${project.version}</version>
         </dependency>
 
-
-
-        <!-- <dependency>
+        <dependency>
             <groupId>quant.tipl</groupId>
             <artifactId>tipl-jython</artifactId>
             <version>${project.version}</version>
-        </dependency> -->
+        </dependency>
         
          <dependency>
             <groupId>net.java.sezpoz</groupId>
@@ -118,6 +116,7 @@
                                 <exclude>META-INF/*.SF</exclude>
                                 <exclude>META-INF/*.DSA</exclude>
                                 <exclude>META-INF/*.RSA</exclude>
+                                <exclude>IJ_Props.txt</exclude>
                             </excludes>
                         </filter>
                     </filters>
@@ -133,7 +132,13 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                                 <!-- use the transformers to combine all the annotations before making the final file -->
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/annotations/tipl.blocks.BaseTIPLBlock\$BlockIdentity</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/annotations/tipl.util.TIPLPluginManager\$PluginInfo</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/annotations/tipl.util.TIPLPluginManager$PluginInfo</resource>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/annotations/tipl.formats.TSliceWriter\$DWriter</resource>
@@ -143,6 +148,9 @@
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>reference.conf</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>plugins.config</resource>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
                                     <resource>log4j.properties</resource>
