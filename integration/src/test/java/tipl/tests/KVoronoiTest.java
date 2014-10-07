@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Test the shape analysis on a synthetic label image
+ * Test the voronoi tesselation on an image
  *
  * @author mader
  */
@@ -50,11 +50,10 @@ public class KVoronoiTest {
     /**
      * the function to run the test on an image
      */
-    public static ITIPLPluginIn testImage(String outName, PluginInfo pluginId, TImgRO inputImage) {
+    public static ITIPLPluginIn testImage(PluginInfo pluginId, TImgRO inputImage) {
         System.out.println("Testing Component volume limits");
 
         ITIPLPluginIn SA = makeSA(pluginId, inputImage);
-        //SA.setParameter("-csvname="+outName);
         SA.execute();
         return SA;
 
@@ -68,14 +67,14 @@ public class KVoronoiTest {
 
     @Test
     public void testDiagonalImage() {
-        ITIPLPluginIn SA = testImage("diag_" + pluginId.sparkBased() + ".csv", pluginId, diagonalPlane);
+        ITIPLPluginIn SA = testImage(pluginId, diagonalPlane);
         //assertEquals(1L,SA.getInfo("groups"));
         //assertEquals(63775.0,SA.getInfo("average_volume"));
     }
 
     @Test
     public void testLayered() {
-        ITIPLPluginIn SA = testImage("layered_" + pluginId.sparkBased() + ".csv", pluginId, layeredImage);
+        ITIPLPluginIn SA = testImage(pluginId, layeredImage);
         //assertEquals(3L,SA.getInfo("groups"));
         //assertEquals(1125000.0,SA.getInfo("average_volume"));
     }

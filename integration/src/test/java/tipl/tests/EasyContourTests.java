@@ -4,7 +4,6 @@
 package tipl.tests;
 
 import org.junit.Test;
-
 import tipl.formats.MappedImage;
 import tipl.formats.TImgRO;
 import tipl.tools.EasyContour;
@@ -16,7 +15,7 @@ import tipl.util.TypedPath;
  * 
  */
 public class EasyContourTests {
-	public static final TypedPath testDir=TIPLTestingLibrary.createTestImage("/Users/mader/Dropbox/TIPL/test/ec_tests/");
+    public static final TypedPath testDir=TIPLTestingLibrary.createTestFolder("ec_tests/");
 	protected static EasyContour makeEC(final TImgRO inImage) {
 		final EasyContour EC = new EasyContour(inImage);
 		//EC.LoadImages(new TImgRO[] { inImage });

@@ -1,9 +1,7 @@
 package tipl.tests;
 
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 import tipl.formats.TImgRO;
 import tipl.tools.ComponentLabel;
 import tipl.tools.GrayAnalysis;
@@ -24,10 +22,10 @@ import static org.junit.Assert.assertEquals;
  */
 public class GrayAnalysisTest {
     final public static String testCSVData = "I am just junk\nCOLA,COLB,COLC\n1,2,3\n4,5,6\n7,8,9\n7,8,9\n";
-    static protected TypedPath tempFilePathCSV = new TypedPath("");
-    static protected TypedPath tempFilePath = new TypedPath("");
-    static protected TypedPath tempFilePath2 = new TypedPath("");
-    private static boolean doDelete = true;
+    public static final TypedPath testDir=TIPLTestingLibrary.createTestFolder("ga_tests/");
+    static protected TypedPath tempFilePathCSV = testDir.append("csv-file");
+    static protected TypedPath tempFilePath = testDir.append("temp1");
+    static protected TypedPath tempFilePath2 = testDir.append("temp2");
 
     protected static void showLine(Hashtable<String, String> cLine, int lineNo) {
         String outString = "";
@@ -109,18 +107,6 @@ public class GrayAnalysisTest {
         }
     }
 
-    /**
-     * Clean up the temporary files
-     */
-    @AfterClass
-    public static void deleteTempFiles() {
-        for (TypedPath cFile : tempFiles()) {
-            if (doDelete) TIPLGlobal.DeleteFile(cFile);
-            else System.out.println("Want to delete:: " + cFile);
-        }
-
-
-    }
 
     @Test
     public void testGrayVoxel() {
@@ -176,7 +162,7 @@ public class GrayAnalysisTest {
     }
 
     /**
-     * Test method for {@link tipl.tools.CSVFile}.
+     * Test method for {@link tipl.util.CSVFile}.
      */
     @Test
     public void testCSVFileRead() {
@@ -187,12 +173,10 @@ public class GrayAnalysisTest {
         } catch (IOException e) {
             throw new IllegalArgumentException("create the needed temporary file");
         }
-
         // check the output file itself
         int[] rowCols = checkFile(tempFilePathCSV, true);
         assertEquals(4, rowCols[0]);
         assertEquals(3, rowCols[1]);
-
     }
 
     /**

@@ -6,9 +6,11 @@ package tipl.tests;
 import tipl.formats.TImgRO;
 import tipl.tools.BaseTIPLPluginIn;
 import tipl.util.D3int;
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 import tipl.util.TypedPath;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -214,7 +216,33 @@ public abstract class TIPLTestingLibrary {
      * @return
      */
     static public TypedPath createTestImage(String imageName) {
-    	return new TypedPath(imageName);
+        TypedPath outPath = new TypedPath(imageName);
+        if (cleanup) TIPLGlobal.DeleteTempAtFinish(outPath);
+        return outPath;
+    }
+
+    static public boolean cleanup = true;
+
+    /**
+     * A way for creating typed images in the appropriate place for the given test. Additionally all sub-paths of this
+     * path are automatically deleted
+     * @param subDir
+     * @return
+     */
+    static public TypedPath createTestFolder(String subDir) {
+        String outDir = "temp_test_folder"+File.separator+subDir;
+        File outDirName = (new File(outDir));
+        outDirName.mkdirs();
+
+        TypedPath outPath = new TypedPath(outDir) {
+            @Override public TypedPath append(String inName) {
+                final TypedPath tPath = super.append(inName);
+
+                return tPath;
+            }
+        };
+        if (cleanup) TIPLGlobal.DeleteTempAtFinish(outPath,true);
+        return outPath;
     }
 
 }

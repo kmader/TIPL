@@ -1,11 +1,8 @@
 package spark.images
-import org.apache.spark.rdd.RDD
-import tipl.util.D3int
-import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
-import scala.math
-import tipl.util.TImgBlock
+import org.apache.spark.rdd.RDD
+import tipl.util.{D3int, TImgBlock}
 /**
  *  A series of tools that are useful for image data
  */
@@ -81,6 +78,7 @@ object ImageTools {
             toIterator
       }
     }
+
     compLabelingCore(inImg, partitionSpreadFunction)
 
   }

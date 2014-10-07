@@ -5,12 +5,14 @@ import tipl.formats.VirtualAim;
 import tipl.util.TIPLMongo.ITIPLUsage;
 import tipl.util.TIPLMongo.TIPLUsage;
 
-import java.awt.Window;
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -342,17 +344,50 @@ public class TIPLGlobal {
             return true;
         }
     }
+    public static void RecursivelyDelete(final TypedPath delName) {
+        assert(delName.isLocal()); // needs to be local
+        Path directory = Paths.get(delName.getPath());
+        try {
+            Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Files.delete(file);
+                    return FileVisitResult.CONTINUE;
+                }
 
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    Files.delete(dir);
+                    return FileVisitResult.CONTINUE;
+                }
+
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Directory:"+directory+" could not be recursively deleted");
+        }
+    }
+
+    public static void DeleteTempAtFinish(final TypedPath delName) {
+        DeleteTempAtFinish(delName,false);
+    }
     /**
      * A function to register the current filename as a temporary file that
-     * should be delated when the runtime finishes
+     * should be deleted when the runtime finishes
+     * @param delName the name of the file or folder to delete (works only locally now)
+     * @param recursiveDelete recursively delete if it is a directory (automatically false)
      */
-    public static void DeleteTempAtFinish(final TypedPath delName) {
+    public static void DeleteTempAtFinish(final TypedPath delName, final boolean recursiveDelete) {
         if (!delName.isLocal()) throw new IllegalArgumentException("File must be local for delete function to work:"+delName.summary());
 
         curRuntime.addShutdownHook(new Thread() {
             public boolean SimpleDeleteFunction(final TypedPath file, final String whoDel) {
+
                 final File f1 = new File(file.getPath());
+                if (f1.isDirectory() && recursiveDelete) {
+                    System.out.println(f1+" is a directory and will be recursively deleted");
+                    RecursivelyDelete(delName);
+                }
                 final boolean success = f1.delete();
                 if (!success) {
                     System.out.println(whoDel + "\t" + "ERROR:" + file
