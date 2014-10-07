@@ -5,34 +5,35 @@ package tipl.util;
 
 import ij.IJ;
 import ij.gui.GenericDialog;
+import org.scijava.annotations.Index;
+import org.scijava.annotations.IndexItem;
+import org.scijava.annotations.Indexable;
+import tipl.formats.TImgRO;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
-import net.java.sezpoz.Index;
-import net.java.sezpoz.IndexItem;
-import net.java.sezpoz.Indexable;
-import tipl.formats.TImgRO;
+//import net.java.sezpoz.Index;
+//import net.java.sezpoz.IndexItem;
+//import net.java.sezpoz.Indexable;
 
 /**
  * @author mader
  *
  */
 public class TIPLPluginManager {
-	/**
+    /**
 	 * PluginInfo stores information about each plugin so that the proper one can be loaded for the given situation
 	 * 
 	 * @author mader
 	 *
 	 */
-	@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
+	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.SOURCE)
-	@Indexable(type = TIPLPluginFactory.class)
+    @Indexable //@Indexable(type = TIPLPluginFactory.class)
 	public static @interface PluginInfo {
 		/**
 		 * The name of the plugin (VfilterScale is Filter so is FilterScale)
@@ -89,6 +90,12 @@ public class TIPLPluginManager {
 	 * @return
 	 */
 	public static ITIPLPlugin getPlugin(PluginInfo curInfo) {
+        System.out.println("Requesting:"+curInfo.toString()+"\t"+pluginList.get(curInfo)+" from "+pluginList.toString());
+        for(Map.Entry<PluginInfo,TIPLPluginFactory> cf : pluginList.entrySet()) {
+            System.out.println(""+cf.getKey().pluginType()+"->"+cf.getValue());
+            cf.getValue().get();
+        }
+
 		if(getAllPlugins().contains(curInfo)) return pluginList.get(curInfo).get();
 		else throw new IllegalArgumentException("Plugin:"+curInfo.pluginType()+" with info"+curInfo+" has not yet been loaded");
 	}
@@ -109,18 +116,27 @@ public class TIPLPluginManager {
 	 */
 	public static List<PluginInfo> getAllPlugins() {
 		if (pluginList.size()>1) return new ArrayList<PluginInfo>(pluginList.keySet());
-		for (final IndexItem<PluginInfo, TIPLPluginFactory> item : Index.load(
-				PluginInfo.class, TIPLPluginFactory.class)) {
+		for( Iterator<IndexItem<PluginInfo>> cIter = Index.load(PluginInfo.class).iterator(); cIter.hasNext();) {
+            final IndexItem<PluginInfo> item = cIter.next();
+
 			final PluginInfo bName = item.annotation();
+
 			try {
-				final TIPLPluginFactory dBlock = item.instance();
+
+				final TIPLPluginFactory dBlock = (TIPLPluginFactory) Class.forName(item.className()).newInstance();
 				System.out.println(bName + " loaded as: " + dBlock);
 				pluginList.put(bName, dBlock);
 			} catch (InstantiationException e) {
 				System.err.println("Plugin: "+bName.pluginType()+" "+bName.desc()+" could not be loaded or instantiated by plugin manager!\t"+e);
 				if (TIPLGlobal.getDebug()) e.printStackTrace();
-			}
-		}
+			} catch (ClassNotFoundException e) {
+                System.err.println("Plugin: "+bName.pluginType()+" "+bName.desc()+" could not be found by plugin manager!\t"+e);
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                System.err.println("Plugin: "+bName.pluginType()+" "+bName.desc()+" was accessed illegally by plugin manager!\t"+e);
+                e.printStackTrace();
+            }
+        }
 
 		return new ArrayList<PluginInfo>(pluginList.keySet());
 	}
@@ -150,7 +166,7 @@ public class TIPLPluginManager {
 	}
 	/** 
 	 * get the fastest plugin (by speed rank)
-	 * @param pluginType
+	 * @param inList the list of possible plugins
 	 * @return info for a single plugin
 	 */
 	public static PluginInfo getFastestPlugin(final List<PluginInfo> inList) {
@@ -162,7 +178,7 @@ public class TIPLPluginManager {
 	}
 	/** 
 	 * get the lowest memory usage plugin
-	 * @param pluginType
+	 * @param inList the list of possible plugins
 	 * @return info for a single plugin
 	 */
 	public static PluginInfo getLowestMemoryPlugin(final List<PluginInfo> inList) {
@@ -258,7 +274,6 @@ public class TIPLPluginManager {
 	/**
 	 * get the best suited plugin for the given images
 	 * @param pluginType name of the plugin
-	 * @param inImages the input images
 	 * @return an instance of the plugin as a standard plugin
 	 */
 	public static ITIPLPlugin createBestPlugin(final String pluginType) {
@@ -359,5 +374,6 @@ public class TIPLPluginManager {
 		}
 
 	}
+
 
 }

@@ -28,7 +28,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
             desc = "Full memory 2D grayscale analysis",
             sliceBased = false,
             maximumSize = 1024 * 1024 * 1024)
-    final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class ga2dFactory implements TIPLPluginManager.TIPLPluginFactory {
         @Override
         public ITIPLPlugin get() {
             return new GrayAnalysis2D();
@@ -148,7 +148,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
      * @param profImageA function image to use as the x map
      * @param profImageB function image to use as the y map
      * @param outFile    path and name of output file
-     * @param theshVal   the threshold value to use fro the inGfilt image
+     * @param threshVal   the threshold value to use fro the inGfilt image
      * @param fbinsA     the number of bins to use for the x map
      * @param fbinsB     the number of bins to use for the y map
      */
@@ -186,7 +186,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
      * @param profImageA function image to use as the x map
      * @param profImageB function image to use as the y map
      * @param outFile    path and name of output file
-     * @param theshVal   the threshold value to use fro the inGfilt image
+     * @param threshVal   the threshold value to use fro the inGfilt image
      * @param fbinsA     the number of bins to use for the x map
      * @param fbinsB     the number of bins to use for the y map
      */

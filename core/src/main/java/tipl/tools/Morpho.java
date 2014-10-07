@@ -13,7 +13,7 @@ public class Morpho extends BaseTIPLPluginBW {
     @TIPLPluginManager.PluginInfo(pluginType = "Morpho",
             desc = "Full memory morphological operations",
             sliceBased = false)
-    final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class morphoFactory implements TIPLPluginManager.TIPLPluginFactory {
         @Override
         public ITIPLPlugin get() {
             return new Morpho();

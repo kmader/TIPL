@@ -2,13 +2,7 @@ package tipl.tools;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.util.ArgumentParser;
-import tipl.util.D3int;
-import tipl.util.ITIPLPlugin;
-import tipl.util.TIPLGlobal;
-import tipl.util.TIPLPluginManager;
-import tipl.util.TImgTools;
-import tipl.util.TypedPath;
+import tipl.util.*;
 
 /**
  * This class peels a mask away from an aim by taking the outermost layers
@@ -18,7 +12,7 @@ public class Peel extends BaseTIPLPluginMult {
 	@TIPLPluginManager.PluginInfo(pluginType = "Peel",
 			desc="Full memory peel command",
 			sliceBased=false)
-	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class peelFactory implements TIPLPluginManager.TIPLPluginFactory {
 		@Override
 		public ITIPLPlugin get() {
 			return new Peel();

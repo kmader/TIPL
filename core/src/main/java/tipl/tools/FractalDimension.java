@@ -4,6 +4,11 @@
  */
 package tipl.tools;
 
+import tipl.formats.ConcurrentReader;
+import tipl.formats.TImg;
+import tipl.formats.TImgRO;
+import tipl.util.*;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -11,16 +16,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
-import tipl.formats.ConcurrentReader;
-import tipl.formats.TImg;
-import tipl.formats.TImgRO;
-import tipl.util.ArgumentParser;
-import tipl.util.D3int;
-import tipl.util.ITIPLPlugin;
-import tipl.util.TIPLGlobal;
-import tipl.util.TIPLPluginManager;
-import tipl.util.TImgTools;
 
 /**
  * FractalDimension
@@ -35,7 +30,7 @@ public class FractalDimension extends BaseTIPLPluginInExecutor {
 			desc="Full memory fractal dimesnion analysis",
 			sliceBased=false,
 			maximumSize=1024*1024*1024)
-	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class vfsFactory implements TIPLPluginManager.TIPLPluginFactory {
 		@Override
 		public ITIPLPlugin get() {
 			return new FractalDimension();

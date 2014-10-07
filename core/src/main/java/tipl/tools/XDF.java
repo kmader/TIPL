@@ -16,7 +16,7 @@ public class XDF extends BaseTIPLPluginMult {
     @TIPLPluginManager.PluginInfo(pluginType = "XDF",
             desc = "Full memory xdf command",
             sliceBased = false)
-    final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class xdfFactory implements TIPLPluginManager.TIPLPluginFactory {
         @Override
         public ITIPLPlugin get() {
             return new XDF();

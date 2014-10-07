@@ -2,14 +2,7 @@ package tipl.tools;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.util.ArgumentParser;
-import tipl.util.D3float;
-import tipl.util.D3int;
-import tipl.util.ITIPLPlugin;
-import tipl.util.TIPLGlobal;
-import tipl.util.TIPLPluginManager;
-import tipl.util.TImgTools;
-import tipl.util.TypedPath;
+import tipl.util.*;
 
 /**
  * DistGrow is the class used for labeling bubbles based on a distance map and a
@@ -19,7 +12,7 @@ public class DistGrow extends BaseTIPLPluginIO {
 	@TIPLPluginManager.PluginInfo(pluginType = "DistGrow",
 			desc="Full memory distance growing",
 			sliceBased=false)
-	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class dgFactory implements TIPLPluginManager.TIPLPluginFactory {
 		@Override
 		public ITIPLPlugin get() {
 			return new DistGrow();

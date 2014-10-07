@@ -1,14 +1,9 @@
 package tipl.tools;
 
-import java.util.Date;
-
 import tipl.formats.TImg;
-import tipl.util.ArgumentParser;
-import tipl.util.ITIPLPlugin;
-import tipl.util.TIPLGlobal;
-import tipl.util.TIPLPluginManager;
-import tipl.util.TImgTools;
-import tipl.util.TypedPath;
+import tipl.util.*;
+
+import java.util.Date;
 
 /** Performs voronoi dilation on objects into a mask and shrinks based on usage */
 public class kVoronoiShrink extends kVoronoi {
@@ -16,7 +11,7 @@ public class kVoronoiShrink extends kVoronoi {
 			desc="Full memory kvoronoi tesselation, optimized with shrinking bounds",
 			sliceBased=false,
 			speedRank=11)
-	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class kvsFactory implements TIPLPluginManager.TIPLPluginFactory {
 		@Override
 		public ITIPLPlugin get() {
 			return new kVoronoiShrink();

@@ -1,30 +1,22 @@
 package tipl.tools;
 
-import java.util.ArrayList;
-
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.util.ArgumentParser;
-import tipl.util.D3int;
-import tipl.util.ITIPLPlugin;
-import tipl.util.ITIPLPluginIO;
-import tipl.util.SGEJob;
-import tipl.util.TIPLGlobal;
-import tipl.util.TIPLPluginManager;
-import tipl.util.TImgTools;
-import tipl.util.TypedPath;
+import tipl.util.*;
+
+import java.util.ArrayList;
 
 /** Thickness map based on the Hildebrand Method */
 public class HildThickness extends Thickness {
 	@TIPLPluginManager.PluginInfo(pluginType = "HildThickness",
 			desc="Full memory hildebrand thickness",
 			sliceBased=false)
-	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class hthickFactory implements TIPLPluginManager.TIPLPluginFactory {
 		@Override
 		public ITIPLPlugin get() {
 			return new HildThickness();
 		}
-	};
+	}
 	/** Run the distance label initialization routines in parallel */
 	private static class dlRunner extends Thread {
 		int sslice, fslice;

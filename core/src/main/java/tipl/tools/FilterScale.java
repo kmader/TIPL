@@ -3,13 +3,7 @@ package tipl.tools;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.settings.FilterSettings;
-import tipl.util.ArgumentParser;
-import tipl.util.D3float;
-import tipl.util.D3int;
-import tipl.util.ITIPLPlugin;
-import tipl.util.TIPLGlobal;
-import tipl.util.TIPLPluginManager;
-import tipl.util.TImgTools;
+import tipl.util.*;
 
 /**
  * A plugin to rescale and/or filter Aim files
@@ -38,7 +32,7 @@ public class FilterScale extends BaseTIPLPluginMult implements FilterSettings.Ha
 			maximumSize=1024*1024*1024,
 			bytesPerVoxel=-1,
 			speedRank=11)
-	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class vfsFactory implements TIPLPluginManager.TIPLPluginFactory {
 		@Override
 		public ITIPLPlugin get() {
 			return new FilterScale();

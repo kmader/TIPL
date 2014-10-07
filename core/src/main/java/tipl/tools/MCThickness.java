@@ -1,16 +1,9 @@
 package tipl.tools;
 
-import java.util.Random;
-
 import tipl.formats.TImg;
-import tipl.util.ArgumentParser;
-import tipl.util.D3int;
-import tipl.util.ITIPLPlugin;
-import tipl.util.ITIPLPluginIO;
-import tipl.util.TIPLGlobal;
-import tipl.util.TIPLPluginManager;
-import tipl.util.TImgTools;
-import tipl.util.TypedPath;
+import tipl.util.*;
+
+import java.util.Random;
 
 /**
  * Calculate thickness using monte carlo methods by randomly throwing spheres
@@ -23,7 +16,7 @@ public class MCThickness extends Thickness {
 	@TIPLPluginManager.PluginInfo(pluginType = "MCThickness",
 			desc="Full memory monte carlo thickness calculation tool",
 			sliceBased=false)
-	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class mcthickFactory implements TIPLPluginManager.TIPLPluginFactory {
 		@Override
 		public ITIPLPlugin get() {
 			return new MCThickness();

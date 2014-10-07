@@ -13,7 +13,7 @@ public class cVoronoi extends VoronoiTransform {
     @TIPLPluginManager.PluginInfo(pluginType = "cVoronoi",
             desc = "Full memory center voronoi",
             sliceBased = false)
-    final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class cvFactory implements TIPLPluginManager.TIPLPluginFactory {
         @Override
         public ITIPLPlugin get() {
             return new cVoronoi();

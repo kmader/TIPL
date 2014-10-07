@@ -1,15 +1,10 @@
 package tipl.tools;
 
-import java.util.Date;
-
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.util.ArgumentParser;
-import tipl.util.ITIPLPlugin;
-import tipl.util.TIPLGlobal;
-import tipl.util.TIPLPluginManager;
-import tipl.util.TImgTools;
-import tipl.util.TypedPath;
+import tipl.util.*;
+
+import java.util.Date;
 
 // Used as a replacement for the moment function as it allows much more control over data
 // and communication with webservices (potentially?)
@@ -19,7 +14,7 @@ public class kVoronoi extends VoronoiTransform {
 			desc="Full memory kvoronoi tesselation",
 			sliceBased=false,
 			maximumSize=1024*1024*1024)
-	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class kvFactory implements TIPLPluginManager.TIPLPluginFactory {
 		@Override
 		public ITIPLPlugin get() {
 			return new kVoronoi();

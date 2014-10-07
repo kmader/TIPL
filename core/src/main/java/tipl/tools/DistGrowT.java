@@ -2,13 +2,7 @@ package tipl.tools;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.util.ArgumentParser;
-import tipl.util.D3float;
-import tipl.util.ITIPLPlugin;
-import tipl.util.TIPLGlobal;
-import tipl.util.TIPLPluginManager;
-import tipl.util.TImgTools;
-import tipl.util.TypedPath;
+import tipl.util.*;
 
 /**
  * DistGrowT is like distgrow but instead of recursive filling it uses distance
@@ -19,7 +13,7 @@ public class DistGrowT extends DistGrow {
 			desc="Full memory distgrowing with ring based distance filling",
 			sliceBased=false,
 			speedRank=1)
-	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class dgtFactory implements TIPLPluginManager.TIPLPluginFactory {
 		@Override
 		public ITIPLPlugin get() {
 			return new DistGrow();

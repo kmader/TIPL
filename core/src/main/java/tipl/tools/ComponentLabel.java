@@ -17,7 +17,7 @@ public class ComponentLabel extends BaseTIPLPluginIO {
             sliceBased = false,
             maximumSize = 1024 * 1024 * 1024,
             bytesPerVoxel = 3)
-    final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class clFactory implements TIPLPluginManager.TIPLPluginFactory {
         @Override
         public ITIPLPlugin get() {
             return new ComponentLabel();

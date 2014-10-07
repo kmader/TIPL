@@ -192,6 +192,7 @@
                     <scalaVersion>${scala.compile.version}</scalaVersion>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+
                     <encoding>UTF-8</encoding>
                     <!--  <recompileMode>incremental</recompileMode>
                       <useZincServer>true</useZincServer> -->
@@ -329,6 +330,8 @@
                            <revisionOnScmFailure>UNKNOWN</revisionOnScmFailure>
                        </configuration>
                    </plugin>
+
+
              </plugins>
 </build>
 </project>

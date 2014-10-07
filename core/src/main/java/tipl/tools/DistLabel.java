@@ -1,17 +1,17 @@
 package tipl.tools;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-
+import Jama.EigenvalueDecomposition;
+import Jama.Matrix;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.util.D3int;
 import tipl.util.ITIPLPlugin;
 import tipl.util.TIPLPluginManager;
 import tipl.util.TImgTools;
-import Jama.EigenvalueDecomposition;
-import Jama.Matrix;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 
 /**
  * DistLabel is the class used for labeling bubbles based on a distance map and
@@ -21,7 +21,7 @@ public class DistLabel extends BaseTIPLPluginIO {
 	@TIPLPluginManager.PluginInfo(pluginType = "DistLabel",
 			desc="Full memory dist labeling",
 			sliceBased=false)
-	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class dlFactory implements TIPLPluginManager.TIPLPluginFactory {
 		@Override
 		public ITIPLPlugin get() {
 			return new DistLabel();

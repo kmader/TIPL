@@ -20,7 +20,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	@TIPLPluginManager.PluginInfo(pluginType = "GrayAnalysis",
 			desc="Full memory gray value analysis",
 			sliceBased=false)
-	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class gaFactory implements TIPLPluginManager.TIPLPluginFactory {
 		@Override
 		public ITIPLPlugin get() {
 			return new GrayAnalysis();
@@ -34,7 +34,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 	@TIPLPluginManager.PluginInfo(pluginType = "ShapeAnalysis",
 			desc="Full memory shape analysis",
 			sliceBased=false)
-	final public static TIPLPluginManager.TIPLPluginFactory shapeFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class shapeFactory implements TIPLPluginManager.TIPLPluginFactory {
 		@Override
 		public ITIPLPlugin get() {
 			final GrayAnalysis gaDummy=new GrayAnalysis();

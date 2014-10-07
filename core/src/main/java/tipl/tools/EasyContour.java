@@ -17,7 +17,7 @@ public class EasyContour extends BaseTIPLPluginBW {
             desc = "Full memory easy contouring",
             sliceBased = false,
             maximumSize = 1024 * 1024 * 1024)
-    final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class ecFactory implements TIPLPluginManager.TIPLPluginFactory {
         @Override
         public ITIPLPlugin get() {
             return new EasyContour();

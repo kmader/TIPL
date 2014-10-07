@@ -18,7 +18,7 @@ public class Neighbors extends BaseTIPLPluginIO {
     @TIPLPluginManager.PluginInfo(pluginType = "Neighbors",
             desc = "Full memory neighborhood analysis",
             sliceBased = false)
-    final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+    final public static class nhFactory implements TIPLPluginManager.TIPLPluginFactory {
         @Override
         public ITIPLPlugin get() {
             return new Neighbors();

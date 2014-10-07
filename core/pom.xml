@@ -63,6 +63,14 @@
             <artifactId>ij</artifactId>
             <version>1.49h</version>
         </dependency>
+
+        <dependency> <!-- initially just for the annotations -->
+            <groupId>org.scijava</groupId>
+            <artifactId>scijava-common</artifactId>
+            <version>2.22.0</version>
+        </dependency>
+
+
         <dependency>
             <groupId>net.java.sezpoz</groupId>
             <artifactId>sezpoz</artifactId>

@@ -3,12 +3,7 @@ package tipl.tools;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.VirtualAim;
-import tipl.util.ArgumentParser;
-import tipl.util.D3int;
-import tipl.util.ITIPLPlugin;
-import tipl.util.TIPLGlobal;
-import tipl.util.TIPLPluginManager;
-import tipl.util.TImgTools;
+import tipl.util.*;
 
 /**
  * A plugin to rescale and/or filter Aim files, the V means virtual since it
@@ -18,6 +13,7 @@ import tipl.util.TImgTools;
  * 
  * @author Kevin Mader
  */
+
 public class VFilterScale extends FilterScale {	
 	
 	
@@ -26,7 +22,7 @@ public class VFilterScale extends FilterScale {
 			sliceBased=true,
 			maximumSize=-1,
 			bytesPerVoxel=-1)
-	final public static TIPLPluginManager.TIPLPluginFactory myFactory = new TIPLPluginManager.TIPLPluginFactory() {
+	final public static class vfsFactory implements TIPLPluginManager.TIPLPluginFactory {
 		@Override
 		public ITIPLPlugin get() {
 			return new VFilterScale();
