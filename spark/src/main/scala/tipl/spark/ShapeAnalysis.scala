@@ -3,19 +3,13 @@
  */
 package tipl.spark
 
-import tipl.util.ArgumentParser
-import tipl.tools.BaseTIPLPluginIn
-import tipl.tools.GrayAnalysis
-import tipl.tests.TestPosFunctions
-import tipl.util.TIPLPluginManager
-import tipl.util.TImgTools
-import tipl.util.D3int
-import scala.collection.JavaConversions._
 import tipl.formats.TImgRO
-import tipl.tools.GrayVoxels
-import tipl.util.ITIPLPlugin
 import tipl.spark.TypeMacros._
-import tipl.util.TypedPath
+import tipl.tests.TestPosFunctions
+import tipl.tools.{BaseTIPLPluginIn, GrayAnalysis, GrayVoxels}
+import tipl.util.{ArgumentParser, D3int, ITIPLPlugin, TIPLPluginManager, TImgTools, TypedPath}
+
+import scala.collection.JavaConversions._
 
 /**
  * A spark based code to perform shape analysis similarly to the code provided GrayAnalysis
@@ -26,11 +20,11 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
   @TIPLPluginManager.PluginInfo(pluginType = "ShapeAnalysis",
     desc = "Spark-based shape analysis",
     sliceBased = false, sparkBased = true)
-  val myFactory: TIPLPluginManager.TIPLPluginFactory = new TIPLPluginManager.TIPLPluginFactory() {
+  class saSparkFactory extends TIPLPluginManager.TIPLPluginFactory {
     override def get(): ITIPLPlugin = {
       return new ShapeAnalysis;
     }
-  };
+  }
 
   override def setParameter(p: ArgumentParser, prefix: String): ArgumentParser = {
     analysisName = p.getOptionString(prefix + "analysis", analysisName, "Name of analysis")

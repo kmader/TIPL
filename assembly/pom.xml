@@ -135,10 +135,7 @@
                                     <resource>META-INF/annotations/tipl.blocks.BaseTIPLBlock\$BlockIdentity</resource>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/annotations/tipl.util.TIPLPluginManager\$PluginInfo</resource>
-                                </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/annotations/tipl.util.TIPLPluginManager$PluginInfo</resource>
+                                    <resource>META-INF/json/tipl.util.TIPLPluginManager$PluginInfo</resource>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/annotations/tipl.formats.TSliceWriter\$DWriter</resource>

@@ -64,10 +64,10 @@
             <version>1.49h</version>
         </dependency>
 
-        <dependency> <!-- initially just for the annotations -->
+        <dependency> <!-- initially just for the annotations, use the development version until something better comes along -->
             <groupId>org.scijava</groupId>
             <artifactId>scijava-common</artifactId>
-            <version>2.22.0</version>
+            <version>2.33.1-SNAPSHOT</version>
         </dependency>
 
 

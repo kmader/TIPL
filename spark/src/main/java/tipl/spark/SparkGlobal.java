@@ -91,7 +91,6 @@ abstract public class SparkGlobal {
     /**
      * Create or reuses the instance of the JavaSparkContext
      *
-     * @param masterName
      * @param jobName
      * @return
      */
