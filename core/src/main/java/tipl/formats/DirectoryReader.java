@@ -13,13 +13,12 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.*;
 
-import net.java.sezpoz.Index;
-import net.java.sezpoz.IndexItem;
-import net.java.sezpoz.Indexable;
+import org.scijava.annotations.Index;
+import org.scijava.annotations.IndexItem;
+import org.scijava.annotations.Indexable;
+
 import tipl.util.ArgumentParser;
 import tipl.util.D3float;
 import tipl.util.D3int;
@@ -35,9 +34,9 @@ import tipl.util.TypedPath;
  * 
  */
 public abstract class DirectoryReader implements TReader {
-	@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
+	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.SOURCE)
-	@Indexable(type = DRFactory.class)
+	@Indexable
 	public static @interface DReader {
 		String name();
 	}
@@ -52,17 +51,33 @@ public abstract class DirectoryReader implements TReader {
 			throws InstantiationException {
 		final HashMap<FileFilter, DRFactory> current = new HashMap<FileFilter, DRFactory>();
 
-		for (final IndexItem<DReader, DRFactory> item : Index.load(
-				DReader.class, DRFactory.class)) {
-			final FileFilter f = item.instance().getFilter();
-			final DRFactory d = item.instance();
-			System.out.println(item.annotation().name() + " loaded as: " + d);
-			current.put(f, d);
-		}
+        for (Iterator<IndexItem<DReader>> cIter = Index.load(DReader.class).iterator(); cIter.hasNext(); ) {
+            final IndexItem<DReader> item = cIter.next();
+
+            final DReader bName = item.annotation();
+
+            try {
+
+                final DRFactory dBlock = (DRFactory) Class.forName(item.className()).newInstance();
+                final FileFilter f = dBlock.getFilter();
+                System.out.println(bName + " loaded as: " + dBlock);
+                current.put(f, dBlock);
+                System.out.println(item.annotation().name() + " loaded as: " + dBlock);
+            } catch (InstantiationException e) {
+                System.err.println(DirectoryReader.class.getSimpleName()+": " + bName.name() + " could not be loaded or instantiated by plugin manager!\t" + e);
+                if (TIPLGlobal.getDebug()) e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                System.err.println(DirectoryReader.class.getSimpleName()+": " + bName.name()+ " could not be found by plugin manager!\t" + e);
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                System.err.println(DirectoryReader.class.getSimpleName()+": " + bName.name() + " was accessed illegally by plugin manager!\t" + e);
+                e.printStackTrace();
+            }
+        }
 		return current;
 	}
 
-	final static String version = "28-08-2014";
+	final static String version = "08-10-2014";
 
 
 	/**

@@ -26,7 +26,7 @@ public class XDFBlock extends BaseTIPLBlock {
 	@BaseTIPLBlock.BlockIdentity(blockName = "XDFBlock",
 			inputNames= {"object(s) image", "mask image","gray value image"}, 
 			outputNames= {"correlation function"})
-	final public static TIPLBlockFactory myFactory = new BaseTIPLBlock.TIPLBlockFactory() {
+    final public static class xdfBlockFactory implements BaseTIPLBlock.TIPLBlockFactory {
 		@Override
 		public ITIPLBlock get() {
 			return new XDFBlock();

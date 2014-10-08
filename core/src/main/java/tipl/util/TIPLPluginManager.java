@@ -18,9 +18,6 @@ import java.util.*;
 
 import java.util.Map.Entry;
 
-//import net.java.sezpoz.Index;
-//import net.java.sezpoz.IndexItem;
-//import net.java.sezpoz.Indexable;
 
 /**
  * @author mader

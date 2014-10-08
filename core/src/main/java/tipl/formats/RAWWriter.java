@@ -1,6 +1,7 @@
 package tipl.formats;
 
 import tipl.util.TIPLGlobal;
+import tipl.util.TImgTools;
 import tipl.util.TypedPath;
 
 import java.io.BufferedWriter;
@@ -88,13 +89,13 @@ public class RAWWriter implements TWriter {
         final TImg.TImgFull fullOutImg = new TImg.TImgFull(outImg);
         try {
             switch (rawType) {
-                case 0:
+                case TImgTools.IMAGETYPE_CHAR:
                     final char[] cslice = fullOutImg.getByteArray(n);
                     buffer = new byte[cslice.length];
                     for (int i = 0; i < cslice.length; i++)
                         buffer[i] = (byte) cslice[i];
                     break;
-                case 1:
+                case TImgTools.IMAGETYPE_SHORT:
                     final short[] sslice = fullOutImg.getShortArray(n);
                     buffer = new byte[2 * sslice.length];
                     for (int i = 0; i < sslice.length; i++) {
@@ -103,7 +104,7 @@ public class RAWWriter implements TWriter {
                         System.arraycopy(tbuffer, 0, buffer, 4 * i + 0, 2);
                     }
                     break;
-                case 2:
+                case TImgTools.IMAGETYPE_INT:
                     final int[] islice = fullOutImg.getIntArray(n);
                     buffer = new byte[4 * islice.length];
                     for (int i = 0; i < islice.length; i++) {
@@ -112,7 +113,7 @@ public class RAWWriter implements TWriter {
                         System.arraycopy(tbuffer, 0, buffer, 4 * i + 0, 4);
                     }
                     break;
-                case 3:
+                case TImgTools.IMAGETYPE_FLOAT:
                     final float[] fslice = fullOutImg.getFloatArray(n);
                     buffer = new byte[4 * fslice.length];
                     for (int i = 0; i < fslice.length; i++) {
@@ -121,7 +122,7 @@ public class RAWWriter implements TWriter {
                         System.arraycopy(tbuffer, 0, buffer, 4 * i + 0, 4);
                     }
                     break;
-                case 10:
+                case TImgTools.IMAGETYPE_BOOL:
                     final boolean[] bslice = fullOutImg.getBoolArray(n);
                     int byteLen = bslice.length / 8;
                     if ((bslice.length % 8) != 0)

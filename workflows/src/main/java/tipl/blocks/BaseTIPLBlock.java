@@ -3,20 +3,18 @@
  */
 package tipl.blocks;
 
+import java.io.FileFilter;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.reflections.Reflections;
 
-import net.java.sezpoz.Index;
-import net.java.sezpoz.IndexItem;
-import net.java.sezpoz.Indexable;
+import org.scijava.annotations.Index;
+import org.scijava.annotations.IndexItem;
+import org.scijava.annotations.Indexable;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
@@ -39,9 +37,9 @@ import tipl.util.TypedPath;
  */
 public abstract class BaseTIPLBlock implements ITIPLBlock {
 	
-	@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
+	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.SOURCE)
-	@Indexable(type = TIPLBlockFactory.class)
+	@Indexable
 	public static @interface BlockIdentity {
 		String blockName();
 		String desc() default "";
@@ -109,14 +107,30 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 		
 		final HashMap<BlockIdentity, TIPLBlockFactory> current = new HashMap<BlockIdentity, TIPLBlockFactory>();
 
-		for (final IndexItem<BlockIdentity, TIPLBlockFactory> item : Index.load(
-				BlockIdentity.class, TIPLBlockFactory.class)) {
-			final BlockIdentity bName = item.annotation();
-			final TIPLBlockFactory dBlock = item.instance();
-			System.out.println(bName + " loaded as: " + dBlock);
-			current.put(bName, dBlock);
-		}
-		return current;
+
+        for (Iterator<IndexItem<BlockIdentity>> cIter = Index.load(BlockIdentity.class).iterator(); cIter.hasNext(); ) {
+            final IndexItem<BlockIdentity> item = cIter.next();
+
+            final BlockIdentity bName = item.annotation();
+
+            try {
+
+                final TIPLBlockFactory dBlock = (TIPLBlockFactory) Class.forName(item.className()).newInstance();
+                System.out.println(bName + " loaded as: " + dBlock);
+                current.put(bName, dBlock);
+                System.out.println(item.annotation().blockName() + " loaded as: " + dBlock);
+            } catch (InstantiationException e) {
+                System.err.println(BaseTIPLBlock.class.getSimpleName()+": " + bName.blockName() + " could not be loaded or instantiated by plugin manager!\t" + e);
+                if (TIPLGlobal.getDebug()) e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                System.err.println(BaseTIPLBlock.class.getSimpleName()+": " + bName.blockName()+ " could not be found by plugin manager!\t" + e);
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                System.err.println(BaseTIPLBlock.class.getSimpleName()+": " + bName.blockName() + " was accessed illegally by plugin manager!\t" + e);
+                e.printStackTrace();
+            }
+        }
+        return current;
 	}
 	
 	protected ITIPLBlock[] prereqBlocks = new ITIPLBlock[] {};
@@ -184,7 +198,6 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	 * @param earlierPathArgs
 	 * @param outArgs
 	 * @param job the command to actually be run (type blockrunnable or configurableblockrunnable)
-	 * @param parFunc
 	 * @return TIPLBlock to be run later
 	 */
 	public static ITIPLBlock InlineBlock(final String name, final String prefix,
@@ -206,7 +219,6 @@ public abstract class BaseTIPLBlock implements ITIPLBlock {
 	 * @param outputArgs
 	 *            needed output arguments
 	 * @param job the command to actually be run (type blockrunnable or configurableblockrunnable)
-	 * @param parFunc
 	 * @return TIPLBlock to be run later
 	 */
 	public static ITIPLBlock InlineBlock(final String name, final String prefix,

@@ -1,15 +1,19 @@
 package tipl.formats;
 
+import java.io.FileFilter;
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.HashMap;
+import java.util.Iterator;
 
-import net.java.sezpoz.Index;
-import net.java.sezpoz.IndexItem;
-import net.java.sezpoz.Indexable;
+import org.scijava.annotations.Index;
+import org.scijava.annotations.IndexItem;
+import org.scijava.annotations.Indexable;
+
+import tipl.util.TIPLGlobal;
 import tipl.util.TImgBlock;
 import tipl.util.TypedPath;
 
@@ -24,7 +28,7 @@ import tipl.util.TypedPath;
 public interface TSliceWriter extends Serializable {
 	@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
 	@Retention(RetentionPolicy.SOURCE)
-	@Indexable(type = DWFactory.class)
+	@Indexable
 	public static @interface DWriter {
 		String name();
 		String type() default "";
@@ -49,13 +53,31 @@ public interface TSliceWriter extends Serializable {
 				throws InstantiationException {
 			final HashMap<String, DWFactory> current = new HashMap<String, DWFactory>();
 
-			for (final IndexItem<DWriter, DWFactory> item : Index.load(
-					DWriter.class, DWFactory.class)) {
-				final DWFactory d = item.instance();
-				System.out.println(item.annotation().name() + " loaded as: " + d);
-				current.put(item.annotation().type(), d);
-			}
-			return current;
+
+            for (Iterator<IndexItem<DWriter>> cIter = Index.load(DWriter.class).iterator(); cIter.hasNext(); ) {
+                final IndexItem<DWriter> item = cIter.next();
+
+                final DWriter bName = item.annotation();
+
+                try {
+
+                    final DWFactory dBlock = (DWFactory) Class.forName(item.className()).newInstance();
+
+                    System.out.println(bName + " loaded as: " + dBlock);
+                    current.put(item.annotation().type(), dBlock);
+                    System.out.println(item.annotation().name() + " loaded as: " + dBlock);
+                } catch (InstantiationException e) {
+                    System.err.println(TSliceWriter.class.getSimpleName()+": " + bName.name() + " could not be loaded or instantiated by plugin manager!\t" + e);
+                    if (TIPLGlobal.getDebug()) e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    System.err.println(TSliceWriter.class.getSimpleName()+": " + bName.name()+ " could not be found by plugin manager!\t" + e);
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    System.err.println(TSliceWriter.class.getSimpleName()+": " + bName.name() + " was accessed illegally by plugin manager!\t" + e);
+                    e.printStackTrace();
+                }
+            }
+            return current;
 		}
 		/**
 		 * ChooseBest chooses the directory reader plugin which has the highest

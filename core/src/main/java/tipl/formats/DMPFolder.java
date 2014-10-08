@@ -102,21 +102,10 @@ public class DMPFolder extends DirectoryReader {
 	}
 
 	final static String version = "08-29-2014";
-	final static private FileFilter dmpFilter = new FileFilter() {
-		@Override
-		public boolean accept(final File file) {
-			if (file.getAbsolutePath().endsWith(".dmp"))
-				return true;
-			if (file.getAbsolutePath().endsWith(".DMP"))
-				return true;
-			if (file.getAbsolutePath().endsWith(".Dmp"))
-				return true;
-			return false;
-		}
-	};
+
 
 	@DirectoryReader.DReader(name = "DMP")
-	final public static DRFactory myFactory = new DRFactory() {
+    final public static class dmpreaderFactory implements DRFactory  {
 		@Override
 		public DirectoryReader get(final TypedPath path) {
 			try {
@@ -128,6 +117,19 @@ public class DMPFolder extends DirectoryReader {
 			}
 		}
 
+        final static public FileFilter dmpFilter = new FileFilter() {
+            @Override
+            public boolean accept(final File file) {
+                if (file.getAbsolutePath().endsWith(".dmp"))
+                    return true;
+                if (file.getAbsolutePath().endsWith(".DMP"))
+                    return true;
+                if (file.getAbsolutePath().endsWith(".Dmp"))
+                    return true;
+                return false;
+            }
+        };
+
 		@Override
 		public FileFilter getFilter() {
 			return dmpFilter;
@@ -136,7 +138,7 @@ public class DMPFolder extends DirectoryReader {
 
 
 	public DMPFolder(final TypedPath path) throws IOException {
-		super(path, dmpFilter, new DMPSliceFactory());
+		super(path,dmpreaderFactory.dmpFilter, new DMPSliceFactory());
 
 	}
 

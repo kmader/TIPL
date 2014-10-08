@@ -23,7 +23,7 @@ public class FilterBlock extends BaseTIPLBlock {
 	@BaseTIPLBlock.BlockIdentity(blockName = "FilterBlock",
 			inputNames= {"unfiltered image"}, 
 			outputNames= {"filtered image"})
-	final public static TIPLBlockFactory myFactory = new BaseTIPLBlock.TIPLBlockFactory() {
+	final public static class filtBlockFactory implements BaseTIPLBlock.TIPLBlockFactory {
 		@Override
 		public ITIPLBlock get() {
 			return new FilterBlock();

@@ -49,7 +49,6 @@
     <orderEntry type="library" name="Maven: org.scijava:scijava-common:2.33.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: com.googlecode.gentyref:gentyref:1.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.bushe:eventbus:1.4" level="project" />
-    <orderEntry type="library" name="Maven: net.java.sezpoz:sezpoz:1.9" level="project" />
     <orderEntry type="library" name="Maven: org.apache.spark:spark-core_2.10:1.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-client:1.0.4" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-core:1.0.4" level="project" />

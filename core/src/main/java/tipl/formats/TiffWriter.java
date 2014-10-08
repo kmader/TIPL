@@ -30,14 +30,15 @@ import com.sun.media.jai.codecimpl.util.RasterFactory;
  */
 public class TiffWriter implements TSliceWriter {
 	@TSliceWriter.DWriter(name = "Tiff Folder",type="tif")
-	final public static DWFactory myFactory = new DWFactory() {
+	final public static class myFactory implements DWFactory {
 		@Override
 		public TSliceWriter get(final TImgRO outFile,final TypedPath path,int outType) {
 			TSliceWriter outWriter=new TiffWriter();
 			outWriter.SetupWriter(outFile, path, outType);
 			return outWriter;
 		}
-	};
+	}
+    
 	protected TypedPath plPath=new TypedPath("");
 
 	protected TypedPath outpath=new TypedPath("");
@@ -135,10 +136,7 @@ public class TiffWriter implements TSliceWriter {
 	 * Creates a buffered image for the given slice which can be used to save as
 	 * tiff
 	 * 
-	 * @param n
-	 *            slice number
-	 * @param cType
-	 *            type of image to buffer
+	 * @param in the slice (as an image block)
 	 * @return a bufferedimage
 	 */
 	protected BufferedImage sliceAsImage(final TImgBlock in) {

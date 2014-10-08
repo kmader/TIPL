@@ -21,7 +21,7 @@ public class GrowRegions extends BaseTIPLBlock {
 	@BaseTIPLBlock.BlockIdentity(blockName = "GrowRegionsBlock",
 			inputNames= {"labeled image", "mask image"}, 
 			outputNames= {"filled labels", "filled neighborhood"})
-	final public static TIPLBlockFactory myFactory = new BaseTIPLBlock.TIPLBlockFactory() {
+    final public static class growRegionsBlockFactory implements BaseTIPLBlock.TIPLBlockFactory {
 		@Override
 		public ITIPLBlock get() {
 			return new GrowRegions();

@@ -17,7 +17,7 @@ public class ThresholdBlock extends BaseTIPLBlock {
 	@BaseTIPLBlock.BlockIdentity(blockName = "ThresholdBlock",
 			inputNames= {"gray valued image"}, 
 			outputNames= {"threshold image", "inverse threshold", "mask image"})
-	final public static TIPLBlockFactory myFactory = new BaseTIPLBlock.TIPLBlockFactory() {
+    final public static class threshBlockFactory implements BaseTIPLBlock.TIPLBlockFactory {
 		@Override
 		public ITIPLBlock get() {
 			return new ThresholdBlock();

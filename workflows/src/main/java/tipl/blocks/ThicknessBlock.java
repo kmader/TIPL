@@ -15,7 +15,7 @@ public class ThicknessBlock extends BaseTIPLBlock {
 	@BaseTIPLBlock.BlockIdentity(blockName = "ThicknessBlock",
 			inputNames= {"threshold image"}, 
 			outputNames= {"thickness map","distance map","ridge map"})
-	final public static TIPLBlockFactory myFactory = new BaseTIPLBlock.TIPLBlockFactory() {
+    final public static class thicknessBlockFactory implements BaseTIPLBlock.TIPLBlockFactory {
 		@Override
 		public ITIPLBlock get() {
 			return new ThicknessBlock();

@@ -72,13 +72,6 @@
 
 
         <dependency>
-            <groupId>net.java.sezpoz</groupId>
-            <artifactId>sezpoz</artifactId>
-            <version>1.9</version>
-        </dependency>
-
-
-        <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.binary.version}</artifactId>
             <version>${spark.version}</version>

@@ -172,23 +172,10 @@ public class TiffFolder extends DirectoryReader {
 	}
 
 	final static String version = "26-02-2014";
-	final static public FileFilter tifFilter = new FileFilter() {
-		@Override
-		public boolean accept(final File file) {
-			if (file.getAbsolutePath().endsWith(".tif"))
-				return true;
-			if (file.getAbsolutePath().endsWith(".TIF"))
-				return true;
-			if (file.getAbsolutePath().endsWith(".tiff"))
-				return true;
-			if (file.getAbsolutePath().endsWith(".TIFF"))
-				return true;
-			return false;
-		}
-	};
+
 
 	@DirectoryReader.DReader(name = "tiff")
-	final public static DRFactory readerFactory = new DRFactory() {
+    final public static class tifreaderFactory implements DRFactory {
 		@Override
 		public DirectoryReader get(final TypedPath path) {
 			try {
@@ -200,28 +187,29 @@ public class TiffFolder extends DirectoryReader {
 			}
 		}
 
+        final static public FileFilter tifFilter = new FileFilter() {
+            @Override
+            public boolean accept(final File file) {
+                if (file.getAbsolutePath().endsWith(".tif"))
+                    return true;
+                if (file.getAbsolutePath().endsWith(".TIF"))
+                    return true;
+                if (file.getAbsolutePath().endsWith(".tiff"))
+                    return true;
+                if (file.getAbsolutePath().endsWith(".TIFF"))
+                    return true;
+                return false;
+            }
+        };
+
 		@Override
 		public FileFilter getFilter() {
-			return TiffFolder.tifFilter;
+			return tifFilter;
 		}
 	};
-	
-	final static public FileFilter jpegFilter = new FileFilter() {
-		@Override
-		public boolean accept(final File file) {
-			if (file.getAbsolutePath().endsWith(".jpg"))
-				return true;
-			if (file.getAbsolutePath().endsWith(".JPG"))
-				return true;
-			if (file.getAbsolutePath().endsWith(".jpeg"))
-				return true;
-			if (file.getAbsolutePath().endsWith(".JPEG"))
-				return true;
-			return false;
-		}
-	};
+
 	@DirectoryReader.DReader(name = "jpeg")
-	final public static DRFactory jpreaderFactory = new DRFactory() {
+	final public static class jpreaderFactory implements DRFactory {
 		@Override
 		public DirectoryReader get(final TypedPath path) {
 			try {
@@ -233,11 +221,26 @@ public class TiffFolder extends DirectoryReader {
 			}
 		}
 
+        final static public FileFilter jpegFilter = new FileFilter() {
+            @Override
+            public boolean accept(final File file) {
+                if (file.getAbsolutePath().endsWith(".jpg"))
+                    return true;
+                if (file.getAbsolutePath().endsWith(".JPG"))
+                    return true;
+                if (file.getAbsolutePath().endsWith(".jpeg"))
+                    return true;
+                if (file.getAbsolutePath().endsWith(".JPEG"))
+                    return true;
+                return false;
+            }
+        };
+
 		@Override
 		public FileFilter getFilter() {
-			return TiffFolder.jpegFilter;
+			return jpegFilter;
 		}
-	};
+	}
 	/** 
 	 * operating as a tiff or jpeg folder
 	 */
