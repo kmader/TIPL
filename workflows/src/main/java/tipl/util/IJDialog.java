@@ -26,6 +26,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Vector;
 
+import net.miginfocom.swing.MigLayout;
+
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -171,12 +173,14 @@ WindowListener,ITIPLDialog {
 		addKeyListener(this);
 		addWindowListener(this);
 		setResizable(true);
+        setLayout(new MigLayout());
 		//this.setSize(1024,768);
 
 	}
 	static protected JPanel createInnerPanel(String text) {
 		JPanel jplPanel = new JPanel();
-		jplPanel.setLayout(new GridBagLayout());
+		jplPanel.setLayout(new MigLayout());
+        //jplPanel.setLayout(new GridBagLayout());
 		return jplPanel;
 	}
 
@@ -673,7 +677,6 @@ WindowListener,ITIPLDialog {
 	 * @param defaultValue value to be initially displayed
 	 * @param digits       number of digits to right of decimal point
 	 * @param columns      width of field in characters
-	 * @param units        a string displayed to the right of the field
 	 */
 	public ITIPLDialog.GUIControl appendNumericField(final String label, final String helpText,
 			final double defaultValue, final int digits, int columns) {

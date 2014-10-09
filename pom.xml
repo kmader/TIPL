@@ -154,6 +154,10 @@
                     <!-- Make true to use scalatest instead 
                     <skipTests>true</skipTests>
                     -->
+
+                    <parallel>classes</parallel>
+                    <threadCount>2</threadCount>
+
                 </configuration>
             </plugin>
 
