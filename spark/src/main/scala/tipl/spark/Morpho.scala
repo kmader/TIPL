@@ -13,7 +13,7 @@ import tipl.tools.BaseTIPLPluginIO
 abstract class Morpho extends BaseTIPLPluginIO {
 
   override def setParameter(p: ArgumentParser, prefix: String): ArgumentParser = {
-    return p
+    p
   }
 
   var labeledImage: KVImg[Boolean] = null

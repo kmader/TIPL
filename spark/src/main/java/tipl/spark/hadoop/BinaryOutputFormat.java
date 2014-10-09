@@ -15,11 +15,11 @@ import org.apache.hadoop.util.ReflectionUtils;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class BinaryOutputFormat<K, V> extends FileOutputFormat<K, V> {
+class BinaryOutputFormat<K, V> extends FileOutputFormat<K, V> {
 
-    protected static class BinaryRecordWriter<K, V> extends RecordWriter<K, V> {
+    static class BinaryRecordWriter<K, V> extends RecordWriter<K, V> {
 
-        protected DataOutputStream out;
+        final DataOutputStream out;
 
         public BinaryRecordWriter(DataOutputStream out) {
             this.out = out;

@@ -21,16 +21,16 @@ import java.util.concurrent.TimeUnit;
  */
 @Deprecated
 public class VolumeFraction {
-    final public static TImgRO classTestImage = TestPosFunctions.wrapIt(1000,
+    private final static TImgRO classTestImage = TestPosFunctions.wrapIt(1000,
             new TestPosFunctions.DiagonalPlaneFunction());
-    static protected final int loopMax = 200;
+    private static final int loopMax = 200;
 
-    public static JavaSparkContext getContext(String masterName, String jobName) {
+    private static JavaSparkContext getContext(String masterName, String jobName) {
         return new JavaSparkContext(masterName, jobName,
                 System.getenv("SPARK_HOME"), JavaSparkContext.jarOfClass(VolumeFraction.class));
     }
 
-    protected static Result processSlice(boolean[] workData) {
+    private static Result processSlice(boolean[] workData) {
         long inV = 0, outV = 0;
         /** Do something silly like count each slice 100 times and count the in phase only on the even slices
          * and the out of phase only on the odd slices
@@ -44,7 +44,7 @@ public class VolumeFraction {
         return new Result(inV, outV);
     }
 
-    public static Result sendTImgTest(final TImgRO testImg, JavaSparkContext jsc) {
+    private static Result sendTImgTest(final TImgRO testImg, JavaSparkContext jsc) {
 
         final int sliceCount = testImg.getDim().z;
         int blockCount = sliceCount / 20;
@@ -67,7 +67,7 @@ public class VolumeFraction {
         });
     }
 
-    public static Result globalTImgTest(JavaSparkContext jsc) {
+    private static Result globalTImgTest(JavaSparkContext jsc) {
 
         final int sliceCount = classTestImage.getDim().z;
         final int blockCount = sliceCount / 20;
@@ -89,7 +89,7 @@ public class VolumeFraction {
         });
     }
 
-    public static Result localTImgTest(JavaSparkContext jsc) {
+    private static Result localTImgTest(JavaSparkContext jsc) {
 
         final int sliceCount = 1000;
         final int blockCount = sliceCount / 20;

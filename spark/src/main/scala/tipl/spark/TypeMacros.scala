@@ -107,13 +107,13 @@ object TypeMacros {
       val ity = cImg.getImageType
       cImg match {
         case m: KVImg[_] => m
-        case m: DTImg[_] if (ity == IMAGETYPE_BOOL) => KVImg.fromDTImg[Array[Boolean], Boolean](m.asInstanceOf[DTImg[Array[Boolean]]])
-        case m: DTImg[_] if (ity == IMAGETYPE_CHAR) => KVImg.fromDTImg[Array[Char], Char](m.asInstanceOf[DTImg[Array[Char]]])
-        case m: DTImg[_] if (ity == IMAGETYPE_SHORT) => KVImg.fromDTImg[Array[Short], Short](m.asInstanceOf[DTImg[Array[Short]]])
-        case m: DTImg[_] if (ity == IMAGETYPE_INT) => KVImg.fromDTImg[Array[Int], Int](m.asInstanceOf[DTImg[Array[Int]]])
-        case m: DTImg[_] if (ity == IMAGETYPE_LONG) => KVImg.fromDTImg[Array[Long], Long](m.asInstanceOf[DTImg[Array[Long]]])
-        case m: DTImg[_] if (ity == IMAGETYPE_FLOAT) => KVImg.fromDTImg[Array[Float], Float](m.asInstanceOf[DTImg[Array[Float]]])
-        case m: DTImg[_] if (ity == IMAGETYPE_DOUBLE) => KVImg.fromDTImg[Array[Double], Double](m.asInstanceOf[DTImg[Array[Double]]])
+        case m: DTImg[_] if ity == IMAGETYPE_BOOL => KVImg.fromDTImg[Array[Boolean], Boolean](m.asInstanceOf[DTImg[Array[Boolean]]])
+        case m: DTImg[_] if ity == IMAGETYPE_CHAR => KVImg.fromDTImg[Array[Char], Char](m.asInstanceOf[DTImg[Array[Char]]])
+        case m: DTImg[_] if ity == IMAGETYPE_SHORT => KVImg.fromDTImg[Array[Short], Short](m.asInstanceOf[DTImg[Array[Short]]])
+        case m: DTImg[_] if ity == IMAGETYPE_INT => KVImg.fromDTImg[Array[Int], Int](m.asInstanceOf[DTImg[Array[Int]]])
+        case m: DTImg[_] if ity == IMAGETYPE_LONG => KVImg.fromDTImg[Array[Long], Long](m.asInstanceOf[DTImg[Array[Long]]])
+        case m: DTImg[_] if ity == IMAGETYPE_FLOAT => KVImg.fromDTImg[Array[Float], Float](m.asInstanceOf[DTImg[Array[Float]]])
+        case m: DTImg[_] if ity == IMAGETYPE_DOUBLE => KVImg.fromDTImg[Array[Double], Double](m.asInstanceOf[DTImg[Array[Double]]])
         case m: TImgRO => KVImg.ConvertTImg(SparkGlobal.getContext(), m, IMAGETYPE_INT)
       }
     }
@@ -122,13 +122,13 @@ object TypeMacros {
       val ity = cImg.getImageType
       cImg match {
         case m: DTImg[_] => m
-        case m: KVImg[_] if (ity == IMAGETYPE_BOOL) => DTImgOps.fromKVImg[Boolean](m.asInstanceOf[KVImg[Boolean]])
-        case m: KVImg[_] if (ity == IMAGETYPE_CHAR) => DTImgOps.fromKVImg[Char](m.asInstanceOf[KVImg[Char]])
-        case m: KVImg[_] if (ity == IMAGETYPE_SHORT) => DTImgOps.fromKVImg[Short](m.asInstanceOf[KVImg[Short]])
-        case m: KVImg[_] if (ity == IMAGETYPE_INT) => DTImgOps.fromKVImg[Int](m.asInstanceOf[KVImg[Int]])
-        case m: KVImg[_] if (ity == IMAGETYPE_LONG) => DTImgOps.fromKVImg[Long](m.asInstanceOf[KVImg[Long]])
-        case m: KVImg[_] if (ity == IMAGETYPE_FLOAT) => DTImgOps.fromKVImg[Float](m.asInstanceOf[KVImg[Float]])
-        case m: KVImg[_] if (ity == IMAGETYPE_DOUBLE) => DTImgOps.fromKVImg[Double](m.asInstanceOf[KVImg[Double]])
+        case m: KVImg[_] if ity == IMAGETYPE_BOOL => DTImgOps.fromKVImg[Boolean](m.asInstanceOf[KVImg[Boolean]])
+        case m: KVImg[_] if ity == IMAGETYPE_CHAR => DTImgOps.fromKVImg[Char](m.asInstanceOf[KVImg[Char]])
+        case m: KVImg[_] if ity == IMAGETYPE_SHORT => DTImgOps.fromKVImg[Short](m.asInstanceOf[KVImg[Short]])
+        case m: KVImg[_] if ity == IMAGETYPE_INT => DTImgOps.fromKVImg[Int](m.asInstanceOf[KVImg[Int]])
+        case m: KVImg[_] if ity == IMAGETYPE_LONG => DTImgOps.fromKVImg[Long](m.asInstanceOf[KVImg[Long]])
+        case m: KVImg[_] if ity == IMAGETYPE_FLOAT => DTImgOps.fromKVImg[Float](m.asInstanceOf[KVImg[Float]])
+        case m: KVImg[_] if ity == IMAGETYPE_DOUBLE => DTImgOps.fromKVImg[Double](m.asInstanceOf[KVImg[Double]])
         case m: TImgRO => DTImg.ConvertTImg(SparkGlobal.getContext(), m, IMAGETYPE_INT)
       }
     }

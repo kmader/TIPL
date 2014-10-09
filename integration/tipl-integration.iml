@@ -168,25 +168,6 @@
     <orderEntry type="library" name="Maven: com.googlecode.gentyref:gentyref:1.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.bushe:eventbus:1.4" level="project" />
     <orderEntry type="module" module-name="tipl-ccgeom" />
-    <orderEntry type="module" module-name="tipl-volviewer" />
-    <orderEntry type="module-library">
-      <library name="Maven: stupid.fiji.scripting.shit:abstractinterpreter:99.0">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../tipl/tipl-libraries/fiji-integration/fiji-scripting.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="Maven: stupid.fiji.scripting.shit:commonlibs:99.0">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../tipl/tipl-libraries/fiji-integration/ij-core.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
   </component>
 </module>
 

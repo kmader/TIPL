@@ -163,7 +163,14 @@
     <orderEntry type="library" name="Maven: com.twitter:parquet-format:2.0.0" level="project" />
     <orderEntry type="library" name="Maven: com.twitter:parquet-jackson:1.4.3" level="project" />
     <orderEntry type="module" module-name="tipl-ccgeom" />
+    <orderEntry type="module" module-name="tipl-VIB" />
+    <orderEntry type="module" module-name="tipl-workflows" />
+    <orderEntry type="library" name="Maven: com.miglayout:miglayout-core:4.2" level="project" />
+    <orderEntry type="library" name="Maven: com.miglayout:miglayout-swing:4.2" level="project" />
     <orderEntry type="module" module-name="tipl-volviewer" />
+    <orderEntry type="module" module-name="tipl-integration" />
+    <orderEntry type="module" module-name="tipl-jython" />
+    <orderEntry type="library" name="Maven: org.python:jython:2.7-b3" level="project" />
     <orderEntry type="module-library">
       <library name="Maven: stupid.fiji.scripting.shit:abstractinterpreter:99.0">
         <CLASSES>
@@ -182,13 +189,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module" module-name="tipl-VIB" />
-    <orderEntry type="module" module-name="tipl-workflows" />
-    <orderEntry type="library" name="Maven: com.miglayout:miglayout-core:4.2" level="project" />
-    <orderEntry type="library" name="Maven: com.miglayout:miglayout-swing:4.2" level="project" />
-    <orderEntry type="module" module-name="tipl-integration" />
-    <orderEntry type="module" module-name="tipl-jython" />
-    <orderEntry type="library" name="Maven: org.python:jython:2.7-b3" level="project" />
   </component>
 </module>
 

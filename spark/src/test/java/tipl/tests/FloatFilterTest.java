@@ -17,20 +17,20 @@ import static org.junit.Assert.assertEquals;
 
 public class FloatFilterTest {
 
-    static final TImgRO lineImg = TestPosFunctions.wrapItAs(400,
+    private static final TImgRO lineImg = TestPosFunctions.wrapItAs(400,
             new TestPosFunctions.LinesFunction(), 3);
-    protected static List<TImgBlock<float[]>> someSlices = makeSomeSlices(lineImg, 2);
-    protected static float[] inSlice = (float[]) lineImg.getPolyImage(5, 3);
-    private FloatFilter ff = new FloatFilterTestImpl();
+    private static final List<TImgBlock<float[]>> someSlices = makeSomeSlices(lineImg);
+    private static final float[] inSlice = (float[]) lineImg.getPolyImage(5, 3);
+    private final FloatFilter ff = new FloatFilterTestImpl();
     private FloatFilter ffSlice = new FloatFilterTestImpl2();
 
-    protected static List<TImgBlock<float[]>> makeSomeSlices(TImgRO testImg, int startZ) {
+    private static List<TImgBlock<float[]>> makeSomeSlices(TImgRO testImg) {
         List<TImgBlock<float[]>> imList = new ArrayList<TImgBlock<float[]>>();
-        for (int i = 0; i < testImg.getDim().z; i++) {
-            D3int pos = new D3int(0, 0, startZ);
-            D3int offset = new D3int(0, 0, startZ - i);
-            D3int dim = new D3int(testImg.getDim().x, testImg.getDim().y, 1);
-            imList.add(new TImgBlock<float[]>((float[]) testImg.getPolyImage(1, 3), pos, dim, offset));
+        for (int i = 0; i < FloatFilterTest.lineImg.getDim().z; i++) {
+            D3int pos = new D3int(0, 0, 2);
+            D3int offset = new D3int(0, 0, 2 - i);
+            D3int dim = new D3int(FloatFilterTest.lineImg.getDim().x, FloatFilterTest.lineImg.getDim().y, 1);
+            imList.add(new TImgBlock<float[]>((float[]) FloatFilterTest.lineImg.getPolyImage(1, 3), pos, dim, offset));
         }
         return imList;
     }

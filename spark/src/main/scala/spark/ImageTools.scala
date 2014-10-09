@@ -14,7 +14,7 @@ object ImageTools {
     val pos = pvec._1
     val label = pvec._2
     for (x <- 0 to windSize.x; y <- 0 to windSize.y; z <- 0 to windSize.z)
-      yield (new D3int(pos.x + x, pos.y + y, pos.z + z), (label, (x == 0 & y == 0 & z == 0)))
+      yield (new D3int(pos.x + x, pos.y + y, pos.z + z), (label, x == 0 & y == 0 & z == 0))
   }
   /**
    *  spread slices out
@@ -23,7 +23,7 @@ object ImageTools {
     val pos = pvec._1
     val label = pvec._2
     for (z <- -zSize to zSize)
-      yield (new D3int(pos.x, pos.y, pos.z + z), (label, (z == 0)))
+      yield (new D3int(pos.x, pos.y, pos.z + z), (label, z == 0))
   }
   /**
    *  spread blocks out
@@ -102,7 +102,7 @@ object ImageTools {
       val curGroupList = newLabels.map(pvec => (pvec._2._1, 1)).
         reduceByKey(_ + _).sortByKey(true).collect
       // if the list isn't the same as before, continue running since we need to wait for swaps to stop
-      running = (curGroupList.deep != groupList.deep)
+      running = curGroupList.deep != groupList.deep
       groupList = curGroupList
       labelImg = newLabels
       iterations += 1
@@ -128,7 +128,7 @@ object ImageTools {
       val mergeList = spreadList.groupByKey.map {
         cKeyValues =>
           val cPoints = cKeyValues._2
-          val isTrue = (for (cPt <- cPoints) yield cPt._2)
+          val isTrue = for (cPt <- cPoints) yield cPt._2
           (for (cPt <- cPoints) yield cPt._1._1,
             isTrue.reduce(_ || _))
       }.filter(_._2)
@@ -138,7 +138,7 @@ object ImageTools {
           val minComp = mlList.min
           for (cVal <- mlList; if cVal != minComp) yield (cVal, minComp)
       }.distinct.collect.toMap
-      running = (replList.size > 0)
+      running = replList.size > 0
       val newLabels = labelImg.mapValues {
         cVox => (replList.getOrElse(cVox._1, cVox._1), cVox._2)
       }
@@ -169,8 +169,8 @@ object ImageTools2D {
         val imgDim = cSlice.getDim
         val imgPos = cSlice.getPos
         for {
-          y <- 0 until imgDim.y;
-          x <- 0 until imgDim.x;
+          y <- 0 until imgDim.y
+          x <- 0 until imgDim.x
           oVal = cSliceArr(y * imgDim.x + x)
           if num.gt(oVal, threshold)
         } yield (new D3int(imgPos.x + x, imgPos.y + y, imgPos.z), oVal)
@@ -184,9 +184,9 @@ object ImageTools2D {
         val imgDim = cSlice.getDim
         val imgPos = cSlice.getPos
         for {
-          y <- 0 until imgDim.y;
-          x <- 0 until imgDim.x;
-          oVal = cSliceArr(y * imgDim.x + x);
+          y <- 0 until imgDim.y
+          x <- 0 until imgDim.x
+          oVal = cSliceArr(y * imgDim.x + x)
           if oVal >= threshold
         } yield (new D3int(imgPos.x + x, imgPos.y + y, imgPos.z), oVal)
     }
@@ -251,7 +251,7 @@ object ImageTools2D {
       val mergeList = spreadList.toList.groupBy(_._1).map {
         cKeyValues =>
           val cPoints = cKeyValues._2
-          val isTrue = (for (cPt <- cPoints) yield cPt._2._2)
+          val isTrue = for (cPt <- cPoints) yield cPt._2._2
 
           (for (cPt <- cPoints) yield cPt._2._1._1,
             isTrue.reduce(_ || _))
@@ -272,7 +272,7 @@ object ImageTools2D {
       println("****")
       println("Iter #" + iterations + ": Replacements:" + replList.size)
       println("****")
-      running = (replList.size > 0)
+      running = replList.size > 0
     }
     labelImg
 

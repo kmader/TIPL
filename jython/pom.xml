@@ -21,6 +21,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.binary.version}</artifactId>
             <version>${spark.version}</version>
@@ -34,6 +39,11 @@
             <groupId>quant.tipl</groupId>
             <artifactId>tipl-workflows</artifactId>
             <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency> <!-- needed for show3d method in scops -->
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-volviewer</artifactId>
+            <version>${tipl.version}</version>
         </dependency>
         <dependency>
             <groupId>org.python</groupId>

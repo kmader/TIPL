@@ -38,7 +38,7 @@ class SFilterScale extends BaseTIPLPluginIO with FilterSettings.HasFilterSetting
   override def getFilterSettings() = filtSettings
 
   override def setParameter(p: ArgumentParser, prefix: String): ArgumentParser = {
-    return filtSettings.setParameter(p, prefix)
+    filtSettings.setParameter(p, prefix)
   }
 
   override def getPluginName() = {
@@ -46,7 +46,7 @@ class SFilterScale extends BaseTIPLPluginIO with FilterSettings.HasFilterSetting
   }
 
   override def execute(): Boolean = {
-    print("Starting Plugin..." + getPluginName);
+    print("Starting Plugin..." + getPluginName)
 
     val sfg: filterGenerator = filtSettings.scalingFilterGenerator
     val up = filtSettings.upfactor
@@ -77,8 +77,8 @@ class SFilterScale extends BaseTIPLPluginIO with FilterSettings.HasFilterSetting
 
   override def getInfo(request: String): Object = {
     request.toLowerCase() match {
-      case "outtype" => return new java.lang.Integer(filtSettings.oimageType);
-      case _ => return super.getInfo(request);
+      case "outtype" => new java.lang.Integer(filtSettings.oimageType);
+      case _ => super.getInfo(request);
     }
   }
 
@@ -109,7 +109,7 @@ object SFilterScale {
           cSlices =>
             val pos = cSlices._1
             val sliceList = cSlices._2.toList
-            val finished = (sliceList.length == neededSlices)
+            val finished = sliceList.length == neededSlices
             val outVal = if (finished) {
               List(partBasedFilterReduce(sliceList, upWindSize, filt))
             } else {
@@ -147,8 +147,8 @@ object SFilterScale {
       val zp = blockPos.z
       for (yp <- 0 until curDim.y) {
         for (xp <- 0 until curDim.x) {
-          val off = (yp) * curDim.x + xp;
-          val curKernel = kernelList(off);
+          val off = yp * curDim.x + xp
+          val curKernel = kernelList(off)
           for (
             cPos <- BaseTIPLPluginIn.getScanPositions(mKernel, new D3int(xp, yp, zp),
               curBlock.getOffset(), off, curDim, upWindSize)
@@ -171,13 +171,13 @@ object SFilterTest {
 
   def main(args: Array[String]): Unit = {
     var p = SparkGlobal.activeParser(args)
-    val boxSize = p.getOptionInt("boxsize", 8, "The dimension of the image used for the analysis");
-    val iters = p.getOptionInt("iters", 5, "The number of iterations to use for the filter");
+    val boxSize = p.getOptionInt("boxsize", 8, "The dimension of the image used for the analysis")
+    val iters = p.getOptionInt("iters", 5, "The number of iterations to use for the filter")
     val filtTool = new SFilterScale
     p = filtTool.setParameter(p)
 
     var testImg = TestPosFunctions.wrapIt(boxSize,
-      new TestPosFunctions.SphericalLayeredImage(boxSize / 2, boxSize / 2, boxSize / 2, 0, 1, 2));
+      new TestPosFunctions.SphericalLayeredImage(boxSize / 2, boxSize / 2, boxSize / 2, 0, 1, 2))
 
     for (i <- 0 to iters) {
       filtTool.LoadImages(Array(testImg))

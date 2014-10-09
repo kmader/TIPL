@@ -3,49 +3,53 @@
  */
 package tipl.ij.scripting;
 
+import ij.IJ;
 
-/** Scala_Interpreter.java
- * 
- * ImageJ/Fiji plugin for scala REPL,
- * extending AbstractInterpreter abstract class.
- *  
- * @author Kota Miura (miura@embl)
- * http://cmci.embl.de
- * Nov 12, 2012 -
- */
- 
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-import ij.IJ;
+import org.apache.spark.repl.SparkIMain;
+
 import common.AbstractInterpreter;
 import scala.Option;
 import scala.collection.immutable.List;
 import scala.tools.nsc.Settings;
-import scala.tools.nsc.interpreter.IMain;
 
-public class Scala_Interpreter extends AbstractInterpreter{
 
-	IMain imain = null;
-	String varname, vartype, varval, aline;
-	Option<Object> varobj;
-	
+/**
+ * @author mader
+ *
+ */
+public class Spark_Interpreter extends AbstractInterpreter {
+
+	private SparkIMain imain = null;
+	private String varname;
+    private String vartype;
+    private String varval;
+    private String aline;
+	private Option<Object> varobj;
+	@Override
 	public void run(String args){
 		Thread.currentThread().setContextClassLoader(IJ.getClassLoader());
 		super.run(args);
-		setTitle("Scala Interpreter");
-		println("Starting Scala...");
+		setTitle("Spark Interpreter");
+		println("Starting Spark...");
 		prompt.setEnabled(false);
 		Settings settings = new Settings();
-		//val settings = new Settings; settings.usejavacp.value = true
 		List<String> param = List.make(1, "true");
 		settings.usejavacp().tryToSet(param);
 		PrintWriter stream = new PrintWriter(this.out);
-		imain = new IMain(settings, stream);
-		//import all ImageJ classes, maybe upgrade this later. 
-		//using IMain.quiteImport() should be faster
-		//instead of importAll();
+		imain = new SparkIMain(settings, stream);
+
 		preimport();
+		String sparkCommand = "val sc = tipl.spark.SparkGlobal.getContext(\"FijiSpark\").sc";
+		try {	
+			eval(sparkCommand);
+
+		} catch (Throwable e) {
+			IJ.log("Failed starting spark " + sparkCommand);
+			e.printStackTrace();
+		}
 		prompt.setEnabled(true);
 		println("Ready.");
 	}
@@ -68,6 +72,7 @@ public class Scala_Interpreter extends AbstractInterpreter{
 		return aline;
 	}
 
+
 	/**
 	 * Overriding super abstract method.
 	 * Implemented, but not used.
@@ -84,27 +89,24 @@ public class Scala_Interpreter extends AbstractInterpreter{
 		}
 		buffer.append("}");
 		return "".equals(packageName) ?
-			"import " + buffer + "\n":
-			"import " + packageName + "." + buffer + "\n";
+				"import " + buffer + "\n":
+					"import " + packageName + "." + buffer + "\n";
 	}
 
 
 	/** pre-imports ImageJ and Java classes.
 	 * Work around of AbstractInterpreter.importAll()
 	 */
-	public static ArrayList<String> getPreimportStatements() {
-		ArrayList<String> scalaStatements =  new ArrayList<String>();
-		scalaStatements.add("ij._");
-		scalaStatements.add("java.lang.String");
-		scalaStatements.add("script.imglib.math.Compute");
-		scalaStatements.add("scala.math._");
-		scalaStatements.add("tipl.util.TImgBlock");
-		scalaStatements.add("tipl.util.TImgTools");
-		scalaStatements.add("tipl.util.TIPLOps._");
-		scalaStatements.add("tipl.ij.scripting.scOps._");
+	private static ArrayList<String> getPreimportStatements() {
+		ArrayList<String> scalaStatements = Scala_Interpreter.getPreimportStatements();
+		scalaStatements.add("org.apache.spark.SparkContext");
+		scalaStatements.add("org.apache.spark.SparkContext._");
+		scalaStatements.add("org.apache.spark._");
+		scalaStatements.add("org.apache.spark.rdd.PairRDDFunctions._");
+		scalaStatements.add("tipl.spark.IOOps._");
 		return scalaStatements;
 	}
-	public void preimport() {
+	void preimport() {
 		for (String statement : getPreimportStatements()){
 			try {
 				eval("import " + statement);
@@ -124,7 +126,7 @@ public class Scala_Interpreter extends AbstractInterpreter{
 	 * @param args
 	 */
 	static public void main(String[] args){
-		Scala_Interpreter si = new Scala_Interpreter();
+		Spark_Interpreter si = new Spark_Interpreter();
 		si.run(null);
 	}
 }

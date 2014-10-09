@@ -157,7 +157,7 @@ object IOOps {
     private[IOOps] def processSlices[A](asType: Int, transFcn: (Any => A)) = {
       val (outRdd, firstImage) = parseSlices[A](srd, asType, transFcn, sorted = true, partitions = srd.count.toInt)
       val timgDim = new D3int(firstImage.getDim.x, firstImage.getDim.y, srd.count.toInt)
-      val efImg = TImgTools.MakeEditable(firstImage);
+      val efImg = TImgTools.MakeEditable(firstImage)
       efImg.setDim(timgDim)
       DTImg.WrapRDD[A](efImg, JavaPairRDD.fromRDD(outRdd), asType)
     }
@@ -171,7 +171,7 @@ object IOOps {
                                        partitions: Int = 20) = {
       TImgTools.isValidType(asType)
       // sort by file name and then remove the filename
-      val srdPreSorted = (if (sorted) srdIn.sortByKey(true, partitions) else srdIn)
+      val srdPreSorted = if (sorted) srdIn.sortByKey(true, partitions) else srdIn
       val srdSorted = nameToValue match {
         case Some(f: (String => Long)) => srdPreSorted.map { inKV => (inKV._2, f(inKV._1))}
         case None => srdPreSorted.map(_._2).zipWithIndex

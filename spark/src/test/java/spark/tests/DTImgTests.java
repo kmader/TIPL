@@ -45,7 +45,7 @@ public class DTImgTests {
 	@Before
 	public void setUp() throws Exception {
 	}
-	final int zsize = 10;
+	private final int zsize = 10;
 	/**
 	 * 
 	 */
@@ -82,14 +82,6 @@ public class DTImgTests {
 			if (TIPLGlobal.getDebug()) System.out.println("Current Slice:"+i+" => "+dblSlice[1]);
 			assertEquals(i,dblSlice[1],0.1);
 		}
-	}
-
-	/**
-	 * Test method for {@link tipl.spark.DTImg#ReadObjectFile(org.apache.spark.api.java.JavaSparkContext, java.lang.String, int)}.
-	 */
-	//@Test
-	public void testReadObjectFile() {
-		fail("Not yet implemented"); // TODO
 	}
 
 	/**

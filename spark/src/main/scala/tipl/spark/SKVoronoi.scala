@@ -29,26 +29,26 @@ import tipl.util.TypedPath
  */
 class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
 
-  var preserveLabels = false;
+  var preserveLabels = false
 
-  var alreadyCopied = false;
+  var alreadyCopied = false
 
-  var includeEdges = false;
+  var includeEdges = false
 
   var maxUsuableDistance = -1.0
   val stepSize = 0.5f
 
   override def setParameter(p: ArgumentParser, prefix: String): ArgumentParser = {
-    val args: ArgumentParser = super.setParameter(p, prefix);
+    val args: ArgumentParser = super.setParameter(p, prefix)
     preserveLabels = args.getOptionBoolean(prefix + "preservelabels", preserveLabels,
-      "Preserve the labels in old image");
+      "Preserve the labels in old image")
     alreadyCopied = args.getOptionBoolean(prefix + "alreadycopied", alreadyCopied,
-      "Has the image already been copied");
+      "Has the image already been copied")
     includeEdges = args.getOptionBoolean(prefix + "includeedges", includeEdges,
-      "Include the edges");
+      "Include the edges")
     maxUsuableDistance = args.getOptionDouble(prefix + "maxdistance", maxUsuableDistance,
-      "The maximum distance to run the voronoi tesselation until");
-    return args;
+      "The maximum distance to run the voronoi tesselation until")
+    args
   }
 
   override def getPluginName() = {
@@ -61,17 +61,17 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
    */
   val spread_voxels = (pvec: (D3int, ((Long, Float), Boolean)), windSize: D3int, kernel: Option[BaseTIPLPluginIn.morphKernel], min_distance: Float) => {
     val pos = pvec._1
-    val alive = (pvec._2._2 & (pvec._2._1._1 > 0) & (pvec._2._1._2 >= min_distance))
+    val alive = pvec._2._2 & (pvec._2._1._1 > 0) & (pvec._2._1._2 >= min_distance)
     if (alive) {
-      val windx = (-windSize.x to windSize.x)
-      val windy = (-windSize.y to windSize.y)
-      val windz = (-windSize.z to windSize.z)
-      for (x <- windx; y <- windy; z <- windz;
-           if (kernel.map(_.inside(0, 0, pos.x, pos.x + x, pos.y, pos.y + y, pos.z, pos.z + z)).getOrElse(true)))
+      val windx = -windSize.x to windSize.x
+      val windy = -windSize.y to windSize.y
+      val windz = -windSize.z to windSize.z
+      for (x <- windx; y <- windy; z <- windz
+           if kernel.map(_.inside(0, 0, pos.x, pos.x + x, pos.y, pos.y + y, pos.z, pos.z + z)).getOrElse(true))
       yield (new D3int(pos.x + x, pos.y + y, pos.z + z),
         (
           (pvec._2._1._1, pvec._2._1._2 + sqrt(1.0 * x * x + y * y + z * z).floatValue()),
-          true, (x == 0 & y == 0 & z == 0)))
+          true, x == 0 & y == 0 & z == 0))
     } else {
       Seq((pos,
         (
@@ -102,7 +102,7 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
   val get_label = (avec: (D3int, ((Long, Float), Boolean))) => avec._2._1._1.doubleValue
 
   override def execute(): Boolean = {
-    print("Starting Plugin..." + getPluginName);
+    print("Starting Plugin..." + getPluginName)
     val curKernel: Option[BaseTIPLPluginIn.morphKernel] =
       if (neighborKernel == null)
         None
@@ -146,7 +146,7 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
   }
   var labeledDistanceMap: RDD[(D3int, ((Long, Float), Boolean))] = null
   var objDim: D3int = null
-  lazy val partitioner = SparkGlobal.getPartitioner(objDim);
+  lazy val partitioner = SparkGlobal.getPartitioner(objDim)
 
   /**
    * The first image is the
@@ -156,7 +156,7 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
     objDim = labelImage.getDim
     var maskImage = if (inImages.length > 1) inImages(1) else null
 
-    val labeledImage = (labelImage.toKV.toKVLong).getBaseImg.partitionBy(partitioner)
+    val labeledImage = labelImage.toKV.toKVLong.getBaseImg.partitionBy(partitioner)
 
     // any image filled with all negative distances
     val initialDistances = fillImage(labelImage, -1).getBaseImg
@@ -194,7 +194,7 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
 
   override def ExportImages(templateImage: TImgRO): Array[TImg] = {
     val tiEx = TImgTools.makeTImgExportable(templateImage)
-    return Array(ExportVolumesAim(tiEx),
+    Array(ExportVolumesAim(tiEx),
       ExportDistanceAim(tiEx))
   }
 
@@ -214,9 +214,9 @@ object SKTest extends SKVoronoi {
   def main(args: Array[String]): Unit = {
     val p = SparkGlobal.activeParser(args)
     val imSize = p.getOptionInt("size", 50,
-      "Size of the image to run the test with");
+      "Size of the image to run the test with")
     val testImg = TestPosFunctions.wrapItAs(imSize,
-      new TestPosFunctions.DotsFunction(), TImgTools.IMAGETYPE_INT);
+      new TestPosFunctions.DotsFunction(), TImgTools.IMAGETYPE_INT)
 
 
 
@@ -225,7 +225,7 @@ object SKTest extends SKVoronoi {
     setParameter(p, "")
 
     p.checkForInvalid()
-    execute();
+    execute()
 
   }
 }

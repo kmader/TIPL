@@ -54,7 +54,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
         return outString;
     }
 
-    public static String printImSummary(final Tuple3<Double, Double, Double> inData) {
+    private static String printImSummary(final Tuple3<Double, Double, Double> inData) {
         final double sumV = inData._1();
         final double sumV2 = inData._2();
         final double cntV = inData._3();
@@ -62,7 +62,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
         return String.format("Mean:%3.2f\tSd:%3.2f\tSum:%3.0f", meanV, Math.sqrt((sumV2 / (1.0 * cntV) - Math.pow(meanV, 2))), cntV);
     }
 
-    protected static Tuple3<Double, Double, Double> countSlice(float[] workData) {
+    private static Tuple3<Double, Double, Double> countSlice(float[] workData) {
         double sumV = 0;
         double sumV2 = 0;
         long cntV = 0;
@@ -133,7 +133,7 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
                     return outVal;
 
                 }
-            }, TImgTools.IMAGETYPE_FLOAT);
+            });
             filtImg.setRDDName("Filter:Iter" + ic);
             filtImg.showPartitions();
         }

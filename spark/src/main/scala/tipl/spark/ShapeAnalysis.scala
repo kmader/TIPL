@@ -22,14 +22,14 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
     sliceBased = false, sparkBased = true)
   class saSparkFactory extends TIPLPluginManager.TIPLPluginFactory {
     override def get(): ITIPLPlugin = {
-      return new ShapeAnalysis;
+      new ShapeAnalysis
     }
   }
 
   override def setParameter(p: ArgumentParser, prefix: String): ArgumentParser = {
     analysisName = p.getOptionString(prefix + "analysis", analysisName, "Name of analysis")
     outputName = p.getOptionPath(prefix + "csvname", outputName, "Name of analysis")
-    return p
+    p
   }
 
   var analysisName = "Shape"
@@ -40,10 +40,10 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
   }
 
 
-  var singleGV: Array[GrayVoxels] = Array();
+  var singleGV: Array[GrayVoxels] = Array()
 
   override def execute(): Boolean = {
-    print("Starting Plugin..." + getPluginName);
+    print("Starting Plugin..." + getPluginName)
     val filterFun = (ival: (D3int, Long)) => ival._2 > 0
     val gbFun = (ival: (D3int, Long)) => ival._2
     val gvList = labeledImage.getBaseImg. // get it into the scala format
@@ -53,7 +53,7 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
     singleGV = gvList.collect()
     singleGV.foreach(x => print("Value " + x.getLabel + ", " + x.count))
 
-    GrayAnalysis.ScalaLacunAnalysis(singleGV, labeledImage, outputName, analysisName, true);
+    GrayAnalysis.ScalaLacunAnalysis(singleGV, labeledImage, outputName, analysisName, true)
 
     true
   }
@@ -66,9 +66,9 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
 
   override def getInfo(request: String): Object = {
 
-    val output = GrayAnalysis.getInfoFromGVArray(singleGV, singleGV.length, request);
-    if (output == null) return super.getInfo(request);
-    else return output;
+    val output = GrayAnalysis.getInfoFromGVArray(singleGV, singleGV.length, request)
+    if (output == null) super.getInfo(request)
+    else output
   }
 
 
@@ -108,12 +108,12 @@ object ShapeAnalysis {
 object SATest extends ShapeAnalysis {
   def main(args: Array[String]): Unit = {
     val testImg = TestPosFunctions.wrapItAs(10,
-      new TestPosFunctions.DiagonalPlaneAndDotsFunction(), TImgTools.IMAGETYPE_INT);
+      new TestPosFunctions.DiagonalPlaneAndDotsFunction(), TImgTools.IMAGETYPE_INT)
 
 
     LoadImages(Array(testImg))
-    setParameter("-csvname=" + true + "_testing.csv");
-    execute();
+    setParameter("-csvname=" + true + "_testing.csv")
+    execute()
 
   }
 }

@@ -21,8 +21,8 @@ import tipl.util.TIPLOps.NeighborhoodOperation
  */
 object KVImgOps extends Serializable {
   def createFromPureFun(sc: SparkContext, objToMirror: TImgTools.HasDimensions, inpf: PureFImage.PositionFunction): KVImg[Double] = {
-    val objDim = objToMirror getDim
-    val objPos = objToMirror getPos
+    val objDim = objToMirror.getDim
+    val objPos = objToMirror.getPos
     val xrng = objPos.x until (objPos.x + objDim.x)
     val yrng = objPos.y until (objPos.y + objDim.y)
     val zrng = objPos.z until (objPos.z + objDim.z)
@@ -45,7 +45,33 @@ object KVImgOps extends Serializable {
     }
   }
 
-  implicit class RichKvRDD[A <: Number](srd: RDD[(D3int, A)]) extends NeighborhoodOperation[(A, Boolean), A] {
+  /**
+   * A Type with standard operations implemented
+   * @tparam T
+   */
+  trait WellSupportedType[T] {
+    def plus(a: T, b: T): T
+    def minus(a: T, b: T): T
+    def times(a: T, b: T): T
+
+    /**
+     *
+    def div(a: T, b: T): T
+    def (a: T, b: Double): T
+    def -(a: T, b: Double): T
+    def *(a: T, b: Double): T
+    def /(a: T, b: Double): T
+     */
+  }
+
+  implicit class NumericToWST[T](ncls: Numeric[T]) extends WellSupportedType[T] {
+    def plus(a: T, b: T): T = ncls.plus(a,b)
+    def minus(a: T, b: T): T = ncls.minus(a,b)
+    def times(a: T, b: T): T = ncls.times(a,b)
+
+  }
+
+  implicit class RichKvRDD[A](srd: RDD[(D3int, A)])(implicit ncls: WellSupportedType[A]) extends NeighborhoodOperation[(A, Boolean), A] {
 
     /**
      * A generic voxel spread function for a given window size and kernel
@@ -55,14 +81,14 @@ object KVImgOps extends Serializable {
       (pvec: (D3int, A)) => {
         val pos = pvec._1
 
-        val windx = (-windSize.x to windSize.x)
-        val windy = (-windSize.y to windSize.y)
-        val windz = (-windSize.z to windSize.z)
+        val windx = -windSize.x to windSize.x
+        val windy = -windSize.y to windSize.y
+        val windz = -windSize.z to windSize.z
         for (
-          x <- windx; y <- windy; z <- windz;
-          if (kernel.map(_.inside(0, 0, pos.x, pos.x + x, pos.y, pos.y + y, pos.z, pos.z + z)).getOrElse(true))
+          x <- windx; y <- windy; z <- windz
+          if kernel.map(_.inside(0, 0, pos.x, pos.x + x, pos.y, pos.y + y, pos.z, pos.z + z)).getOrElse(true)
         ) yield (new D3int(pos.x + x, pos.y + y, pos.z + z),
-          (pvec._2, (x == 0 & y == 0 & z == 0)))
+          (pvec._2, x == 0 & y == 0 & z == 0))
       }
     }
 
@@ -71,53 +97,64 @@ object KVImgOps extends Serializable {
     }
 
     def blockOperation(windSize: D3int, kernel: Option[BaseTIPLPluginIn.morphKernel], mapFun: (Iterable[(A, Boolean)] => A)): RDD[(D3int, A)] = {
-      val spread = srd.spreadPoints(windSize, kernel).collectPoints(mapFun)
+      val spread = spreadPoints(windSize, kernel).collectPoints(mapFun)
       spread
     }
 
+
+  }
+
+  /**
+   * The enhanced class specifically for numeric types
+   * @param srd
+   * @param ncls
+   * @tparam A anything supported by the Numeric type class
+   */
+  implicit class NumericKvRDD[A](srd: RDD[(D3int, A)])(implicit ncls: Numeric[A]) extends RichKvRDD[A](srd)(ncls=NumericToWST[A](ncls)) {
+
     // pixel level operations
     def >(threshVal: Double): RDD[(D3int, Boolean)] = {
-      srd.map { pvec: (D3int, A) => (pvec._1, pvec._2.doubleValue > threshVal)}
+      srd.map { pvec: (D3int, A) => (pvec._1, ncls.toDouble(pvec._2) > threshVal)}
     }
 
     def +(threshVal: Double): RDD[(D3int, Double)] = {
-      srd.map { pvec: (D3int, A) => (pvec._1, pvec._2.doubleValue + threshVal)}
+      srd.map { pvec: (D3int, A) => (pvec._1, ncls.toDouble(pvec._2) + threshVal)}
     }
 
     def *(threshVal: Double): RDD[(D3int, Double)] = {
-      srd.map { pvec: (D3int, A) => (pvec._1, pvec._2.doubleValue * threshVal)}
+      srd.map { pvec: (D3int, A) => (pvec._1, ncls.toDouble(pvec._2) * threshVal)}
     }
 
     def <(threshVal: Double): RDD[(D3int, Boolean)] = {
-      srd.map { pvec: (D3int, A) => (pvec._1, pvec._2.doubleValue < threshVal)}
+      srd.map { pvec: (D3int, A) => (pvec._1, ncls.toDouble(pvec._2) < threshVal)}
     }
 
     def ==(threshVal: Long): RDD[(D3int, Boolean)] = {
-      srd.map { pvec: (D3int, A) => (pvec._1, pvec._2.longValue > threshVal)}
+      srd.map { pvec: (D3int, A) => (pvec._1, ncls.toDouble(pvec._2) > threshVal)}
     }
 
     // image level operations
     /**
      * Convert two images to doubles and then perform a left outer join on them
      */
-    def combineAsDouble[B <: Number](imgB: RDD[(D3int, B)]): RDD[(D3int, Iterable[Double])] = {
-      val imgAdouble = srd.map { pvec: (D3int, A) => (pvec._1, pvec._2.doubleValue)}
-      val imgBdouble = imgB.map { pvec: (D3int, B) => (pvec._1, pvec._2.doubleValue)}
+    def combineAsDouble[B](imgB: RDD[(D3int, B)])(implicit nbcls: Numeric[B]): RDD[(D3int, Iterable[Double])] = {
+      val imgAdouble = srd.map { pvec: (D3int, A) => (pvec._1, ncls.toDouble(pvec._2))}
+      val imgBdouble = imgB.map { pvec: (D3int, B) => (pvec._1, nbcls.toDouble(pvec._2))}
       imgAdouble.union(imgBdouble).groupByKey
     }
 
     /**
      * Performs a reduce step on multiple images collapsed into position, list of point format
      */
-    def collapseAsDouble[B <: Number](imgB: RDD[(D3int, B)], redFun: (Double, Double) => Double): RDD[(D3int, Double)] = {
+    def collapseAsDouble[B](imgB: RDD[(D3int, B)], redFun: (Double, Double) => Double)(implicit nbcls: Numeric[B]): RDD[(D3int, Double)] = {
       combineAsDouble(imgB).mapValues { pvec: Iterable[Double] => pvec.reduce(redFun)}
     }
 
-    def +[B <: Number](imgB: RDD[(D3int, B)]): RDD[(D3int, Double)] = {
+    def +[B](imgB: RDD[(D3int, B)])(implicit nbcls: Numeric[B]): RDD[(D3int, Double)] = {
       collapseAsDouble(imgB, _ + _)
     }
 
-    def *[B <: Number](imgB: RDD[(D3int, B)]): RDD[(D3int, Double)] = {
+    def *[B](imgB: RDD[(D3int, B)])(implicit nbcls: Numeric[B]): RDD[(D3int, Double)] = {
       collapseAsDouble(imgB, _ * _)
     }
 
@@ -126,16 +163,16 @@ object KVImgOps extends Serializable {
   /**
    * A class of a spread RDD image (after a flatMap/spread operation)
    */
-  implicit class SpreadRDD[A <: Number](srd: RDD[(D3int, Iterable[(A, Boolean)])]) {
+  implicit class SpreadRDD[A](srd: RDD[(D3int, Iterable[(A, Boolean)])])(implicit ncls: WellSupportedType[A]) {
     def collectPoints(coFun: (Iterable[(A, Boolean)] => A)) = {
       srd.mapValues(coFun)
     }
   }
 
-  implicit class RichKVImg[A <: Number](ip: KVImg[A]) {
+  implicit class RichKVImg[A](ip: KVImg[A])(implicit ncls: Numeric[A]) {
     val srd = ip.getBaseImg
 
-    def +[B <: Number](imgB: KVImg[B]): KVImg[Double] = {
+    def +[B](imgB: KVImg[B])(implicit nbcls: Numeric[B]): KVImg[Double] = {
 
       val outImg = srd + imgB.getBaseImg()
       val javaImg = outImg.mapValues {
@@ -157,9 +194,9 @@ object KVImgOps extends Serializable {
       cSlice =>
         val cSliceArr = inImg.getPolyImage(cSlice, TImgTools.IMAGETYPE_DOUBLE).asInstanceOf[Array[Double]]
         for {
-          y <- 0 until imgDim.y;
-          x <- 0 until imgDim.x;
-          oVal = cSliceArr(y * imgDim.x + x);
+          y <- 0 until imgDim.y
+          x <- 0 until imgDim.x
+          oVal = cSliceArr(y * imgDim.x + x)
           if oVal > threshold
         } yield (new D3int(imgPos.x + x, imgPos.y + y, imgPos.z + cSlice), oVal)
     }

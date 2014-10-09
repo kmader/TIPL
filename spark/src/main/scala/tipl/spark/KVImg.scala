@@ -13,6 +13,7 @@ import tipl.util.TImgTools
 import tipl.formats.TImgRO
 import tipl.formats.TImg
 
+
 /**
  * A KV Pair image where the key is the position and the value is the value
  * @author mader
@@ -32,7 +33,7 @@ class KVImg[T](dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg:
  */
   override def getPolyImage(sliceNumber: Int, asType: Int): Object = {
     assert(TImgTools.isValidType(asType))
-    val sliceSize = dim.x * dim.y;
+    val sliceSize = dim.x * dim.y
 
     val sliceAsList = baseImg.filter(_._1.z == (sliceNumber + pos.z)).map {
       curElement: (D3int, T) =>
@@ -44,7 +45,7 @@ class KVImg[T](dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg:
     val missingPoints = allPoints.subtractByKey(sliceAsList)
     val fixedList = sliceAsList.union(missingPoints)
     // convert this array into the proper output format
-    TImgTools.convertArrayType(fixedList.map(_._2).collect(), imageType, asType, getSigned(), getShortScaleFactor());
+    TImgTools.convertArrayType(fixedList.map(_._2).collect(), imageType, asType, getSigned(), getShortScaleFactor())
   }
 
   /* (non-Javadoc)
@@ -54,8 +55,8 @@ class KVImg[T](dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg:
   override def getSampleName() = baseImg.name
 
   override def inheritedAim(inImg: TImgRO): TImg = {
-    val outImage = KVImg.ConvertTImg(baseImg.sparkContext, inImg, inImg.getImageType());
-    outImage.appendProcLog("Merged with:" + getSampleName() + ":" + this + "\n" + getProcLog());
+    val outImage = KVImg.ConvertTImg(baseImg.sparkContext, inImg, inImg.getImageType())
+    outImage.appendProcLog("Merged with:" + getSampleName() + ":" + this + "\n" + getProcLog())
     outImage
   }
 

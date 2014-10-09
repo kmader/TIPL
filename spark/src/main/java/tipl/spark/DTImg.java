@@ -38,17 +38,17 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
 	/**
 	 * if future is utilized to reduce the load initially (causes problems with iterative loops)
 	 */
-    static protected final boolean futureTImgMigrate = false;
+    private static final boolean futureTImgMigrate = false;
     /**
      *
      */
     private static final long serialVersionUID = -1824695496632428954L;
-    final TypedPath path;
+    private final TypedPath path;
     /**
      * should be final but sometimes it changes *
      */
-    protected JavaPairRDD<D3int, TImgBlock<T>> baseImg;
-    protected String procLog = "";
+    private final JavaPairRDD<D3int, TImgBlock<T>> baseImg;
+    private String procLog = "";
 
 
     /**
@@ -59,8 +59,8 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param imgType
      * @param path
      */
-    protected DTImg(TImgTools.HasDimensions parent, JavaPairRDD<D3int, TImgBlock<T>> newImage,
-                    int imgType, TypedPath path) {
+    DTImg(TImgTools.HasDimensions parent, JavaPairRDD<D3int, TImgBlock<T>> newImage,
+          int imgType, TypedPath path) {
         super(parent,imgType);
     	this.baseImg = newImage;//.partitionBy(SparkGlobal.getPartitioner(getDim()));
         TImgTools.mirrorImage(parent, this);
@@ -95,7 +95,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param imgType
      * @return
      */
-    protected static <U> JavaPairRDD<D3int, TImgBlock<U>> ImportImage(
+    private static <U> JavaPairRDD<D3int, TImgBlock<U>> ImportImage(
             final JavaSparkContext jsc, final TypedPath imgName, final int imgType) {
         assert (TImgTools.isValidType(imgType));
         final TImgRO cImg = TImgTools.ReadTImg(imgName, false, true);
@@ -163,7 +163,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param imgType
      * @return
      */
-    protected static <U> JavaPairRDD<D3int, TImgBlock<U>> MigrateImage(
+    private static <U> JavaPairRDD<D3int, TImgBlock<U>> MigrateImage(
             final JavaSparkContext jsc, TImgRO cImg, final int imgType) {
         assert (TImgTools.isValidType(imgType));
         final D3int imgDim = cImg.getDim();
@@ -327,7 +327,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      *
      * @param path
      */
-    public void HSave(String path) {
+    void HSave(String path) {
         final boolean makeFolder = (new File(path)).mkdir();
         if (makeFolder) {
             System.out.println("Directory: " + path + " created");
@@ -446,7 +446,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param mapFunc
      * @return
      */
-    public <U> DTImg<U> mapValues(
+    <U> DTImg<U> mapValues(
             final Function<TImgBlock<T>, TImgBlock<U>> mapFunc,
             final int outType) {
         return DTImg.WrapRDD(this, this.baseImg.mapValues(mapFunc).partitionBy(SparkGlobal.getPartitioner(getDim())), outType);
@@ -491,7 +491,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * Convert the current image into an integer image (for labels useful)
      * @return
      */
-    static public <To,Tn> DTImg<Tn> changeType(DTImg<To> inImage, final int outType) {
+    private static <To,Tn> DTImg<Tn> changeType(DTImg<To> inImage, final int outType) {
     	assert(TImgTools.isValidType(outType));
         return inImage.mapValues(new Function<TImgBlock<To>, TImgBlock<Tn>>() {
             @Override
@@ -551,7 +551,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param filtFunc the function to filter with
      * @return a subselection of the image
      */
-    public DTImg<T> subselect(
+    DTImg<T> subselect(
             final Function<Tuple2<D3int, TImgBlock<T>>, Boolean> filtFunc
     ) {
         final JavaPairRDD<D3int, TImgBlock<T>> subImg = this.baseImg.filter(filtFunc);
@@ -592,8 +592,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      */
     public <U> DTImg<U> spreadMap(
             final int spreadWidth,
-            final PairFunction<Tuple2<D3int, Iterable<TImgBlock<T>>>, D3int, TImgBlock<U>> mapFunc,
-            final int outType) {
+            final PairFunction<Tuple2<D3int, Iterable<TImgBlock<T>>>, D3int, TImgBlock<U>> mapFunc) {
 
         JavaPairRDD<D3int, Iterable<TImgBlock<T>>> joinImg;
         joinImg = this.spreadSlices(spreadWidth).
@@ -601,7 +600,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
                 partitionBy(SparkGlobal.getPartitioner(getDim()));
 
         return DTImg.WrapRDD(this, joinImg.
-                mapToPair(mapFunc), outType);
+                mapToPair(mapFunc), TImgTools.IMAGETYPE_FLOAT);
     }
 
     public void showPartitions() {
@@ -634,7 +633,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      *
      * @return partition count
      */
-    public int getPartitions() {
+    int getPartitions() {
         return SparkGlobal.calculatePartitions(getDim().z);
     }
 
@@ -690,7 +689,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param windowSize range above and below to spread
      * @return
      */
-    protected JavaPairRDD<D3int, TImgBlock<T>> spreadSlices(final int windowSize) {
+    JavaPairRDD<D3int, TImgBlock<T>> spreadSlices(final int windowSize) {
         return baseImg.flatMapToPair(BlockSpreader.<T>SpreadSlices(windowSize, getDim()));
 
     }
@@ -701,12 +700,12 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param <W> the type of the image as an array
      * @author mader
      */
-    protected static class ReadSlice<W> implements
+    static class ReadSlice<W> implements
             PairFunction<Integer, D3int, TImgBlock<W>> {
-        protected final TypedPath imgPath;
-        protected final int imgType;
-        protected final D3int imgPos;
-        protected final D3int sliceDim;
+        final TypedPath imgPath;
+        final int imgType;
+        final D3int imgPos;
+        final D3int sliceDim;
 
         /**
          * The function for reading slices from an image
@@ -747,12 +746,12 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param <W> the type of the image as an array
      * @author mader
      */
-    protected static class ReadSlicePromise<W> implements
+    static class ReadSlicePromise<W> implements
             PairFunction<Integer, D3int, TImgBlock<W>> {
-        protected final TypedPath imgPath;
-        protected final int imgType;
-        protected final D3int imgPos;
-        protected final D3int sliceDim;
+        final TypedPath imgPath;
+        final int imgType;
+        final D3int imgPos;
+        final D3int sliceDim;
 
         /**
          * The function for reading slices from an image
@@ -875,8 +874,8 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param <T>
      * @author mader
      */
-    protected static class BlockShifter<T> implements PairFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<T>> {
-        protected final D3int inOffset;
+    static class BlockShifter<T> implements PairFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<T>> {
+        final D3int inOffset;
 
         // Since we can't have constructors here (probably should make it into a subclass)
         public BlockShifter(D3int inOffset) {
@@ -907,9 +906,9 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      */
     protected static class BlockSpreader<T> implements PairFlatMapFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<T>> {
 
-        protected final D3int[] inOffsetList;
+        final D3int[] inOffsetList;
 
-        protected final D3int imgDim;
+        final D3int imgDim;
 
         // Since we can't have constructors here (probably should make it into a subclass)
         public BlockSpreader(D3int[] inOffsetList, D3int imgDim) {

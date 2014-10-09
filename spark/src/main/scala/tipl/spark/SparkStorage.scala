@@ -36,7 +36,7 @@ abstract class SparkStorage extends ITIPLStorage {
 
 
     //val realImage = tifLoad.loadAsValues
-    return new SSTImg(null) //ssd.load)
+    new SSTImg(null) //ssd.load)
     //null
   }
 }

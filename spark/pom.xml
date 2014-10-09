@@ -1,7 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>quant.tipl</groupId>
     <artifactId>tipl-spark</artifactId>
     <packaging>jar</packaging>
     <name>spark</name>
@@ -55,31 +54,13 @@
             <artifactId>tipl-core</artifactId>
             <version>${tipl.version}</version>
         </dependency>
-        <dependency>
+        <dependency> <!-- needed for shapeanalysis -->
             <groupId>quant.tipl</groupId>
             <artifactId>tipl-ccgeom</artifactId>
             <version>${tipl.version}</version>
         </dependency>
-        <dependency>
-            <groupId>quant.tipl</groupId>
-            <artifactId>tipl-volviewer</artifactId>
-            <version>${tipl.version}</version>
-        </dependency>
 
-        <dependency>
-            <groupId>stupid.fiji.scripting.shit</groupId>
-            <artifactId>abstractinterpreter</artifactId>
-            <version>99.0</version>
-            <scope>system</scope>
-            <systemPath>/Users/mader/Dropbox/tipl/tipl-libraries/fiji-integration/fiji-scripting.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>stupid.fiji.scripting.shit</groupId>
-            <artifactId>commonlibs</artifactId>
-            <version>99.0</version>
-            <scope>system</scope>
-            <systemPath>/Users/mader/Dropbox/tipl/tipl-libraries/fiji-integration/ij-core.jar</systemPath>
-        </dependency>
+
 
     </dependencies>
 

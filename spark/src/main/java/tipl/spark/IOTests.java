@@ -34,7 +34,6 @@ import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 import tipl.util.TypedPath;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,10 +49,10 @@ public class IOTests {
 
 
     static protected final int loopMax = 200;
-    protected static int range = 3;
-    protected static int maximumSlice = 100;
+    private static int range = 3;
+    private static int maximumSlice = 100;
 
-    public static JavaPairRDD<Integer, int[]> ReadIntImg(final JavaSparkContext jsc, final TypedPath localImgName) {
+    private static JavaPairRDD<Integer, int[]> ReadIntImg(final JavaSparkContext jsc, final TypedPath localImgName) {
        
     	final TypedPath imgName = localImgName.makeAbsPath();
         TImgRO cImg = TImgTools.ReadTImg(imgName);
@@ -74,7 +73,7 @@ public class IOTests {
         });
     }
 
-    public static JavaPairRDD<Integer, int[]> SpreadImage(final JavaPairRDD<Integer, int[]> inImg, final int windowSize) {
+    private static JavaPairRDD<Integer, int[]> SpreadImage(final JavaPairRDD<Integer, int[]> inImg, final int windowSize) {
         return inImg.flatMapToPair(
                 new PairFlatMapFunction<Tuple2<Integer, int[]>, Integer, int[]>() {
                     public Iterable<Tuple2<Integer, int[]>> call(Tuple2<Integer, int[]> inD) {
@@ -90,7 +89,7 @@ public class IOTests {
     }
 
     @SuppressWarnings("serial")
-    public static JavaPairRDD<Integer, int[]> FilterImage(final JavaPairRDD<Integer, Iterable<int[]>> inImg) {
+    private static JavaPairRDD<Integer, int[]> FilterImage(final JavaPairRDD<Integer, Iterable<int[]>> inImg) {
         return inImg.mapToPair(
                 new PairFunction<Tuple2<Integer, Iterable<int[]>>, Integer, int[]>() {
                     @Override
@@ -108,7 +107,7 @@ public class IOTests {
                 });
     }
 
-    protected static Tuple3<Double, Double, Double> countSlice(int[] workData) {
+    private static Tuple3<Double, Double, Double> countSlice(int[] workData) {
         double sumV = 0;
         double sumV2 = 0;
         long cntV = 0;
@@ -120,7 +119,7 @@ public class IOTests {
         return new Tuple3<Double, Double, Double>(sumV, sumV2, (double) cntV);
     }
 
-    public static String printImSummary(final Tuple3<Double, Double, Double> inData) {
+    private static String printImSummary(final Tuple3<Double, Double, Double> inData) {
         final double sumV = inData._1().doubleValue();
         final double sumV2 = inData._2().doubleValue();
         final double cntV = inData._3().doubleValue();
@@ -128,7 +127,7 @@ public class IOTests {
         return String.format("Mean:%3.2f\tSd:%3.2f\tSum:%3.0f", meanV, Math.sqrt((sumV2 / (1.0 * cntV) - Math.pow(meanV, 2))), cntV);
     }
 
-    public static String ImageSummary(final JavaPairRDD<Integer, int[]> inImg) {
+    private static String ImageSummary(final JavaPairRDD<Integer, int[]> inImg) {
         Tuple3<Double, Double, Double> imSum = inImg.map(new Function<Tuple2<Integer, int[]>, Tuple3<Double, Double, Double>>() {
             @Override
             public Tuple3<Double, Double, Double> call(Tuple2<Integer, int[]> arg0)
@@ -155,7 +154,7 @@ public class IOTests {
         return outString;
     }
 
-    public static Result sendTImgTest(final JavaSparkContext jsc, final TypedPath imgName) {
+    private static Result sendTImgTest(final JavaSparkContext jsc, final TypedPath imgName) {
         final int maxSlice = maximumSlice;
         
         JavaPairRDD<Integer, int[]> dataSet = ReadIntImg(jsc, imgName).filter(new Function<Tuple2<Integer, int[]>, Boolean>() {
@@ -172,7 +171,7 @@ public class IOTests {
         System.out.println("Input Image\t# of Slices " + dataSet.count() + ", " + ImageSummary(dataSet));
         System.out.println("After Spread\t# of Slices " + spreadDataSet.count() + ", " + ImageSummary(spreadDataSet));
         System.out.println("After Filter\t# of Slices " + dataSet3.count() + ", " + ImageSummary(dataSet3));
-        return new Result(0, 0);
+        return new Result(0);
     }
 
     public static void main(String[] args) throws Exception {
@@ -201,9 +200,9 @@ public class IOTests {
         private final long intPixels;
         private final long outPixels;
 
-        public Result(long sintPixels, long soutPixels) {
-            intPixels = sintPixels;
-            outPixels = soutPixels;
+        public Result(long soutPixels) {
+            intPixels = (long) 0;
+            outPixels = (long) 0;
         }
 
         public long getInt() {

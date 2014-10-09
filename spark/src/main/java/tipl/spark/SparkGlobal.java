@@ -19,39 +19,39 @@ abstract public class SparkGlobal {
     /**
      * The default persistence settings basically copied from spark
      */
-    public final static int MEMORY_ONLY = 0;
-    public final static int DEFAULT_LEVEL = MEMORY_ONLY;
-    public final static int MEMORY_ONLY_SER = 1;
-    public final static int MEMORY_AND_DISK = 2;
-    public final static int MEMORY_AND_DISK_SER = 3;
-    public final static int DISK_ONLY = 4;
-    static public String memorySettings = "";
-    static public String sparkLocal = "/scratch"; // much better than tmp
-    static public boolean useKyro = false;
-    static public int kyroBufferSize = 200;
-    static public int shuffleBufferSize = 20 * 1024;
-    static public int maxMBforReduce = 128;
+    private final static int MEMORY_ONLY = 0;
+    private final static int DEFAULT_LEVEL = MEMORY_ONLY;
+    private final static int MEMORY_ONLY_SER = 1;
+    private final static int MEMORY_AND_DISK = 2;
+    private final static int MEMORY_AND_DISK_SER = 3;
+    private final static int DISK_ONLY = 4;
+    private static String memorySettings = "";
+    private static String sparkLocal = "/scratch"; // much better than tmp
+    private static boolean useKyro = false;
+    private static final int kyroBufferSize = 200;
+    private static final int shuffleBufferSize = 20 * 1024;
+    private static final int maxMBforReduce = 128;
     static public boolean useCompression = true;
-    static public double memFraction = 0.3;
-    static public int retainedStages = 10;
+    private static final double memFraction = 0.3;
+    private static final int retainedStages = 10;
     static public int defaultPartitions = 25;
 
     /**
      * how long to remember in seconds stage and task information (default 12 hours)
      */
-    static public int metaDataMemoryTime = 12 * 60 * 60;
-    static protected JavaSparkContext currentContext = null;
-    static protected String masterName = "";
+    private static final int metaDataMemoryTime = 12 * 60 * 60;
+    private static JavaSparkContext currentContext = null;
+    private static String masterName = "";
     /**
      * The maximum number of cores which can be used per job
      */
-    static protected int maxCores = -1;
+    static int maxCores = -1;
 
     /**
      * Utility Function Section
      */
-    protected static int sparkPersistence = -1;
-    protected static int intSlicesPerCore = 1;
+    private static int sparkPersistence = -1;
+    private static int intSlicesPerCore = 1;
 
     static public boolean inheritContext(final JavaSparkContext activeContext) {
         if (activeContext != null) currentContext = activeContext;
@@ -65,12 +65,12 @@ abstract public class SparkGlobal {
         return maxCores;
     }
 
-    static public void setMaxCores(int imaxCores) {
+    private static void setMaxCores(int imaxCores) {
         assert (imaxCores > 0);
         maxCores = imaxCores;
     }
 
-    static protected String getMasterName() {
+    static String getMasterName() {
         if (masterName.length() < 1) masterName = "local[" + TIPLGlobal.availableCores + "]";
         return masterName;
     }
@@ -131,7 +131,7 @@ abstract public class SparkGlobal {
     /**
      * A function to register the runtime to be stopped so it needn't be done manually
      */
-    static public void StopSparkeAtFinish(final JavaSparkContext jsc) {
+    private static void StopSparkeAtFinish(final JavaSparkContext jsc) {
         TIPLGlobal.curRuntime.addShutdownHook(new Thread() {
             @Override
             public void run() {
@@ -147,7 +147,7 @@ abstract public class SparkGlobal {
      *
      * @return
      */
-    static public String getPersistenceText() {
+    private static String getPersistenceText() {
         return "Memory only (" + MEMORY_ONLY + "), " +
                 "Serialized Memory only (" + MEMORY_ONLY_SER + "), " +
                 "Memory and disk (" + MEMORY_AND_DISK + "), " +
@@ -199,17 +199,17 @@ abstract public class SparkGlobal {
         }
     }
 
-    static public void setSparkPersistance(int inPersist) {
+    private static void setSparkPersistance(int inPersist) {
         assert (inPersist < 4);
         assert (inPersist == -1 || inPersist >= 0);
         sparkPersistence = inPersist;
     }
 
-    static public int getSlicesPerCore() {
+    private static int getSlicesPerCore() {
         return intSlicesPerCore;
     }
 
-    static public void setSlicesPerCore(int slicesPerCore) {
+    private static void setSlicesPerCore(int slicesPerCore) {
         assert (slicesPerCore > 0);
         intSlicesPerCore = slicesPerCore;
     }
@@ -221,7 +221,7 @@ abstract public class SparkGlobal {
      * @param slicesPerCore
      * @return
      */
-    static public int calculatePartitions(int slices, int slicesPerCore) {
+    private static int calculatePartitions(int slices, int slicesPerCore) {
         assert (slices > 0);
         assert (slicesPerCore > 0);
         int partCount = 1;
@@ -275,7 +275,7 @@ abstract public class SparkGlobal {
      * @param sp input argumentparser
      * @return
      */
-    static public ArgumentParser activeParser(ArgumentParser sp) {
+    private static ArgumentParser activeParser(ArgumentParser sp) {
     	sp.createNewLayer("Spark Settings");
         masterName = sp.getOptionString("@masternode", getMasterName(), "The name of the master node to connect to");
         memorySettings = sp.getOptionString("@sparkmemory", memorySettings, "The memory per job");

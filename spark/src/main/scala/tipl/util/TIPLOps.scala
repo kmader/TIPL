@@ -133,9 +133,9 @@ object TIPLOps {
       plugObj.execute
     }
     def filter(size: D3int = new D3int(1, 1, 1)): TImgRO = { //, shape: morphKernel = fullKernel, filter: filterGenerator = null): TImgRO = {
-      val plugObj = TIPLPluginManager.createBestPluginIO("Filter", Array(inputImage));
+      val plugObj = TIPLPluginManager.createBestPluginIO("Filter", Array(inputImage))
       plugObj.LoadImages(Array(inputImage))
-      plugObj.setParameter("-upfactor=" + size + " -downfactor=" + size);
+      plugObj.setParameter("-upfactor=" + size + " -downfactor=" + size)
 
       //TODO Implement this  plugObj.neighborKernel=shape
       //TODO plugObj.asInstanceOf[].scalingFilterGenerator = filter

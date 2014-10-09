@@ -53,7 +53,7 @@ class SResize extends BaseTIPLPluginIO {
       "Fill in blanks (only relevant for KVImg type)")
 
     println(getPluginName + "\tNew Range:" + pOutPos + " -- " + (pOutPos + pOutDim))
-    return p
+    p
   }
 
   override def getPluginName() = {
@@ -61,7 +61,7 @@ class SResize extends BaseTIPLPluginIO {
   }
 
   override def execute(): Boolean = {
-    print("Starting Plugin..." + getPluginName);
+    print("Starting Plugin..." + getPluginName)
     outImg = SResize.applyResize(inImage, pOutDim, pOutPos, pFindEdge)
     true
   }
@@ -69,7 +69,7 @@ class SResize extends BaseTIPLPluginIO {
   var inImage: TImgRO = null
   var outImg: TImg = null
   var objDim: D3int = null
-  lazy val partitioner = SparkGlobal.getPartitioner(objDim);
+  lazy val partitioner = SparkGlobal.getPartitioner(objDim)
 
   /**
    * The first image is the
@@ -82,7 +82,7 @@ class SResize extends BaseTIPLPluginIO {
 
   override def ExportImages(templateImage: TImgRO): Array[TImg] = {
     val tiEx = TImgTools.makeTImgExportable(templateImage)
-    return Array(outImg)
+    Array(outImg)
   }
 
 }
@@ -95,23 +95,23 @@ object SResize {
 
     val imClass = TImgTools.imageTypeToClass(inImg.getImageType)
     inImg match {
-      case dImg: DTImg[_] if (imClass == TImgTools.IMAGECLASS_LABEL) => dtResize(dImg.asDTInt, outDim, outPos, findEdge)
-      case dImg: DTImg[_] if (imClass == TImgTools.IMAGECLASS_VALUE) => dtResize(dImg.asDTDouble, outDim, outPos, findEdge)
-      case dImg: DTImg[_] if (imClass == TImgTools.IMAGECLASS_BINARY) => dtResize(dImg.asDTBool, outDim, outPos, findEdge)
+      case dImg: DTImg[_] if imClass == TImgTools.IMAGECLASS_LABEL => dtResize(dImg.asDTInt, outDim, outPos, findEdge)
+      case dImg: DTImg[_] if imClass == TImgTools.IMAGECLASS_VALUE => dtResize(dImg.asDTDouble, outDim, outPos, findEdge)
+      case dImg: DTImg[_] if imClass == TImgTools.IMAGECLASS_BINARY => dtResize(dImg.asDTBool, outDim, outPos, findEdge)
       case kvImg: KVImg[A] => kvResize(kvImg, outDim, outPos)
-      case normImg: TImgRO if (imClass == TImgTools.IMAGECLASS_LABEL) =>
+      case normImg: TImgRO if imClass == TImgTools.IMAGECLASS_LABEL =>
         val dnormImg = normImg.toDTLabels
         val resizeImg = dtResize(dnormImg, outDim, outPos, findEdge)
         TImgTools.ChangeImageType(resizeImg, normImg.getImageType())
-      case normImg: TImgRO if (imClass == TImgTools.IMAGECLASS_VALUE) =>
+      case normImg: TImgRO if imClass == TImgTools.IMAGECLASS_VALUE =>
         val dnormImg = normImg.toDTValues
         val resizeImg = dtResize(dnormImg, outDim, outPos, findEdge)
         TImgTools.ChangeImageType(resizeImg, normImg.getImageType())
-      case normImg: TImgRO if (imClass == TImgTools.IMAGECLASS_BINARY) =>
+      case normImg: TImgRO if imClass == TImgTools.IMAGECLASS_BINARY =>
         val dnormImg = normImg.toDTBinary
         val resizeImg = dtResize(dnormImg, outDim, outPos, findEdge)
         TImgTools.ChangeImageType(resizeImg, normImg.getImageType())
-      case normImg: TImgRO if (imClass == TImgTools.IMAGECLASS_OTHER) => throw new IllegalArgumentException(" Image Type Other is not supported yet inside Resize:Spark :" + inImg.getImageType)
+      case normImg: TImgRO if imClass == TImgTools.IMAGECLASS_OTHER => throw new IllegalArgumentException(" Image Type Other is not supported yet inside Resize:Spark :" + inImg.getImageType)
     }
   }
 
@@ -123,9 +123,9 @@ object SResize {
     val resImg = aImg.getBaseImg.filter {
       inVals =>
         val inPos = inVals._1
-        ((inPos.x >= outPos.x) && (inPos.x <= finalPos.x) &&
+        (inPos.x >= outPos.x) && (inPos.x <= finalPos.x) &&
           (inPos.y >= outPos.y) && (inPos.y <= finalPos.y) &&
-          (inPos.z >= outPos.z) && (inPos.z <= finalPos.z))
+          (inPos.z >= outPos.z) && (inPos.z <= finalPos.z)
     }
     KVImg.fromRDD[A](
       TImgTools.SimpleDimensions(outDim, aImg.getElSize, outPos),
@@ -133,8 +133,8 @@ object SResize {
   }
   /**
    * Resize a DTImg
-   * @param basePos is the new upper corner position
-   * @param baseDim is the new dimensions
+   * @param ibasePos is the new upper corner position
+   * @param ibaseDim is the new dimensions
    */
   def dtResize[B <: AnyVal](dImg: DTImg[Array[B]], ibaseDim: D3int, ibasePos: D3int, find_edges: Boolean)(implicit aa: ClassTag[B]) = {
     var basePos = ibasePos
@@ -157,7 +157,7 @@ object SResize {
             for (
               iy <- 0 until bDim.y;
               ix <- 0 until bDim.x;
-              idx = iy * bDim.x + ix;
+              idx = iy * bDim.x + ix
               if ptArray(idx)
             ) {
               if (ix < minx) minx = ix
@@ -183,7 +183,7 @@ object SResize {
     // remove the empty z slices
     val zFilter = dImg.getBaseImg.rdd.filter { inBlock =>
       val cPos = inBlock._1
-      (cPos.z >= basePos.z && cPos.z < finalPos.z)
+      cPos.z >= basePos.z && cPos.z < finalPos.z
     }
 
     val outDim = new D3int(baseDim.x, baseDim.y, 1)
@@ -250,7 +250,7 @@ object SResize {
     val imType = dImg.getImageType
     val zFilter = dImg.getBaseImg.rdd.filter { inBlock =>
       val cPos = inBlock._1
-      (cPos.z >= basePos.z && cPos.z <= finalPos.z)
+      cPos.z >= basePos.z && cPos.z <= finalPos.z
     }
     val resImg = zFilter.map { inBlock =>
       val oldPos = inBlock._1
@@ -285,16 +285,16 @@ object SResizeTest extends SKVoronoi {
   def main(args: Array[String]): Unit = {
     val p = SparkGlobal.activeParser(args)
     val imSize = p.getOptionInt("size", 50,
-      "Size of the image to run the test with");
+      "Size of the image to run the test with")
     val testImg = TestPosFunctions.wrapItAs(imSize,
-      new TestPosFunctions.DotsFunction(), TImgTools.IMAGETYPE_INT);
+      new TestPosFunctions.DotsFunction(), TImgTools.IMAGETYPE_INT)
 
     LoadImages(Array(testImg))
 
     setParameter(p, "")
 
     p.checkForInvalid()
-    execute();
+    execute()
 
   }
 }

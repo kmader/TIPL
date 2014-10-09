@@ -8,7 +8,7 @@ import org.apache.spark.serializer.KryoRegistrator;
  *
  * @author mader
  */
-public class TIPLRegistrator implements KryoRegistrator {
+class TIPLRegistrator implements KryoRegistrator {
 
     @Override
     public void registerClasses(Kryo arg0) {
