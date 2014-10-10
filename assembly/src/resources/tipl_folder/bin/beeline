@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
@@ -17,10 +17,29 @@
 # limitations under the License.
 #
 
+# Figure out where Spark is installed
 FWDIR="$(cd `dirname $0`/..; pwd)"
 
-export PYTHONPATH=$FWDIR/python:$PYTHONPATH
-export PYTHONPATH=$FWDIR/python/lib/py4j-0.8.2.1-src.zip:$PYTHONPATH
+# Find the java binary
+if [ -n "${JAVA_HOME}" ]; then
+  RUNNER="${JAVA_HOME}/bin/java"
+else
+  if [ `command -v java` ]; then
+    RUNNER="java"
+  else
+    echo "JAVA_HOME is not set" >&2
+    exit 1
+  fi
+fi
 
-echo "Running spark-executor with framework dir = $FWDIR"
-exec $FWDIR/bin/spark-class org.apache.spark.executor.MesosExecutorBackend
+# Compute classpath using external script
+classpath_output=$($FWDIR/bin/compute-classpath.sh)
+if [[ "$?" != "0" ]]; then
+  echo "$classpath_output"
+  exit 1
+else
+  CLASSPATH=$classpath_output
+fi
+
+CLASS="org.apache.hive.beeline.BeeLine"
+exec "$RUNNER" -cp "$CLASSPATH" $CLASS "$@"

@@ -19,7 +19,7 @@
 # - SPARK_WORKER_PORT / SPARK_WORKER_WEBUI_PORT
 # - SPARK_WORKER_INSTANCES, to set the number of worker processes per node
 # - SPARK_WORKER_DIR, to set the working directory of worker processes
-SPARK_CLASSPATH="/Users/mader/Dropbox/tipl/build/TIPL_core.jar"
+# SPARK_CLASSPATH="/Users/mader/Dropbox/tipl/build/TIPL_core.jar"
 # SPARK_DRIVER_MEMORY="3G"
 SPARK_LOCAL_DIRS="/scratch"
 # SPARK_JAVA_OPTS="-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps"

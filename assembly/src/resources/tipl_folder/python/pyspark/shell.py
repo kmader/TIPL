@@ -35,7 +35,8 @@ from pyspark.context import SparkContext
 from pyspark.storagelevel import StorageLevel
 
 # this is the equivalent of ADD_JARS
-add_files = os.environ.get("ADD_FILES").split(',') if os.environ.get("ADD_FILES") != None else None
+add_files = (os.environ.get("ADD_FILES").split(',')
+             if os.environ.get("ADD_FILES") is not None else None)
 
 if os.environ.get("SPARK_EXECUTOR_URI"):
     SparkContext.setSystemProperty("spark.executor.uri", os.environ["SPARK_EXECUTOR_URI"])
@@ -46,7 +47,7 @@ print("""Welcome to
       ____              __
      / __/__  ___ _____/ /__
     _\ \/ _ \/ _ `/ __/  '_/
-   /__ / .__/\_,_/_/ /_/\_\   version 1.0.1
+   /__ / .__/\_,_/_/ /_/\_\   version 1.0.0-SNAPSHOT
       /_/
 """)
 print("Using Python version %s (%s, %s)" % (
@@ -55,7 +56,7 @@ print("Using Python version %s (%s, %s)" % (
     platform.python_build()[1]))
 print("SparkContext available as sc.")
 
-if add_files != None:
+if add_files is not None:
     print("Adding files: [%s]" % ", ".join(add_files))
 
 # The ./bin/pyspark script stores the old PYTHONSTARTUP value in OLD_PYTHONSTARTUP,
