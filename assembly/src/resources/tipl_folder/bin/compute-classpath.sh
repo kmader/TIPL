@@ -23,14 +23,14 @@
 SCALA_VERSION=2.10
 
 # Figure out where Spark is installed
-FWDIR="$(cd `dirname $0`/..; pwd)"
+FWDIR="$(cd `dirname $0`/../../../../..; pwd)"
 
-. $FWDIR/bin/load-spark-env.sh
+. $FWDIR/assembly/src/resources/tipl_folder/bin/load-spark-env.sh
 
 # Build up classpath
 CLASSPATH="$SPARK_CLASSPATH:$SPARK_SUBMIT_CLASSPATH:$FWDIR/conf"
 
-ASSEMBLY_DIR="$FWDIR/assembly/target/scala-$SCALA_VERSION"
+ASSEMBLY_DIR="$FWDIR/assembly/target/"
 
 if [ -n "$JAVA_HOME" ]; then
   JAR_CMD="$JAVA_HOME/bin/jar"
@@ -43,17 +43,9 @@ if [ -n "$SPARK_PREPEND_CLASSES" ]; then
   echo "NOTE: SPARK_PREPEND_CLASSES is set, placing locally compiled Spark"\
     "classes ahead of assembly." >&2
   CLASSPATH="$CLASSPATH:$FWDIR/core/target/scala-$SCALA_VERSION/classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/repl/target/scala-$SCALA_VERSION/classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/mllib/target/scala-$SCALA_VERSION/classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/bagel/target/scala-$SCALA_VERSION/classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/graphx/target/scala-$SCALA_VERSION/classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/streaming/target/scala-$SCALA_VERSION/classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/tools/target/scala-$SCALA_VERSION/classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/sql/catalyst/target/scala-$SCALA_VERSION/classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/sql/core/target/scala-$SCALA_VERSION/classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/sql/hive/target/scala-$SCALA_VERSION/classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/sql/hive-thriftserver/target/scala-$SCALA_VERSION/classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/yarn/stable/target/scala-$SCALA_VERSION/classes"
+  CLASSPATH="$CLASSPATH:$FWDIR/spark/target/scala-$SCALA_VERSION/classes"
+  CLASSPATH="$CLASSPATH:$FWDIR/core/target/scala-$SCALA_VERSION/classes"
+  CLASSPATH="$CLASSPATH:$FWDIR/workflows/target/scala-$SCALA_VERSION/classes"
 fi
 
 # Use spark-assembly jar from either RELEASE or assembly directory
@@ -63,21 +55,21 @@ else
   assembly_folder="$ASSEMBLY_DIR"
 fi
 
-num_jars=$(ls "$assembly_folder" | grep "spark-assembly.*hadoop.*\.jar" | wc -l)
+num_jars=$(ls "$assembly_folder" | grep "tipl-assembly.*.jar" | wc -l)
 if [ "$num_jars" -eq "0" ]; then
   echo "Failed to find Spark assembly in $assembly_folder"
   echo "You need to build Spark before running this program."
   exit 1
 fi
 if [ "$num_jars" -gt "1" ]; then
-  jars_list=$(ls "$assembly_folder" | grep "spark-assembly.*hadoop.*.jar")
+  jars_list=$(ls "$assembly_folder" | grep "tipl-assembly.*.jar")
   echo "Found multiple Spark assembly jars in $assembly_folder:"
   echo "$jars_list"
   echo "Please remove all but one jar."
   exit 1
 fi
 
-ASSEMBLY_JAR=$(ls "$assembly_folder"/spark-assembly*hadoop*.jar 2>/dev/null)
+ASSEMBLY_JAR=$(ls "$assembly_folder"/tipl-assembly*.jar 2>/dev/null)
 
 # Verify that versions of java used to build the jars and run Spark are compatible
 jar_error_check=$("$JAR_CMD" -tf "$ASSEMBLY_JAR" nonexistent/class/path 2>&1)
@@ -117,14 +109,9 @@ fi
 # Add test classes if we're running from SBT or Maven with SPARK_TESTING set to 1
 if [[ $SPARK_TESTING == 1 ]]; then
   CLASSPATH="$CLASSPATH:$FWDIR/core/target/scala-$SCALA_VERSION/test-classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/repl/target/scala-$SCALA_VERSION/test-classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/mllib/target/scala-$SCALA_VERSION/test-classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/bagel/target/scala-$SCALA_VERSION/test-classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/graphx/target/scala-$SCALA_VERSION/test-classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/streaming/target/scala-$SCALA_VERSION/test-classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/sql/catalyst/target/scala-$SCALA_VERSION/test-classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/sql/core/target/scala-$SCALA_VERSION/test-classes"
-  CLASSPATH="$CLASSPATH:$FWDIR/sql/hive/target/scala-$SCALA_VERSION/test-classes"
+  CLASSPATH="$CLASSPATH:$FWDIR/spark/target/scala-$SCALA_VERSION/test-classes"
+  CLASSPATH="$CLASSPATH:$FWDIR/workflows/target/scala-$SCALA_VERSION/test-classes"
+  CLASSPATH="$CLASSPATH:$FWDIR/integration/target/scala-$SCALA_VERSION/test-classes"
 fi
 
 # Add hadoop conf dir if given -- otherwise FileSystem.*, etc fail !
