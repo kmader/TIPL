@@ -1,4 +1,7 @@
 package tipl.util
+
+import java.io.File
+
 import scala.reflect.ClassTag
 import scala.collection.JavaConversions._
 import scala.math.{ sqrt, pow }
@@ -33,6 +36,8 @@ object TIPLOps {
   trait NeighborhoodOperation[T, U] {
     def blockOperation(windSize: D3int, kernel: Option[BaseTIPLPluginIn.morphKernel], mapFun: (Iterable[T] => U)): RDD[(D3int, U)]
   }
+
+  implicit def TypedPathFromFileObject(localFile: File): TypedPath = TypedPath.localFile(localFile)
 
   /**
    * A version of D3float which can perform simple math operations

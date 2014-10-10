@@ -110,6 +110,15 @@ public class TypedPath implements Serializable {
     public static TypedPath virtualPath(final String virtualName) {
     	return new TypedPath(virtualName,PATHTYPE.VIRTUAL);
     }
+
+    /**
+     * Create a typed path from a local file object (ensures it is in fact local)
+     * @param localF a file object
+     * @return the typed path
+     */
+    public static TypedPath localFile(final File localF) {
+        return new TypedPath(localF.getAbsolutePath(),PATHTYPE.LOCAL);
+    }
     public static TypedPath hadoopPath(final String hadoopPath) {
     	return new TypedPath(hadoopPath,PATHTYPE.HADOOP);
     }

@@ -13,6 +13,8 @@ import tipl.tools.BaseTIPLPluginIn
 import tipl.formats.TImgRO
 import tipl.util.TIPLOps.NeighborhoodOperation
 
+import scala.reflect.ClassTag
+
 
 /**
  * Some tools for the Key-value pair image to make working with them easier, writing code in java is just too much of a pain in the ass
@@ -45,33 +47,200 @@ object KVImgOps extends Serializable {
     }
   }
 
+  trait ExtraImplicits extends Serializable {
+    /** These implicits create conversions from a value for which an implicit Numeric
+      *  exists to the inner class which creates infix operations.  Once imported, you
+      *  can write methods as follows:
+      *  {{{
+      *  def plus[T: WellSupportedType](x: T, y: T) = x + y
+      *  }}}
+      */
+   implicit def infixWSTOps[T](x: T)(implicit num: WellSupportedType[T]): WellSupportedType[T]#Ops = new num.Ops(x)
+    implicit def infixNumericWSTOps[T](x: T)(implicit num: NumericWellSupportedType[T]): NumericWellSupportedType[T]#Ops = new num.Ops(x)
+  }
   /**
-   * A Type with standard operations implemented
+   * A type with the standard operations supported
    * @tparam T
    */
-  trait WellSupportedType[T] {
+  trait WellSupportedType[T] extends Serializable {
     def plus(a: T, b: T): T
-    def minus(a: T, b: T): T
     def times(a: T, b: T): T
 
+    def negate(a: T): T
+    def invert(a: T): T
+    def abs(a: T): T
+
+    def minus(a: T, b: T): T = plus(a,negate(b))
+    def divide(a: T, b: T): T = times(a,invert(b))
+    // operations to make repl usage easier
+    class Ops(lhs: T) {
+      def +(rhs: T) = plus(lhs, rhs)
+      def -(rhs: T) = minus(lhs, rhs)
+      def *(rhs: T) = times(lhs, rhs)
+      def unary_-() = negate(lhs)
+      def abs(): T = WellSupportedType.this.abs(lhs)
+    }
+
+    implicit def mkWSTOps(lhs: T): Ops = new Ops(lhs)
+  }
+
+
+
+  /**
+   * An extension of wellsupportedtype that is a number of some kind (can be synthesized from primitives, etc)
+   * @tparam T
+   */
+  trait NumericWellSupportedType[T] extends WellSupportedType[T] with Ordering[T] {
+    // standard conversions
+    def toDouble(a: T): Double
+    def toLong(a: T): Long
+    // default conversions
+    def toFloat(a: T): Float = toDouble(a).toFloat
+    def toInt(a: T): Int = toLong(a).toInt
+
+    def abs(a: T) = if (a>negate(a)) a else negate(a)
+
+    def fromDouble(a: Double): T
+    def fromLong(a: Long): T
+
     /**
-     *
-    def div(a: T, b: T): T
-    def (a: T, b: Double): T
-    def -(a: T, b: Double): T
-    def *(a: T, b: Double): T
-    def /(a: T, b: Double): T
+     * A more useful definition of divide from standard types
      */
+    override def divide(a: T, b: T): T = fromDouble(a.toDouble/b.toDouble)
+
+    class CreateOps(lhs: T) {
+      def toInt(): Int = NumericWellSupportedType.this.toInt(lhs)
+      def toLong(): Long = NumericWellSupportedType.this.toLong(lhs)
+      def toFloat(): Float = NumericWellSupportedType.this.toFloat(lhs)
+      def toDouble(): Double = NumericWellSupportedType.this.toDouble(lhs)
+    }
+
+    implicit def mkNumericOps(lhs: T): CreateOps = new CreateOps(lhs)
+
   }
 
-  implicit class NumericToWST[T](ncls: Numeric[T]) extends WellSupportedType[T] {
-    def plus(a: T, b: T): T = ncls.plus(a,b)
-    def minus(a: T, b: T): T = ncls.minus(a,b)
-    def times(a: T, b: T): T = ncls.times(a,b)
+  trait IntIsWST extends NumericWellSupportedType[Int] {
+    def plus(a: Int, b: Int): Int = a+b
+    def times(a: Int, b: Int): Int = a*b
+
+    def negate(a: Int) = -a
+    def invert(a: Int) = 1/a
+
+    // numeric commands
+
+    def toDouble(a: Int): Double = a.toDouble
+    def toLong(a: Int): Long = a.toLong
+
+    def fromDouble(a: Double): Int = a.toInt
+    def fromLong(a: Long): Int = a.toInt
 
   }
 
-  implicit class RichKvRDD[A](srd: RDD[(D3int, A)])(implicit ncls: WellSupportedType[A]) extends NeighborhoodOperation[(A, Boolean), A] {
+  implicit object IntIsWST extends IntIsWST with Ordering.IntOrdering
+
+  trait ShortIsWST extends NumericWellSupportedType[Short] {
+    def plus(a: Short, b: Short): Short = (a+b).toShort
+    def times(a: Short, b: Short): Short = (a*b).toShort
+
+    def negate(a: Short) = (-a).toShort
+    def invert(a: Short) = (1/a).toShort
+
+    // numeric commands
+
+    def toDouble(a: Short): Double = a.toDouble
+    def toLong(a: Short): Long = a.toLong
+
+    def fromDouble(a: Double): Short = a.toShort
+    def fromLong(a: Long): Short = a.toShort
+  }
+
+  implicit object ShortIsWST extends ShortIsWST with Ordering.ShortOrdering
+
+  trait LongIsWST extends NumericWellSupportedType[Long] {
+    def plus(a: Long, b: Long): Long = a+b
+    def times(a: Long, b: Long): Long = a*b
+    def negate(a: Long) = -a
+    def invert(a: Long) = 1/a
+
+    // numeric commands
+
+    def toDouble(a: Long): Double = a.toDouble
+    def toLong(a: Long): Long = a.toLong
+
+    def fromDouble(a: Double): Long = a.toLong
+    def fromLong(a: Long): Long = a.toLong
+  }
+
+  implicit object LongIsWST extends LongIsWST with Ordering.LongOrdering
+
+  trait FloatIsWST extends NumericWellSupportedType[Float] {
+    def plus(a: Float, b: Float): Float = a+b
+    def times(a: Float, b: Float): Float = a*b
+
+    def negate(a: Float) = -a
+    def invert(a: Float) = 1/a
+
+    // numeric commands
+
+    def toDouble(a: Float): Double = a.toDouble
+    def toLong(a: Float): Long = a.toLong
+
+    def fromDouble(a: Double): Float = a.toFloat
+    def fromLong(a: Long): Float = a.toFloat
+  }
+
+  implicit object FloatIsWST extends FloatIsWST with Ordering.FloatOrdering
+
+  trait DoubleIsWST extends NumericWellSupportedType[Double] {
+    def plus(a: Double, b: Double): Double = a+b
+    def times(a: Double, b: Double): Double = a*b
+
+    def negate(a: Double) = -a
+    def invert(a: Double) = 1/a
+
+    // numeric commands
+
+    def toDouble(a: Double): Double = a.toDouble
+    def toLong(a: Double): Long = a.toLong
+
+    def fromDouble(a: Double): Double = a.toDouble
+    def fromLong(a: Long): Double = a.toDouble
+  }
+
+  implicit object DoubleIsWST extends DoubleIsWST with Ordering.DoubleOrdering
+
+
+
+  def rddMergeCommand[A,B](a: RDD[(D3int, A)], b: RDD[(D3int, A)],mergeOp: ((A, A) => B),stdOp: (A => B))
+                          (implicit cls: ClassTag[A], clsb: ClassTag[B]): RDD[(D3int,B)] = {
+    //TODO this is fine for transitive operations but for division and subtraction it could be tricky
+    val combined = a.union(b).groupByKey()
+    val singleElements = combined.filter(_._2.size==1).mapValues(inval => stdOp(inval.head))
+    val doubleElements = combined.filter(_._2.size==2).mapValues{invals => mergeOp(invals.head,invals.tail.head)}
+    singleElements.union(doubleElements)
+  }
+
+
+  trait WellSupportedKVRDD[B,A] extends WellSupportedType[RDD[(B, A)]] {
+    val ncls: WellSupportedType[A]
+    implicit val cta: ClassTag[A]
+    implicit val ctb: ClassTag[B]
+
+    private def mergeRdd(a: RDD[(D3int, A)], b: RDD[(D3int, A)],mergeOp: ((A, A) => A)) =
+      rddMergeCommand[A,A](a,b,mergeOp,((iv: A) => iv))
+
+    def plus(a: RDD[(D3int, A)], b: RDD[(D3int, A)])= mergeRdd(a,b,ncls.plus)
+    def times(a: RDD[(D3int, A)], b: RDD[(D3int, A)])= mergeRdd(a,b,ncls.times)
+    def negate(a: RDD[(D3int, A)]) = a.mapValues(ncls.negate(_))
+    def invert(a: RDD[(D3int, A)]) = a.mapValues(ncls.invert(_))
+    def abs(a: RDD[(D3int, A)]) =  a.mapValues(ncls.abs(_))
+  }
+
+  implicit class RichKvRDD[A](srd: RDD[(D3int, A)])(implicit incls: WellSupportedType[A], icta: ClassTag[A], ictb: ClassTag[D3int])
+    extends NeighborhoodOperation[(A, Boolean), A] with WellSupportedKVRDD[D3int,A] {
+    val ncls = incls
+    val cta = icta
+    val ctb = ictb
 
     /**
      * A generic voxel spread function for a given window size and kernel
@@ -100,65 +269,25 @@ object KVImgOps extends Serializable {
       val spread = spreadPoints(windSize, kernel).collectPoints(mapFun)
       spread
     }
-
-
   }
 
-  /**
-   * The enhanced class specifically for numeric types
-   * @param srd
-   * @param ncls
-   * @tparam A anything supported by the Numeric type class
-   */
-  implicit class NumericKvRDD[A](srd: RDD[(D3int, A)])(implicit ncls: Numeric[A]) extends RichKvRDD[A](srd)(ncls=NumericToWST[A](ncls)) {
-
-    // pixel level operations
-    def >(threshVal: Double): RDD[(D3int, Boolean)] = {
-      srd.map { pvec: (D3int, A) => (pvec._1, ncls.toDouble(pvec._2) > threshVal)}
-    }
-
-    def +(threshVal: Double): RDD[(D3int, Double)] = {
-      srd.map { pvec: (D3int, A) => (pvec._1, ncls.toDouble(pvec._2) + threshVal)}
-    }
-
-    def *(threshVal: Double): RDD[(D3int, Double)] = {
-      srd.map { pvec: (D3int, A) => (pvec._1, ncls.toDouble(pvec._2) * threshVal)}
-    }
-
-    def <(threshVal: Double): RDD[(D3int, Boolean)] = {
-      srd.map { pvec: (D3int, A) => (pvec._1, ncls.toDouble(pvec._2) < threshVal)}
-    }
-
-    def ==(threshVal: Long): RDD[(D3int, Boolean)] = {
-      srd.map { pvec: (D3int, A) => (pvec._1, ncls.toDouble(pvec._2) > threshVal)}
-    }
-
-    // image level operations
-    /**
-     * Convert two images to doubles and then perform a left outer join on them
-     */
-    def combineAsDouble[B](imgB: RDD[(D3int, B)])(implicit nbcls: Numeric[B]): RDD[(D3int, Iterable[Double])] = {
-      val imgAdouble = srd.map { pvec: (D3int, A) => (pvec._1, ncls.toDouble(pvec._2))}
-      val imgBdouble = imgB.map { pvec: (D3int, B) => (pvec._1, nbcls.toDouble(pvec._2))}
-      imgAdouble.union(imgBdouble).groupByKey
-    }
+  implicit class NumericRichKvRDD[A](srd: RDD[(D3int, A)])(implicit incls: NumericWellSupportedType[A], icta: ClassTag[A]) extends RichKvRDD[A](srd) {
+    def >(threshVal: A): RDD[(D3int, Boolean)] = srd.mapValues{incls.gt(_,threshVal)}
+    def <(threshVal: A): RDD[(D3int, Boolean)] = srd.mapValues{incls.lt(_,threshVal)}
+    def ==(threshVal: A): RDD[(D3int, Boolean)] = srd.mapValues{incls.equiv(_,threshVal)}
+    def +(ival: A) = srd.mapValues(incls.plus(_,ival))
+    def -(ival: A) = srd.mapValues(incls.minus(_,ival))
+    def *(ival: A) = srd.mapValues(incls.times(_,ival))
+    def /(ival: A) = srd.mapValues(incls.divide(_,ival))
 
     /**
-     * Performs a reduce step on multiple images collapsed into position, list of point format
+     * A better implemented division functions using double as an intermediate step
      */
-    def collapseAsDouble[B](imgB: RDD[(D3int, B)], redFun: (Double, Double) => Double)(implicit nbcls: Numeric[B]): RDD[(D3int, Double)] = {
-      combineAsDouble(imgB).mapValues { pvec: Iterable[Double] => pvec.reduce(redFun)}
-    }
-
-    def +[B](imgB: RDD[(D3int, B)])(implicit nbcls: Numeric[B]): RDD[(D3int, Double)] = {
-      collapseAsDouble(imgB, _ + _)
-    }
-
-    def *[B](imgB: RDD[(D3int, B)])(implicit nbcls: Numeric[B]): RDD[(D3int, Double)] = {
-      collapseAsDouble(imgB, _ * _)
-    }
-
+    override def divide(a: RDD[(D3int, A)], b: RDD[(D3int, A)])=
+      rddMergeCommand[Double,A](a.mapValues(incls.toDouble(_)),b.mapValues(incls.toDouble(_)),
+        (u: Double, v: Double) => incls.fromDouble(u*v),incls.fromDouble)
   }
+
 
   /**
    * A class of a spread RDD image (after a flatMap/spread operation)
@@ -169,6 +298,8 @@ object KVImgOps extends Serializable {
     }
   }
 
+
+/**
   implicit class RichKVImg[A](ip: KVImg[A])(implicit ncls: Numeric[A]) {
     val srd = ip.getBaseImg
 
@@ -185,7 +316,7 @@ object KVImgOps extends Serializable {
 
     }
   }
-
+**/
   /** create a KVImage with only points above a certain value **/
   def TImgROToKVThresh(sc: SparkContext, inImg: TImgRO, threshold: Double) = {
     val imgDim = inImg.getDim
@@ -202,5 +333,37 @@ object KVImgOps extends Serializable {
     }
     new KVImg(inImg, TImgTools.IMAGETYPE_DOUBLE, kvRdd)
   }
+
+
+
+  // vector field support
+
+  import org.apache.spark.mllib.linalg.{Vector, Vectors}
+
+  trait VectorIsWST extends WellSupportedType[Vector] {
+    def plus(a: Vector, b: Vector): Vector = a+b
+    def times(a: Vector, b: Vector): Vector = a*b
+    def negate(a: Vector) = -a
+    def invert(a: Vector) = {
+      val nData = a.toArray
+      var i = 0;
+      while(i<nData.length) {
+        nData(i)=1/nData(i)
+        i+=1
+      }
+      Vectors.dense(nData)
+    }
+    def abs(a: Vector): Vector = {
+      val nData = a.toArray
+      var i = 0;
+      while(i<nData.length) {
+        nData(i)=math.abs(nData(i))
+        i+=1
+      }
+      Vectors.dense(nData)
+    }
+  }
+
+  implicit object VectorIsWST extends VectorIsWST
 
 }
