@@ -2,9 +2,8 @@ package tipl.spark
 
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{Partition, SparkContext, TaskContext}
-import tipl.formats.TImgRO
-import tipl.util.TImgTools.HasDimensions
+import org.apache.spark.{Partition, SparkContext}
+import tipl.formats.{TImg, TImgRO}
 import tipl.util._
 
 import scala.reflect.ClassTag
@@ -22,9 +21,10 @@ class DSImgPartition(val prev: Partition, val startIndex: Long)
  *       future extensions should expand this specialization to take advantage of this functionality
  * Created by mader on 10/13/14.
  */
-class DSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](dim: D3int, pos: D3int, elSize: D3float, iType: Int, baseImg: RDD[(D3int, TImgBlock[Array[T]])],path: TypedPath)
+class DSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
+(dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg: RDD[(D3int, TImgBlock[Array[T]])],path: TypedPath)
                                                                      (implicit lm: ClassTag[T])
-  extends RDD[(D3int, TImgBlock[Array[T]])](baseImg) with TImgLike {
+  extends TImg.ATImg(dim,pos,elSize,imageType) {
 
   /**
    * Secondary constructor directly from TImg data
@@ -37,18 +37,7 @@ class DSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](dim: D3int,
   def this(sc: SparkContext, cImg: TImgRO, imageType: Int)(implicit lm: ClassTag[T]) =
     this(cImg.getDim,cImg.getPos,cImg.getElSize,imageType,DSImg.MigrateImage[T](sc,cImg,imageType),cImg.getPath())(lm)
 
-  // for TImgLike traits
-  override val baseSize: HasDimensions = TImgTools.SimpleDimensions(dim,elSize,pos)
-  override val imageType: Int = iType
-
-  // RDD functions
-
-  override def compute(splitIn: Partition, context: TaskContext): Iterator[(D3int, TImgBlock[Array[T]])] = {
-    val split = splitIn.asInstanceOf[DSImgPartition]
-    firstParent[(D3int,TImgBlock[Array[T]])].iterator(split.prev, context)
-  }
-  override def getPartitions: Array[Partition] =
-    firstParent[T].partitions
+  def getBaseImg() = baseImg
   /**
    * A fairly simple operation of filtering the RDD for the correct slice and returning that slice
    */
@@ -77,14 +66,15 @@ object DSImg {
    * @param imgType
    * @return
    */
-  def MigrateImage[@spec(Boolean, Byte, Short, Int, Long, Float, Double) U](sc: SparkContext, cImg: TImgRO, imgType: Int): RDD[(D3int, TImgBlock[Array[U]])] = {
+  def MigrateImage[@spec(Boolean, Byte, Short, Int, Long, Float, Double) U](sc: SparkContext, cImg: TImgRO, imgType: Int):
+  RDD[(D3int, TImgBlock[Array[U]])] = {
     assert((TImgTools.isValidType(imgType)))
     val imgDim: D3int = cImg.getDim
     val imgPos: D3int = cImg.getPos
     val sliceDim: D3int = new D3int(imgDim.x, imgDim.y, 1)
     val zero: D3int = new D3int(0)
     val partitionCount: Int = SparkGlobal.calculatePartitions(cImg.getDim.z)
-    sc.parallelize(0 to imgDim.z,partitionCount). // create indices with correct partitioning
+    sc.parallelize(0 until imgDim.z,partitionCount). // create indices with correct partitioning
       map{curSlice =>
       val nPos = new D3int(imgPos.x,imgPos.y,imgPos.z+curSlice)
       (nPos,

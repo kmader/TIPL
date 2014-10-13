@@ -25,6 +25,17 @@ class KVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](dim: D3int,
   def this(inImg: TImgTools.HasDimensions, imageType: Int, baseImg: RDD[(D3int, T)])(implicit lm: ClassTag[T]) =
     this(inImg.getDim, inImg.getPos, inImg.getElSize, imageType, baseImg)(lm)
 
+  /**
+   * Direct conversion from TImgRO data
+   * @param sc
+   * @param cImg
+   * @param imageType
+   * @param lm
+   * @return
+   */
+  def this(sc: SparkContext, cImg: TImgRO, imageType: Int)(implicit lm: ClassTag[T]) =
+    this(cImg,imageType,KVImg.TImgToKVRdd[T](sc,cImg,imageType))(lm)
+
 
   def getBaseImg() = baseImg
 
@@ -100,10 +111,23 @@ class KVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](dim: D3int,
 object KVImg {
   case class KVImgRowGeneric(x: Int, y: Int, z: Int, value: Double) extends Serializable
 
-  def ConvertTImg(sc: SparkContext, inImg: TImgRO, imType: Int) = {
-    val curImg = DTImg.ConvertTImg(sc, inImg, imType)
-    new KVImg(inImg, imType, DTImgOps.DTImgToKVRDD(curImg))
+  private[spark] def TImgToKVRdd[T](sc: SparkContext, inImg: TImgRO, imType: Int)(implicit lm: ClassTag[T]) = {
+    new DSImg[T](sc,inImg,imType).getBaseImg().
+      flatMap {
+      cPoint =>
+        val pos = cPoint._1
+        val dim = cPoint._2.getDim
+        val curSlice = cPoint._2.get
+        for {z <- 0 until dim.z
+             y <- 0 until dim.y
+             x <- 0 until dim.x
+        }
+        yield (new D3int(pos.x + x, pos.y + y, pos.z + z), curSlice((z * dim.y + y) * dim.x + x))
+    }
   }
+  def ConvertTImg[T: ClassTag](sc: SparkContext, inImg: TImgRO, imType: Int) =
+    new KVImg[T](inImg, imType, TImgToKVRdd(sc,inImg,imType))
+
   
   /** Load a parquet file
    *  

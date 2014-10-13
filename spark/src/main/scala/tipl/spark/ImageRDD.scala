@@ -13,22 +13,21 @@ trait TImgROLike extends TImgRO {
   def baseSize: TImgTools.HasDimensions
   def imageType: Int
 
-  lazy val baseDimensions: TImgRO = new ATImgRO(baseSize,imageType) {
+  var baseDimensions: TImgRO = new ATImgRO(baseSize,imageType) {
     println("Warning: Creating mock TImgRO class!")
     override def getPolyImage(sliceNumber: Int, asType: Int): AnyRef = null
-
     override def getSampleName: String = "Mock TImgRO class, should not be used for anything at all"
   }
 
-  def getDim(): D3int = baseDimensions.getDim()
+  def getDim(): D3int = baseSize.getDim()
 
-  def getElSize: D3float = baseDimensions.getElSize
+  def getElSize: D3float = baseSize.getElSize
 
-  def getOffset: D3int = baseDimensions.getOffset
+  def getOffset: D3int = baseSize.getOffset
 
-  def getPos: D3int = baseDimensions.getPos
+  def getPos: D3int = baseSize.getPos
 
-  def getProcLog: String = baseDimensions.getProcLog
+  def getProcLog: String = baseSize.getProcLog
 
   def appendProcLog(inData: String): String = baseDimensions.appendProcLog(inData)
 
@@ -38,7 +37,7 @@ trait TImgROLike extends TImgRO {
 
   def getPath: TypedPath = baseDimensions.getPath
 
-  def getShortScaleFactor: Float = baseDimensions.getShortScaleFactor
+  def getShortScaleFactor: Float = baseSize.getShortScaleFactor
 
   def getSigned: Boolean = baseDimensions.getSigned
 
