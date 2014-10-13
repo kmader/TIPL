@@ -1,14 +1,14 @@
 package tipl.spark
 
-import org.apache.spark.{Partition, SparkContext}
+import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import tipl.formats.{TImgRO, TImg}
+import org.apache.spark.{Partition, SparkContext, TaskContext}
+import tipl.formats.TImgRO
 import tipl.util.TImgTools.HasDimensions
 import tipl.util._
-import scala.{specialized=>spec}
-import org.apache.spark.SparkContext._
+
 import scala.reflect.ClassTag
-import org.apache.spark.TaskContext
+import scala.{specialized => spec}
 
 private[spark]
 class DSImgPartition(val prev: Partition, val startIndex: Long)
@@ -22,21 +22,33 @@ class DSImgPartition(val prev: Partition, val startIndex: Long)
  *       future extensions should expand this specialization to take advantage of this functionality
  * Created by mader on 10/13/14.
  */
-class DSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg: RDD[(D3int, TImgBlock[Array[T]])],path: TypedPath)
+class DSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](dim: D3int, pos: D3int, elSize: D3float, iType: Int, baseImg: RDD[(D3int, TImgBlock[Array[T]])],path: TypedPath)
                                                                      (implicit lm: ClassTag[T])
   extends RDD[(D3int, TImgBlock[Array[T]])](baseImg) with TImgLike {
 
-  // for TImgLike traits
-  override val baseSize: HasDimensions = TImgTools.SimpleDimensions(dim,elSize,pos)
-
+  /**
+   * Secondary constructor directly from TImg data
+   * @param sc
+   * @param cImg
+   * @param imageType
+   * @param lm
+   * @return
+   */
   def this(sc: SparkContext, cImg: TImgRO, imageType: Int)(implicit lm: ClassTag[T]) =
     this(cImg.getDim,cImg.getPos,cImg.getElSize,imageType,DSImg.MigrateImage[T](sc,cImg,imageType),cImg.getPath())(lm)
 
+  // for TImgLike traits
+  override val baseSize: HasDimensions = TImgTools.SimpleDimensions(dim,elSize,pos)
+  override val imageType: Int = iType
+
+  // RDD functions
 
   override def compute(splitIn: Partition, context: TaskContext): Iterator[(D3int, TImgBlock[Array[T]])] = {
     val split = splitIn.asInstanceOf[DSImgPartition]
     firstParent[(D3int,TImgBlock[Array[T]])].iterator(split.prev, context)
   }
+  override def getPartitions: Array[Partition] =
+    firstParent[T].partitions
   /**
    * A fairly simple operation of filtering the RDD for the correct slice and returning that slice
    */

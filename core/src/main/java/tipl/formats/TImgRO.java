@@ -19,6 +19,7 @@ public interface TImgRO extends TImgTools.HasDimensions, Serializable {
      * Whether or not basic compression (compatible almost everywhere) should be
      * used when writing data
      */
+    @Deprecated
     public boolean getCompression();
 
     /**
@@ -39,12 +40,6 @@ public interface TImgRO extends TImgTools.HasDimensions, Serializable {
      */
     public String getSampleName();
 
-    /**
-     * The factor to scale bool/short/int/char values by when converting to/from
-     * float (for distance maps is (1000.0/32767.0))
-     */
-    @Override
-    public float getShortScaleFactor();
 
     /**
      * Is the image signed (should an offset be added / subtracted when the data
@@ -52,6 +47,7 @@ public interface TImgRO extends TImgTools.HasDimensions, Serializable {
      * Note
      * the array conversion does nothing strange when getsigned is off (it is only in place to ensure a consist translation between char/short to int/float but is probably out of date
      */
+    @Deprecated
     public boolean getSigned();
 
     /**

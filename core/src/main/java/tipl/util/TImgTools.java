@@ -1230,6 +1230,7 @@ public class TImgTools {
 		 * The size of the border around the image which does not contain valid
 		 * voxel data
 		 */
+        @Deprecated
 		public void setOffset(D3int inData);
 
 		/**
@@ -1244,6 +1245,7 @@ public class TImgTools {
 		 *
 		 * @param ssf
 		 */
+        @Deprecated
 		public void setShortScaleFactor(float ssf);
 
 	}
@@ -1321,6 +1323,7 @@ public class TImgTools {
 		 * The size of the border around the image which does not contain valid
 		 * voxel data
 		 */
+        @Deprecated
 		public D3int getOffset();
 
 		/**
@@ -1338,9 +1341,12 @@ public class TImgTools {
 		/**
 		 * A function to change the short scale factor used to convert shorts to
 		 * double and back
+         * The factor to scale bool/short/int/char values by when converting to/from
+         * float (for distance maps is (1000.0/32767.0))
 		 *
 		 * @return
 		 */
+        @Deprecated
 		public float getShortScaleFactor();
 
 
