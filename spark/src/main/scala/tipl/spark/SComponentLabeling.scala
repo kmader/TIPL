@@ -1,20 +1,19 @@
 package tipl.spark
 
-/**
- *
- */
-package tipl.spark
 
 import java.io.Serializable
-import java.util._
-
+import org.apache.spark.SparkContext._
 import org.apache.commons.collections.IteratorUtils
-import org.apache.spark.Accumulator
-import org.apache.spark.api.java.{JavaPairRDD, JavaSparkContext}
-import org.apache.spark.api.java.function.{FlatMapFunction, Function, Function2, PairFunction}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.{SparkContext, Accumulator}
 import org.apache.spark.broadcast.Broadcast
-import tipl.util.ArgumentParser
-import tipl.util.TImgBlock
+import tipl.formats.TImgRO
+import tipl.tests.TestPosFunctions
+import tipl.util._
+import tipl.tools.{BaseTIPLPluginIO,BaseTIPLPluginIn}
+
+import scala.collection.mutable
+
 
 /**
  * CL performs iterative component labeling using a very simple label and merge algorithm
@@ -22,9 +21,9 @@ import tipl.util.TImgBlock
  * @author mader
  */
 @SuppressWarnings(Array("serial"))
-class SComponentLabeling {
+object SComponentLabeling {
 
-  def main(args: Array[String]): Unit {
+  def main(args: Array[String]): Unit = {
     println("Testing Component Label Code")
     val p: ArgumentParser = SparkGlobal.activeParser(args)
     testFunc(p)
@@ -49,20 +48,11 @@ class SComponentLabeling {
    * @param inLabelImg
    * @return
    */
-  private def groupCount(inLabelImg: DTImg[Array[Long]]): Map[Long, Long] = {
-    return inLabelImg.getBaseImg.values.flatMap(new FlatMapFunction[TImgBlock[Array[Long]], Long] {
-      def call(inBlock: TImgBlock[Array[Long]]): Iterable[Long] = {
-        val cSlice: Array[Long] = inBlock.get
-        val outData: List[Long] = new LinkedList[Long]
-        for (ival <- cSlice) {
-          if (ival > 0) {
-            val cKey: Long = ival
-            outData.add(cKey)
-          }
-        }
-        return outData
-      }
-    }).countByValue
+  private def groupCount(inLabelImg: DSImg[Long]) = {
+    inLabelImg.getBaseImg.values.flatMap{
+      inSlice =>
+        for(ival <- inSlice.get() if(ival>0) ) yield ival
+    }.countByValue()
   }
 
   /**
@@ -72,16 +62,14 @@ class SComponentLabeling {
    * @param mapB
    * @return a joined map where the overlapping elements have been joined using the canJoin interface
    */
-  protected def joinMap(mapA: Map[Sf, Sc], mapB: Map[Sf, Sc], joinTool: CL.canJoin[Sc]): Map[Sf, Sc] = {
-    val joinMap: Map[Sf, Sc] = new HashMap[Sf, Sc](mapA.size + mapB.size)
-    joinMap.putAll(mapA)
-    import scala.collection.JavaConversions._
-    for (cElement <- mapB.entrySet) {
-      val cKey: Sf = cElement.getKey
-      if (joinMap.containsKey(cKey)) joinMap.put(cKey, joinTool.join(cElement.getValue, joinMap.get(cKey)))
-      else joinMap.put(cKey, cElement.getValue)
+  protected def joinMap[Sf,Sc](mapA: Map[Sf, Sc], mapB: Map[Sf, Sc], joinTool: canJoin[Sc]) = {
+    val joinMap: mutable.HashMap[Sf, Sc] = new mutable.HashMap[Sf, Sc]()
+    for((key,value) <- mapA) joinMap.put(key,value)
+    for ((cKey,value) <- mapB) {
+      if (joinMap.contains(cKey)) joinMap.put(cKey, joinTool.join(value, joinMap(cKey)))
+      else joinMap.put(cKey, value)
     }
-    return joinMap
+    joinMap
   }
 
   /**
@@ -92,59 +80,47 @@ class SComponentLabeling {
    */
   private def makeLabelImage(inMaskImg: DSImg[Boolean], ns: D3int, mKernel: BaseTIPLPluginIn.morphKernel): DSImg[Long] = {
     val wholeSize: D3int = inMaskImg.getDim
-    return inMaskImg.map(new PairFunction[(D3int, TImgBlock[Array[Boolean]]), D3int, TImgBlock[Array[Long]]] {
-      def call(arg0: (D3int, TImgBlock[Array[Boolean]])): (D3int, TImgBlock[Array[Long]]) = {
+    import scala.collection.JavaConversions._
+    val slicesList = inMaskImg.getBaseImg().map
+    {
+      arg0 =>
         val inBlock: TImgBlock[Array[Boolean]] = arg0._2
         val cSlice: Array[Boolean] = inBlock.get
         val spos: D3int = inBlock.getPos
         val sdim: D3int = inBlock.getDim
         val gOffset: D3int = new D3int(0, 0, 0)
         val oSlice: Array[Long] = new Array[Long](cSlice.length)
-        {
-          var z: Int = 0
-          while (z < sdim.z) {
-            {
+        var z: Int = 0
+        while (z < sdim.z) {
+          var y: Int = 0
+          while (y < sdim.y) {
+            var x: Int = 0
+            while (x < sdim.x) {
               {
-                var y: Int = 0
-                while (y < sdim.y) {
-                  {
-                    {
-                      var x: Int = 0
-                      while (x < sdim.x) {
-                        {
-                          val off: Int = (z * sdim.y + y) * sdim.x + x
-                          if (cSlice(off)) {
-                            var label: Long = 0L
-                            if (oSlice(off) == 0) label = ((z + spos.z) * wholeSize.y + (y + spos.y)) * wholeSize.x + x + spos.x
-                            else label = oSlice(off)
-                            oSlice(off) = label
-                            for (scanPos <- BaseTIPLPluginIn.getScanPositions(mKernel, new D3int(x, y, z), gOffset, off, sdim, ns)) {
-                              if (cSlice(scanPos.offset)) oSlice(scanPos.offset) = label
-                            }
-                          }
-                        }
-                        ({
-                          x += 1; x - 1
-                        })
-                      }
-                    }
+                val off: Int = (z * sdim.y + y) * sdim.x + x
+                if (cSlice(off)) {
+                  var label: Long = 0L
+                  if (oSlice(off) == 0) label = ((z + spos.z) * wholeSize.y + (y + spos.y)) * wholeSize.x + x + spos.x
+                  else label = oSlice(off)
+                  oSlice(off) = label
+                  for (scanPos <- BaseTIPLPluginIn.getScanPositions(mKernel, new D3int(x, y, z), gOffset, off, sdim, ns)) {
+                    if (cSlice(scanPos.offset)) oSlice(scanPos.offset) = label
                   }
-                  ({
-                    y += 1; y - 1
-                  })
                 }
               }
+              x += 1;
             }
-            ({
-              z += 1; z - 1
-            })
+            y += 1;
           }
+          z += 1;
         }
-        return new (D3int, TImgBlock[Array[Long]])(arg0._1, new TImgBlock[Array[Long]](oSlice, inBlock.getPos, inBlock.getDim))
-      }
-    }, TImgTools.IMAGETYPE_LONG)
+        (arg0._1, new TImgBlock[Array[Long]](oSlice, inBlock.getPos, inBlock.getDim))
+    }
+    new DSImg[Long](wholeSize,inMaskImg.getPos(),inMaskImg.getElSize(),TImgTools.IMAGETYPE_LONG,slicesList,
+      inMaskImg.getPath().append("::aslabels"))
   }
 
+  val useSpreadSlicesPartitioner = false
   /**
    * Looks for all the connections in an image by scanning neighbors
    *
@@ -153,12 +129,12 @@ class SComponentLabeling {
    * @param mKernel
    * @return
    */
-  private def slicesToConnections(labeledImage: DTImg[Array[Long]], neighborSize: D3int, mKernel: BaseTIPLPluginIn.morphKernel, inTO: CL.TimingObject): JavaPairRDD[D3int, CL.OmnidirectionalMap] = {
-    var fannedImage: JavaPairRDD[D3int, Iterable[TImgBlock[Array[Long]]]] = null
-    if (false) fannedImage = labeledImage.spreadSlices(neighborSize.z).groupByKey.partitionBy(SparkGlobal.getPartitioner(labeledImage.getDim))
-    else fannedImage = labeledImage.getBaseImg.groupByKey
-    val gccObj: CL.GetConnectedComponents = new CL.GetConnectedComponents(inTO, mKernel, neighborSize)
-    val outComponents: JavaPairRDD[D3int, CL.OmnidirectionalMap] = fannedImage.mapToPair(gccObj)
+  private def slicesToConnections(labeledImage: DSImg[Long], neighborSize: D3int, mKernel: BaseTIPLPluginIn.morphKernel, inTO: TimingObject): RDD[(D3int, OmnidirectionalMap)] = {
+    var fannedImage: RDD[(D3int, Iterable[TImgBlock[Array[Long]]])] =
+    if (useSpreadSlicesPartitioner) labeledImage.spreadSlices(neighborSize.z).groupByKey.partitionBy(SparkGlobal.getPartitioner(labeledImage.getDim))
+    else labeledImage.getBaseImg.groupByKey
+    val gccObj: GetConnectedComponents = new GetConnectedComponents(inTO, mKernel, neighborSize)
+    val outComponents: RDD[(D3int, OmnidirectionalMap)] = fannedImage.map(ikey => gccObj.call(ikey))
     return outComponents
   }
 
@@ -170,14 +146,12 @@ class SComponentLabeling {
    * @param mKernel
    * @return
    */
-  private def scanForNewGroups(labeledImage: DTImg[Array[Long]], neighborSize: D3int, mKernel: BaseTIPLPluginIn.morphKernel, inTO: CL.TimingObject): Map[Long, Long] = {
-    val connectedGroups: JavaPairRDD[D3int, CL.OmnidirectionalMap] = slicesToConnections(labeledImage, neighborSize, mKernel, inTO)
-    val groupList: CL.OmnidirectionalMap = connectedGroups.values.reduce(new Function2[CL.OmnidirectionalMap, CL.OmnidirectionalMap, CL.OmnidirectionalMap] {
-      def call(arg0: CL.OmnidirectionalMap, arg1: CL.OmnidirectionalMap): CL.OmnidirectionalMap = {
-        arg0.coalesce(arg1)
-        return arg0
-      }
-    })
+  private def scanForNewGroups(labeledImage: DSImg[Long], neighborSize: D3int, mKernel: BaseTIPLPluginIn.morphKernel, inTO: TimingObject): Map[Long, Long] = {
+    val connectedGroups: RDD[(D3int, SComponentLabeling.OmnidirectionalMap)] = slicesToConnections(labeledImage, neighborSize, mKernel, inTO)
+
+    val groupList: SComponentLabeling.OmnidirectionalMap = connectedGroups.values.reduce(
+      (a: OmnidirectionalMap, b: OmnidirectionalMap) => a.coalesce(b)
+    )
     return groupListToMerges(groupList)
   }
 
@@ -189,52 +163,41 @@ class SComponentLabeling {
    * @param mKernel
    * @return
    */
-  private def scanAndMerge(labeledImage: DTImg[Array[Long]], neighborSize: D3int, mKernel: BaseTIPLPluginIn.morphKernel, inTO: CL.TimingObject): (DTImg[Array[Long]], Long) = {
-    val connectedGroups: JavaPairRDD[D3int, CL.OmnidirectionalMap] = slicesToConnections(labeledImage, neighborSize, mKernel, inTO)
-    val mergeCmds: JavaPairRDD[D3int, Map[Long, Long]] = connectedGroups.mapValues(new Function[CL.OmnidirectionalMap, Map[Long, Long]] {
-      def call(arg0: CL.OmnidirectionalMap): Map[Long, Long] = {
+  private def scanAndMerge(labeledImage: DSImg[Long], neighborSize: D3int, mKernel: BaseTIPLPluginIn.morphKernel, inTO: TimingObject): (DSImg[Long], Long) = {
+    val connectedGroups: RDD[(D3int, OmnidirectionalMap)] = slicesToConnections(labeledImage, neighborSize, mKernel, inTO)
+    val mergeCmds: RDD[(D3int, Map[Long, Long])] = connectedGroups.mapValues{
+      arg0 =>
         val start: Long = System.currentTimeMillis
         val outList: Map[Long, Long] = groupListToMerges(arg0)
-        inTO.timeElapsed.$plus$eq((System.currentTimeMillis - start).asInstanceOf[Double])
-        inTO.mapOperations.$plus$eq(1)
-        return outList
-      }
-    })
+        inTO.timeElapsed+=(System.currentTimeMillis - start)*1.0
+        inTO.mapOperations+=1
+        outList
+    }
     System.out.println("Merges per slice")
     var totalMerges: Long = 0
-    import scala.collection.JavaConversions._
-    for (cVal <- mergeCmds.values.map(new Function[Map[Long, Long], Long] {
-      def call(arg0: Map[Long, Long]): Long = {
-        return arg0.size.asInstanceOf[Long]
-      }
-    }).collect) {
+    for (cVal <- mergeCmds.values.map{arg0 =>arg0.size}.collect) {
       System.out.println("\t" + cVal)
       totalMerges += cVal
     }
-    val newlabeledImage: JavaPairRDD[D3int, TImgBlock[Array[Long]]] = labeledImage.getBaseImg.join(mergeCmds, SparkGlobal.getPartitioner(labeledImage.getDim)).mapValues(new Function[(TImgBlock[Array[Long]], Map[Long, Long]), TImgBlock[Array[Long]]] {
-      def call(inTuple: (TImgBlock[Array[Long]], Map[Long, Long])): TImgBlock[Array[Long]] = {
-        val start: Long = System.currentTimeMillis
-        val cBlock: TImgBlock[Array[Long]] = inTuple._1
-        val curSlice: Array[Long] = cBlock.get
-        val outSlice: Array[Long] = new Array[Long](curSlice.length)
-        val mergeCommands: Map[Long, Long] = inTuple._2
-        {
-          var i: Int = 0
-          while (i < curSlice.length) {
-            {
-              if (curSlice(i) > 0) outSlice(i) = mergeCommands.get(curSlice(i))
+    val newlabeledImage: RDD[(D3int, TImgBlock[Array[Long]])] =
+      labeledImage.getBaseImg.join(mergeCmds, SparkGlobal.getPartitioner(labeledImage.getDim)).mapValues {
+        inTuple =>
+          val start: Long = System.currentTimeMillis
+          val cBlock: TImgBlock[Array[Long]] = inTuple._1
+          val curSlice: Array[Long] = cBlock.get
+          val outSlice: Array[Long] = new Array[Long](curSlice.length)
+          val mergeCommands: Map[Long, Long] = inTuple._2
+            var i: Int = 0
+            while (i < curSlice.length) {
+                if (curSlice(i) > 0) outSlice(i) = mergeCommands(curSlice(i))
+                i += 1;
             }
-            ({
-              i += 1; i - 1
-            })
-          }
-        }
-        inTO.mapOperations.$plus$eq(1)
-        inTO.timeElapsed.$plus$eq((System.currentTimeMillis - start).asInstanceOf[Double])
-        return new TImgBlock[Array[Long]](outSlice, cBlock)
+
+          inTO.mapOperations+=(1)
+          inTO.timeElapsed+=((System.currentTimeMillis - start)*1.0)
+          new TImgBlock[Array[Long]](outSlice, cBlock)
       }
-    })
-    return new (DTImg[Array[Long]], Long)(DTImg.WrapRDD(labeledImage, newlabeledImage, TImgTools.IMAGETYPE_LONG), totalMerges)
+    return (new DSImg[Long](labeledImage, newlabeledImage, TImgTools.IMAGETYPE_LONG), totalMerges)
   }
 
   /**
@@ -243,21 +206,21 @@ class SComponentLabeling {
    * @param groupList
    * @return
    */
-  private def groupListToMerges(groupList: CL.OmnidirectionalMap): Map[Long, Long] = {
+  private def groupListToMerges(groupList: OmnidirectionalMap): Map[Long, Long] = {
     val groups: Set[Long] = groupList.getKeys
     val groupGroups: Set[Set[Long]] = new HashSet[Set[Long]](groups.size)
-    import scala.collection.JavaConversions._
+    
     for (curKey <- groups) {
-      import scala.collection.JavaConversions._
+      
       for (oldSet <- groupGroups) if (oldSet.contains(curKey)) break //todo: break is not supported
       val cList: Set[Long] = groupList.rget(curKey)
       groupGroups.add(cList)
     }
-    val mergeCommands: Map[Long, Long] = new CL.PassthroughHashMap(groupGroups.size * 2)
-    import scala.collection.JavaConversions._
+    val mergeCommands: Map[Long, Long] = new PassthroughHashMap(groupGroups.size * 2)
+    
     for (curSet <- groupGroups) {
       val mapToVal: Long = Collections.min(curSet)
-      import scala.collection.JavaConversions._
+      
       for (cKey <- curSet) {
         mergeCommands.put(cKey, mapToVal)
       }
@@ -265,9 +228,9 @@ class SComponentLabeling {
     return mergeCommands
   }
 
-  private def mergeGroups(labeledImage: DTImg[Array[Long]], mergeCommands: Map[Long, Long], inTO: CL.TimingObject): DTImg[Array[Long]] = {
+  private def mergeGroups(labeledImage: DSImg[Long], mergeCommands: Map[Long, Long], inTO: TimingObject): DSImg[Long] = {
     val broadcastMergeCommands: Broadcast[Map[Long, Long]] = SparkGlobal.getContext.broadcast(mergeCommands)
-    val newlabeledImage: DTImg[Array[Long]] = labeledImage.map(new PairFunction[(D3int, TImgBlock[Array[Long]]), D3int, TImgBlock[Array[Long]]] {
+    val newlabeledImage: DSImg[Long] = labeledImage.map(new PairFunction[(D3int, TImgBlock[Array[Long]]), D3int, TImgBlock[Array[Long]]] {
       def call(arg0: (D3int, TImgBlock[Array[Long]])): (D3int, TImgBlock[Array[Long]]) = {
         val start: Long = System.currentTimeMillis
         val curSlice: Array[Long] = arg0._2.get
@@ -293,7 +256,7 @@ class SComponentLabeling {
     return newlabeledImage
   }
 
-  protected var LongAdder: CL.canJoin[Long] = new CL.canJoin[Long] {
+  protected var LongAdder: canJoin[Long] = new canJoin[Long] {
     def join(a: Long, b: Long): Long = {
       return a + b
     }
@@ -305,7 +268,7 @@ class SComponentLabeling {
    * @param <Si>
    * @author mader
    */
-  abstract trait canJoin extends Serializable {
+  abstract trait canJoin[Si] extends Serializable {
     def join(a: Si, b: Si): Si
   }
 
@@ -314,15 +277,12 @@ class SComponentLabeling {
    *
    * @author mader
    */
-  protected object OmnidirectionalMap {
-    final val emptyList: List[Long] = new ArrayList[Long](0)
+  protected class OmnidirectionalMap extends Serializable {
     /**
      * The maximum number of iterations for the recursive get command (-1 is no-limit)
      */
-    final val RGET_MAX_ITERS: Int = 2
-  }
-
-  protected class OmnidirectionalMap extends Serializable {
+    val RGET_MAX_ITERS: Int = 2
+    val emptyList: List[Long] = new ArrayList[Long](0)
     def this(guessLength: Int) {
       this()
       mapElements = new LinkedHashSet[Array[Long]](guessLength)
@@ -353,7 +313,7 @@ class SComponentLabeling {
     }
 
     def containsKey(key: Long): Boolean = {
-      import scala.collection.JavaConversions._
+      
       for (curKey <- mapElements) {
         if (key == curKey(0)) return true
         else if (key == curKey(1)) return true
@@ -368,7 +328,7 @@ class SComponentLabeling {
      */
     def getKeys: Set[Long] = {
       val outList: Set[Long] = new HashSet[Long]
-      import scala.collection.JavaConversions._
+      
       for (curKey <- mapElements) {
         outList.add(curKey(0))
         outList.add(curKey(1))
@@ -378,7 +338,7 @@ class SComponentLabeling {
 
     def get(key: Long): Set[Long] = {
       val outList: Set[Long] = new HashSet[Long]
-      import scala.collection.JavaConversions._
+      
       for (curKey <- mapElements) {
         if (key == curKey(0)) outList.add(curKey(1))
         else if (key == curKey(1)) outList.add(curKey(0))
@@ -402,7 +362,7 @@ class SComponentLabeling {
         lastlen = outSet.size
         val outSetTemp: Set[Long] = new HashSet[Long](outSet.size)
         outSetTemp.addAll(outSet)
-        import scala.collection.JavaConversions._
+        
         for (e <- outSet) outSetTemp.addAll(get(e))
         outSet = outSetTemp
         rgetCount += 1
@@ -421,9 +381,9 @@ class SComponentLabeling {
      *
      * @param map2
      */
-    def coalesce(map2: CL.OmnidirectionalMap) {
-      import scala.collection.JavaConversions._
+    def coalesce(map2: OmnidirectionalMap): OmnidirectionalMap = {
       for (curEle <- map2.getAsSet) this.add(curEle)
+      this
     }
 
     private[spark] final val mapElements: Set[Array[Long]] = null
@@ -434,16 +394,8 @@ class SComponentLabeling {
    *
    * @author mader
    */
-  private[spark] object PassthroughHashMap {
-    private[spark] final val zero: Long = 0.asInstanceOf[Long]
-  }
-
-  private[spark] class PassthroughHashMap extends HashMap[Long, Long] with Serializable {
-    def this(guessSize: Int) {
-      this()
-      `super`(guessSize)
-    }
-
+  private[spark] class PassthroughHashMap(guessSize: Int) extends HashMap[Long, Long](guessSize) with Serializable {
+    val zero: Long = 0.asInstanceOf[Long]
     override def get(objVal: AnyRef): Long = {
       val eVal: Long = objVal.asInstanceOf[Long]
       if (eVal == zero) return zero
@@ -452,15 +404,9 @@ class SComponentLabeling {
     }
   }
 
-  protected class TimingObject extends Serializable {
-    def this(jsc: JavaSparkContext) {
-      this()
-      timeElapsed = jsc.accumulator(0.asInstanceOf[Double])
-      mapOperations = jsc.accumulator(new Integer(0))
-    }
-
-    final val timeElapsed: Accumulator[Double] = null
-    final val mapOperations: Accumulator[Integer] = null
+  private[spark] class TimingObject(sc: SparkContext) extends Serializable {
+    val timeElapsed: Accumulator[Double] = sc.accumulator(0.0)
+    val mapOperations: Accumulator[Int] = sc.accumulator(0)
   }
 
   /**
@@ -469,43 +415,26 @@ class SComponentLabeling {
    *
    * @author mader
    */
-  class GetConnectedComponents extends PairFunction[(D3int, Iterable[TImgBlock[Array[Long]]]), D3int, CL.OmnidirectionalMap] {
-    def this(inTO: CL.TimingObject, mKernel: BaseTIPLPluginIn.morphKernel, ns: D3int) {
-      this()
-      this.mKernel = mKernel
-      this.ns = ns
-      this.to = inTO
-    }
-
-    def getNeighborSize: D3int = {
-      return ns
-    }
-
-    def getMKernel: BaseTIPLPluginIn.morphKernel = {
-      return mKernel
-    }
-
-    def call(inTuple: (D3int, Iterable[TImgBlock[Array[Long]]])): (D3int, CL.OmnidirectionalMap) = {
+  def GetConnectedComponents(inTO: TimingObject, mKernel: BaseTIPLPluginIn.morphKernel, ns: D3int) = {
+    (inVal: (D3int, Iterable[TImgBlock[Array[Long]]])) =>
       val start: Long = System.currentTimeMillis
-      val ns: D3int = getNeighborSize
-      val inBlocks: List[TImgBlock[Array[Long]]] = IteratorUtils.toList(inTuple._2.iterator)
-      val templateBlock: TImgBlock[Array[Long]] = inBlocks.get(0)
+      val inBlocks = inVal._2.toList
+      val templateBlock = inBlocks(0)
       val blockSize: D3int = templateBlock.getDim
-      val mKernel: BaseTIPLPluginIn.morphKernel = getMKernel
       val eleCount: Int = templateBlock.getDim.prod.asInstanceOf[Int]
-      val neighborList: Array[Set[Long]] = new Array[Set[_]](eleCount)
-      {
-        var i: Int = 0
-        while (i < eleCount) {
-          neighborList(i) = new HashSet[Long]
-          ({
-            i += 1; i - 1
-          })
-        }
+      val neighborList = new Array[mutable.HashSet[Long]](eleCount)
+
+    {
+      var i: Int = 0
+      while (i < eleCount) {
+        neighborList(i) = new mutable.HashSet[Long]
+        i += 1
       }
-      import scala.collection.JavaConversions._
+    }
+
       for (cBlock <- inBlocks) {
-        val curBlock: Array[Long] = cBlock.get
+        val curBlock: Array[Long] = cBlock.get()
+
         {
           var zp: Int = 0
           while (zp < templateBlock.getDim.z) {
@@ -524,32 +453,24 @@ class SComponentLabeling {
                             if (cval > 0) neighborList(off).add(cval)
                           }
                         }
-                        ({
-                          xp += 1; xp - 1
-                        })
+                        xp += 1
                       }
                     }
                   }
-                  ({
-                    yp += 1; yp - 1
-                  })
+                  yp += 1
                 }
               }
             }
-            ({
-              zp += 1; zp - 1
-            })
+            zp += 1
           }
         }
       }
-      val pairs: CL.OmnidirectionalMap = new CL.OmnidirectionalMap(2 * eleCount)
-      {
+      val pairs: OmnidirectionalMap = new OmnidirectionalMap(2 * eleCount) {
         var i: Int = 0
         while (i < eleCount) {
           {
             if (neighborList(i).size > 2) {
-              val iterArray: Array[Long] = neighborList(i).toArray(new Array[Long](neighborList(i).size))
-              {
+              val iterArray: Array[Long] = neighborList(i).toArray(new Array[Long](neighborList(i).size)) {
                 var ax: Int = 0
                 while (ax < (iterArray.length - 1)) {
                   {
@@ -560,31 +481,28 @@ class SComponentLabeling {
                           pairs.put(iterArray(ax), iterArray(bx))
                         }
                         ({
-                          bx += 1; bx - 1
+                          bx += 1;
+                          bx - 1
                         })
                       }
                     }
                   }
                   ({
-                    ax += 1; ax - 1
+                    ax += 1;
+                    ax - 1
                   })
                 }
               }
             }
           }
-          ({
-            i += 1; i - 1
-          })
+          i += 1
         }
       }
-      to.timeElapsed.$plus$eq((System.currentTimeMillis - start).asInstanceOf[Double])
-      to.mapOperations.$plus$eq(1)
-      return new (D3int, CL.OmnidirectionalMap)(inTuple._1, pairs)
-    }
+      inTO.timeElapsed += (System.currentTimeMillis - start) * 1.0
+      inTO.mapOperations += 1
+      new (D3int, OmnidirectionalMap)(inTuple._1, pairs)
 
-    final val to: CL.TimingObject = null
-    private[spark] final val mKernel: BaseTIPLPluginIn.morphKernel = null
-    private[spark] final val ns: D3int = null
+
   }
 
 }
@@ -639,12 +557,12 @@ class SComponentLabeling extends BaseTIPLPluginIO {
 
   def execute: Boolean = {
     val start: Long = System.currentTimeMillis
-    val to: CL.TimingObject = new CL.TimingObject(this.maskImg.getContext)
+    val to: TimingObject = new TimingObject(this.maskImg.getContext)
     labelImg = makeLabelImage(this.maskImg, getNeighborSize, getKernel)
     var stillMerges: Boolean = runSliceMergesFirst
     var i: Int = 0
     while (stillMerges) {
-      val smOutput: (DTImg[Array[Long]], Long) = scanAndMerge(labelImg, getNeighborSize, getKernel, to)
+      val smOutput: (DSImg[Long], Long) = scanAndMerge(labelImg, getNeighborSize, getKernel, to)
       labelImg = smOutput._1
       System.out.println("Iter: " + i + ", Full:" + (false) + "\n\tMerges " + smOutput._2)
       stillMerges = (smOutput._2 > 0)
@@ -654,14 +572,14 @@ class SComponentLabeling extends BaseTIPLPluginIO {
     while (stillMerges) {
       var curGrpSummary: String = ""
       val cGrp: Map[Long, Long] = groupCount(labelImg)
-      import scala.collection.JavaConversions._
+      
       for (cEntry <- cGrp.entrySet) {
         curGrpSummary += cEntry.getKey + "\t" + cEntry.getValue + "\n"
         if (curGrpSummary.length > 50) break //todo: break is not supported
       }
       val curMap: Map[Long, Long] = scanForNewGroups(labelImg, getNeighborSize, getKernel, to)
       var curMapSummary: String = ""
-      import scala.collection.JavaConversions._
+      
       for (cEntry <- curMap.entrySet) {
         curMapSummary += cEntry.getKey + "=>" + cEntry.getValue + ","
         if (curMapSummary.length > 50) break //todo: break is not supported
@@ -684,7 +602,7 @@ class SComponentLabeling extends BaseTIPLPluginIO {
     var curGrpSummary: String = ""
     val reArrangement: SortedMap[Long, Long] = new TreeMap[Long, Long]
     var outDex: Int = 1
-    import scala.collection.JavaConversions._
+    
     for (cEntry <- cGrp) {
       if (curGrpSummary.length < 100) curGrpSummary += cEntry.getKey + "=>" + outDex + "\t" + cEntry.getValue + " voxels\n"
       reArrangement.put(cEntry.getKey, outDex.asInstanceOf[Long])
@@ -707,7 +625,7 @@ class SComponentLabeling extends BaseTIPLPluginIO {
 
   private var runSliceMergesFirst: Boolean = true
   private var maskImg: DTImg[Array[Boolean]] = null
-  private var labelImg: DTImg[Array[Long]] = null
+  private var labelImg: DSImg[Long] = null
   private var objFilter: ComponentLabel.CLFilter = null
 }
 

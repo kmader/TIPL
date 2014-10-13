@@ -26,6 +26,8 @@ class DSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
                                                                      (implicit lm: ClassTag[T])
   extends TImg.ATImg(dim,pos,elSize,imageType) {
 
+  def this(hd: TImgTools.HasDimensions, baseImg: RDD[(D3int, TImgBlock[Array[T]])], imageType: Int)(implicit lm: ClassTag[T]) =
+  this(hd.getDim,hd.getPos,hd.getElSize,imageType,baseImg,TypedPath.virtualPath("Nothing"))(lm)
   /**
    * Secondary constructor directly from TImg data
    * @param sc
@@ -53,6 +55,13 @@ class DSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
   }
 
   override def getSampleName: String = path.getPath()
+
+  def spreadSlices(zSlices: Int) = {
+    baseImg.flatMap {
+      inBlock =>
+        for(curSlice <- -zSlices to zSlices) yield DSImg.BlockShifter(new D3int(0,0,curSlice))(inBlock)
+    }
+  }
 }
 
 object DSImg {
@@ -84,5 +93,21 @@ object DSImg {
     }
 
   }
+
+  /**
+   * A simple block shifting function
+   *
+   * @param <T>
+   * @author mader
+   */
+  def BlockShifter[T](inOffset: D3int) = {
+    (inData: (D3int, TImgBlock[T])) =>
+        val inSlice: TImgBlock[T] = inData._2
+        val nOffset: D3int = inOffset
+        val oPos: D3int = inData._1
+        val nPos: D3int = new D3int(oPos.x + nOffset.x, oPos.y + nOffset.y, oPos.z + nOffset.z)
+         (nPos, new TImgBlock[T](inSlice.getClone, nPos, inSlice.getDim, nOffset))
+  }
+
 
 }
