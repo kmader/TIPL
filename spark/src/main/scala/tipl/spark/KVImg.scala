@@ -12,14 +12,14 @@ import tipl.util.D3float
 import tipl.util.TImgTools
 import tipl.formats.TImgRO
 import tipl.formats.TImg
-
+import scala.{specialized=>spec}
 
 /**
  * A KV Pair image where the key is the position and the value is the value
  * @author mader
  *
  */
-class KVImg[T](dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg: RDD[(D3int, T)])(implicit lm: ClassTag[T])
+class KVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg: RDD[(D3int, T)])(implicit lm: ClassTag[T])
   extends TImg.ATImg(dim, pos, elSize, imageType) with TImg {
 
   def this(inImg: TImgTools.HasDimensions, imageType: Int, baseImg: RDD[(D3int, T)])(implicit lm: ClassTag[T]) =

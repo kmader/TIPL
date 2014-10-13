@@ -86,7 +86,27 @@ public interface TImg extends TImgRO, TImgRO.CanExport,
      * @author mader
      */
 
+    static public class ATImgWrappingTImgRO extends ATImg {
+        final TImgRO coreImage;
+        public ATImgWrappingTImgRO(final TImgRO inImage) {
+            super(inImage);
+            coreImage = inImage;
+        }
+
+        @Override
+        public Object getPolyImage(int sliceNumber, int asType) {
+            return coreImage.getPolyImage(sliceNumber,asType);
+        }
+
+        @Override
+        public String getSampleName() {
+            return coreImage.getSampleName();
+        }
+    }
+
     static public abstract class ATImg extends TImgRO.ATImgRO implements TImg {
+
+        public ATImg(final TImgRO tempImg) { super(tempImg,tempImg.getImageType()); }
 
         public ATImg(HasDimensions tempImg, int iimageType) {
             super(tempImg, iimageType);

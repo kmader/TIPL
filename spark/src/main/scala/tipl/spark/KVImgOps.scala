@@ -298,25 +298,6 @@ object KVImgOps extends Serializable {
     }
   }
 
-
-/**
-  implicit class RichKVImg[A](ip: KVImg[A])(implicit ncls: Numeric[A]) {
-    val srd = ip.getBaseImg
-
-    def +[B](imgB: KVImg[B])(implicit nbcls: Numeric[B]): KVImg[Double] = {
-
-      val outImg = srd + imgB.getBaseImg()
-      val javaImg = outImg.mapValues {
-        _.doubleValue
-      }
-      KVImg.fromRDD[Double](ip, TImgTools.IMAGETYPE_DOUBLE, javaImg)
-    }
-
-    def getInterface() = {
-
-    }
-  }
-**/
   /** create a KVImage with only points above a certain value **/
   def TImgROToKVThresh(sc: SparkContext, inImg: TImgRO, threshold: Double) = {
     val imgDim = inImg.getDim
