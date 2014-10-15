@@ -165,7 +165,6 @@ public class TImgBlock<V> implements Serializable {
         /**
          * Create a new block with an offset given a chunk of data and position, dimensions
          *
-         * @param path
          * @param sliceNumber
          * @param imageType
          * @param pos         position of the upper left corner of the block
@@ -196,7 +195,6 @@ public class TImgBlock<V> implements Serializable {
      * Convert a TImgBlock (a single slice) into a TImg Object since it is easier like that
      * @author mader
      *
-     * @param <Ti>
      */
     static public class TImgBlockAsTImg extends TImgRO.ATImgRO implements TImgRO {
     	final protected TImgBlock baseBlock;
@@ -264,6 +262,10 @@ public class TImgBlock<V> implements Serializable {
         @Override
         public String toString() {
             return "SLR:sl=" + sliceNumber + ",path=" + fileName;
+        }
+
+        static public int getImageType(TImgBlock blockOfInterest) {
+            return TImgTools.identifySliceType(blockOfInterest.get());
         }
 
     }

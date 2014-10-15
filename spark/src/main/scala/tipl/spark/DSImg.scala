@@ -15,6 +15,15 @@ class DSImgPartition(val prev: Partition, val startIndex: Long)
   override val index: Int = prev.index
 }
 
+class FlattenedDSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
+(dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg: IndexedSeq[(D3int, TImgBlock[Array[T]])],path: TypedPath)
+(implicit lm: ClassTag[T])
+  extends TImg.ATImg(dim,pos,elSize,imageType) {
+  override def getPolyImage(sliceNumber: Int, asType: Int): AnyRef =
+    TImgTools.convertArrayType(baseImg(sliceNumber)._2.get(),getImageType, asType, getSigned, getShortScaleFactor)
+  override def getSampleName: String = path.getPath()
+}
+
 /**
  * A scala version of the DTImg class, designed for handling images. It is vastly superior to DTImg since it uses the same types as KVImg
  * @note The class takes advantage of the specialized annotation to allow for more natural expression of each slice as an array rather than a generic
