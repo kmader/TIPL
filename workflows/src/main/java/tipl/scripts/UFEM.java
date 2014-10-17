@@ -9,7 +9,7 @@ import tipl.spark.SparkGlobal;
 import tipl.tools.*;
 import tipl.util.*;
 // doesn't make sense to declare this function again
-import static tipl.blocks.BaseTIPLBlock.tryOpenImagePath;
+import static tipl.blocks.LocalTIPLBlock.LocalIOHelper.tryOpenImagePath;
 
 import java.io.BufferedReader;
 import java.io.File;

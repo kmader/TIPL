@@ -60,14 +60,14 @@
             <artifactId>abstractinterpreter</artifactId>
             <version>99.0</version>
             <scope>system</scope>
-            <systemPath>/Users/mader/Dropbox/tipl/tipl-libraries/fiji-integration/fiji-scripting.jar</systemPath>
+            <systemPath>/Users/mader/Dropbox/tipl_libraries/fiji-integration/fiji-scripting.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>stupid.fiji.scripting.shit</groupId>
             <artifactId>commonlibs</artifactId>
             <version>99.0</version>
             <scope>system</scope>
-            <systemPath>/Users/mader/Dropbox/tipl/tipl-libraries/fiji-integration/ij-core.jar</systemPath>
+            <systemPath>/Users/mader/Dropbox/tipl_libraries/fiji-integration/ij-core.jar</systemPath>
         </dependency>
     </dependencies>
 </project>

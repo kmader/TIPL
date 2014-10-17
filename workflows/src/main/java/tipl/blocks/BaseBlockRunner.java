@@ -21,6 +21,7 @@ import tipl.util.TypedPath;
  */
 public class BaseBlockRunner implements IBlockRunner,ITIPLBlock {
 	final protected LinkedList<ITIPLBlock> blockList;
+    final protected BlockIOHelper ioHelper = new LocalTIPLBlock.LocalIOHelper();
 	/**
 	 * 
 	 */
@@ -50,10 +51,6 @@ public class BaseBlockRunner implements IBlockRunner,ITIPLBlock {
 	}
 
 	@Override
-	public void setSliceRange(int startSlice,int finishSlice) {
-		for(ITIPLBlock cBlock : blockList) cBlock.setSliceRange(startSlice, finishSlice);
-	}
-	@Override
 	public String toString() {
 		String outStr="";
 		for(ITIPLBlock cBlock : blockList) outStr+=cBlock+",";
@@ -69,28 +66,29 @@ public class BaseBlockRunner implements IBlockRunner,ITIPLBlock {
 		if (withGui) {
 			s = ArgumentDialog.GUIBlock(this,p.subArguments("gui",true));
 		} 
-		for(ITIPLBlock cBlock : blockList) s=cBlock.setParameter(s);
+		for(ITIPLBlock cBlock : blockList) {
+            s=cBlock.setParameter(ioHelper.gatherIOArguments(s,cBlock.getPrefix(),cBlock.getInfo()));
+        }
 
 		return s;
 	}
 	@Override
 	public void connectInput(String inputName, ITIPLBlock outputBlock,
 			String outputName) {
-		// TODO Auto-generated method stub
-
+		ioHelper.connectInput(inputName, outputBlock,outputName);
 	}
 
-	@Override
-	public TypedPath getFileParameter(String argument) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public TImgRO getInputFile(String argument) {
-		// TODO Auto-generated method stub
-		return null;
+		return ioHelper.getInputFile(argument);
 	}
+
+    @Override
+    public void SaveImage(TImgRO imgObj,String nameArg) { ioHelper.SaveImage(imgObj,nameArg); }
+
+    @Override
+    public TypedPath getFileParameter(String cParm) { return ioHelper.getFileParameter(cParm); }
 
 	@Override
 	public IBlockInfo getInfo() {
@@ -157,11 +155,12 @@ public class BaseBlockRunner implements IBlockRunner,ITIPLBlock {
 
 	@Override
 	public boolean isReady() {
-		if (blockList.size()<1) return false;		
-		return blockList.getFirst().isReady();
+		if (blockList.size()<1) return false;
+        ITIPLBlock firstBlock = blockList.getFirst();
+		return firstBlock.isReady() && ioHelper.isReady(firstBlock.getPrefix(), firstBlock.getInfo());
 	}
 
-	public final static String kVer="140821_02";
+	public final static String kVer="141020_03";
 	protected static void checkHelp(final ArgumentParser p) {
 		if (p.hasOption("?")) {
 			System.out.println(" BaseBlockRunner");

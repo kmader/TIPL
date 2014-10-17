@@ -18,7 +18,7 @@ import tipl.util.TypedPath;
 public interface ITIPLBlock {
 
 	
-	public class BlockImage implements IBlockImage {
+	static public class BlockImage implements IBlockImage {
 		protected final String name;
 		protected final String desc;
 		protected final boolean isess;
@@ -71,7 +71,7 @@ public interface ITIPLBlock {
 
 	}
 
-	public interface IBlockImage {
+	static public interface IBlockImage {
 		/**
 		 * the default filename to use (can be blank)
 		 * 
@@ -105,7 +105,7 @@ public interface ITIPLBlock {
 	 * 
 	 */
 
-	public interface IBlockInfo {
+	static public interface IBlockInfo {
 		public String getDesc();
 
 		public IBlockImage[] getInputNames();
@@ -134,14 +134,8 @@ public interface ITIPLBlock {
 	 */
 	public boolean execute();
 
-	/**
-	 * Returns the value for a file contained in the getInputNames or
-	 * getOutputNames list
-	 * 
-	 * @param argument
-	 * @return file/path name
-	 */
-	public TypedPath getFileParameter(String argument);
+
+
 	/**
 	 * get an input file (handles loading and everything in a consistent manner and returns null if the image is empty 
 	 * @param argument image argument name
@@ -162,12 +156,7 @@ public interface ITIPLBlock {
 	 * @param newPrefix the new prefix
 	 */
 	public void setPrefix(String newPrefix);
-	
-	/**
-	 * Set the maximum number of slices to read in when using the get input file command
-	 * @param maxNumberOfSlices
-	 */
-	public void setSliceRange(int startSlice,int finishSlice);
+
 	
 	/**
 	 * has the block completed or are all of the files, etc present which
@@ -193,7 +182,7 @@ public interface ITIPLBlock {
 	/**
 	 * Inputs can be given to the block through the setParameters command using
 	 * the ArgumentParser class
-	 * 
+	 *
 	 * @param p
 	 *            input arguments
 	 * @return updated arguments (in case they are replaced)
@@ -207,4 +196,56 @@ public interface ITIPLBlock {
 	 */
 	@Override
 	public String toString();
+
+    /**
+     * A save function so background saving can be controlled on a block level
+     * @param imgObj
+     */
+    public void SaveImage(TImgRO imgObj,String nameArg);
+
+    /**
+     * Get the file path of the current argument, still needed for writing csv files
+     * @param argument
+     * @return
+     */
+    @Deprecated
+    public TypedPath getFileParameter(final String argument);
+
+    /**
+     * A class to handle IO for the blocks (either locally, through Hadoop or otherwise)
+     * basically it makes it more straightforward to pass images in as objects instead of paths
+     */
+    static public interface BlockIOHelper {
+        /**
+         * A save function so background saving can be controlled on a block level
+         * @param imgObj
+         */
+        public void SaveImage(TImgRO imgObj,String nameArg);
+
+        /**
+         * Is the IO ready (usually directly linked to the block being ready, but not always
+         * @return do all files that are needed exist and are readable
+         */
+        public boolean isReady(final String prefix, IBlockInfo aboutMe);
+
+
+        public TImgRO getInputFile(final String argument);
+
+        /**
+         * The arguments for the IO helper specifically
+         * @param p the current argument list
+         * @param prefix the prefix to use for the current extension
+         * @param aboutMe the info about the current block
+         * @return
+         */
+        public ArgumentParser gatherIOArguments(ArgumentParser p, String prefix, IBlockInfo aboutMe);
+
+        public void connectInput(final String inputName,
+                                 final ITIPLBlock outputBlock, final String outputName);
+
+        @Deprecated
+        public TypedPath getFileParameter(final String argument);
+
+
+    }
 }

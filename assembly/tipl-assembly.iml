@@ -174,7 +174,7 @@
     <orderEntry type="module-library">
       <library name="Maven: stupid.fiji.scripting.shit:abstractinterpreter:99.0">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../tipl/tipl-libraries/fiji-integration/fiji-scripting.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../tipl_libraries/fiji-integration/fiji-scripting.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -183,7 +183,7 @@
     <orderEntry type="module-library">
       <library name="Maven: stupid.fiji.scripting.shit:commonlibs:99.0">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../tipl/tipl-libraries/fiji-integration/ij-core.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../tipl_libraries/fiji-integration/ij-core.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

@@ -77,8 +77,8 @@ public class XDFBlock extends BaseTIPLBlock {
 		cXDF.LoadImages(inImgs);
 		cXDF.execute();
 		
-		TImgTools.RemoveTImgFromCache(getFileParameter("input"));
-		TImgTools.WriteBackground(cXDF.ExportImages(inputAim)[0], getFileParameter("rdf"));
+		SaveImage(cXDF.ExportImages(inputAim)[0],"rdf");
+
 		XDF.WriteHistograms((XDF) cXDF, TImgTools.makeTImgExportable(inputAim),getFileParameter("rdf"));
 		return true;
 	}

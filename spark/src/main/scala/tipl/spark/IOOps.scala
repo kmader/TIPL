@@ -11,9 +11,9 @@ import org.apache.spark.rdd.{BinaryFileRDD, RDD}
 import org.apache.spark.streaming.StreamingContext._
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.dstream.DStream
-import tipl.formats.TImgRO
 import tipl.formats.TReader.TSliceReader
 import tipl.formats.TiffFolder.TIFSliceReader
+import tipl.formats.{TImg, TImgRO}
 import tipl.spark.hadoop.TiffFileInputFormat
 import tipl.util._
 
@@ -199,18 +199,18 @@ object IOOps {
   }
 
   import scala.{specialized => spec}
-  implicit def createTImgFromStack[@spec(Boolean, Byte, Short, Int, Long, Float, Double) V](inVal: Iterable[(D3int,TImgBlock[Array[V]])])
-                                                                                           (implicit sc: SparkContext, elSize: D3float, path: TypedPath, vc: ClassTag[V]):
-  FlattenedDSImg[V] = {
-    val inSeq = inVal.toIndexedSeq.sortWith((a,b) => (a._1.z < b._1.z) )
 
-    val headP = inSeq.head
-    val dim = new D3int(headP._2.getDim().x,headP._2.getDim().y,inSeq.size)
-    val pos =  new D3int(headP._1.x,headP._1.y,headP._1.z)
+  implicit class toDSImgs[@spec(Boolean, Byte, Short, Int, Long, Float, Double) V](inVal: Iterable[(D3int,TImgBlock[Array[V]])]) {
+    def toTImg(path: TypedPath)(implicit elSize: D3float, vc: ClassTag[V]): TImg = {
+      val inSeq = inVal.toIndexedSeq.sortWith((a,b) => (a._1.z < b._1.z) )
 
-    val imageType = TImgTools.identifySliceType(headP._2.get)
-    new FlattenedDSImg[V](dim,pos,elSize,imageType,inSeq,path)
+      val headP = inSeq.head
+      val dim = new D3int(headP._2.getDim().x,headP._2.getDim().y,inSeq.size)
+      val pos =  new D3int(headP._1.x,headP._1.y,headP._1.z)
 
+      val imageType = TImgTools.identifySliceType(headP._2.get)
+      new FlattenedDSImg[V](dim,pos,elSize,imageType,inSeq,path)
+    }
   }
 
 

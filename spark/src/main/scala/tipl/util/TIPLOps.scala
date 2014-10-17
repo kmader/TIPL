@@ -119,8 +119,15 @@ object TIPLOps {
      * Basic IO
      *
      */
-    def write(path: String) = {
-      TImgTools.WriteTImg(inputImage, new TypedPath(path))
+    def write(path: String) {
+      write(new TypedPath(path))
+    }
+    /**
+     * Basic IO
+     *
+     */
+    def write(path: TypedPath) {
+      TImgTools.WriteTImg(inputImage, path)
     }
     /**
      * The kVoronoi operation
@@ -162,19 +169,21 @@ object TIPLOps {
     }
 
   }
-
-  implicit class RichFunction[B](val mapFun: (Double => B))(implicit bm: ClassTag[B]) {
+  import scala.{specialized => spec}
+  implicit class RichFunction[@spec(Boolean, Byte, Short, Int, Long, Float, Double) B](val mapFun: (Double => B))(implicit bm: ClassTag[B]) {
 
     val outputType = TImgTools.identifySliceType(new Array[B](1))
     lazy val vf = new FImage.VoxelFunction() {
       override def get(ipos: Array[java.lang.Double], voxval: Double): Double = {
         mapFun(voxval) match {
-          case a: Double => a
-          case a: Int => a.toDouble
-          case a: Float => a.toDouble
-          case a: Long => a.toDouble
+          case a: Boolean => if(a) 127.0 else 0.0
+          case a: Byte => a.toDouble
           case a: Char => a.toDouble
           case a: Short => a.toDouble
+          case a: Int => a.toDouble
+          case a: Long => a.toDouble
+          case a: Float => a.toDouble
+          case a: Double => a
           case a: B => a.toString.toDouble
         }
       }

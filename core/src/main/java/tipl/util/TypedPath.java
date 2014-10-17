@@ -20,7 +20,7 @@ public class TypedPath implements Serializable {
     final protected String inType;
     
     public static enum PATHTYPE {
-    	UNDEFINED, LOCAL, VIRTUAL, HADOOP,IMAGEJ
+    	UNDEFINED, LOCAL, VIRTUAL, HADOOP, IMAGEJ
     }
     final protected TypedPath.PATHTYPE pathType;
     /**
@@ -167,6 +167,15 @@ public class TypedPath implements Serializable {
         return this.inStr;
     }
 
+    /**
+     * Get the path separator
+     * @return
+     */
+    public String getPathSeparator() {
+        return File.separator;
+    }
+
+
     public String toString() {
         return inStr;
     }
@@ -185,13 +194,17 @@ public class TypedPath implements Serializable {
     		return getPathType()+pathTypeSplitChr+getPath()+pathTypeSplitChr+getType();
     	}
     }
+    protected File getFileObj() {
+        if (!isLocal()) throw new IllegalArgumentException(summary()+" is not local and can not be converted to an file object");
+        return new File(getPath());
+    }
     /** 
      * Make the path absolute only works on local filesystems
      * @return
      */
     public TypedPath makeAbsPath() {
-    	if (!isLocal()) throw new IllegalArgumentException(summary()+" is not local and can not be converted to an absolute path");
-    	final String newPath = (new File(getPath())).getAbsolutePath(); 
+
+    	final String newPath = getFileObj().getAbsolutePath();
     	return new TypedPath(newPath,this);
     }
     /** 
@@ -202,4 +215,28 @@ public class TypedPath implements Serializable {
     public TypedPath append(String fileName) {
     	return new TypedPath(getPath()+fileName,this);
     }
+
+    /**
+     * append a subdirectory to the current path
+     * @param dirName the name of the subdirectory
+     * @param createDir make directory (recursive)
+     * @return the new path object to the directory
+     */
+    public TypedPath appendDir(String dirName, boolean createDir) {
+        TypedPath outPath = append(getPathSeparator()+dirName+getPathSeparator());
+        if (createDir) {
+            switch(pathType) {
+                case LOCAL:
+                    outPath.getFileObj().mkdirs();
+                    break;
+                case HADOOP:
+                    throw new IllegalArgumentException(summary()+" is not local and cannot (yet) be done on non-local paths");
+                default:
+                    System.err.println("Creating directories for types:"+pathType+" does not make sense");
+            }
+        }
+        return outPath;
+    }
+    public TypedPath appendDir(String dirName) { return appendDir(dirName,true); }
+
 }
