@@ -167,9 +167,9 @@ public class TiffFolder extends DirectoryReader {
                     byte[] inByteData=( (DataBufferByte) activeRaster.getDataBuffer()).getData();
 
                     for(int i=0;i<sliceSize;i++) {
-                        grgb[i][0]=inByteData[3*i];
-                        grgb[i][1]=inByteData[3*i+1];
-                        grgb[i][2]=inByteData[3*i+2];
+                        grgb[i][0]=(byte) (inByteData[3*i] & 0xFF);
+                        grgb[i][1]=(byte) (inByteData[3*i+1] & 0xFF);
+                        grgb[i][2]=(byte) (inByteData[3*i+2] & 0xFF);
                     }
 
                     break;

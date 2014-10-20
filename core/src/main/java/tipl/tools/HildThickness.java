@@ -114,10 +114,30 @@ public class HildThickness extends Thickness {
 	 * @param bwObject
 	 *            The binary input image
 	 */
-	public static TImg DTO(final TImg bwObject) {
+	public static TImg DTO(final TImgRO bwObject) {
 		final TImg[] outImgs = DTOD(bwObject);
 		return outImgs[1];
 	}
+
+    /**
+     * for the TIPLOps command
+     * @param bwObject
+     * @param histoFile
+     * @return TImgRO array (distance map, thickness map)
+     */
+    public static TImgRO[] DTO(final TImgRO bwObject , final TypedPath histoFile) {
+        final TImg[] mapAims = DTOD(bwObject);
+        if (histoFile.length() > 0)
+            GrayAnalysis.StartHistogram(mapAims[1], histoFile.append( ".tsv"));
+        TypedPath profileFile = histoFile.append("");
+            GrayAnalysis.StartZProfile(mapAims[1], bwObject, profileFile
+                    .append("_z.tsv"), 0.1f);
+            GrayAnalysis.StartRProfile(mapAims[1], bwObject, profileFile
+                    .append( "_r.tsv"), 0.1f);
+            GrayAnalysis.StartRCylProfile(mapAims[1], bwObject, profileFile
+                    .append("_rcyl.tsv"), 0.1f);
+        return mapAims;
+    }
 
 	/**
 	 * Similar to DTObjection function in XIPL, takes a black and white input
@@ -127,11 +147,11 @@ public class HildThickness extends Thickness {
 	 * @param bwObject
 	 *            The binary input image
 	 */
-	public static TImg[] DTOD(final TImg bwObject) {
+	public static TImg[] DTOD(final TImgRO bwObject) {
 
-		ITIPLPluginIO KV = TIPLPluginManager.createBestPluginIO("kVoronoi", new TImg[] {bwObject});
+		ITIPLPluginIO KV = TIPLPluginManager.createBestPluginIO("kVoronoi", new TImgRO[] {bwObject});
 		KV.setParameter("-includeEdges=false");
-		KV.LoadImages(new TImg[] {null,bwObject});
+		KV.LoadImages(new TImgRO[] {null,bwObject});
 		KV.execute();
 		final TImg distAim = KV.ExportImages(bwObject)[1];
 		KV = null;

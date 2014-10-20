@@ -388,7 +388,7 @@ public class TImgTools {
      * The rules for converting RGB images to standard images
      */
     public static enum RGBConversion {
-        MEAN, SUM, MIN, MAX, RED, GREEN, BLUE
+        MEAN, SUM, MIN, MAX, INT, RED, GREEN, BLUE
     }
 
     public static RGBConversion rgbConversionMethod = RGBConversion.MEAN;
@@ -419,6 +419,9 @@ public class TImgTools {
                 case MAX:
                     outValue = Math.max(Math.max(grgb[i][0],grgb[i][1]),grgb[i][2]);
                     break;
+                case INT:
+                    outValue =  ((int)grgb[i][0] << 24) + ((int)grgb[i][1] << 8) + (int) grgb[i][2];
+                    break;
                 case RED:
                     outValue = grgb[i][0];
                     break;
@@ -430,7 +433,7 @@ public class TImgTools {
                     break;
 
             }
-            gdouble[i] = outValue+(isSigned ? 0 : 127);
+            gdouble[i] = outValue+(isSigned ? 127 : 0);
         }
         return convertDoubleArray(gdouble, asType,isSigned,shortScaleFactor);
     }

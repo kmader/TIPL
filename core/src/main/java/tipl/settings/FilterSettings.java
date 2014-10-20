@@ -23,6 +23,18 @@ public class FilterSettings implements Serializable {
 	final public static int GRADIENT=2;
 	final public static int LAPLACE=3;
 	final public static int MEDIAN=4;
+
+    /**
+     * Check the filter type and throw an error if it is not acceptable
+     * @param i
+     * @param throwException
+     * @return
+     */
+    final public static boolean checkFilterType(int i, boolean throwException) {
+        if(i>=0 && i<=4) return true;
+        else if (throwException) throw new IllegalArgumentException("Filter type:"+i+" is unknown, please use one of the existing:"+filterHelpString);
+        return false;
+    }
 	
 	public static interface HasFilterSettings extends Serializable {
 		public FilterSettings getFilterSettings();
@@ -45,13 +57,14 @@ public class FilterSettings implements Serializable {
 	 * Set imagetype of output image (default = -1 is the same as the input type
 	 */
 	public int oimageType = -1;
-	
+	static private final String filterHelpString = NEAREST_NEIGHBOR+" - Nearest Neighbor,"+
+            GAUSSIAN+" - Gaussian, "+GRADIENT+" - Gradient, "+LAPLACE+" - Laplace, "+MEDIAN+" - Median";
+
 	public ArgumentParser setParameter(final ArgumentParser p,
 			final String prefix) {
 		final int filterType = p
 				.getOptionInt(prefix + "filter", 0,
-						NEAREST_NEIGHBOR+" - Nearest Neighbor,"+
-				GAUSSIAN+" - Gaussian, "+GRADIENT+" - Gradient, "+LAPLACE+" - Laplace, "+MEDIAN+" - Median");
+						filterHelpString);
 		final double filterParameter = p
 				.getOptionDouble(
 						prefix + "filtersetting",

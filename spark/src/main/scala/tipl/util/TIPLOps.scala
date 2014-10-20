@@ -2,31 +2,16 @@ package tipl.util
 
 import java.io.File
 
-import scala.reflect.ClassTag
-import scala.collection.JavaConversions._
-import scala.math.{ sqrt, pow }
-import tipl.formats.TImgRO
-import tipl.formats.TImg
-import tipl.tools.BaseTIPLPluginIn._
-import tipl.tools.VFilterScale
-import tipl.settings.FilterSettings.filterGenerator
-import tipl.spark.SKVoronoi
-import tipl.spark.ShapeAnalysis
-import org.apache.spark.rdd.RDD
-import tipl.tools.BaseTIPLPluginIn
-import tipl.spark.DTImg
-import tipl.spark.hadoop.TiffFileInputFormat
-import org.apache.spark.input.ByteInputFormat
-import tipl.formats.TReader.TSliceReader
-import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
-import org.apache.spark.rdd.PairRDDFunctions._
+import org.apache.spark.rdd.RDD
+import tipl.formats.{FImage, TImg, TImgRO}
+import tipl.settings.FilterSettings
 import tipl.spark.DTImgOps._
-import org.apache.spark.api.java.JavaPairRDD
-import tipl.spark.KVImg
-import tipl.formats.FImage
-import tipl.util.TImgTools
-import tipl.spark.SparkGlobal
+import tipl.spark.{DTImg, KVImg, SKVoronoi, ShapeAnalysis}
+import tipl.tools.{BaseTIPLPluginIn, GrayAnalysis, HildThickness}
+
+import scala.math.{pow, sqrt}
+import scala.reflect.ClassTag
 
 /**
  * An extension of TImgRO to make the available filters show up
@@ -144,17 +129,36 @@ object TIPLOps {
       plugObj.setParameter("-csvname=" + outfile)
       plugObj.execute
     }
-    def filter(size: D3int = new D3int(1, 1, 1)): TImgRO = { //, shape: morphKernel = fullKernel, filter: filterGenerator = null): TImgRO = {
+
+    def filter(downfactor: Int, upfactor: Int,filterType: Int): TImgRO = filter(new D3int(downfactor),new D3int(upfactor),filterType)
+
+    def filter(downfactor: D3int = new D3int(1, 1, 1), upfactor: D3int = new D3int(1,1,1) , filterType: Int = FilterSettings.GAUSSIAN): TImgRO = { //, shape: morphKernel = fullKernel, filter: filterGenerator = null): TImgRO = {
+      FilterSettings.checkFilterType(filterType,true)
       val plugObj = TIPLPluginManager.createBestPluginIO("Filter", Array(inputImage))
       plugObj.LoadImages(Array(inputImage))
-      plugObj.setParameter("-upfactor=" + size + " -downfactor=" + size)
-
-      //TODO Implement this  plugObj.neighborKernel=shape
-      //TODO plugObj.asInstanceOf[].scalingFilterGenerator = filter
-
+      plugObj.setParameter("-upfactor=" + upfactor + " -downfactor=" + downfactor+" -filter="+filterType)
       plugObj.execute
       plugObj.ExportImages(inputImage)(0)
     }
+
+    def componentLabel(kernel: Int = 0, neighborhood: D3int =new D3int(1,1,1)) = {
+      val plugObj = TIPLPluginManager.createBestPluginIO("ComponentLabel", Array(inputImage))
+      plugObj.LoadImages(Array(inputImage))
+      plugObj.setParameter("-kernel="+kernel+" -neighborhood"+neighborhood)
+      plugObj.execute
+      plugObj.ExportImages(inputImage)(0)
+    }
+    //TODO modernize this function
+    def shapeAnalysis(outPath: TypedPath,analysisName: String = "Shape",includeShapeTensor: Boolean = true) =
+      GrayAnalysis.StartLacunaAnalysis(inputImage,outPath,analysisName,includeShapeTensor)
+    //TODO modernize this function as well
+    def thickness(csvFile: TypedPath): Array[TImgRO] = {
+      HildThickness.DTO(inputImage,csvFile)
+    }
+
+
+    //TODO Implement advanced filter  plugObj.neighborKernel=shape
+    //TODO plugObj.asInstanceOf[].scalingFilterGenerator = filter
 
     /**
      * simple apply a function to each point in the image
