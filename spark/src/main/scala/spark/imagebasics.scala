@@ -1,4 +1,5 @@
 package spark.images
+
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
@@ -21,7 +22,6 @@ object imageBasics extends Serializable {
     true
   }
 
-
   def tinyroi(pvec: ((Int, Int, Int), Double)) = {
     pvec._1._1 >= 0 & pvec._1._2 >= 0 & pvec._1._3 >= 0 &
       pvec._1._1 < 10 & pvec._1._2 < 10 & pvec._1._3 < 10
@@ -30,7 +30,8 @@ object imageBasics extends Serializable {
   def runFilter(sc: SparkContext, fileName: String, useROI: Boolean) = {
     val textImg = sc.textFile(fileName)
     // convert csv to position, value
-    val rImg = textImg.map(_.split(",")).map(cLine => ((cLine(0).toInt, cLine(1).toInt, cLine(2).toInt), cLine(3).toDouble))
+    val rImg = textImg.map(_.split(",")).map(cLine => ((cLine(0).toInt, cLine(1).toInt,
+      cLine(2).toInt), cLine(3).toDouble))
 
     // define volume of interest
 
@@ -54,13 +55,15 @@ object imageBasics extends Serializable {
 
   def compLabeling(sc: SparkContext, inImg: RDD[((Int, Int, Int), Double)]) = {
     // perform a threshold and relabel points
-    var labelImg = inImg.filter(_._2 > 0).map(pvec => (pvec._1, pvec._1._1.toLong * pvec._1._2.toLong * pvec._1._3.toLong + 1))
+    var labelImg = inImg.filter(_._2 > 0).map(pvec => (pvec._1, pvec._1._1.toLong * pvec._1._2
+      .toLong * pvec._1._3.toLong + 1))
 
     def spread_voxels(pvec: ((Int, Int, Int), Long), windSize: Int = 1) = {
       val wind = 0 to windSize // only need to scan positively
       val pos = pvec._1
       val label = pvec._2
-      for (x <- wind; y <- wind; z <- wind) yield ((pos._1 + x, pos._2 + y, pos._3 + z), (label, x == 0 & y == 0 & z == 0))
+      for (x <- wind; y <- wind; z <- wind) yield ((pos._1 + x, pos._2 + y, pos._3 + z), (label,
+        x == 0 & y == 0 & z == 0))
     }
     var groupList = Array((0L, 0))
     var running = true
@@ -74,7 +77,8 @@ object imageBasics extends Serializable {
       // make a list of each label and how many voxels are in it
       val curGroupList = newLabels.map(pvec => (pvec._2, 1)).
         reduceByKey(_ + _).sortByKey(true).collect
-      // if the list isn't the same as before, continue running since we need to wait for swaps to stop
+      // if the list isn't the same as before, continue running since we need to wait for swaps
+      // to stop
       running = curGroupList.deep != groupList.deep
       groupList = curGroupList
       labelImg = newLabels

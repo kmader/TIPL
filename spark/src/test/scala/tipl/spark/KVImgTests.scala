@@ -15,7 +15,7 @@ import tipl.spark.KVImgOps._
 /**
  * Created by mader on 10/10/14.
  */
-class KVImgTests extends FunSuite with LocalSparkContext{
+class KVImgTests extends FunSuite with LocalSparkContext {
 
   var tempDir: File = _
 
@@ -32,7 +32,7 @@ class KVImgTests extends FunSuite with LocalSparkContext{
 
   test("Check if we even get a sparkcontext") {
     sc = getSpark("Acquiring context...")
-    println("Current context is named: "+sc.appName)
+    println("Current context is named: " + sc.appName)
   }
 
   test("KVIO >") {
@@ -53,24 +53,23 @@ class KVImgTests extends FunSuite with LocalSparkContext{
     sc = getSpark("KVImgOps2")
 
     val kv = sc.parallelize(1 to 100).
-      map{i => (new D3int(i),i)}
-    val kvd = (kv-1)<10
-    print("Current keys:"+kvd.first)
+      map { i => (new D3int(i), i)}
+    val kvd = (kv - 1) < 10
+    print("Current keys:" + kvd.first)
     assert(kvd.count() == kv.count())
-    assert(kvd.filter(_._2).count()==10)
+    assert(kvd.filter(_._2).count() == 10)
   }
 
   test("Times") {
 
     val kvnorm = sc.parallelize(1 to 100).
-      map{i => (new D3int(i),i.toDouble)}
+      map { i => (new D3int(i), i.toDouble)}
     val kvinv = sc.parallelize(1 to 100).
-      map{i => (new D3int(i),1/i.toDouble)}
+      map { i => (new D3int(i), 1 / i.toDouble)}
     val n: NumericRichKvRDD[Double] = NumericRichKvRDD[Double](kvnorm)
-    val kvm = (n.times(kvnorm,kvinv)).map(_._2)
+    val kvm = (n.times(kvnorm, kvinv)).map(_._2)
     assert(kvm.min == 1)
     assert(kvm.max == 1)
   }
-
 
 }

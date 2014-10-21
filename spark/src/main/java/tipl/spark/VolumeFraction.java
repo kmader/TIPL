@@ -32,7 +32,8 @@ public class VolumeFraction {
 
     private static Result processSlice(boolean[] workData) {
         long inV = 0, outV = 0;
-        /** Do something silly like count each slice 100 times and count the in phase only on the even slices
+        /** Do something silly like count each slice 100 times and count the in phase only on the
+         *  even slices
          * and the out of phase only on the odd slices
          */
         for (int i = 0; i < loopMax; i++) {
@@ -134,14 +135,19 @@ public class VolumeFraction {
         // run test locally for comparison
         Result outCountLocal = sendTImgTest(TestPosFunctions.wrapIt(1000,
                 new TestPosFunctions.DiagonalPlaneFunction()), getContext("local[1]", "LocalVF"));
-        System.out.println(String.format("Distributed Image\n\tVolume Fraction: \t\t%s\n\tCalculation time: \t%s",
+        System.out.println(String.format("Distributed Image\n\tVolume Fraction: " +
+                        "\t\t%s\n\tCalculation time: \t%s",
                 outCount1.getVF(), Duration.create(start2 - start1, TimeUnit.MILLISECONDS)));
-        System.out.println(String.format("Local Image\n\tVolume Fraction: \t\t%s\n\tCalculation time: \t%s",
+        System.out.println(String.format("Local Image\n\tVolume Fraction: \t\t%s\n\tCalculation " +
+                        "time: \t%s",
                 outCount2.getVF(), Duration.create(start3 - start2, TimeUnit.MILLISECONDS)));
-        System.out.println(String.format("Global Image\n\tVolume Fraction: \t\t%s\n\tCalculation time: \t%s",
+        System.out.println(String.format("Global Image\n\tVolume Fraction: \t\t%s\n\tCalculation " +
+                        "time: \t%s",
                 outCount3.getVF(), Duration.create(startLocal - start3, TimeUnit.MILLISECONDS)));
-        System.out.println(String.format("Local Calculation\n\tVolume Fraction: \t\t%s\n\tCalculation time: \t%s",
-                outCountLocal.getVF(), Duration.create(System.currentTimeMillis() - startLocal, TimeUnit.MILLISECONDS)));
+        System.out.println(String.format("Local Calculation\n\tVolume Fraction: " +
+                        "\t\t%s\n\tCalculation time: \t%s",
+                outCountLocal.getVF(), Duration.create(System.currentTimeMillis() - startLocal,
+                        TimeUnit.MILLISECONDS)));
 
     }
 

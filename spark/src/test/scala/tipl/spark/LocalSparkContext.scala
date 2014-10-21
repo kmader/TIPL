@@ -1,5 +1,6 @@
 /**
- * Based on the implementation from the Spark Testing Suite, a set of commands to initialize a Spark context for tests
+ * Based on the implementation from the Spark Testing Suite, a set of commands to initialize a
+ * Spark context for tests
  * Created by mader on 10/10/14.
  */
 
@@ -16,7 +17,6 @@ import tipl.spark.SparkGlobal
 /** Manages a local `sc` {@link SparkContext} variable, correctly stopping it after each test. */
 trait LocalSparkContext extends BeforeAndAfterEach with BeforeAndAfterAll {
   self: Suite =>
-
 
   @transient var sc: SparkContext = _
 
@@ -35,9 +35,10 @@ trait LocalSparkContext extends BeforeAndAfterEach with BeforeAndAfterAll {
     sc = null
   }
 
-  def getSpark(testName: String) = SparkGlobal.getContext("Testing:"+testName).sc
+  def getSpark(testName: String) = SparkGlobal.getContext("Testing:" + testName).sc
 
 }
+
 
 object LocalSparkContext {
   def stop(sc: SparkContext) {

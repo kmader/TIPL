@@ -21,8 +21,9 @@ import static org.junit.Assert.assertEquals;
  * @author mader
  */
 public class GrayAnalysisTest {
-    final public static String testCSVData = "I am just junk\nCOLA,COLB,COLC\n1,2,3\n4,5,6\n7,8,9\n7,8,9\n";
-    public static final TypedPath testDir=TIPLTestingLibrary.createTestFolder("ga_tests/");
+    final public static String testCSVData = "I am just junk\nCOLA,COLB,COLC\n1,2,3\n4,5,6\n7,8," +
+            "9\n7,8,9\n";
+    public static final TypedPath testDir = TIPLTestingLibrary.createTestFolder("ga_tests/");
     static protected TypedPath tempFilePathCSV = testDir.append("csv-file");
     static protected TypedPath tempFilePath = testDir.append("temp1");
     static protected TypedPath tempFilePath2 = testDir.append("temp2");
@@ -47,12 +48,10 @@ public class GrayAnalysisTest {
         int i = 1;
         if (verbose) showLine(cLine, i);
 
-
         while (!insFile.fileDone) {
             cLine = insFile.lineAsDictionary();
             i++;
             if (verbose) showLine(cLine, i);
-
 
         }
         rowCols[0] = i;
@@ -75,8 +74,8 @@ public class GrayAnalysisTest {
         return CL.ExportImages(sImg)[0];
     }
 
-    protected static ITIPLPlugin doLacunaAnalysis(final TImgRO labelImage, final TypedPath outFile) {
-
+    protected static ITIPLPlugin doLacunaAnalysis(final TImgRO labelImage,
+                                                  final TypedPath outFile) {
 
         ITIPLPlugin cGA = GrayAnalysis.StartLacunaAnalysis(labelImage, outFile, "First Run");
         if (TIPLGlobal.getDebug()) {
@@ -103,10 +102,10 @@ public class GrayAnalysisTest {
             temp = File.createTempFile("lacunaAnalysis2", ".csv");
             tempFilePath2 = TIPLTestingLibrary.createTestImage(temp.getAbsolutePath());
         } catch (IOException e) {
-            throw new IllegalArgumentException("cannot create a temporary file for GrayAnalysis to write to");
+            throw new IllegalArgumentException("cannot create a temporary file for GrayAnalysis " +
+                    "to write to");
         }
     }
-
 
     @Test
     public void testGrayVoxel() {
@@ -134,7 +133,6 @@ public class GrayAnalysisTest {
         assertEquals(1, t.stdy(), 1e-9);
         assertEquals(1.5, t.stdz(), 1e-9);
 
-
     }
 
     //@Test
@@ -149,7 +147,6 @@ public class GrayAnalysisTest {
         assertEquals(3, cLine.size());
         int i = 1;
         if (true) showLine(cLine, i);
-
 
         while (!insFile.fileDone) {
             cLine = insFile.lineAsDictionary();
@@ -212,7 +209,8 @@ public class GrayAnalysisTest {
                 new TestPosFunctions.SheetImageFunction());
         final TImgRO labelImage = makeCL(testImg);
         doLacunaAnalysis(labelImage, tempFilePath);
-        ITIPLPlugin cGA = GrayAnalysis.AddDensityColumn(labelImage, tempFilePath, tempFilePath2, "DENS_TEST");
+        ITIPLPlugin cGA = GrayAnalysis.AddDensityColumn(labelImage, tempFilePath, tempFilePath2,
+                "DENS_TEST");
         assertEquals(5, ((Long) cGA.getInfo("groups")).longValue());
 
         // check the output file itself
@@ -221,6 +219,5 @@ public class GrayAnalysisTest {
         assertEquals(44, rowCols[1]);
 
     }
-
 
 }

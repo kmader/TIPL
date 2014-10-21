@@ -77,17 +77,18 @@ public class ShapeAnalysisTest {
 
     @Test
     public void testDiagonalImage() {
-        ITIPLPluginIn SA = testImage("diag_" + pluginId.sparkBased() + ".csv", pluginId, diagonalPlane);
+        ITIPLPluginIn SA = testImage("diag_" + pluginId.sparkBased() + ".csv", pluginId,
+                diagonalPlane);
         assertEquals(1L, SA.getInfo("groups"));
         assertEquals(63775.0, SA.getInfo("average_volume"));
     }
 
     @Test
     public void testLayered() {
-        ITIPLPluginIn SA = testImage("layered_" + pluginId.sparkBased() + ".csv", pluginId, layeredImage);
+        ITIPLPluginIn SA = testImage("layered_" + pluginId.sparkBased() + ".csv", pluginId,
+                layeredImage);
         assertEquals(3L, SA.getInfo("groups"));
         assertEquals(1125000.0, SA.getInfo("average_volume"));
     }
-
 
 }

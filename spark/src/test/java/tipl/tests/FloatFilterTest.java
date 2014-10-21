@@ -29,8 +29,10 @@ public class FloatFilterTest {
         for (int i = 0; i < FloatFilterTest.lineImg.getDim().z; i++) {
             D3int pos = new D3int(0, 0, 2);
             D3int offset = new D3int(0, 0, 2 - i);
-            D3int dim = new D3int(FloatFilterTest.lineImg.getDim().x, FloatFilterTest.lineImg.getDim().y, 1);
-            imList.add(new TImgBlock<float[]>((float[]) FloatFilterTest.lineImg.getPolyImage(1, 3), pos, dim, offset));
+            D3int dim = new D3int(FloatFilterTest.lineImg.getDim().x,
+                    FloatFilterTest.lineImg.getDim().y, 1);
+            imList.add(new TImgBlock<float[]>((float[]) FloatFilterTest.lineImg.getPolyImage(1,
+                    3), pos, dim, offset));
         }
         return imList;
     }
@@ -42,7 +44,8 @@ public class FloatFilterTest {
         D3int blockSize = new D3int(10);
         D3int offset = new D3int(0);
         for (int i = 0; i < 10000; i++) {
-            List<D4int> scanpos = BaseTIPLPluginIn.getScanPositions(start, offset, 0, blockSize, ns);
+            List<D4int> scanpos = BaseTIPLPluginIn.getScanPositions(start, offset, 0, blockSize,
+                    ns);
             long offsum = 0;
             for (D4int scanpoint : scanpos) offsum += scanpoint.offset;
         }
@@ -91,11 +94,14 @@ public class FloatFilterTest {
     @Test
     public void testGatherBlocks() {
         int startSlice = 2;
-        TImgBlock<float[]> outSlice = ff.GatherBlocks(new Tuple2<D3int, Iterable<TImgBlock<float[]>>>(new D3int(0, 0, startSlice),
+        TImgBlock<float[]> outSlice = ff.GatherBlocks(new Tuple2<D3int,
+                Iterable<TImgBlock<float[]>>>(new D3int(0, 0, startSlice),
                 someSlices))._2();
         System.out.println(String.format("i\tIn\tOut"));
         for (int i = 0; i < inSlice.length; i++) {
-            if (i % 1000 == 0) System.out.println(String.format("%d\t%3.2f\t%3.2f", i, inSlice[i], outSlice.get()[i]));
+            if (i % 1000 == 0)
+                System.out.println(String.format("%d\t%3.2f\t%3.2f", i, inSlice[i],
+                        outSlice.get()[i]));
             assertEquals(inSlice[i], outSlice.get()[i], 0.1f);
         }
     }
@@ -125,6 +131,7 @@ public class FloatFilterTest {
             return null;
         }
     }
+
 
     static public class FloatFilterTestImpl2 extends FloatFilterSlice {
         @Override

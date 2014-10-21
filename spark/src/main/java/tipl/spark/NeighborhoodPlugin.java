@@ -13,7 +13,8 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * A generic interface for neighborhood operations and filters and the basis for making more complicated algorithms for image processing using the fan-out/shuffle, group, and map operations.
+ * A generic interface for neighborhood operations and filters and the basis for making more
+ * complicated algorithms for image processing using the fan-out/shuffle, group, and map operations.
  *
  * @param <U> input image format
  * @param <V> output image format
@@ -56,6 +57,7 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
         }
     }
 
+
     @SuppressWarnings("serial")
     public abstract class GatherBasedPlugin<U extends Cloneable, V extends Cloneable>
             extends BaseTIPLPluginIn implements NeighborhoodPlugin<U, V> {
@@ -66,6 +68,7 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
         abstract public BaseTIPLPluginIn.filterKernel getImageKernel();
 
     }
+
 
     /**
      * A very generic class for filtering with abstract methods for getting and
@@ -94,7 +97,8 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
             final int eleCount = (int) templateBlock.getDim().prod();
             // the output image
             final V outData = createObj(eleCount);
-            final BaseTIPLPluginIn.filterKernel[] kernelList = new BaseTIPLPluginIn.filterKernel[eleCount];
+            final BaseTIPLPluginIn.filterKernel[] kernelList = new BaseTIPLPluginIn
+                    .filterKernel[eleCount];
             for (int i = 0; i < eleCount; i++) kernelList[i] = getImageKernel();
             for (final TImgBlock<U> cBlock : inBlocks) {
                 final U curBlock = cBlock.get();
@@ -104,8 +108,11 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
                             final int off = ((zp) * blockSize.y + (yp))
                                     * blockSize.x + (xp);
                             final BaseTIPLPluginIn.filterKernel curKernel = kernelList[off];
-                            for (D4int cPos : BaseTIPLPluginIn.getScanPositions(mKernel, new D3int(xp, yp, zp), cBlock.getOffset(), off, blockSize, ns)) {
-                                //if (mKernel.inside(off, cPos.offset, xp, cPos.x, yp, cPos.y, zp, cPos.z)) {
+                            for (D4int cPos : BaseTIPLPluginIn.getScanPositions(mKernel,
+                                    new D3int(xp, yp, zp), cBlock.getOffset(), off, blockSize,
+                                    ns)) {
+                                //if (mKernel.inside(off, cPos.offset, xp, cPos.x, yp, cPos.y,
+                                // zp, cPos.z)) {
                                 curKernel.addpt(xp, cPos.x, yp, cPos.y, zp, cPos.z,
                                         getEle(curBlock, cPos.offset));
                                 //}
@@ -125,10 +132,12 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
         abstract protected void setEle(V obj, int index, double val);
 
         public void LoadImages(TImgRO[] inputImages) {
-            if (!(basisImage instanceof DTImg)) throw new IllegalArgumentException("This only works with DTImg");
+            if (!(basisImage instanceof DTImg))
+                throw new IllegalArgumentException("This only works with DTImg");
             basisImage = (DTImg<U>) inputImages[0];
         }
     }
+
 
     /**
      * A version of the float filter optimized for operating on slices
@@ -150,7 +159,8 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
             final float[] outData = new float[templateBlock.get().length];
             // Make the output image first as kernels, then add the respective
             // points to it
-            final BaseTIPLPluginIn.filterKernel[] curKernels = new BaseTIPLPluginIn.filterKernel[(int) blockSize
+            final BaseTIPLPluginIn.filterKernel[] curKernels = new BaseTIPLPluginIn.filterKernel[
+                    (int) blockSize
                     .prod()];
 
             for (int ci = 0; ci < curKernels.length; ci++)

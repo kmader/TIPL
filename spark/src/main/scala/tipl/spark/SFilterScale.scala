@@ -3,28 +3,20 @@
  */
 package tipl.spark
 
-import tipl.util.ArgumentParser
-import tipl.tools.BaseTIPLPluginIn
-import tipl.tools.BaseTIPLPluginIO
-import tipl.tools.GrayAnalysis
-import tipl.tests.TestPosFunctions
-import tipl.util.TIPLPluginManager
-import tipl.settings.FilterSettings
-import tipl.util.TImgTools
-import tipl.util.D3int
-import scala.collection.JavaConversions._
-import tipl.formats.TImgRO
-import tipl.tools.GrayVoxels
-import tipl.util.ITIPLPlugin
-import tipl.spark.TypeMacros._
-import tipl.formats.TImg
-import org.apache.spark.rdd.RDD
-import tipl.util.TImgBlock
-import tipl.settings.FilterSettings.filterGenerator
-import spark.images.ImageTools
 import org.apache.spark.SparkContext._
 import org.apache.spark.api.java.JavaPairRDD
+import org.apache.spark.rdd.RDD
+import spark.images.ImageTools
+import tipl.formats.{TImg, TImgRO}
+import tipl.settings.FilterSettings
+import tipl.settings.FilterSettings.filterGenerator
+import tipl.spark.TypeMacros._
+import tipl.tests.TestPosFunctions
+import tipl.tools.{BaseTIPLPluginIO, BaseTIPLPluginIn}
+import tipl.util.{ArgumentParser, D3int, TImgBlock, TImgTools}
+
 import scala.collection.GenTraversableOnce
+import scala.collection.JavaConversions._
 
 /**
  * A spark based code to perform filters similarly to the code provided VFilterScale
@@ -34,7 +26,11 @@ import scala.collection.GenTraversableOnce
 class SFilterScale extends BaseTIPLPluginIO with FilterSettings.HasFilterSettings {
 
   private var filtSettings = new FilterSettings
-  override def setFilterSettings(in: FilterSettings) = { filtSettings = in }
+
+  override def setFilterSettings(in: FilterSettings) = {
+    filtSettings = in
+  }
+
   override def getFilterSettings() = filtSettings
 
   override def setParameter(p: ArgumentParser, prefix: String): ArgumentParser = {
@@ -53,7 +49,8 @@ class SFilterScale extends BaseTIPLPluginIO with FilterSettings.HasFilterSetting
     val dn = filtSettings.downfactor
     val insize = inputImage.getDim
 
-    outputSize = new D3int((insize.x * up.x) / dn.x, (insize.y * up.y) / dn.y, (insize.z * up.z) / dn.z)
+    outputSize = new D3int((insize.x * up.x) / dn.x, (insize.y * up.y) / dn.y,
+      (insize.z * up.z) / dn.z)
     val imRdd: RDD[(D3int, TImgBlock[Array[Double]])] = inputImage.getBaseImg.rdd
 
     outputImage = SFilterScale.partBasedFilterMap(imRdd, up,
@@ -64,6 +61,7 @@ class SFilterScale extends BaseTIPLPluginIO with FilterSettings.HasFilterSetting
   var inputImage: DTImg[Array[Double]] = null
   var outputImage: RDD[(D3int, TImgBlock[Array[Double]])] = null
   var outputSize: D3int = null
+
   override def LoadImages(inImages: Array[TImgRO]) = {
     inputImage = inImages(0).toDTValues
   }
@@ -84,10 +82,15 @@ class SFilterScale extends BaseTIPLPluginIO with FilterSettings.HasFilterSetting
 
 }
 
+
 object SFilterScale {
+
+
   case class partialFilter[T](newpos: D3int, block: TImgBlock[T], finished: Boolean)
+
+
   /**
-   *  a basic spread function
+   * a basic spread function
    */
   val simple_spread = (windSize: D3int) =>
     (pvec: (D3int, TImgBlock[Array[Double]])) =>
@@ -97,9 +100,10 @@ object SFilterScale {
    * A partition based filter command that should be more
    */
   def partBasedFilterMap(inImg: RDD[(D3int, TImgBlock[Array[Double]])],
-    upWindSize: D3int,
-    spread_fun: (((D3int, TImgBlock[Array[Double]])) => GenTraversableOnce[(D3int, TImgBlock[Array[Double]])]),
-    filt: filterGenerator) = {
+                         upWindSize: D3int,
+                         spread_fun: (((D3int, TImgBlock[Array[Double]])) =>
+                           GenTraversableOnce[(D3int, TImgBlock[Array[Double]])]),
+                         filt: filterGenerator) = {
     val neededSlices = 2 * upWindSize.z + 1
     val outImg = inImg.mapPartitions {
       cPartition =>
@@ -112,8 +116,10 @@ object SFilterScale {
             val finished = sliceList.length == neededSlices
             val outVal = if (finished) {
               List(partBasedFilterReduce(sliceList, upWindSize, filt))
-            } else {
-              for (curSlice <- sliceList) yield (pos, partialFilter[Array[Double]](cSlices._1, curSlice._2, false))
+            }
+            else {
+              for (curSlice <- sliceList)
+              yield (pos, partialFilter[Array[Double]](cSlices._1, curSlice._2, false))
             }
             outVal.toIterator
         }.toIterator
@@ -122,16 +128,16 @@ object SFilterScale {
       mapValues(_.block). // remove the partialFilter status
       map(inPair => (inPair._1, (inPair._1, inPair._2))). // format for the reduce command
       groupByKey.map {
-        inPairs =>
-          val cSlices = inPairs._2
-          partBasedFilterReduce(cSlices.toList, upWindSize, filt)
-      }
+      inPairs =>
+        val cSlices = inPairs._2
+        partBasedFilterReduce(cSlices.toList, upWindSize, filt)
+    }
     (outImg.filter(_._2.finished) ++ betweenSlices).mapValues(_.block)
   }
 
   def partBasedFilterReduce(inSpreadImg: List[(D3int, TImgBlock[Array[Double]])],
-    upWindSize: D3int,
-    filt: filterGenerator): (D3int, partialFilter[Array[Double]]) = {
+                            upWindSize: D3int,
+                            filt: filterGenerator): (D3int, partialFilter[Array[Double]]) = {
     val templateImg = inSpreadImg.head
     val sliceLen = templateImg._2.get.length
     // process blocks
@@ -159,13 +165,16 @@ object SFilterScale {
         }
       }
     }
-    val outSlice = kernelList.map { _.value() }.toArray
+    val outSlice = kernelList.map {
+      _.value()
+    }.toArray
     val inBlock = templateImg._2
     val outBlock = new TImgBlock[Array[Double]](outSlice, inBlock.getPos, inBlock.getDim)
 
     (templateImg._1, partialFilter[Array[Double]](templateImg._1, outBlock, false))
   }
 }
+
 
 object SFilterTest {
 
@@ -185,9 +194,14 @@ object SFilterTest {
       testImg = filtTool.ExportImages(testImg)(0)
       val outImg = testImg.asInstanceOf[DTImg[Array[Double]]]
       val outRdd = outImg.getBaseImg.rdd
-      val justArr = outRdd.map { _._2.get }
-      val imgStats = justArr.aggregate((0.0, 0))((lastSum, inArr) => (lastSum._1 + inArr.sum / inArr.length, lastSum._2 + 1), (a, b) => (a._1 + b._1, a._2 + b._2))
+      val justArr = outRdd.map {
+        _._2.get
+      }
+      val imgStats = justArr.aggregate((0.0, 0))((lastSum, inArr) =>
+        (lastSum._1 + inArr.sum / inArr.length, lastSum._2 + 1),
+        (a, b) => (a._1 + b._1, a._2 + b._2))
       println("Iteration #" + i + " complete\t" + imgStats)
     }
   }
 }
+

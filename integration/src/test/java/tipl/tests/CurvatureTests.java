@@ -54,13 +54,14 @@ public class CurvatureTests {
     @Test
     public void testDivideWork() {
         System.out.println("Testing that work is divided into chunks between 1 and the last slice");
-        for (int coreCount = TIPLGlobal.availableCores - 1; coreCount < 2 * TIPLGlobal.availableCores; coreCount += 2) {
+        for (int coreCount = TIPLGlobal.availableCores - 1; coreCount < 2 * TIPLGlobal
+                .availableCores; coreCount += 2) {
             final TImgRO testImg = TestPosFunctions.wrapIt(coreCount,
                     new TestPosFunctions.DiagonalPlaneAndDotsFunction());
             ITIPLPluginIO cv = makeCurvature(testImg);
-            TIPLTestingLibrary.testDivideWork(((BaseTIPLPluginIn) cv), 1, testImg.getDim().z - 1, true);
+            TIPLTestingLibrary.testDivideWork(((BaseTIPLPluginIn) cv), 1, testImg.getDim().z - 1,
+                    true);
         }
-
 
     }
 
@@ -75,6 +76,5 @@ public class CurvatureTests {
         final ITIPLPluginIn CL = makeCurvature(testImg);
         CL.execute();
     }
-
 
 }

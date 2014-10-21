@@ -210,7 +210,7 @@ public class CLTest {
 
         testImg = TestPosFunctions
                 .wrapIt(10, new TestPosFunctions.DiagonalLineFunction());
-        
+
         CL = makeCL(testImg);
         CL.setParameter("-kernel=2 -sphradius=1.00");
         CL.execute();
@@ -226,6 +226,5 @@ public class CLTest {
         CL.execute();
         checkVals(CL, 1, 10);
     }
-
 
 }

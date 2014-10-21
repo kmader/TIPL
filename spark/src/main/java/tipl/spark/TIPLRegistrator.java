@@ -4,7 +4,8 @@ import com.esotericsoftware.kryo.Kryo;
 import org.apache.spark.serializer.KryoRegistrator;
 
 /**
- * A class to load several of the more heavily used classes into the Kyro serializer for increased performance and smaller sizes
+ * A class to load several of the more heavily used classes into the Kyro serializer for
+ * increased performance and smaller sizes
  *
  * @author mader
  */

@@ -8,8 +8,6 @@ import tipl.settings.FilterSettings;
 import tipl.spark.SparkGlobal;
 import tipl.tools.*;
 import tipl.util.*;
-// doesn't make sense to declare this function again
-import static tipl.blocks.LocalTIPLBlock.LocalIOHelper.tryOpenImagePath;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,49 +15,47 @@ import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.Hashtable;
 
+import static tipl.blocks.LocalTIPLBlock.LocalIOHelper.tryOpenImagePath;
+
+// doesn't make sense to declare this function again
+
 /**
  * Script to Process Femur Data (specifically for 1.4um mid-diaphysis femur)
  *
  * @author Kevin Mader
  *         <p/>
- *         This and most of my scripts contain an almost excessively high number
- *         of functions, I did it in this way to make it easier for the garbage
- *         collector to work by keeeping as many variables as possible as local
- *         variables inside these subfunctions. It also makes the code somewhat
- *         easier to read and potentially reuse
+ *         This and most of my scripts contain an almost excessively high number of functions, I did
+ *         it in this way to make it easier for the garbage collector to work by keeeping as many
+ *         variables as possible as local variables inside these subfunctions. It also makes the
+ *         code somewhat easier to read and potentially reuse
  *         <p/>
  *         Change Log:
  *         <p/>
- *         v26 added the ability to run without any mask at all (just a white
- *         image as a mask)
+ *         v26 added the ability to run without any mask at all (just a white image as a mask)
  *         <p/>
- *         v25 added maximum io threads and fixed parameter for maskdistance in
- *         the subscript
+ *         v25 added maximum io threads and fixed parameter for maskdistance in the subscript
  *         <p/>
- *         v24 fixed the contour option to output just the max instead of the
- *         masked bone
+ *         v24 fixed the contour option to output just the max instead of the masked bone
  *         <p/>
- *         v23 added an option to skip contouring and just use a circle (same
- *         radius as the initial circle)
+ *         v23 added an option to skip contouring and just use a circle (same radius as the initial
+ *         circle)
  *         <p/>
  *         v22 Fixed critical bug in Resizing masks
  *         <p/>
- *         v21 Started to change many of the functions from member to static
- *         functions to make debugging easier.
+ *         v21 Started to change many of the functions from member to static functions to make
+ *         debugging easier.
  *         <p/>
- *         v20 Changed the script to produce a thresheld image first and then
- *         create bone and porosity
+ *         v20 Changed the script to produce a thresheld image first and then create bone and
+ *         porosity
  *         <p/>
- *         v19 Fixed the resume feature to work on bone/poros as a starting
- *         point (generate mask etc)
+ *         v19 Fixed the resume feature to work on bone/poros as a starting point (generate mask
+ *         etc)
  *         <p/>
  *         v18 Added minimum memory request of 5GB so the program always runs
  *         <p/>
- *         v17 Added lacuna distance to output (distance away from lacuna
- *         surface)
+ *         v17 Added lacuna distance to output (distance away from lacuna surface)
  *         <p/>
- *         v16 Added morphological radius (the radius to use for the sphKernel
- *         function)
+ *         v16 Added morphological radius (the radius to use for the sphKernel function)
  *         <p/>
  *         v15 Start
  */
@@ -138,41 +134,52 @@ public class UFEM implements Runnable {
             remEdgesRadius;
     private int smcOperation = 0;
     private volatile int ufemCores = 0;
+
     /**
      * ParameterSweeper needs to be able to instantiate the class to call the main
      */
     public UFEM() {
         final TypedPath emptyPath = new TypedPath("");
-        ufiltAimFile=emptyPath;
-        gfiltAimFile=emptyPath;
-        threshAimFile=emptyPath;
-        boneAimFile=emptyPath;
-        maskAimFile=emptyPath;
-        porosAimFile=emptyPath;
-        maskdistAimFile=emptyPath;
-        thickmapAimFile=emptyPath;
-        lmaskAimFile=emptyPath;
-        cmaskAimFile=emptyPath;
-        comboAimFile=emptyPath;
-        lacunAimFile=emptyPath;
-        canalAimFile=emptyPath;
-        lacunVolsAimFile=emptyPath;
-        lacunDistAimFile=emptyPath;
-        canalVolsAimFile=emptyPath;
-        canalDistAimFile=emptyPath;
-        cdtoAimFile=emptyPath;
-        cdtbAimFile=emptyPath;
-        mdtoAimFile=emptyPath;
+        ufiltAimFile = emptyPath;
+        gfiltAimFile = emptyPath;
+        threshAimFile = emptyPath;
+        boneAimFile = emptyPath;
+        maskAimFile = emptyPath;
+        porosAimFile = emptyPath;
+        maskdistAimFile = emptyPath;
+        thickmapAimFile = emptyPath;
+        lmaskAimFile = emptyPath;
+        cmaskAimFile = emptyPath;
+        comboAimFile = emptyPath;
+        lacunAimFile = emptyPath;
+        canalAimFile = emptyPath;
+        lacunVolsAimFile = emptyPath;
+        lacunDistAimFile = emptyPath;
+        canalVolsAimFile = emptyPath;
+        canalDistAimFile = emptyPath;
+        cdtoAimFile = emptyPath;
+        cdtbAimFile = emptyPath;
+        mdtoAimFile = emptyPath;
         runAsJob = false;
         jobToRun = null;
     }
+
     public UFEM(final ArgumentParser p) {
 
         stage = p
                 .getOptionInt(
                         "stage",
                         1,
-                        "1 - Filtering, 2 - Thresholding, 3 - Segmentation, 4 - Contouring, 5 - Mask Distance [parallel], 6 -  Classification, 7 - Labeling, 8 - Canal Voronoi Volumes / Distance Map [parallel], 9 - Lacuna Volumes [parallel], [10,11,12,13] - Lacuna Shape Analysis, 14 - Lacuna Neighbor Analysis, [15,16] - Canal Shape Analysis, 17 - Canal Neighbor Analysis, 18 - Canal Thickness Analysis, 19 - Canal Spacing Analysis, 20 - Mask Thickness Analysis, 21 - Canal Thickness Maps, 22 - Canal Spacing Maps, 23 - Mask Thickness Maps   (Histograms,etc) ");
+                        "1 - Filtering, 2 - Thresholding, 3 - Segmentation, 4 - Contouring, " +
+                                "5 - Mask Distance [parallel], 6 -  Classification, 7 - Labeling," +
+                                " 8 - Canal Voronoi Volumes / Distance Map [parallel], " +
+                                "9 - Lacuna Volumes [parallel], [10,11,12," +
+                                "13] - Lacuna Shape Analysis, 14 - Lacuna Neighbor Analysis, [15," +
+                                "16] - Canal Shape Analysis, 17 - Canal Neighbor Analysis, " +
+                                "18 - Canal Thickness Analysis, 19 - Canal Spacing Analysis, " +
+                                "20 - Mask Thickness Analysis, 21 - Canal Thickness Maps, " +
+                                "22 - Canal Spacing Maps, 23 - Mask Thickness Maps   (Histograms," +
+                                "etc) ");
         resume = p.getOptionBoolean("resume",
                 "Resume based on which files are present");
         singleStep = p.getOptionBoolean("singlestep",
@@ -186,14 +193,14 @@ public class UFEM implements Runnable {
                 .getOptionInt(
                         "scriptMulticore",
                         1,
-                        "Number of different stages of the script in parallel (mask distance generation for example)");
-
+                        "Number of different stages of the script in parallel (mask distance " +
+                                "generation for example)");
 
         multiJobs = p
                 .getOptionBoolean(
                         "multiJobs",
-                        "Submit additional jobs [merlin only!] for subtasks (distance map, voronoi volumes, shape analysis)");
-
+                        "Submit additional jobs [merlin only!] for subtasks (distance map, " +
+                                "voronoi volumes, shape analysis)");
 
         // Read Filenames
         ufiltAimFile = p.getOptionPath("ufilt", "", "Input unfiltered image");
@@ -278,7 +285,8 @@ public class UFEM implements Runnable {
                 .getOptionDouble(
                         "morphRadius",
                         1.75,
-                        "Radius to use for the kernel (vertex shaing is sqrt(3), edge sharing is sqrt(2), and face sharing is 1)");
+                        "Radius to use for the kernel (vertex shaing is sqrt(3), " +
+                                "edge sharing is sqrt(2), and face sharing is 1)");
         // Contouring
         doCL = !p
                 .getOptionBoolean("nocomplabel",
@@ -297,7 +305,8 @@ public class UFEM implements Runnable {
                 .getOptionDouble(
                         "maskcontourwidth",
                         0.4,
-                        "Amount to blur the edges of the contouring of the mask (normalized to number of steps)");
+                        "Amount to blur the edges of the contouring of the mask (normalized to " +
+                                "number of steps)");
         porosMaskPeel = p.getOptionInt("maskcontourpeel", 5,
                 "Number layers to peel off with the mask");
         removeMarrowCore = !p.getOptionBoolean("leavemarrow",
@@ -378,8 +387,8 @@ public class UFEM implements Runnable {
     }
 
     /**
-     * find the extents of non-zero values in an image and resize based on the
-     * smallest bounding box which can be fit around these edges
+     * find the extents of non-zero values in an image and resize based on the smallest bounding box
+     * which can be fit around these edges
      */
     public static TImg boundbox(final TImg maskImage) {
         final Resize myResizer = new Resize(maskImage);
@@ -396,8 +405,7 @@ public class UFEM implements Runnable {
     }
 
     /**
-     * run the contouring code and perform open and closing operations
-     * afterwards
+     * run the contouring code and perform open and closing operations afterwards
      */
     public static TImg contour(final TImg maskAim, final boolean remEdges,
                                final double remEdgesRadius, final boolean doCL,
@@ -466,15 +474,16 @@ public class UFEM implements Runnable {
     }
 
     public static TImg filter(final TImg ufiltAim, final boolean doLaplace,
-                              final boolean doGradient, final boolean doGauss, final boolean doMedian,
+                              final boolean doGradient, final boolean doGauss,
+                              final boolean doMedian,
                               final int upsampleFactor, final int downsampleFactor) {
 
-
-        final ITIPLPluginIO fs = TIPLPluginManager.createBestPluginIO("Filter", new TImgRO[] {ufiltAim});
-        fs.LoadImages( new TImgRO[] {ufiltAim});
+        final ITIPLPluginIO fs = TIPLPluginManager.createBestPluginIO("Filter",
+                new TImgRO[]{ufiltAim});
+        fs.LoadImages(new TImgRO[]{ufiltAim});
         int filterMode = FilterSettings.NEAREST_NEIGHBOR;
         if (doMedian) {
-            filterMode=FilterSettings.MEDIAN;
+            filterMode = FilterSettings.MEDIAN;
         } else if (doLaplace) {
             filterMode = FilterSettings.LAPLACE;
         } else if (doGradient) {
@@ -483,9 +492,9 @@ public class UFEM implements Runnable {
             filterMode = FilterSettings.GAUSSIAN;
         }
 
-        final D3int ds = new D3int(downsampleFactor,downsampleFactor,downsampleFactor);
-        final D3int up = new D3int(upsampleFactor,upsampleFactor,upsampleFactor);
-        fs.setParameter("-upfactor="+up+" -downfactor="+ds+" -filter="+filterMode);
+        final D3int ds = new D3int(downsampleFactor, downsampleFactor, downsampleFactor);
+        final D3int up = new D3int(upsampleFactor, upsampleFactor, upsampleFactor);
+        fs.setParameter("-upfactor=" + up + " -downfactor=" + ds + " -filter=" + filterMode);
         fs.execute();
 
         return fs.ExportImages(ufiltAim)[0];
@@ -526,8 +535,8 @@ public class UFEM implements Runnable {
                                        final TypedPath fileroot) {
         GrayAnalysis.StartThetaCylProfile(datAim, mskAim, fileroot.append("_th.txt"),
                 0.1f);
-        GrayAnalysis.StartZProfile(datAim, mskAim, fileroot.append( "_z.txt"), 0.1f);
-        GrayAnalysis2D.StartRZProfile(datAim, fileroot.append( "_rz.txt"), 0.1f, 1000);
+        GrayAnalysis.StartZProfile(datAim, mskAim, fileroot.append("_z.txt"), 0.1f);
+        GrayAnalysis2D.StartRZProfile(datAim, fileroot.append("_rz.txt"), 0.1f, 1000);
         GrayAnalysis2D.StartThZProfile(datAim, fileroot.append("_thz.txt"), 0.1f,
                 1000);
     }
@@ -683,7 +692,8 @@ public class UFEM implements Runnable {
             maskAim = TImgTools.ReadTImg(maskAimFile);
         canaldistAimReady = false;
 
-        ITIPLPluginIO vTransform = TIPLPluginManager.createBestPluginIO("kVoronoi", new TImg[]{canalAim, maskAim});
+        ITIPLPluginIO vTransform = TIPLPluginManager.createBestPluginIO("kVoronoi",
+                new TImg[]{canalAim, maskAim});
         vTransform.LoadImages(new TImg[]{canalAim, maskAim});
         vTransform.execute();
         TImg[] outImgs = vTransform.ExportImages(canalAim);
@@ -711,7 +721,8 @@ public class UFEM implements Runnable {
         if (boneAim == null)
             boneAim = TImgTools.ReadTImg(boneAimFile);
         lacundistAimReady = false;
-        ITIPLPluginIO vTransform = TIPLPluginManager.createBestPluginIO("kVoronoi", new TImg[]{lacunAim, boneAim});
+        ITIPLPluginIO vTransform = TIPLPluginManager.createBestPluginIO("kVoronoi",
+                new TImg[]{lacunAim, boneAim});
         vTransform.LoadImages(new TImg[]{lacunAim, boneAim});
         vTransform.execute();
         TImg[] outImgs = vTransform.ExportImages(lacunAim);
@@ -755,17 +766,18 @@ public class UFEM implements Runnable {
      * Code to make preview (slices every 20 slides of the data)
      */
     public void makePreview(final TypedPath previewName, final TImg previewData) {
-        final int skipSlices=20;
-        final ITIPLPluginIO fs = TIPLPluginManager.createBestPluginIO("Filter", new TImgRO[] {previewData});
-        fs.LoadImages( new TImgRO[] {previewData});
-        fs.setParameter("-upfactor=1,1,1 -downfactor=1,1,"+skipSlices);
+        final int skipSlices = 20;
+        final ITIPLPluginIO fs = TIPLPluginManager.createBestPluginIO("Filter",
+                new TImgRO[]{previewData});
+        fs.LoadImages(new TImgRO[]{previewData});
+        fs.setParameter("-upfactor=1,1,1 -downfactor=1,1," + skipSlices);
         fs.execute();
         final TImg tempAim = fs.ExportImages(previewData)[0];
         TImgTools.WriteTImg(tempAim, previewName);
     }
 
     public TypedPath nameVersion(final TypedPath inName, final int verNumber) {
-        return inName.append( "_" + verNumber + ".csv");
+        return inName.append("_" + verNumber + ".csv");
     }
 
     /**
@@ -781,8 +793,7 @@ public class UFEM implements Runnable {
     }
 
     /**
-     * Checks the status of the aim files in the directory and proceeds based on
-     * their presence
+     * Checks the status of the aim files in the directory and proceeds based on their presence
      */
     public void prepareResume() {
         // 1 - Filtering, 2 - Thresholding, 3 - Segmentation, 4 - Contouring, 5
@@ -850,7 +861,8 @@ public class UFEM implements Runnable {
                 // otherwise submit subjobs and wait, wait, wait
                 multiJobs = false; // no more jobs to submit so just finish
                 System.out
-                        .println(" ====== Everything completed except shape analysis, running shape analysis!");
+                        .println(" ====== Everything completed except shape analysis, " +
+                                "running shape analysis!");
             } else
                 return;
         }
@@ -868,7 +880,8 @@ public class UFEM implements Runnable {
             switch (smcOperation) {
                 case 0:
                     System.err
-                            .println("You have erroneously ended up at the point in the script, please check whatever freak code got you here!");
+                            .println("You have erroneously ended up at the point in the script, " +
+                                    "please check whatever freak code got you here!");
                     System.out.println(myThread.getStackTrace());
                     break;
                 case UFEM_MASKDIST:
@@ -891,7 +904,8 @@ public class UFEM implements Runnable {
                     break;
                 default:
                     System.err
-                            .println("You have waaay erroneously ended up at the point in the script, please check whatever freak code got you here!"
+                            .println("You have waaay erroneously ended up at the point in the " +
+                                    "script, please check whatever freak code got you here!"
                                     + smcOperation);
                     System.out.println(myThread.getStackTrace());
                     break;
@@ -909,9 +923,8 @@ public class UFEM implements Runnable {
     /**
      * run the neighborhood analysis
      *
-     * @param inputAim the image to perform the analysis on, typically hte post
-     *                 voronoi image but for foams it is often better with the
-     *                 labeled image
+     * @param inputAim the image to perform the analysis on, typically hte post voronoi image but
+     *                 for foams it is often better with the labeled image
      */
     public TImg runNeighborhoodAnalysis(final TImg inputAim,
                                         final TypedPath edgeName) {
@@ -944,10 +957,9 @@ public class UFEM implements Runnable {
     }
 
     /**
-     * The code required to run each step of the analysis and return. The code
-     * should be entirely self-contained reading the data in if needed from
-     * saved files and saving the results. Memory cleaning and thread management
-     * will be done by other sections of the code
+     * The code required to run each step of the analysis and return. The code should be entirely
+     * self-contained reading the data in if needed from saved files and saving the results. Memory
+     * cleaning and thread management will be done by other sections of the code
      *
      * @param sect The Section of code to run
      */
@@ -957,7 +969,8 @@ public class UFEM implements Runnable {
             System.err
                     .println("Stages over "
                             + sect
-                            + " are not run during multijob operation since waiting is not possible! Submitted Jobs ("
+                            + " are not run during multijob operation since waiting is not " +
+                            "possible! Submitted Jobs ("
                             + submittedJobs + ")");
             if (submittedJobs > 0)
                 return;
@@ -1040,12 +1053,10 @@ public class UFEM implements Runnable {
                         .println("Begin Special Stage, Recontouring and Mask Repairing...");
 
                 // Make Backups
-                for (final TypedPath imgFile : imgListBW)
-                {
+                for (final TypedPath imgFile : imgListBW) {
                     TIPLGlobal.copyFile(imgFile, originalName(imgFile));
                 }
-                for (final TypedPath imgFile : imgListColor)
-                {
+                for (final TypedPath imgFile : imgListColor) {
                     TIPLGlobal.copyFile(imgFile, originalName(imgFile));
                 }
                 TIPLGlobal.copyFile(boneAimFile, originalName(boneAimFile));
@@ -1319,8 +1330,9 @@ public class UFEM implements Runnable {
                 if (canalDistAim == null)
                     canalDistAim = TImgTools.ReadTImg(canalDistAimFile);
 
-                final ITIPLPluginIO KT = TIPLPluginManager.createBestPluginIO("HildThickness", new TImg[] { canalDistAim });
-                KT.LoadImages(new TImg[] { canalDistAim });
+                final ITIPLPluginIO KT = TIPLPluginManager.createBestPluginIO("HildThickness",
+                        new TImg[]{canalDistAim});
+                KT.LoadImages(new TImg[]{canalDistAim});
                 KT.execute();
                 cdtbAim = KT.ExportImages(canalDistAim)[0];
                 canalDistAim = null;
@@ -1333,13 +1345,14 @@ public class UFEM implements Runnable {
                 if (maskdistAim == null)
                     maskdistAim = TImgTools.ReadTImg(maskdistAimFile);
 
-                final ITIPLPluginIO MKT = TIPLPluginManager.createBestPluginIO("HildThickness", new TImg[] { maskdistAim });
-                MKT.LoadImages(new TImg[] { maskdistAim });
+                final ITIPLPluginIO MKT = TIPLPluginManager.createBestPluginIO("HildThickness",
+                        new TImg[]{maskdistAim});
+                MKT.LoadImages(new TImg[]{maskdistAim});
                 MKT.execute();
                 mdtoAim = MKT.ExportImages(maskdistAim)[0];
                 maskdistAim = null;
                 TImgTools.WriteTImg(mdtoAim, mdtoAimFile);
-                GrayAnalysis.StartHistogram(mdtoAim, mdtoAimFile .append( ".csv"));
+                GrayAnalysis.StartHistogram(mdtoAim, mdtoAimFile.append(".csv"));
                 mdtoAim = null;
                 break;
             case 21:
@@ -1435,8 +1448,6 @@ public class UFEM implements Runnable {
         submittedJobs++;
     }
 
-
-
     protected void ufemThread(final int threadTask) {
         smcOperation = threadTask;
         if (multiJobs) {
@@ -1447,7 +1458,8 @@ public class UFEM implements Runnable {
             switch (smcOperation) {
                 case 0:
                     System.err
-                            .println("You have erroneously ended up at the point in the script, please check whatever freak code got you here!");
+                            .println("You have erroneously ended up at the point in the script, " +
+                                    "please check whatever freak code got you here!");
                     break;
                 case UFEM_MASKDIST:
                     System.out.println("Mask Distance Job Submitting...");
@@ -1473,7 +1485,8 @@ public class UFEM implements Runnable {
                     break;
                 default:
                     System.err
-                            .println("You have waaay erroneously ended up at the point in the script, please check whatever freak code got you here!"
+                            .println("You have waaay erroneously ended up at the point in the " +
+                                    "script, please check whatever freak code got you here!"
                                     + smcOperation);
 
                     break;
@@ -1496,7 +1509,8 @@ public class UFEM implements Runnable {
                     System.err
                             .println("Thread : "
                                     + Thread.currentThread()
-                                    + " was interrupted while sleeping, proceed carefully!, hopefully thread:"
+                                    + " was interrupted while sleeping, proceed carefully!, " +
+                                    "hopefully thread:"
                                     + bgThread + " is still ok");
 
                 }
@@ -1510,7 +1524,8 @@ public class UFEM implements Runnable {
                     System.err
                             .println("Thread : "
                                     + Thread.currentThread()
-                                    + " was interrupted while sleeping, proceed carefully!, hopefully thread:"
+                                    + " was interrupted while sleeping, proceed carefully!, " +
+                                    "hopefully thread:"
                                     + bgThread + " is still ok");
 
                 }

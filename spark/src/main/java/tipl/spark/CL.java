@@ -33,6 +33,8 @@ import java.util.Map.Entry;
  */
 @SuppressWarnings("serial")
 public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],int[]> {
+
+
     @TIPLPluginManager.PluginInfo(pluginType = "ComponentLabel",
             desc = "Spark-based component labeling",
             sliceBased = false,
@@ -45,6 +47,8 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
             return new CL();
         }
     }
+
+
     protected static canJoin<Long> LongAdder = new canJoin<Long>() {
         @Override
         public Long join(Long a, Long b) {
@@ -69,12 +73,15 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
     }
 
     private static void testFunc(ArgumentParser p) {
-        int boxSize = p.getOptionInt("boxsize", 8, "The dimension of the image used for the analysis");
-        int layerWidth = p.getOptionInt("width", boxSize / 4, "The width of the layer used for the analysis");
+        int boxSize = p.getOptionInt("boxsize", 8, "The dimension of the image used for the " +
+                "analysis");
+        int layerWidth = p.getOptionInt("width", boxSize / 4, "The width of the layer used for " +
+                "the analysis");
         TypedPath writeIt = p.getOptionPath("out", "", "write image as output file");
 
         final TImgRO testImg = TestPosFunctions.wrapIt(boxSize,
-                new TestPosFunctions.SphericalLayeredImage(boxSize / 2, boxSize / 2, boxSize / 2, 0, 1, layerWidth));
+                new TestPosFunctions.SphericalLayeredImage(boxSize / 2, boxSize / 2, boxSize / 2,
+                        0, 1, layerWidth));
         //	new TestPosFunctions.DiagonalPlaneFunction());
         if (writeIt.length() > 0) TImgTools.WriteTImg(testImg, writeIt);
 
@@ -84,7 +91,6 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
         p.checkForInvalid();
 
         curPlugin.LoadImages(new TImgRO[]{testImg});
-
 
         curPlugin.execute();
 
@@ -124,9 +130,11 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
      *
      * @param mapA
      * @param mapB
-     * @return a joined map where the overlapping elements have been joined using the canJoin interface
+     * @return a joined map where the overlapping elements have been joined using the canJoin
+     * interface
      */
-    protected static <Sf, Sc> Map<Sf, Sc> joinMap(Map<Sf, Sc> mapA, Map<Sf, Sc> mapB, canJoin<Sc> joinTool) {
+    protected static <Sf, Sc> Map<Sf, Sc> joinMap(Map<Sf, Sc> mapA, Map<Sf, Sc> mapB,
+                                                  canJoin<Sc> joinTool) {
         Map<Sf, Sc> joinMap = new HashMap<Sf, Sc>(mapA.size() + mapB.size());
         joinMap.putAll(mapA);
         for (Entry<Sf, Sc> cElement : mapB.entrySet()) {
@@ -144,7 +152,8 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
      * @param inMaskImg the binary input image
      * @return labeled image as long[]
      */
-    private static DTImg<long[]> makeLabelImage(DTImg<boolean[]> inMaskImg, final D3int ns, final BaseTIPLPluginIn.morphKernel mKernel) {
+    private static DTImg<long[]> makeLabelImage(DTImg<boolean[]> inMaskImg, final D3int ns,
+                                                final BaseTIPLPluginIn.morphKernel mKernel) {
         final D3int wholeSize = inMaskImg.getDim();
         // give every voxel a unique label as a long
         return inMaskImg.map(
@@ -152,7 +161,7 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
                     @Override
                     public Tuple2<D3int, TImgBlock<long[]>> call(
                             Tuple2<D3int, TImgBlock<boolean[]>> arg0) throws Exception {
-                        final TImgBlock<boolean[]> inBlock = arg0._2;
+                        final TImgBlock<boolean[]> inBlock = arg0._2();
                         final boolean[] cSlice = inBlock.get();
                         final D3int spos = inBlock.getPos();
                         final D3int sdim = inBlock.getDim();
@@ -164,19 +173,24 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
                                     int off = (z * sdim.y + y) * sdim.x + x;
                                     if (cSlice[off]) {
                                         long label;
-                                        // the default label is just the index of the voxel in the whole image
+                                        // the default label is just the index of the voxel in
+                                        // the whole image
                                         if (oSlice[off] == 0)
-                                            label = ((z + spos.z) * wholeSize.y + (y + spos.y)) * wholeSize.x + x + spos.x;
+                                            label = ((z + spos.z) * wholeSize.y + (y + spos.y)) *
+                                                    wholeSize.x + x + spos.x;
                                         else label = oSlice[off];
                                         oSlice[off] = label;
-                                        for (D4int scanPos : BaseTIPLPluginIn.getScanPositions(mKernel, new D3int(x, y, z), gOffset, off, sdim, ns)) {
-                                            if (cSlice[scanPos.offset]) oSlice[scanPos.offset] = label;
+                                        for (D4int scanPos : BaseTIPLPluginIn.getScanPositions
+                                                (mKernel, new D3int(x, y, z), gOffset, off, sdim,
+                                                        ns)) {
+                                            if (cSlice[scanPos.offset])
+                                                oSlice[scanPos.offset] = label;
                                         }
                                     }
                                 }
                             }
                         }
-                        return new Tuple2<D3int, TImgBlock<long[]>>(arg0._1,
+                        return new Tuple2<D3int, TImgBlock<long[]>>(arg0._1(),
                                 new TImgBlock<long[]>(oSlice, inBlock.getPos(), inBlock.getDim()));
                     }
 
@@ -191,7 +205,8 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
      * @param mKernel
      * @return
      */
-    private static JavaPairRDD<D3int, OmnidirectionalMap> slicesToConnections(DTImg<long[]> labeledImage, D3int neighborSize, morphKernel mKernel, final TimingObject inTO) {
+    private static JavaPairRDD<D3int, OmnidirectionalMap> slicesToConnections(DTImg<long[]>
+                                                                                      labeledImage, D3int neighborSize, morphKernel mKernel, final TimingObject inTO) {
         JavaPairRDD<D3int, Iterable<TImgBlock<long[]>>> fannedImage;
         if (false)
             fannedImage = labeledImage.spreadSlices(neighborSize.z).
@@ -200,7 +215,8 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
             fannedImage = labeledImage.getBaseImg().groupByKey();
 
         /**
-         * the code was changed to store everything slice-wise so it could potentially be transported again that way for half-iterations
+         * the code was changed to store everything slice-wise so it could potentially be
+         * transported again that way for half-iterations
          * this is not yet implemented
          */
         GetConnectedComponents gccObj = new GetConnectedComponents(inTO, mKernel, neighborSize);
@@ -216,8 +232,12 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
      * @param mKernel
      * @return
      */
-    private static Map<Long, Long> scanForNewGroups(DTImg<long[]> labeledImage, D3int neighborSize, BaseTIPLPluginIn.morphKernel mKernel, final TimingObject inTO) {
-        JavaPairRDD<D3int, OmnidirectionalMap> connectedGroups = slicesToConnections(labeledImage, neighborSize, mKernel, inTO);
+    private static Map<Long, Long> scanForNewGroups(DTImg<long[]> labeledImage,
+                                                    D3int neighborSize,
+                                                    BaseTIPLPluginIn.morphKernel mKernel,
+                                                    final TimingObject inTO) {
+        JavaPairRDD<D3int, OmnidirectionalMap> connectedGroups = slicesToConnections
+                (labeledImage, neighborSize, mKernel, inTO);
 
         OmnidirectionalMap groupList = connectedGroups.values().reduce(new Function2<OmnidirectionalMap, OmnidirectionalMap, OmnidirectionalMap>() {
 
@@ -241,8 +261,12 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
      * @param mKernel
      * @return
      */
-    private static Tuple2<DTImg<long[]>, Long> scanAndMerge(DTImg<long[]> labeledImage, D3int neighborSize, BaseTIPLPluginIn.morphKernel mKernel, final TimingObject inTO) {
-        JavaPairRDD<D3int, OmnidirectionalMap> connectedGroups = slicesToConnections(labeledImage, neighborSize, mKernel, inTO);
+    private static Tuple2<DTImg<long[]>, Long> scanAndMerge(DTImg<long[]> labeledImage,
+                                                            D3int neighborSize,
+                                                            BaseTIPLPluginIn.morphKernel mKernel,
+                                                            final TimingObject inTO) {
+        JavaPairRDD<D3int, OmnidirectionalMap> connectedGroups = slicesToConnections
+                (labeledImage, neighborSize, mKernel, inTO);
 
         JavaPairRDD<D3int, Map<Long, Long>> mergeCmds = connectedGroups.mapValues(new Function<OmnidirectionalMap, Map<Long, Long>>() {
             @Override
@@ -274,17 +298,18 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
 
         JavaPairRDD<D3int, TImgBlock<long[]>> newlabeledImage = labeledImage.getBaseImg().
                 join(mergeCmds, SparkGlobal.getPartitioner(labeledImage.getDim()))
-                .mapValues(new Function<Tuple2<TImgBlock<long[]>, Map<Long, Long>>, TImgBlock<long[]>>() {
+                .mapValues(new Function<Tuple2<TImgBlock<long[]>, Map<Long, Long>>,
+                        TImgBlock<long[]>>() {
 
                     @Override
                     public TImgBlock<long[]> call(
                             Tuple2<TImgBlock<long[]>, Map<Long, Long>> inTuple) throws Exception {
                         final long start = System.currentTimeMillis();
-                        final TImgBlock<long[]> cBlock = inTuple._1;
+                        final TImgBlock<long[]> cBlock = inTuple._1();
 
                         final long[] curSlice = cBlock.get();
                         final long[] outSlice = new long[curSlice.length];
-                        final Map<Long, Long> mergeCommands = inTuple._2;
+                        final Map<Long, Long> mergeCommands = inTuple._2();
 
                         for (int i = 0; i < curSlice.length; i++) {
                             if (curSlice[i] > 0) outSlice[i] = mergeCommands.get(curSlice[i]);
@@ -331,23 +356,27 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
         return mergeCommands;
     }
 
-    private static DTImg<long[]> mergeGroups(DTImg<long[]> labeledImage, final Map<Long, Long> mergeCommands, final TimingObject inTO) {
-        final Broadcast<Map<Long, Long>> broadcastMergeCommands = SparkGlobal.getContext().broadcast(mergeCommands);
-        DTImg<long[]> newlabeledImage = labeledImage.map(new PairFunction<Tuple2<D3int, TImgBlock<long[]>>, D3int, TImgBlock<long[]>>() {
+    private static DTImg<long[]> mergeGroups(DTImg<long[]> labeledImage, final Map<Long,
+            Long> mergeCommands, final TimingObject inTO) {
+        final Broadcast<Map<Long, Long>> broadcastMergeCommands = SparkGlobal.getContext()
+                .broadcast(mergeCommands);
+        DTImg<long[]> newlabeledImage = labeledImage.map(new PairFunction<Tuple2<D3int,
+                TImgBlock<long[]>>, D3int, TImgBlock<long[]>>() {
             final Map<Long, Long> cMergeCommands = broadcastMergeCommands.value();
 
             @Override
             public Tuple2<D3int, TImgBlock<long[]>> call(
                     Tuple2<D3int, TImgBlock<long[]>> arg0) throws Exception {
                 final long start = System.currentTimeMillis();
-                final long[] curSlice = arg0._2.get();
+                final long[] curSlice = arg0._2().get();
                 final long[] outSlice = new long[curSlice.length];
                 for (int i = 0; i < curSlice.length; i++) {
                     outSlice[i] = cMergeCommands.get(curSlice[i]);
                 }
                 inTO.timeElapsed.$plus$eq((double) (System.currentTimeMillis() - start));
                 inTO.mapOperations.$plus$eq(1);
-                return new Tuple2<D3int, TImgBlock<long[]>>(arg0._1, new TImgBlock<long[]>(outSlice, arg0._2));
+                return new Tuple2<D3int, TImgBlock<long[]>>(arg0._1(),
+                        new TImgBlock<long[]>(outSlice, arg0._2()));
             }
 
         }, TImgTools.IMAGETYPE_LONG);
@@ -357,7 +386,8 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
 
     @Override
     public ArgumentParser setParameter(ArgumentParser p, String prefix) {
-        runSliceMergesFirst = p.getOptionBoolean("slicemerging", runSliceMergesFirst, "Run slice merges before entire image merges, faster for very large data sets");
+        runSliceMergesFirst = p.getOptionBoolean("slicemerging", runSliceMergesFirst,
+                "Run slice merges before entire image merges, faster for very large data sets");
         return super.setParameter(p, prefix);
     }
 
@@ -374,7 +404,8 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
         if (inImage instanceof DTImg<?> & inImage.getImageType() == TImgTools.IMAGETYPE_BOOL)
             maskImg = (DTImg<boolean[]>) inImage;
         else
-            maskImg = DTImg.ConvertTImg(SparkGlobal.getContext(getPluginName() + "Context"), inImage, TImgTools.IMAGETYPE_BOOL);
+            maskImg = DTImg.ConvertTImg(SparkGlobal.getContext(getPluginName() + "Context"),
+                    inImage, TImgTools.IMAGETYPE_BOOL);
 
     }
 
@@ -419,10 +450,11 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
          * the slice based one flatten out.
          */
         while (stillMerges) {
-            Tuple2<DTImg<long[]>, Long> smOutput = scanAndMerge(labelImg, getNeighborSize(), getKernel(), to);
-            labelImg = smOutput._1;
-            System.out.println("Iter: " + i + ", Full:" + (false) + "\n\tMerges " + smOutput._2);
-            stillMerges = (smOutput._2 > 0);
+            Tuple2<DTImg<long[]>, Long> smOutput = scanAndMerge(labelImg, getNeighborSize(),
+                    getKernel(), to);
+            labelImg = smOutput._1();
+            System.out.println("Iter: " + i + ", Full:" + (false) + "\n\tMerges " + smOutput._2());
+            stillMerges = (smOutput._2() > 0);
             i++;
         }
 
@@ -444,7 +476,9 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
                 curMapSummary += cEntry.getKey() + "=>" + cEntry.getValue() + ",";
                 if (curMapSummary.length() > 50) break;
             }
-            System.out.println("Iter: " + i + ", Full:" + (true) + "\n" + curGrpSummary + "\tMerges " + curMap.size() + ": Groups:" + cGrp.size() + "\n\t" + curMapSummary);
+            System.out.println("Iter: " + i + ", Full:" + (true) + "\n" + curGrpSummary +
+                    "\tMerges " + curMap.size() + ": Groups:" + cGrp.size() + "\n\t" +
+                    curMapSummary);
 
             if (curMap.size() > 0) {
                 labelImg = mergeGroups(labelImg, curMap, to);
@@ -455,7 +489,8 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
             i++;
 
         }
-        List<Entry<Long,Long>> cGrp = new ArrayList<Entry<Long,Long>>(groupCount(labelImg).entrySet());
+        List<Entry<Long, Long>> cGrp = new ArrayList<Entry<Long, Long>>(groupCount(labelImg)
+                .entrySet());
         // now sort by voxel count
         Collections.sort(
                 cGrp,
@@ -471,12 +506,12 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
 
         String curGrpSummary = "";
 
-
-        SortedMap<Long,Long> reArrangement = new TreeMap<Long,Long>();
+        SortedMap<Long, Long> reArrangement = new TreeMap<Long, Long>();
         int outDex = 1;
         for (Entry<Long, Long> cEntry : cGrp) {
             if (curGrpSummary.length() < 100)
-                curGrpSummary += cEntry.getKey() + "=>" + outDex + "\t" + cEntry.getValue() + " voxels\n";
+                curGrpSummary += cEntry.getKey() + "=>" + outDex + "\t" + cEntry.getValue() + " " +
+                        "voxels\n";
             reArrangement.put(cEntry.getKey(), (long) outDex);
             outDex++;
         }
@@ -489,9 +524,12 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
         mapTime = to.timeElapsed.value();
         mapOps = to.mapOperations.value();
 
-        System.out.println("CSV_OUT," + SparkGlobal.getMasterName() + "," + reArrangement.size() + "," +
-                labelImg.getDim().x + "," + labelImg.getDim().y + "," + labelImg.getDim().z + "," + mapTime + "," +
-                runTime + "," + mapOps + "," + SparkGlobal.maxCores + "," + SparkGlobal.getSparkPersistenceValue() + "," + SparkGlobal.useCompression);
+        System.out.println("CSV_OUT," + SparkGlobal.getMasterName() + "," +
+                "" + reArrangement.size() + "," +
+                labelImg.getDim().x + "," + labelImg.getDim().y + "," + labelImg.getDim().z + "," +
+                "" + mapTime + "," +
+                runTime + "," + mapOps + "," + SparkGlobal.maxCores + "," +
+                "" + SparkGlobal.getSparkPersistenceValue() + "," + SparkGlobal.useCompression);
 
         return true;
     }
@@ -512,8 +550,10 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
         public Si join(Si a, Si b);
     }
 
+
     /**
-     * Effectively a map but it uses only primitives instead of objects so it doesn't really implement the interface
+     * Effectively a map but it uses only primitives instead of objects so it doesn't really
+     * implement the interface
      *
      * @author mader
      */
@@ -586,7 +626,8 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
         }
 
         /**
-         * A recursive get command which gets all the neighbors of the neighbors ... until the list stops growing
+         * A recursive get command which gets all the neighbors of the neighbors ... until the
+         * list stops growing
          *
          * @param key
          * @return
@@ -600,7 +641,8 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
             int rgetCount = 0;
             while (outSet.size() > lastlen) {
                 lastlen = outSet.size();
-                // need to create a temp set since you cant add items to a set which is being iterated over
+                // need to create a temp set since you cant add items to a set which is being
+                // iterated over
                 final Set<Long> outSetTemp = new HashSet<Long>(outSet.size());
                 outSetTemp.addAll(outSet);
                 for (Long e : outSet) outSetTemp.addAll(get(e));
@@ -627,8 +669,10 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
 
     }
 
+
     /**
-     * a hashmap which returns the input value when it is missing from the map and 0 when 0 is given as an input
+     * a hashmap which returns the input value when it is missing from the map and 0 when 0 is
+     * given as an input
      *
      * @author mader
      */
@@ -648,6 +692,7 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
         }
     }
 
+
     protected static class TimingObject implements Serializable {
 
         public final Accumulator<Double> timeElapsed;
@@ -659,18 +704,21 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
         }
     }
 
+
     /**
      * The function which actually finds connected components in each block and returns
      * them as a list
      *
      * @author mader
      */
-    static public class GetConnectedComponents implements PairFunction<Tuple2<D3int, Iterable<TImgBlock<long[]>>>, D3int, OmnidirectionalMap> {
+    static public class GetConnectedComponents implements PairFunction<Tuple2<D3int,
+            Iterable<TImgBlock<long[]>>>, D3int, OmnidirectionalMap> {
         public final TimingObject to;
         final BaseTIPLPluginIn.morphKernel mKernel;
         final D3int ns;
 
-        public GetConnectedComponents(final TimingObject inTO, final BaseTIPLPluginIn.morphKernel mKernel, final D3int ns) {
+        public GetConnectedComponents(final TimingObject inTO, final BaseTIPLPluginIn.morphKernel
+                mKernel, final D3int ns) {
             this.mKernel = mKernel;
             this.ns = ns;
             this.to = inTO;
@@ -685,7 +733,8 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
         }
 
         @Override
-        public Tuple2<D3int, OmnidirectionalMap> call(Tuple2<D3int, Iterable<TImgBlock<long[]>>> inTuple) {
+        public Tuple2<D3int, OmnidirectionalMap> call(Tuple2<D3int, Iterable<TImgBlock<long[]>>>
+                                                                      inTuple) {
             final long start = System.currentTimeMillis();
             final D3int ns = getNeighborSize();
 
@@ -707,7 +756,9 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
                             final int off = ((zp) * blockSize.y + (yp))
                                     * blockSize.x + (xp);
 
-                            for (D4int cPos : BaseTIPLPluginIn.getScanPositions(mKernel, new D3int(xp, yp, zp), cBlock.getOffset(), off, blockSize, ns)) {
+                            for (D4int cPos : BaseTIPLPluginIn.getScanPositions(mKernel,
+                                    new D3int(xp, yp, zp), cBlock.getOffset(), off, blockSize,
+                                    ns)) {
                                 final long cval = curBlock[cPos.offset];
                                 if (cval > 0) neighborList[off].add(cval);
                             }

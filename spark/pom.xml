@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>tipl-spark</artifactId>
@@ -11,7 +12,7 @@
         <version>1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -27,7 +28,7 @@
             <scope>test</scope>
         </dependency>
 
-       <dependency>
+        <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>${scala.version}</version>
@@ -69,26 +70,24 @@
         </dependency>
 
 
-
     </dependencies>
 
     <build>
-    <plugins>
+        <plugins>
 
-    <plugin>
-        <groupId>org.scalatest</groupId>
-        <artifactId>scalatest-maven-plugin</artifactId>
-        <configuration>
-            <environmentVariables>
-                <SPARK_HOME>${basedir}/..</SPARK_HOME>
-                <SPARK_TESTING>1</SPARK_TESTING>
-                <!-- <SPARK_CLASSPATH>${spark.classpath}</SPARK_CLASSPATH> -->
-            </environmentVariables>
-        </configuration>
-    </plugin>
-    </plugins>
+            <plugin>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest-maven-plugin</artifactId>
+                <configuration>
+                    <environmentVariables>
+                        <SPARK_HOME>${basedir}/..</SPARK_HOME>
+                        <SPARK_TESTING>1</SPARK_TESTING>
+                        <!-- <SPARK_CLASSPATH>${spark.classpath}</SPARK_CLASSPATH> -->
+                    </environmentVariables>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
-
 
 
 </project>

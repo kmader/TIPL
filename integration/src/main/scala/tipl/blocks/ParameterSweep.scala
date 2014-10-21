@@ -1,64 +1,65 @@
 package tipl.blocks
+
+import java.io.{ ByteArrayOutputStream, File, FileWriter, PrintStream }
+import java.util.concurrent.{ Executors, TimeUnit }
+
 import tipl.spark.SparkGlobal
-import tipl.util.TIPLGlobal
-import tipl.util.ArgumentParser
-import scala.concurrent.{ future, promise, ExecutionContext}
-import scala.concurrent.Future
-import scala.util.Success
-import scala.util.Failure
+import tipl.util.{ ArgumentList, ArgumentParser, TIPLGlobal, TypedPath }
+
 import scala.collection.concurrent.Map
-import java.io.PrintStream
-import java.io.ByteArrayOutputStream
-import java.util.concurrent.Executors
-import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import java.util.concurrent.TimeUnit
-import scala.annotation.tailrec
-import tipl.util.TypedPath
-import java.io.File
-import java.io.FileWriter
-import tipl.util.ArgumentList
+import scala.concurrent.{ Await, ExecutionContext, Future, future }
+import scala.util.{ Failure, Success }
 
 object ParameterSweep {
-  val baosMap: Map[String,ByteArrayOutputStream] = new scala.collection.concurrent.TrieMap[String,ByteArrayOutputStream]()
-  val psMap: Map[String,PrintStream] = new scala.collection.concurrent.TrieMap[String,PrintStream]()
+  val baosMap: Map[String, ByteArrayOutputStream] =
+    new scala.collection.concurrent.TrieMap[String, ByteArrayOutputStream]()
+  val psMap: Map[String, PrintStream] =
+    new scala.collection.concurrent.TrieMap[String, PrintStream]()
+
   /**
-   * A nasty hack to to reroute output streams based on thread names
-   */
+    * A nasty hack to to reroute output streams based on thread names
+    */
   class ThreadSeperatedOutputStream extends PrintStream(new ByteArrayOutputStream()) {
     override def println(line: String): Unit = {
       val callerName = Thread.currentThread().getName
-      ParameterSweep.baosMap.putIfAbsent(callerName,new ByteArrayOutputStream())
-      ParameterSweep.psMap.putIfAbsent(callerName,new PrintStream(baosMap.get(callerName).head))
+      ParameterSweep.baosMap.putIfAbsent(callerName, new ByteArrayOutputStream())
+      ParameterSweep.psMap.putIfAbsent(callerName, new PrintStream(baosMap.get(callerName).head))
       psMap.get(callerName).head.println(line)
     }
   }
 
   /**
-   *  A class which automatically changes path names to the current analysis being run when writing
-   */
-  class ThreadSeperatedArgumentParser(customExceptions: Seq[String] = Seq[String]()) extends TIPLGlobal.ArgumentParserFactory {
-    lazy val exceptionList = customExceptions ++ Seq[String]("@localdir","sge:tiplpath","sge:javapath","sge:tiplbeta","sge:sparkpath","sge:qsubpath","@sparklocal")
+    * A class which automatically changes path names to the current analysis being run when writing
+    */
+  class ThreadSeperatedArgumentParser(customExceptions: Seq[String] = Seq[String]())
+    extends TIPLGlobal.ArgumentParserFactory {
+    lazy val exceptionList = customExceptions ++ Seq[String]("@localdir", "sge:tiplpath",
+      "sge:javapath", "sge:tiplbeta", "sge:sparkpath", "sge:qsubpath", "@sparklocal")
+
     /**
-     * Change the path of the type
-     */
+      * Change the path of the type
+      */
     def fixType(argName: String, path: TypedPath, dirName: String) = {
-      (argName,path) match {
-        case (_, p: TypedPath) if (p.getPath().length<1 || p.getPath().contains(dirName)) => p // if it is empty keep it empty or it is already pathed
-        case (arg: String, p: TypedPath) if(arg.toUpperCase().contains("TIPL")) => p
-        case (arg: String, p: TypedPath) if(exceptionList.contains(arg)) => p
+      (argName, path) match {
+        case (_, p: TypedPath) if (p.getPath().length < 1 || p.getPath().contains(dirName)) => p
+        // if it is empty keep it empty or it is already pathed
+        case (arg: String, p: TypedPath) if (arg.toUpperCase().contains("TIPL")) => p
+        case (arg: String, p: TypedPath) if (exceptionList.contains(arg)) => p
         case (arg: String, p: TypedPath) =>
           p.getPathType match {
             case TypedPath.PATHTYPE.LOCAL =>
               val pathStr = path.makeAbsPath().getPath.split(File.separator)
-              val prefix = pathStr.slice(0,pathStr.length-1)
+              val prefix = pathStr.slice(0, pathStr.length - 1)
               val absDirName = prefix :+ dirName
               val dirFile = new File(absDirName.mkString(File.separator))
-              if (dirFile.mkdir) System.out.println(this.getClass().getSimpleName()+":: For "+p.getPath()+", Making directory "+dirFile.getPath())
+              if (dirFile.mkdir) System.out.println(this.getClass().getSimpleName()+":: For "+
+                p.getPath()+", Making directory "+dirFile.getPath())
 
               val prefixedPath = (absDirName :+ pathStr.takeRight(1)(0)).mkString(File.separator)
               path.changePath(prefixedPath)
-            case _ => throw new IllegalArgumentException("Thread divided paths are not yet supported for:"+path.getPathType)
+            case _ => throw new IllegalArgumentException("Thread divided paths are not yet "+
+              "supported for:"+path.getPathType)
           }
       }
     }
@@ -66,17 +67,20 @@ object ParameterSweep {
     def getParser(args: Array[String]): ArgumentParser = {
       new ArgumentParser.CustomArgumentParser(args) {
 
-        override def getOptionPath(argName: String, defaultPath: TypedPath, helpText: String): TypedPath = {
-          val stdType = super.getOptionPath(argName,defaultPath,helpText)
-          val newPath = fixType(argName,stdType,Thread.currentThread().getName())
+        override def getOptionPath(argName: String, defaultPath: TypedPath,
+          helpText: String): TypedPath = {
+          val stdType = super.getOptionPath(argName, defaultPath, helpText)
+          val newPath = fixType(argName, stdType, Thread.currentThread().getName())
           val newArg = new ArgumentList.TypedArgument[TypedPath](argName,
             helpText, newPath, ArgumentList.typePathParse);
           putArg(argName, newArg)
           newPath
         }
-        override def getOptionPath(argName: String, defaultPath: String, helpText: String): TypedPath = {
-          val stdType = super.getOptionPath(argName,defaultPath,helpText)
-          val newPath = fixType(argName,stdType,Thread.currentThread().getName())
+
+        override def getOptionPath(argName: String, defaultPath: String,
+          helpText: String): TypedPath = {
+          val stdType = super.getOptionPath(argName, defaultPath, helpText)
+          val newPath = fixType(argName, stdType, Thread.currentThread().getName())
           val newArg = new ArgumentList.TypedArgument[TypedPath](argName,
             helpText, newPath, ArgumentList.typePathParse);
           putArg(argName, newArg)
@@ -89,100 +93,119 @@ object ParameterSweep {
   // begin of parameter sweep specific code
 
   val prefix = "@ps:"
+
   object StepType extends Enumeration {
     type StepType = Value
     val LinStep, IntLinStep, LogStep, SqrtStep = Value
+
     /**
-     * Get a string representation of the step (parseInt does not like decimals)
-     */
+      * Get a string representation of the step (parseInt does not like decimals)
+      */
     def getStr(curParm: vargVar, v: Double): String = {
       curParm.stepType match {
         case IntLinStep => "%d".format(v.intValue())
         case _ => v.toString()
       }
     }
+
     /**
-     * Get the nth step using whatever approach has been selected
-     */
+      * Get the nth step using whatever approach has been selected
+      */
     def getStep(curParm: vargVar, i: Int): Double = {
       curParm.stepType match {
         case LinStep =>
-          if(curParm.varSteps==1)  (curParm.varMax+curParm.varMin)/2
-          else curParm.varMin+(curParm.varMax-curParm.varMin)/(curParm.varSteps-1)*i
+          if (curParm.varSteps == 1) (curParm.varMax + curParm.varMin) / 2
+          else curParm.varMin + (curParm.varMax - curParm.varMin) / (curParm.varSteps - 1) * i
         case IntLinStep =>
-          if(curParm.varSteps==1)  Math.round((curParm.varMax+curParm.varMin)/2)
-          else Math.round(curParm.varMin+(curParm.varMax-curParm.varMin)/(curParm.varSteps-1)*i)
-        case _ => throw new IllegalArgumentException(curParm.stepType+" has not yet been implemented")
+          if (curParm.varSteps == 1) Math.round((curParm.varMax + curParm.varMin) / 2)
+          else Math.round(curParm.varMin + (curParm.varMax - curParm.varMin) / (curParm.varSteps
+            - 1) * i)
+        case _ => throw new IllegalArgumentException(curParm.stepType+" has not yet been "+
+          "implemented")
       }
     }
   }
 
-  case class vargVar(varName: String, varMin: Double, varMax: Double, varSteps: Int,stepType : StepType.StepType)
-
+  case class vargVar(varName: String, varMin: Double, varMax: Double, varSteps: Int,
+    stepType: StepType.StepType)
 
   def processArgs(p: ArgumentParser): Seq[vargVar] = {
-    val vargCount = p.getOptionInt(prefix+"nargs", 1, "The number of arguments to vary", 0, Char.MaxValue)
+    val vargCount = p.getOptionInt(prefix+"nargs", 1, "The number of arguments to vary", 0,
+      Char.MaxValue)
     for (
       curArg <- (1 to vargCount);
-      vargName = p.getOptionString(prefix+"argname"+curArg,"","The name of the #"+curArg+" to vary");
-      vargMin = p.getOptionDouble(prefix+"argmin"+curArg,Double.MinValue,"Minimum value of "+vargName+" (#"+curArg+" argument)");
-      vargMax = p.getOptionDouble(prefix+"argmax"+curArg,Double.MaxValue,"Maximum value of "+vargName+" (#"+curArg+" argument)");
-      vargSteps = p.getOptionInt(prefix+"steps"+curArg,10,"Number of steps to take "+vargName+" (#"+curArg+" argument)",1,Char.MaxValue);
-      vargType = p.getOptionInt(prefix+"type"+curArg,0,"Number of steps to take "+vargName+" (#"+curArg+" argument)",0,StepType.maxId)
-    )
-    yield vargVar(varName=vargName,varMin=vargMin,varMax=vargMax,varSteps=vargSteps,stepType=StepType(vargType))
+      vargName = p.getOptionString(prefix+"argname"+curArg, "",
+        "The name of the #"+curArg+" to vary");
+      vargMin = p.getOptionDouble(prefix+"argmin"+curArg, Double.MinValue,
+        "Minimum value of "+vargName+" (#"+curArg+" argument)");
+      vargMax = p.getOptionDouble(prefix+"argmax"+curArg, Double.MaxValue,
+        "Maximum value of "+vargName+" (#"+curArg+" argument)");
+      vargSteps = p.getOptionInt(prefix+"steps"+curArg, 10, "Number of steps to take "+
+        vargName+" (#"+curArg+" argument)", 1, Char.MaxValue);
+      vargType = p.getOptionInt(prefix+"type"+curArg, 0, "Number of steps to take "+
+        vargName+" (#"+curArg+" argument)", 0, StepType.maxId)
+    ) yield vargVar(varName = vargName, varMin = vargMin, varMax = vargMax, varSteps = vargSteps,
+      stepType = StepType(vargType))
   }
 
-  def runArguments(methodToCall: Array[String] => Unit, argString: String, parameters: Seq[vargVar],isNested: Boolean,appendArgString: String = "")
-                  (implicit ec: ExecutionContext): Seq[(String,Future[String])] = {
+  def runArguments(methodToCall: Array[String] => Unit, argString: String,
+    parameters: Seq[vargVar], isNested: Boolean, appendArgString: String = "")
+                  (implicit ec: ExecutionContext): Seq[(String, Future[String])] = {
     val curParm = parameters.head
-    var runResults: Seq[(String,Future[String])] = Seq()
+    var runResults: Seq[(String, Future[String])] = Seq()
 
-    for(i <- 0 until curParm.varSteps) {
+    for (i <- 0 until curParm.varSteps) {
       val varVal = StepType.getStep(curParm, i)
-      if (i>0 & ( StepType.getStep(curParm, i)==StepType.getStep(curParm, i-1))) {
+      if (i > 0 & (StepType.getStep(curParm, i) == StepType.getStep(curParm, i - 1))) {
         println("Values are identical this step will be skipped")
-      } else {
-        val varStr = StepType.getStr(curParm,varVal)
-        val newArgString = "-"+curParm.varName+"="+varStr +" "+appendArgString
+      }
+      else {
+        val varStr = StepType.getStr(curParm, varVal)
+        val newArgString = "-"+curParm.varName+"="+varStr+" "+appendArgString
 
-        val cleanNAS = (curParm.varName+"="+"%2.2f".format(varVal) +" "+appendArgString).split(" ").mkString("_").split("-").mkString("").split("=").mkString("-")
+        val cleanNAS = (curParm.varName+"="+"%2.2f".format(varVal)+" "+appendArgString)
+          .split(" ").mkString("_").split("-").mkString("").split("=").mkString("-")
         val argList = (newArgString+" "+argString).split(" ")
-        val execString =  methodToCall+" with: "+newArgString+" "+argString
+        val execString = methodToCall+" with: "+newArgString+" "+argString
 
-        if(isNested) if (parameters.size>1) {
-          runResults = runResults ++ runArguments(methodToCall,argString,parameters.tail,isNested,appendArgString=newArgString) // nested means it is recursive
-        } else {
+        if (isNested) if (parameters.size > 1) {
+          runResults = runResults ++ runArguments(methodToCall, argString, parameters.tail,
+            isNested, appendArgString = newArgString) // nested means it is recursive
+        }
+        else {
           println("Calling:"+execString)
-          runResults = runResults :+ (cleanNAS,future {
+          runResults = runResults :+ (cleanNAS, future {
             val stime = System.currentTimeMillis()
             try {
               Thread.currentThread().setName(cleanNAS)
               System.out.println(this.getClass().getSimpleName()+":: running:"+parameters)
-              System.out.println(this.getClass().getSimpleName()+":: Current Step:"+newArgString+" in folder:"+cleanNAS)
+              System.out.println(this.getClass().getSimpleName()+":: Current Step:"+
+                newArgString+" in folder:"+cleanNAS)
               methodToCall(argList)
               val eTime = (System.currentTimeMillis() - stime) / (1000F)
 
               "Suceeded: %2.2f seconds".format(eTime)
-            } catch {
-              case e: Exception => "Failed after %2.2fs:".format((System.currentTimeMillis() - stime) / (1000F))+e.getStackTraceString
+            }
+            catch {
+              case e: Exception => "Failed after %2.2fs:".format((System.currentTimeMillis() -
+                stime) / (1000F)) + e.getStackTraceString
             }
           })
         }
       }
     }
 
-    if(!isNested) if (parameters.size>1) runResults = runResults ++ runArguments(methodToCall,argString,parameters.tail,isNested)
+    if (!isNested) if (parameters.size > 1) runResults = runResults ++ runArguments(methodToCall,
+      argString, parameters.tail, isNested)
     runResults
   }
 
-
   def runSweep(methodToCall: Array[String] => Unit,
-               argsToProcess: Seq[vargVar],
-               newArguments: ArgumentParser,
-               inputArguments: Array[String],
-               baseLogName: TypedPath,
-               waitDuration: Duration,isNested: Boolean,coreCount: Int) = {
+    argsToProcess: Seq[vargVar],
+    newArguments: ArgumentParser,
+    inputArguments: Array[String],
+    baseLogName: TypedPath,
+    waitDuration: Duration, isNested: Boolean, coreCount: Int) = {
     // Start of the execution code
 
     val originalPS = new PrintStream(System.out)
@@ -197,15 +220,16 @@ object ParameterSweep {
     TIPLGlobal.defaultAPFactory = tsap
 
     // implicit sets as the default context for all future commands
-    implicit val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(coreCount))//TIPLGlobal.requestSimpleES(coreCount))
+    //TIPLGlobal.requestSimpleES(coreCount))
+    implicit val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(coreCount))
 
-    val output = runArguments(methodToCall,newArguments.toString,argsToProcess,isNested)
+    val output = runArguments(methodToCall, newArguments.toString, argsToProcess, isNested)
     //ec.awaitTermination(10, java.util.concurrent.TimeUnit.SECONDS)
     val outResults = output.map {
       inval =>
-        val (msg: String,results: Future[String]) = inval
+        val (msg: String, results: Future[String]) = inval
         val mainStr = "Exeuction of :"+msg+"\n\t   has\t"
-        val outMsg = Await.ready(results,waitDuration).value.get match {
+        val outMsg = Await.ready(results, waitDuration).value.get match {
           case Success(result) => result
           case Failure(t) => "Failed:"+t.getMessage()
           case _ => "Something strange happened"
@@ -214,15 +238,16 @@ object ParameterSweep {
         // write the log files
         baosMap.get(msg).foreach {
           baosLog =>
-            if(TIPLGlobal.getDebug()) println(msg+"\t"+baosLog.toString.split("\n").mkString("#"))
-            val fixedPath = tsap.fixType("logfile",baseLogName,inval._1)
+            if (TIPLGlobal.getDebug()) println(msg+"\t"+baosLog.toString.split("\n").mkString("#"))
+            val fixedPath = tsap.fixType("logfile", baseLogName, inval._1)
             println(fixedPath.summary())
-            val oPS =  new FileWriter(fixedPath.getPath(), false);
+            val oPS = new FileWriter(fixedPath.getPath(), false);
             oPS.write(baosLog.toString)
-            oPS.write("\n\n\t===== Final Status ====\n"+mainStr+outMsg.split("\n").mkString("\t\n"))
+            oPS.write("\n\n\t===== Final Status ====\n"+mainStr +
+              outMsg.split("\n").mkString("\t\n"))
             oPS.close()
         }
-        mainStr+outMsg.split("\n").mkString("# ")
+        mainStr + outMsg.split("\n").mkString("# ")
 
     }
 
@@ -234,34 +259,44 @@ object ParameterSweep {
 
     outResults
   }
+
   val className = "ParameterSweep"
+
   def cmdlineVersion(p: ArgumentParser): Unit = {
     p.createNewLayer("Parameter Sweep Settings")
-    val classToCall = p.getOptionString(prefix+"classname","","The name of the class or block to run")
-    val baseLogName = p.getOptionPath(prefix+"logname",className+".log","The name of the log files to keep")
-    val isNested = p.getOptionBoolean(prefix+"nested",true,"Are the commands nested (or run the loops independently)")
-    val coreCount = p.getOptionInt(prefix+"ncores", 2, "The number of commands to run at the same time", 1, Char.MaxValue)
-    val inputArguments = p.getOptionString(prefix+"inputargs","","The name of input arguments to avoid directory rerouting (seperated by commas)")
-    val waittime = p.getOptionDouble(prefix+"waittime",Int.MaxValue , "The number of minutes to wait per job", 0, Int.MaxValue)
+    val classToCall = p.getOptionString(prefix+"classname", "", "The name of the class or block"+
+      " to run")
+    val baseLogName = p.getOptionPath(prefix+"logname", className+".log",
+      "The name of the log files to keep")
+    val isNested = p.getOptionBoolean(prefix+"nested", true, "Are the commands nested (or run "+
+      "the loops independently)")
+    val coreCount = p.getOptionInt(prefix+"ncores", 2, "The number of commands to run at the "+
+      "same time", 1, Char.MaxValue)
+    val inputArguments = p.getOptionString(prefix+"inputargs", "", "The name of input arguments"+
+      " to avoid directory rerouting (seperated by commas)")
+    val waittime = p.getOptionDouble(prefix+"waittime", Int.MaxValue,
+      "The number of minutes to wait per job", 0, Int.MaxValue)
     val argsToProcess = processArgs(p)
-    val newArguments = p.subArguments(prefix,false)
+    val newArguments = p.subArguments(prefix, false)
     // manually add a file to save
-    newArguments.getOptionPath(ArgumentParser.saveArg,baseLogName.changePath(baseLogName.getPath().split(".log").mkString("","",".settings")),"Set default settings to the baselog name")
+    newArguments.getOptionPath(ArgumentParser.saveArg,
+      baseLogName.changePath(baseLogName.getPath().split(".log").mkString("", "", ".settings")),
+      "Set default settings to the baselog name")
     println(p.getHelp())
-
 
     // basically create a class and make sure it has a main method ()
     //NOTE causes problems if class cannot be instantiated!
     //val newPM = Class.forName(classToCall).getMethod("main",Array[String])
-    val parmSweepClass = Class.forName(classToCall).newInstance().asInstanceOf[{ def main(args: Array[String]): Unit}]
+    val parmSweepClass = Class.forName(classToCall).newInstance().asInstanceOf[{
+      def main(args: Array[String]): Unit
+    }]
 
     val outResults = runSweep(parmSweepClass.main,
       argsToProcess,
       newArguments,
       inputArguments.split(","),
       baseLogName,
-      Duration.create(waittime, TimeUnit.MINUTES),isNested,coreCount
-    )
+      Duration.create(waittime, TimeUnit.MINUTES), isNested, coreCount)
 
     println("== Results")
     outResults.foreach(println(_))

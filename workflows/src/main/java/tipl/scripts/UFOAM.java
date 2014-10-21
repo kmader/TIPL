@@ -4,40 +4,52 @@ import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.settings.FilterSettings;
 import tipl.tools.*;
-import tipl.tools.Curvature;
 import tipl.util.*;
 
 import java.util.Date;
 
 /**
- * Script to Process Foam Data (specifically for the dk31 and dkg flow
- * experiments)
+ * Script to Process Foam Data (specifically for the dk31 and dkg flow experiments)
  *
  * @author Kevin Mader
  *         <p/>
- *         <pre> This and most of my scripts contain an almost excessively high number of functions, I did it in this way to make it easier for the garbage collector to work by keeeping as many variables as possible as local variables inside these subfunctions. It also makes the code somewhat easier to read and potentially reuse
+ *         <pre> This and most of my scripts contain an almost excessively high number of
+ *         functions,
+ *                 I did it in this way to make it easier for the garbage collector to work by
+ *         keeeping as
+ *                 many variables as possible as local variables inside these subfunctions. It also
+ *         makes
+ *                 the code somewhat easier to read and potentially reuse
  *         <p/>
- *                 <pre> Change Log:
+ *                                 <pre> Change Log:
  *         <p/>
- *                 <pre> v25 Fixed several bugs in the labeling code due to bugs induced by the update to plugins
+ *                                 <pre> v25 Fixed several bugs in the labeling code due to bugs
+ *         induced by
+ *                 the update to plugins
  *         <p/>
- *                 <pre> v24 Added run as job functionality
+ *                                 <pre> v24 Added run as job functionality
  *         <p/>
- *                 <pre> v23 Added circle radius as parameter
+ *                                 <pre> v23 Added circle radius as parameter
  *         <p/>
- *                 <pre> v22 Added neighbor distance as a parameters
+ *                                 <pre> v22 Added neighbor distance as a parameters
  *         <p/>
- *                 <pre> v21 Added new parameters to control the labeling
+ *                                 <pre> v21 Added new parameters to control the labeling
  *         <p/>
- *                 <pre> v20 Changed how bubble filling was done to be less aggressive and label the volumes correctly
+ *                                 <pre> v20 Changed how bubble filling was done to be less
+ *         aggressive and
+ *                 label the volumes correctly
  *         <p/>
- *                 <pre> v19 Added Curvature to standard output in clpor/lacun file if ccup==ccdown
+ *                                 <pre> v19 Added Curvature to standard output in clpor/lacun file
+ *         if
+ *                 ccup==ccdown
  *         <p/>
- *                 <pre> v18 Added Ridge Aim Export
+ *                                 <pre> v18 Added Ridge Aim Export
  *         <p/>
- *                 <pre> v17 Added morphological radius (the radius to use for the sphKernel function)
+ *                                 <pre> v17 Added morphological radius (the radius to use for the
+ *         sphKernel
+ *                 function)
  *         <p/>
- *                 <pre> v16 Start
+ *                                 <pre> v16 Start
  */
 public class UFOAM {
     public static final String kVer = "130809_024";
@@ -96,7 +108,13 @@ public class UFOAM {
                 .getOptionInt(
                         "stage",
                         0,
-                        "Point to start script : 0 -Filter and Scale, 1 - Threshold and Generate Plat and Bubbles, 2 - Sample Masks and peeling, 3 - Distance map, 4 - bubble labeling, 5 - bubble filling, 6 - calculate thickness, 7 - Curvature Analysis, 8 - Shape Analysis 9 - Neighborhood Analysis, 10 - structure analysis (XDF), 11 - Z/R Profiles");
+                        "Point to start script : 0 -Filter and Scale, " +
+                                "1 - Threshold and Generate Plat and Bubbles, " +
+                                "2 - Sample Masks and peeling, 3 - Distance map, " +
+                                "4 - bubble labeling, 5 - bubble filling, " +
+                                "6 - calculate thickness, 7 - Curvature Analysis, " +
+                                "8 - Shape Analysis 9 - Neighborhood Analysis, " +
+                                "10 - structure analysis (XDF), 11 - Z/R Profiles");
         resume = p.getOptionBoolean("resume",
                 "Resume based on which files are present");
         singleStep = p.getOptionBoolean("singlestep",
@@ -115,7 +133,8 @@ public class UFOAM {
                 .getOptionPath(
                         "outdir",
                         "",
-                        "Directory to save all the output files in, overwrites defaults but not user inputs");
+                        "Directory to save all the output files in, overwrites defaults but not " +
+                                "user inputs");
         if (outputDirectory.length() > 0)
             useOutputDirectory();
 
@@ -178,7 +197,8 @@ public class UFOAM {
                 .getOptionDouble(
                         "morphRadius",
                         1.75,
-                        "Radius to use for the kernel (vertex shaing is sqrt(3), edge sharing is sqrt(2), and face sharing is 1)");
+                        "Radius to use for the kernel (vertex shaing is sqrt(3), " +
+                                "edge sharing is sqrt(2), and face sharing is 1)");
         dilOccup = p.getOptionDouble("dilOccup", 1.0,
                 "Minimum neighborhood occupancy % for dilation addition");
 
@@ -225,7 +245,8 @@ public class UFOAM {
                 .getOptionInt(
                         "neighbordist",
                         1,
-                        "The distance the neighbor function should use for calculating the number of neighbors a bubble has, 1 means -1 to 1 in x,y,z");
+                        "The distance the neighbor function should use for calculating the number" +
+                                " of neighbors a bubble has, 1 means -1 to 1 in x,y,z");
 
         minVolumeDef = p.getOptionInt("minVolume", 10,
                 "Minimum Volume for bubble preservation during labeling");
@@ -242,7 +263,8 @@ public class UFOAM {
                 .getOptionDouble(
                         "maskcontourwidth",
                         0.4,
-                        "Amount to blur the edges of the contouring of the mask (normalized to number of steps)");
+                        "Amount to blur the edges of the contouring of the mask (normalized to " +
+                                "number of steps)");
         porosMaskPeel = p.getOptionInt("maskcontourpeel", 5,
                 "Number layers to peel off with the mask");
         // Curvature Parameters
@@ -255,7 +277,8 @@ public class UFOAM {
                 .getOptionDouble(
                         "cthresh",
                         0,
-                        "Threshold for processing data (1.0 is only full points, 0.5 is all values which round to a full point))");
+                        "Threshold for processing data (1.0 is only full points, " +
+                                "0.5 is all values which round to a full point))");
 
         runAsJob = p
                 .getOptionBoolean("sge:runasjob",
@@ -443,11 +466,13 @@ public class UFOAM {
     }
 
     /**
-     * Checks the status of the aim files in the directory and proceeds based on
-     * their presence
+     * Checks the status of the aim files in the directory and proceeds based on their presence
      */
     public void prepareResume() {
-        // "Point to start script : 0 -Filter and threshold, 1 - Generate Plat and Bubbles, 2 - Sample Masks and peeling, 3 - Distance map, 4 - bubble labeling, 5 - bubble filling, 6 - calculate thickness, 7 - Curvature Analysis, 8 - Shape Analysis 9 - Neighborhood Analysis, 10 - structure analysis (XDF)"
+        // "Point to start script : 0 -Filter and threshold, 1 - Generate Plat and Bubbles,
+        // 2 - Sample Masks and peeling, 3 - Distance map, 4 - bubble labeling,
+        // 5 - bubble filling, 6 - calculate thickness, 7 - Curvature Analysis,
+        // 8 - Shape Analysis 9 - Neighborhood Analysis, 10 - structure analysis (XDF)"
         if (!TIPLGlobal.tryOpen(floatAimFile)) {
             stageList += ",0";
             // Filtering is not that import if other stages are there then just
@@ -524,7 +549,8 @@ public class UFOAM {
 
         DG = null;
         if (fullGrow) {
-            ITIPLPluginIO CV2 = TIPLPluginManager.createBestPluginIO("cVoronoi", new TImg[]{bubblelabelsAim, bubblesAim});
+            ITIPLPluginIO CV2 = TIPLPluginManager.createBestPluginIO("cVoronoi",
+                    new TImg[]{bubblelabelsAim, bubblesAim});
             CV2.setParameter("-preservelabels -maxdistance=1");
             CV2.LoadImages(new TImg[]{bubblelabelsAim, bubblesAim});
             CV2.execute();
@@ -548,22 +574,23 @@ public class UFOAM {
 
     public void runResample() {
 
-        final ITIPLPluginIO fs = TIPLPluginManager.createBestPluginIO("Filter", new TImgRO[] {ufiltAim});
-        fs.LoadImages( new TImgRO[] {ufiltAim});
+        final ITIPLPluginIO fs = TIPLPluginManager.createBestPluginIO("Filter",
+                new TImgRO[]{ufiltAim});
+        fs.LoadImages(new TImgRO[]{ufiltAim});
         int filterMode = FilterSettings.NEAREST_NEIGHBOR;
         if (doMedian) {
-            filterMode=FilterSettings.MEDIAN;
+            filterMode = FilterSettings.MEDIAN;
         } else if (doLaplace) {
-        	filterMode = FilterSettings.LAPLACE;
+            filterMode = FilterSettings.LAPLACE;
         } else if (doGradient) {
-        	filterMode = FilterSettings.GRADIENT;
+            filterMode = FilterSettings.GRADIENT;
         } else if (doGauss) {
-        	filterMode = FilterSettings.GAUSSIAN;
+            filterMode = FilterSettings.GAUSSIAN;
         }
-        
-        final D3int ds = new D3int(downsampleFactor,downsampleFactor,downsampleFactor);
-        final D3int up = new D3int(upsampleFactor,upsampleFactor,upsampleFactor);
-        fs.setParameter("-upfactor="+up+" -downfactor="+ds+" -filter="+filterMode);
+
+        final D3int ds = new D3int(downsampleFactor, downsampleFactor, downsampleFactor);
+        final D3int up = new D3int(upsampleFactor, upsampleFactor, upsampleFactor);
+        fs.setParameter("-upfactor=" + up + " -downfactor=" + ds + " -filter=" + filterMode);
         fs.execute();
         floatAim = fs.ExportImages(ufiltAim)[0];
         ufiltAim = null;
@@ -679,7 +706,8 @@ public class UFOAM {
                     platAim = TImgTools.ReadTImg(platAimFile);
                 if (maskAim == null)
                     maskAim = TImgTools.ReadTImg(maskAimFile);
-                ITIPLPluginIO KV = TIPLPluginManager.createBestPluginIO("kVoronoi", new TImg[]{platAim, maskAim});
+                ITIPLPluginIO KV = TIPLPluginManager.createBestPluginIO("kVoronoi",
+                        new TImg[]{platAim, maskAim});
                 KV.LoadImages(new TImg[]{platAim, maskAim});
                 KV.execute();
                 maskAim = null;
@@ -737,7 +765,8 @@ public class UFOAM {
                     } else {
                         if (maskAim == null)
                             maskAim = TImgTools.ReadTImg(maskAimFile);
-                        ITIPLPluginIO KV2 = TIPLPluginManager.createBestPluginIO("kVoronoi", new TImg[]{labelsAim, maskAim});
+                        ITIPLPluginIO KV2 = TIPLPluginManager.createBestPluginIO("kVoronoi",
+                                new TImg[]{labelsAim, maskAim});
                         KV2.LoadImages(new TImg[]{labelsAim, maskAim});
                         KV2.execute();
                         bubblelabelsAim = KV2.ExportImages(labelsAim)[0];
@@ -763,7 +792,7 @@ public class UFOAM {
                     runThickness();
                     TImgTools.WriteTImg(thickmapAim, thickmapAimFile);
                     GrayAnalysis.StartHistogram(thickmapAim, thickmapAimFile
-                    		.append( ".csv"));
+                            .append(".csv"));
                 }
                 thickmapAim = null;
                 distmapAim = null;
@@ -778,7 +807,7 @@ public class UFOAM {
                     curveAim = Curvature.RunCC(bubblesAim, ccsigma, ccup, ccdown,
                             (float) ccthresh);
                     TImgTools.WriteTImg(curveAim, curveAimFile);
-                    GrayAnalysis.StartHistogram(curveAim, curveAimFile.append( ".csv"),
+                    GrayAnalysis.StartHistogram(curveAim, curveAimFile.append(".csv"),
                             -1, 1, 32765);
                     curveAim = null;
                 } else {
@@ -862,26 +891,30 @@ public class UFOAM {
                 if (platAim == null)
                     platAim = TImgTools.ReadTImg(platAimFile);
                 GrayAnalysis.StartZProfile(platAim, maskAim,
-                        platAimFile.append( "_z.txt"), -1);
+                        platAimFile.append("_z.txt"), -1);
                 GrayAnalysis.StartRProfile(platAim, maskAim,
                         platAimFile.append("_r.txt"), -1);
-                GrayAnalysis.StartRCylProfile(platAim, maskAim, platAimFile.append( "_rcyl.txt"), -1);
+                GrayAnalysis.StartRCylProfile(platAim, maskAim, platAimFile.append("_rcyl.txt"),
+                        -1);
                 platAim = null;
 
                 if (thickmapAim == null)
                     thickmapAim = TImgTools.ReadTImg(thickmapAimFile);
-                GrayAnalysis.StartZProfile(thickmapAim, maskAim, thickmapAimFile.append("_z.txt"), 0.1f);
-                GrayAnalysis.StartRProfile(thickmapAim, maskAim, thickmapAimFile.append("_r.txt"), 0.1f);
-                GrayAnalysis.StartRCylProfile(thickmapAim, maskAim, thickmapAimFile.append("_rcyl.txt"), 0.1f);
+                GrayAnalysis.StartZProfile(thickmapAim, maskAim, thickmapAimFile.append("_z.txt")
+                        , 0.1f);
+                GrayAnalysis.StartRProfile(thickmapAim, maskAim, thickmapAimFile.append("_r.txt")
+                        , 0.1f);
+                GrayAnalysis.StartRCylProfile(thickmapAim, maskAim, thickmapAimFile.append("_rcyl" +
+                        ".txt"), 0.1f);
                 thickmapAim = null;
 
                 if (curveAim == null)
                     curveAim = TImgTools.ReadTImg(curveAimFile);
                 GrayAnalysis
-                        .StartZProfile(curveAim, curveAimFile.append( "_z.txt"), -1000);
+                        .StartZProfile(curveAim, curveAimFile.append("_z.txt"), -1000);
                 GrayAnalysis
-                        .StartRProfile(curveAim, curveAimFile.append( "_r.txt"), -1000);
-                GrayAnalysis.StartRCylProfile(curveAim, curveAimFile.append( "_rcyl.txt"),
+                        .StartRProfile(curveAim, curveAimFile.append("_r.txt"), -1000);
+                GrayAnalysis.StartRCylProfile(curveAim, curveAimFile.append("_rcyl.txt"),
                         -1000);
                 curveAim = null;
 
@@ -889,7 +922,8 @@ public class UFOAM {
                     labelnhAim = TImgTools.ReadTImg(labelnhAimFile);
                 GrayAnalysis.StartZProfile(labelnhAim, maskAim, labelnhAimFile.append("_z.txt"), 1);
                 GrayAnalysis.StartRProfile(labelnhAim, maskAim, labelnhAimFile.append("_r.txt"), 1);
-                GrayAnalysis.StartRCylProfile(labelnhAim, maskAim, labelnhAimFile.append("_rcyl.txt"), 1);
+                GrayAnalysis.StartRCylProfile(labelnhAim, maskAim, labelnhAimFile.append("_rcyl" +
+                        ".txt"), 1);
                 labelnhAim = null;
 
                 break;
@@ -903,8 +937,9 @@ public class UFOAM {
     }
 
     public void runThickness() {
-        final ITIPLPluginIO KT = TIPLPluginManager.createBestPluginIO("HildThickness", new TImg[] { distmapAim });
-        KT.LoadImages(new TImg[] { distmapAim });
+        final ITIPLPluginIO KT = TIPLPluginManager.createBestPluginIO("HildThickness",
+                new TImg[]{distmapAim});
+        KT.LoadImages(new TImg[]{distmapAim});
         if (ridgeAimFile.length() > 0)
             TImgTools.WriteTImg(((HildThickness) KT).ExportRidgeAim(distmapAim), ridgeAimFile);
         KT.execute();

@@ -17,20 +17,26 @@ import org.apache.spark.SparkContext._
 /** A collection of graph generating functions. */
 object FEMDemo {
 
+
   /**
    * A class for storing the image vertex information to prevent excessive tuple-dependence
    */
-  @serializable case class ImageVertex(index: Int, pos: D3int = new D3int(0), value: Int = 0, original: Boolean = false)
+  case class ImageVertex(index: Int, pos: D3int = new D3int(0), value: Int = 0,
+                                       original: Boolean = false) extends Serializable
+
 
   /**
    * Edges connecting images, the orientation is the unit vector between the two points
    *
    **/
-  @serializable case class ImageEdge(dist: Double, orientation: D3float, restLength: Double = 1.0)
+  case class ImageEdge(dist: Double, orientation: D3float, restLength: Double = 1.0)
+    extends Serializable
 
-  @serializable case class ForceEdge(ie: ImageEdge, force: D3float)
 
-  @serializable implicit class ieSub(iv: ImageVertex) {
+  case class ForceEdge(ie: ImageEdge, force: D3float) extends Serializable
+
+
+  implicit class ieSub(iv: ImageVertex) extends Serializable {
     def -(iv2: ImageVertex): ImageEdge = {
       val xd = iv.pos.x - iv2.pos.x
       val yd = iv.pos.y - iv2.pos.y
@@ -39,6 +45,7 @@ object FEMDemo {
       new ImageEdge(bDist, new D3float(xd / bDist, yd / bDist, zd / bDist), 1)
     }
   }
+
 
   val extractPoint = (idx: Int, inArr: Array[Array[Int]], xwidth: Int, ywidth: Int) => {
     val i = Math.floor(idx * 1f / xwidth).toInt
@@ -51,10 +58,12 @@ object FEMDemo {
     val pos = pvec.pos
     val z = 0
     for (x <- wind; y <- wind)
-    yield new ImageVertex(pvec.index, new D3int(pos.x + x, pos.y + y, pos.z + z), pvec.value, (x == 0) & (y == 0) & (z == 0))
+    yield new ImageVertex(pvec.index, new D3int(pos.x + x, pos.y + y, pos.z + z), pvec.value,
+      (x == 0) & (y == 0) & (z == 0))
   }
 
-  def twoDArrayToGraph(sc: SparkContext, inArr: Array[Array[Int]]): Graph[ImageVertex, ImageEdge] = {
+  def twoDArrayToGraph(sc: SparkContext, inArr: Array[Array[Int]]): Graph[ImageVertex,
+    ImageEdge] = {
     val ywidth = inArr.length
     val xwidth = inArr(0).length
     val vertices = sc.parallelize(0 until xwidth * ywidth).map {
@@ -113,7 +122,8 @@ object FEMDemo {
     val sc = SparkGlobal.getContext()
     val myGraph = twoDArrayToGraph(sc, testImg)
     myGraph.triplets.
-      map(triplet => triplet.srcAttr + " is connected to  " + triplet.dstAttr + " via " + triplet.attr).
+      map(triplet => triplet.srcAttr + " is connected to  " + triplet.dstAttr + " via " + triplet
+      .attr).
       collect.foreach(println(_))
 
     val out = calcForces(myGraph)
@@ -124,7 +134,6 @@ object FEMDemo {
 
     sumForces(out).
       foreach(cpt => println(cpt._2._2.pos.toString + ": " + cpt._2._1))
-
 
   }
 

@@ -2,6 +2,7 @@
  *
  */
 package tipl.spark
+
 import org.apache.spark.SparkContext._
 import org.apache.spark.api.java.JavaPairRDD
 import org.apache.spark.rdd.RDD
@@ -38,34 +39,33 @@ object DTImgOps {
         }
         yield (new D3int(pos.x + x, pos.y + y, pos.z + z), outArr((z * dim.y + y) * dim.x + x))
     }
-    
+
     //val onImg = TypeMacros.correctlyTypeDTImg(inImg)
   }
-  
-  def DTImgToKV(inImg: DTImg[_])  = {
-    new KVImg(inImg,inImg.getImageType,DTImgToKVRDD(inImg))
+
+  def DTImgToKV(inImg: DTImg[_]) = {
+    new KVImg(inImg, inImg.getImageType, DTImgToKVRDD(inImg))
   }
 
   def DTImgToKVStrict[T, V](inImg: DTImg[T])(implicit V: ClassTag[V]): KVImg[V] = {
     val outImg = DTImgToKVRDD(inImg).mapValues {
       cValue => cValue.asInstanceOf[V]
     }
-    new KVImg[V](inImg,inImg.getImageType,outImg)
+    new KVImg[V](inImg, inImg.getImageType, outImg)
   }
-
 
 
   implicit class RichDtRDD[A](srd: RDD[(D3int, TImgBlock[A])]) extends
   NeighborhoodOperation[TImgBlock[A], TImgBlock[A]] {
 
-   private[RichDtRDD] def blockShift(offset: D3int) = {
+    private[RichDtRDD] def blockShift(offset: D3int) = {
       (p: (D3int, TImgBlock[A])) => {
         val nPos = p._1 + offset
         (nPos, new TImgBlock[A](p._2.getClone(), nPos, offset))
       }
     }
 
-   /**
+    /**
      * Wrap a RDD as a DTImg
      * @param elSize the size of the voxels
      */
@@ -73,12 +73,13 @@ object DTImgOps {
       val fele = srd.first
       val sPos = fele._1
       val odim = fele._2.getDim
-      val ndim = new D3int(odim.x,odim.y,srd.count.asInstanceOf[Int])
-      val baseImg = TImgTools.SimpleDimensions(odim,elSize,sPos)
+      val ndim = new D3int(odim.x, odim.y, srd.count.asInstanceOf[Int])
+      val baseImg = TImgTools.SimpleDimensions(odim, elSize, sPos)
       val imgtype = TImgTools.identifySliceType(fele._2.get)
-      wrap(baseImg,imgtype)
-      
+      wrap(baseImg, imgtype)
+
     }
+
     /**
      * Wrap a RDD as a DTImg
      * @param baseObj the image to mirror
@@ -103,37 +104,37 @@ object DTImgOps {
       curOut
 
     }
+
     /**
      * simple apply a function to a slice
      */
     def apply[B](mapFun: (Double => B))(implicit B: ClassTag[B]) = {
-      srd.mapValues{ inBlock => 
+      srd.mapValues { inBlock =>
         val outArray = (for (cval <- inBlock.getAsDouble()) yield mapFun(cval)).toArray
-        new TImgBlock[Array[B]](outArray,inBlock)
-        }
+        new TImgBlock[Array[B]](outArray, inBlock)
+      }
     }
-    
 
-    def blockOperation(windSize: D3int, kernel: Option[BaseTIPLPluginIn.morphKernel], mapFun: (Iterable[TImgBlock[A]] => TImgBlock[A])): RDD[(D3int, TImgBlock[A])] = {
+    def blockOperation(windSize: D3int, kernel: Option[BaseTIPLPluginIn.morphKernel],
+                       mapFun: (Iterable[TImgBlock[A]] => TImgBlock[A])): RDD[(D3int,
+      TImgBlock[A])] = {
       val spread = srd.spreadSlices(windSize).collectSlices(windSize, kernel, mapFun)
       spread
     }
 
-    
-
-
   }
- 
-  
+
 
   /**
    * A class of a spread RDD image (after a flatMap/spread operation)
    */
   implicit class SpreadRDD[A](srd: RDD[(D3int, Iterable[TImgBlock[A]])]) extends Serializable {
-    def collectSlices(windSize: D3int, kernel: Option[BaseTIPLPluginIn.morphKernel], coFun: (Iterable[TImgBlock[A]] => TImgBlock[A])) = {
+    def collectSlices(windSize: D3int, kernel: Option[BaseTIPLPluginIn.morphKernel],
+                      coFun: (Iterable[TImgBlock[A]] => TImgBlock[A])) = {
       srd.mapValues(coFun)
     }
   }
+
 
   implicit class RichDTImg[A](ip: DTImg[A]) extends Serializable {
 
@@ -143,55 +144,67 @@ object DTImgOps {
       *
       */
     def spreadSlices(windSize: D3int) = srd.spreadSlices(windSize)
-    
+
     def sizeCheck(inImg: HasDimensions) = {
-      if(!TImgTools.CheckSizes2(ip, inImg)) throw new IllegalArgumentException("Image sizes must match! d1:"+ip.getDim+", p1:"+ip.getPos+"\t d2:"+inImg.getDim+" p2:"+inImg.getPos)
+      if (!TImgTools.CheckSizes2(ip, inImg)) throw new IllegalArgumentException("Image sizes must" +
+        " match! d1:" + ip.getDim + ", p1:" + ip.getPos + "\t d2:" + inImg.getDim + " p2:" +
+        inImg.getPos)
     }
-    /** 
-     *  generic implementation of an operator
-     *  @param inImg to combine with the ip image forming the classes
-     *  @param combFunc function to use to combine the two images
-     *  
+
+    /**
+     * generic implementation of an operator
+     * @param inImg to combine with the ip image forming the classes
+     * @param combFunc function to use to combine the two images
+     *
      */
-    def combineImages[B](inImg: DTImg[B],combFunc: ((Double,Double) => Double)):
+    def combineImages[B](inImg: DTImg[B], combFunc: ((Double, Double) => Double)):
     DTImg[Array[Double]] = {
       sizeCheck(inImg)
       val aImg = ip.getBaseImg.rdd
       val bImg = inImg.getBaseImg.rdd
-      val jImg = aImg.join(bImg).mapValues{
-        inImages => 
+      val jImg = aImg.join(bImg).mapValues {
+        inImages =>
           val aArr = inImages._1.getAsDouble()
           val bArr = inImages._2.getAsDouble()
           val outArray = new Array[Double](aArr.length)
-          for(i<-0 until aArr.length) outArray(i)=combFunc(aArr(i),bArr(i))
-          new TImgBlock[Array[Double]](outArray,inImages._1) // inherit from first block
+          for (i <- 0 until aArr.length) outArray(i) = combFunc(aArr(i), bArr(i))
+          new TImgBlock[Array[Double]](outArray, inImages._1) // inherit from first block
       }
-      DTImg.WrapRDD[Array[Double]](ip,JavaPairRDD.fromRDD(jImg),TImgTools.IMAGETYPE_DOUBLE)
+      DTImg.WrapRDD[Array[Double]](ip, JavaPairRDD.fromRDD(jImg), TImgTools.IMAGETYPE_DOUBLE)
     }
-    
-    def +[B](inImg: DTImg[B]) = combineImages(inImg,_+_)
-    def -[B](inImg: DTImg[B]) = combineImages(inImg,_-_)
-    def *[B](inImg: DTImg[B]) = combineImages(inImg,_*_)
-    def /[B](inImg: DTImg[B]) = combineImages(inImg,_/_)
+
+    def +[B](inImg: DTImg[B]) = combineImages(inImg, _ + _)
+
+    def -[B](inImg: DTImg[B]) = combineImages(inImg, _ - _)
+
+    def *[B](inImg: DTImg[B]) = combineImages(inImg, _ * _)
+
+    def /[B](inImg: DTImg[B]) = combineImages(inImg, _ / _)
 
   }
 
-/**
- * A smarter conversion function
- */
-    def fromTImgRO(inImg: TImgRO) = {
+
+  /**
+   * A smarter conversion function
+   */
+  def fromTImgRO(inImg: TImgRO) = {
     val imClass = TImgTools.imageTypeToClass(inImg.getImageType)
     inImg match {
       case dImg: DTImg[_] if imClass == TImgTools.IMAGECLASS_LABEL => dImg.asDTLong
       case dImg: DTImg[_] if imClass == TImgTools.IMAGECLASS_VALUE => dImg.asDTDouble
       case dImg: DTImg[_] if imClass == TImgTools.IMAGECLASS_BINARY => dImg.asDTBool
       case normImg: TImgRO if imClass == TImgTools.IMAGECLASS_LABEL =>
-        DTImg.ConvertTImg[Array[Long]](SparkGlobal.getContext("DTImgOps"), normImg, TImgTools.IMAGETYPE_LONG)
-     case normImg: TImgRO if imClass == TImgTools.IMAGECLASS_VALUE =>
-        DTImg.ConvertTImg[Array[Double]](SparkGlobal.getContext("DTImgOps"), normImg, TImgTools.IMAGETYPE_DOUBLE)
-     case normImg: TImgRO if imClass == TImgTools.IMAGECLASS_BINARY =>
-        DTImg.ConvertTImg[Array[Boolean]](SparkGlobal.getContext("DTImgOps"), normImg, TImgTools.IMAGETYPE_BOOL)
-     case normImg: TImgRO if imClass == TImgTools.IMAGECLASS_OTHER => throw new IllegalArgumentException(" Image Type Other is not supported yet inside Resize:Spark :"+inImg.getImageType)
+        DTImg.ConvertTImg[Array[Long]](SparkGlobal.getContext("DTImgOps"), normImg,
+          TImgTools.IMAGETYPE_LONG)
+      case normImg: TImgRO if imClass == TImgTools.IMAGECLASS_VALUE =>
+        DTImg.ConvertTImg[Array[Double]](SparkGlobal.getContext("DTImgOps"), normImg,
+          TImgTools.IMAGETYPE_DOUBLE)
+      case normImg: TImgRO if imClass == TImgTools.IMAGECLASS_BINARY =>
+        DTImg.ConvertTImg[Array[Boolean]](SparkGlobal.getContext("DTImgOps"), normImg,
+          TImgTools.IMAGETYPE_BOOL)
+      case normImg: TImgRO if imClass == TImgTools.IMAGECLASS_OTHER => throw new
+          IllegalArgumentException(" Image Type Other is not supported yet inside Resize:Spark :"
+            + inImg.getImageType)
     }
   }
 
@@ -200,7 +213,8 @@ object DTImgOps {
     val pos = inImg.getPos
     val elSize = inImg.getElSize
     val sliceSize = dim.x * dim.y
-    var rddObj = inImg.getBaseImg().map { posVal => ((posVal._1.z, (posVal._1.y - pos.y) * dim.x + posVal._1.x - pos.x), posVal._2)}
+    var rddObj = inImg.getBaseImg().map { posVal => ((posVal._1.z, (posVal._1.y - pos.y) * dim.x
+      + posVal._1.x - pos.x), posVal._2)}
     if (inImg.getBaseImg.count.toInt != dim.prod) {
       // fill in holes since voxels are missing
       val allPix = rddObj.sparkContext.parallelize(0 until dim.z).flatMap {
@@ -211,10 +225,12 @@ object DTImgOps {
       val missingPixels = allPix.subtractByKey(rddObj)
       rddObj = rddObj.union(missingPixels)
     }
-    val slices = rddObj.map { posVal => (new D3int(pos.x, pos.y, pos.z + posVal._1._1), (posVal._1._2, posVal._2))}.groupByKey
+    val slices = rddObj.map { posVal => (new D3int(pos.x, pos.y, pos.z + posVal._1._1),
+      (posVal._1._2, posVal._2))}.groupByKey
     val sslices = slices.map {
       imgVec =>
-        val sList = stableSort(imgVec._2.toList, (e1: (Int, T), e2: (Int, T)) => e1._1 < e2._1).map {
+        val sList = stableSort(imgVec._2.toList, (e1: (Int, T), e2: (Int,
+          T)) => e1._1 < e2._1).map {
           _._2
         }
         (imgVec._1, new TImgBlock[Array[T]](sList, imgVec._1, dim))
@@ -224,6 +240,7 @@ object DTImgOps {
     DTImg.WrapRDD[Array[T]](inImg, JavaPairRDD.fromRDD(sslices), inImg.getImageType())
 
   }
-  
+
 }
+
 

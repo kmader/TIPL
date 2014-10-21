@@ -1,4 +1,5 @@
 package spark.images
+
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
@@ -7,7 +8,7 @@ import tipl.spark.SparkGlobal
 import tipl.util.D3int
 
 
-object kvtools extends Serializable {
+object KVTools extends Serializable {
   def main(args: Array[String]): Unit = {
     val p = SparkGlobal.activeParser(args)
     val sc = SparkGlobal.getContext("FilterTool")
@@ -22,7 +23,6 @@ object kvtools extends Serializable {
   def noRoi(pvec: (D3int, Double)) = {
     true
   }
-
 
   def tinyroi(pvec: (D3int, Double)) = {
     pvec._1.x >= 0 & pvec._1.y >= 0 & pvec._1.z >= 0 &
@@ -49,7 +49,8 @@ object kvtools extends Serializable {
       val wind = -windSize to windSize
       val pos = pvec._1
       val scalevalue = pvec._2 / (wind.length * wind.length * wind.length)
-      for (x <- wind; y <- wind; z <- wind) yield (new D3int(pos.x + x, pos.y + y, pos.z + z), scalevalue)
+      for (x <- wind; y <- wind; z <- wind) yield (new D3int(pos.x + x, pos.y + y, pos.z + z),
+        scalevalue)
     }
 
     val filtImg = roiImg.flatMap(cvec => spread_voxels(cvec)).filter(roiFun).reduceByKey(_ + _)
@@ -65,7 +66,8 @@ object kvtools extends Serializable {
       val wind = 0 to windSize // only need to scan positively
       val pos = pvec._1
       val label = pvec._2
-      for (x <- wind; y <- wind; z <- wind) yield (new D3int(pos.x + x, pos.y + y, pos.z + z), (label, x == 0 & y == 0 & z == 0))
+      for (x <- wind; y <- wind; z <- wind) yield (new D3int(pos.x + x, pos.y + y, pos.z + z),
+        (label, x == 0 & y == 0 & z == 0))
     }
     var groupList = Array((0L, 0))
     var running = true
@@ -79,7 +81,8 @@ object kvtools extends Serializable {
       // make a list of each label and how many voxels are in it
       val curGroupList = newLabels.map(pvec => (pvec._2, 1)).
         reduceByKey(_ + _).sortByKey(true).collect
-      // if the list isn't the same as before, continue running since we need to wait for swaps to stop
+      // if the list isn't the same as before, continue running since we need to wait for swaps
+      // to stop
       running = curGroupList.deep != groupList.deep
       groupList = curGroupList
       labelImg = newLabels
@@ -91,5 +94,3 @@ object kvtools extends Serializable {
   }
 
 }
-
-//filterImage.runFilter (sc,"./block*.csv",false).take(1)

@@ -52,9 +52,10 @@ public class IOTests {
     private static int range = 3;
     private static int maximumSlice = 100;
 
-    private static JavaPairRDD<Integer, int[]> ReadIntImg(final JavaSparkContext jsc, final TypedPath localImgName) {
-       
-    	final TypedPath imgName = localImgName.makeAbsPath();
+    private static JavaPairRDD<Integer, int[]> ReadIntImg(final JavaSparkContext jsc,
+                                                          final TypedPath localImgName) {
+
+        final TypedPath imgName = localImgName.makeAbsPath();
         TImgRO cImg = TImgTools.ReadTImg(imgName);
         final int sliceCount = cImg.getDim().z;
 
@@ -73,13 +74,15 @@ public class IOTests {
         });
     }
 
-    private static JavaPairRDD<Integer, int[]> SpreadImage(final JavaPairRDD<Integer, int[]> inImg, final int windowSize) {
+    private static JavaPairRDD<Integer, int[]> SpreadImage(final JavaPairRDD<Integer,
+            int[]> inImg, final int windowSize) {
         return inImg.flatMapToPair(
                 new PairFlatMapFunction<Tuple2<Integer, int[]>, Integer, int[]>() {
                     public Iterable<Tuple2<Integer, int[]>> call(Tuple2<Integer, int[]> inD) {
-                        List<Tuple2<Integer, int[]>> outList = new ArrayList<Tuple2<Integer, int[]>>(2 * windowSize + 1);
+                        List<Tuple2<Integer, int[]>> outList = new ArrayList<Tuple2<Integer,
+                                int[]>>(2 * windowSize + 1);
                         for (int i = -windowSize; i <= windowSize; i++) {
-                            int oSlice = inD._1.intValue() + i;
+                            int oSlice = inD._1().intValue() + i;
                             if (oSlice > 0) //TODO Fix to remove the top slices as well
                                 outList.add(new Tuple2<Integer, int[]>(oSlice, inD._2().clone()));
                         }
@@ -89,7 +92,8 @@ public class IOTests {
     }
 
     @SuppressWarnings("serial")
-    private static JavaPairRDD<Integer, int[]> FilterImage(final JavaPairRDD<Integer, Iterable<int[]>> inImg) {
+    private static JavaPairRDD<Integer, int[]> FilterImage(final JavaPairRDD<Integer,
+            Iterable<int[]>> inImg) {
         return inImg.mapToPair(
                 new PairFunction<Tuple2<Integer, Iterable<int[]>>, Integer, int[]>() {
                     @Override
@@ -124,21 +128,26 @@ public class IOTests {
         final double sumV2 = inData._2().doubleValue();
         final double cntV = inData._3().doubleValue();
         double meanV = (sumV / (1.0 * cntV));
-        return String.format("Mean:%3.2f\tSd:%3.2f\tSum:%3.0f", meanV, Math.sqrt((sumV2 / (1.0 * cntV) - Math.pow(meanV, 2))), cntV);
+        return String.format("Mean:%3.2f\tSd:%3.2f\tSum:%3.0f", meanV,
+                Math.sqrt((sumV2 / (1.0 * cntV) - Math.pow(meanV, 2))), cntV);
     }
 
     private static String ImageSummary(final JavaPairRDD<Integer, int[]> inImg) {
-        Tuple3<Double, Double, Double> imSum = inImg.map(new Function<Tuple2<Integer, int[]>, Tuple3<Double, Double, Double>>() {
+        Tuple3<Double, Double, Double> imSum = inImg.map(new Function<Tuple2<Integer, int[]>,
+                Tuple3<Double, Double, Double>>() {
             @Override
             public Tuple3<Double, Double, Double> call(Tuple2<Integer, int[]> arg0)
                     throws Exception {
                 return countSlice(arg0._2());
             }
-        }).reduce(new Function2<Tuple3<Double, Double, Double>, Tuple3<Double, Double, Double>, Tuple3<Double, Double, Double>>() {
+        }).reduce(new Function2<Tuple3<Double, Double, Double>, Tuple3<Double, Double, Double>,
+                Tuple3<Double, Double, Double>>() {
             @Override
             public Tuple3<Double, Double, Double> call(Tuple3<Double, Double, Double> arg0,
-                                                       Tuple3<Double, Double, Double> arg1) throws Exception {
-                return new Tuple3<Double, Double, Double>(arg0._1() + arg1._1(), arg0._2() + arg1._2(), arg0._3() + arg1._3());
+                                                       Tuple3<Double, Double,
+                                                               Double> arg1) throws Exception {
+                return new Tuple3<Double, Double, Double>(arg0._1() + arg1._1(),
+                        arg0._2() + arg1._2(), arg0._3() + arg1._3());
             }
 
         });
@@ -147,7 +156,7 @@ public class IOTests {
         final List<Integer> keyList = inImg.map(new Function<Tuple2<Integer, int[]>, Integer>() {
             @Override
             public Integer call(Tuple2<Integer, int[]> arg0) throws Exception {
-                return arg0._1;
+                return arg0._1();
             }
         }).collect();
         for (Integer cVal : keyList) outString += cVal + ",";
@@ -156,11 +165,12 @@ public class IOTests {
 
     private static Result sendTImgTest(final JavaSparkContext jsc, final TypedPath imgName) {
         final int maxSlice = maximumSlice;
-        
-        JavaPairRDD<Integer, int[]> dataSet = ReadIntImg(jsc, imgName).filter(new Function<Tuple2<Integer, int[]>, Boolean>() {
+
+        JavaPairRDD<Integer, int[]> dataSet = ReadIntImg(jsc,
+                imgName).filter(new Function<Tuple2<Integer, int[]>, Boolean>() {
             @Override
             public Boolean call(Tuple2<Integer, int[]> arg0) throws Exception {
-                return arg0._1 < maxSlice;
+                return arg0._1() < maxSlice;
             }
 
         }).cache();
@@ -168,16 +178,22 @@ public class IOTests {
         JavaPairRDD<Integer, int[]> spreadDataSet = SpreadImage(dataSet, range);
         JavaPairRDD<Integer, int[]> dataSet3 = FilterImage(spreadDataSet.groupByKey());
 
-        System.out.println("Input Image\t# of Slices " + dataSet.count() + ", " + ImageSummary(dataSet));
-        System.out.println("After Spread\t# of Slices " + spreadDataSet.count() + ", " + ImageSummary(spreadDataSet));
-        System.out.println("After Filter\t# of Slices " + dataSet3.count() + ", " + ImageSummary(dataSet3));
+        System.out.println("Input Image\t# of Slices " + dataSet.count() + ", " +
+                "" + ImageSummary(dataSet));
+        System.out.println("After Spread\t# of Slices " + spreadDataSet.count() + ", " +
+                "" + ImageSummary(spreadDataSet));
+        System.out.println("After Filter\t# of Slices " + dataSet3.count() + ", " +
+                "" + ImageSummary(dataSet3));
         return new Result(0);
     }
 
     public static void main(String[] args) throws Exception {
         ArgumentParser p = TIPLGlobal.activeParser(args);
-        final String masterName = p.getOptionString("master", "local[4]", "Name of the master node for Spark");
-        final TypedPath imagePath = p.getOptionPath("path", "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory) to read in");
+        final String masterName = p.getOptionString("master", "local[4]",
+                "Name of the master node for Spark");
+        final TypedPath imagePath = p.getOptionPath("path",
+                "/Users/mader/Dropbox/TIPL/test/io_tests/rec8tiff", "Path of image (or directory)" +
+                        " to read in");
         range = p.getOptionInt("range", range, "The range to use for the filter");
         maximumSlice = p.getOptionInt("maxs", maximumSlice, "The maximum slice to keep");
         p.checkForInvalid();
@@ -189,10 +205,13 @@ public class IOTests {
         // run test locally for comparison
         //Result outCountLocal=sendTImgTest(getContext("local","LocalIO"),imagePath);
 
-        System.out.println(String.format("Distributed Image\n\tVolume Fraction: \t\t%s\n\tCalculation time: \t%s",
+        System.out.println(String.format("Distributed Image\n\tVolume Fraction: " +
+                        "\t\t%s\n\tCalculation time: \t%s",
                 outCount1.getVF(), Duration.create(startLocal - start1, TimeUnit.MILLISECONDS)));
-        //System.out.println(String.format("Local Calculation\n\tVolume Fraction: \t\t%s\n\tCalculation time: \t%s",
-        //		outCountLocal.getVF(), Duration.create(System.currentTimeMillis() - startLocal, TimeUnit.MILLISECONDS) ));
+        //System.out.println(String.format("Local Calculation\n\tVolume Fraction:
+        // \t\t%s\n\tCalculation time: \t%s",
+        //		outCountLocal.getVF(), Duration.create(System.currentTimeMillis() - startLocal,
+        // TimeUnit.MILLISECONDS) ));
 
     }
 
@@ -217,6 +236,7 @@ public class IOTests {
             return (100. * intPixels) / (intPixels + outPixels);
         }
     }
+
 
     public static class DImg implements Serializable {
         final int sliceNum;

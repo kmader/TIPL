@@ -59,7 +59,8 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
    * (avec: (D3int,((Long,Float),Boolean,Boolean))
    * position, (label, distance), alive, is_moved
    */
-  val spread_voxels = (pvec: (D3int, ((Long, Float), Boolean)), windSize: D3int, kernel: Option[BaseTIPLPluginIn.morphKernel], min_distance: Float) => {
+  val spread_voxels = (pvec: (D3int, ((Long, Float), Boolean)), windSize: D3int,
+                       kernel: Option[BaseTIPLPluginIn.morphKernel], min_distance: Float) => {
     val pos = pvec._1
     val alive = pvec._2._2 & (pvec._2._1._1 > 0) & (pvec._2._1._2 >= min_distance)
     if (alive) {
@@ -67,7 +68,8 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
       val windy = -windSize.y to windSize.y
       val windz = -windSize.z to windSize.z
       for (x <- windx; y <- windy; z <- windz
-           if kernel.map(_.inside(0, 0, pos.x, pos.x + x, pos.y, pos.y + y, pos.z, pos.z + z)).getOrElse(true))
+           if kernel.map(_.inside(0, 0, pos.x, pos.x + x, pos.y, pos.y + y, pos.z,
+             pos.z + z)).getOrElse(true))
       yield (new D3int(pos.x + x, pos.y + y, pos.z + z),
         (
           (pvec._2._1._1, pvec._2._1._2 + sqrt(1.0 * x * x + y * y + z * z).floatValue()),
@@ -79,7 +81,6 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
           false, true)))
     }
 
-
   }
   /**
    * only keep points do not originate from a real point
@@ -89,7 +90,6 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
   }
   val compare_point_distance = (a: ((Long, Float), Boolean), b: ((Long, Float), Boolean, Boolean))
   => a._1._2 compare b._1._2
-
 
   val collect_voxels =
     (pvec: Iterable[((Long, Float), Boolean, Boolean)]) => {
@@ -104,10 +104,11 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
   override def execute(): Boolean = {
     print("Starting Plugin..." + getPluginName)
     val curKernel: Option[BaseTIPLPluginIn.morphKernel] =
-      if (neighborKernel == null)
+      if (neighborKernel == null) {
         None
-      else
+      } else {
         Some(neighborKernel)
+      }
     var changes = 1L
     var curDist = 0f
     var iter = 0
@@ -115,7 +116,8 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
     var mean_dist = labeledDistanceMap.map(get_distance).mean
     var mean_label = labeledDistanceMap.map(get_label).mean
     println("KSM - MD:" + mean_dist + "\tML" + mean_label)
-    println("KSM - Dist:" + curDist + ", Iter:" + iter + ", Ops:" + 0 + ", Changes:" + changes + ", Empty:" + empty_vx)
+    println("KSM - Dist:" + curDist + ", Iter:" + iter + ", Ops:" + 0 + ", " +
+      "Changes:" + changes + ", Empty:" + empty_vx)
     while ((
       (curDist <= maxUsuableDistance) |
         (maxUsuableDistance < 0)) & (changes > 0)) {
@@ -130,7 +132,8 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
       mean_dist = labeledDistanceMap.map(get_distance).mean
       mean_label = labeledDistanceMap.map(get_label).mean
       println("KSM - MD:" + mean_dist + "\tML" + mean_label)
-      println("KSM -Dist:" + curDist + ", Iter:" + iter + ", Ops:" + vox_involved + ", Changes:" + changes + ", Empty:" + empty_vx)
+      println("KSM -Dist:" + curDist + ", Iter:" + iter + ", Ops:" + vox_involved + ", " +
+        "Changes:" + changes + ", Empty:" + empty_vx)
       println("KSM - " + labeledDistanceMap.takeSample(true, 10, 50).mkString(", "))
 
       iter += 1
@@ -166,7 +169,8 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
       case m: TImgRO => m.toKV().toKV.toKVFloat
       case _ => fillImage(labelImage, 1)
     }).getBaseImg.filter(inMask).mapValues(toBoolean)
-    if (TIPLGlobal.getDebug()) println("KSM-MaskedImage:\t" + maskedImage + "\t" + maskedImage.first)
+    if (TIPLGlobal.getDebug()) println("KSM-MaskedImage:\t" + maskedImage + "\t" + maskedImage
+      .first)
     // combine the images to create the starting distance map
     val maskPlusDist = (inVal: (Float, Option[Boolean])) => {
       inVal._2.map(inBool => -1f).getOrElse(inVal._1.floatValue)
@@ -180,8 +184,10 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
 
     labeledDistanceMap = labeledImage.join(maskDistance).
       mapValues(fix_dist).partitionBy(partitioner)
-    if (TIPLGlobal.getDebug()) println("KSM-LDMap:\t" + labeledDistanceMap + "\t" + labeledDistanceMap.first)
-    if (TIPLGlobal.getDebug()) println("KSM-" + labeledDistanceMap.takeSample(true, 10, 50).mkString(", "))
+    if (TIPLGlobal.getDebug()) println("KSM-LDMap:\t" + labeledDistanceMap + "\t" +
+      labeledDistanceMap.first)
+    if (TIPLGlobal.getDebug()) println("KSM-" + labeledDistanceMap.takeSample(true, 10,
+      50).mkString(", "))
   }
 
   override def ExportDistanceAim(inObj: CanExport): TImg = {
@@ -205,7 +211,6 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
   override def WriteDistanceAim(exObj: TImgRO.CanExport, filename: TypedPath) = {
     TImgTools.WriteTImg(ExportDistanceAim(exObj), filename)
   }
-
 
 }
 

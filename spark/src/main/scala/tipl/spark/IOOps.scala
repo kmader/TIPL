@@ -21,9 +21,11 @@ import scala.reflect.ClassTag
 
 /**
  * IOOps is a cover for all the functions related to reading in and writing out Images in Spark
- * it is closely coupled to SparkStorage which then replaces the standard functions in TIPL with the Spark-version
+ * it is closely coupled to SparkStorage which then replaces the standard functions in TIPL with
+ * the Spark-version
  */
 object IOOps {
+
 
   /**
    * Add the byte reading to the SparkContext
@@ -31,8 +33,8 @@ object IOOps {
   implicit class ImageFriendlySparkContext(sc: SparkContext) {
     val defMinPart = sc.defaultMinPartitions
 
-
-    def tiffFolder(path: String, minPartitions: Int = sc.defaultMinPartitions): RDD[(String, TIFSliceReader)] = {
+    def tiffFolder(path: String, minPartitions: Int = sc.defaultMinPartitions): RDD[(String,
+      TIFSliceReader)] = {
       val job = new NewHadoopJob(sc.hadoopConfiguration)
       NewFileInputFormat.addInputPath(job, new Path(path))
       val updateConf = job.getConfiguration
@@ -45,7 +47,8 @@ object IOOps {
         minPartitions).setName(path)
     }
 
-    def byteFolder(path: String, minPartitions: Int = sc.defaultMinPartitions): RDD[(String, Array[Byte])] = {
+    def byteFolder(path: String, minPartitions: Int = sc.defaultMinPartitions): RDD[(String,
+      Array[Byte])] = {
       val job = new NewHadoopJob(sc.hadoopConfiguration)
       NewFileInputFormat.addInputPath(job, new Path(path))
       val updateConf = job.getConfiguration
@@ -74,6 +77,7 @@ object IOOps {
     }
   }
 
+
   implicit class TypedReader[T <: TImgRO](cImg: TImgRO) {
     def readSlice(sliceNumber: Int, asType: Int) = {
       TImgTools.isValidType(asType)
@@ -86,10 +90,12 @@ object IOOps {
         case a: Array[Float] => a
         case a: Array[Short] => a
         case a: Array[Long] => a
-        case _ => throw new IllegalArgumentException("Type Not Found:" + asType + " " + TImgTools.getImageTypeName(asType))
+        case _ => throw new IllegalArgumentException("Type Not Found:" + asType + " " + TImgTools
+          .getImageTypeName(asType))
       }
     }
   }
+
 
   def castAsImageFormat(obj: Any, asType: Int) = {
     TImgTools.isValidType(asType)
@@ -101,14 +107,17 @@ object IOOps {
       case TImgTools.IMAGETYPE_LONG => obj.asInstanceOf[Array[Long]]
       case TImgTools.IMAGETYPE_FLOAT => obj.asInstanceOf[Array[Float]]
       case TImgTools.IMAGETYPE_DOUBLE => obj.asInstanceOf[Array[Double]]
-      case _ => throw new IllegalArgumentException("Type Not Found:" + asType + " " + TImgTools.getImageTypeName(asType))
+      case _ => throw new IllegalArgumentException("Type Not Found:" + asType + " " + TImgTools
+        .getImageTypeName(asType))
     }
   }
+
 
   implicit class SlicesToDTImg[T <: TSliceReader](srd: RDD[(String, T)])(implicit lm: ClassTag[T]) {
 
     def loadAsBinary() = {
-      processSlices[Array[Boolean]](TImgTools.IMAGETYPE_BOOL, inObj => inObj.asInstanceOf[Array[Boolean]])
+      processSlices[Array[Boolean]](TImgTools.IMAGETYPE_BOOL,
+        inObj => inObj.asInstanceOf[Array[Boolean]])
     }
 
     def loadAsLabels() = {
@@ -116,7 +125,8 @@ object IOOps {
     }
 
     def loadAsValues() = {
-      processSlices[Array[Double]](TImgTools.IMAGETYPE_DOUBLE, inObj => inObj.asInstanceOf[Array[Double]])
+      processSlices[Array[Double]](TImgTools.IMAGETYPE_DOUBLE,
+        inObj => inObj.asInstanceOf[Array[Double]])
     }
 
     /**
@@ -125,15 +135,18 @@ object IOOps {
      * @param nameToValue parses the string using the associated function
      */
     def loadAs2D(sorted: Boolean = true, nameToValue: Option[(String => Long)] = None) = {
-      parseSlices[Array[Double]](srd, TImgTools.IMAGETYPE_DOUBLE, inObj => inObj.asInstanceOf[Array[Double]], sorted, nameToValue = nameToValue)._1
+      parseSlices[Array[Double]](srd, TImgTools.IMAGETYPE_DOUBLE,
+        inObj => inObj.asInstanceOf[Array[Double]], sorted, nameToValue = nameToValue)._1
     }
 
     def loadAs2DLabels(sorted: Boolean = true, nameToValue: Option[(String => Long)] = None) = {
-      parseSlices[Array[Long]](srd, TImgTools.IMAGETYPE_LONG, inObj => inObj.asInstanceOf[Array[Long]], sorted, nameToValue = nameToValue)._1
+      parseSlices[Array[Long]](srd, TImgTools.IMAGETYPE_LONG,
+        inObj => inObj.asInstanceOf[Array[Long]], sorted, nameToValue = nameToValue)._1
     }
 
     def loadAs2DBinary(sorted: Boolean = true, nameToValue: Option[(String => Long)] = None) = {
-      parseSlices[Array[Boolean]](srd, TImgTools.IMAGETYPE_BOOL, inObj => inObj.asInstanceOf[Array[Boolean]], sorted, nameToValue = nameToValue)._1
+      parseSlices[Array[Boolean]](srd, TImgTools.IMAGETYPE_BOOL,
+        inObj => inObj.asInstanceOf[Array[Boolean]], sorted, nameToValue = nameToValue)._1
     }
 
     /**
@@ -149,12 +162,14 @@ object IOOps {
         case TImgTools.IMAGETYPE_LONG => loadAsLabels()
         case TImgTools.IMAGETYPE_FLOAT => loadAsValues()
         case TImgTools.IMAGETYPE_DOUBLE => loadAsValues()
-        case _ => throw new IllegalArgumentException("Type Not Found:" + tImg.getImageType() + " " + TImgTools.getImageTypeName(tImg.getImageType()))
+        case _ => throw new IllegalArgumentException("Type Not Found:" + tImg.getImageType() + " " +
+          "" + TImgTools.getImageTypeName(tImg.getImageType()))
       }
     }
 
     private[IOOps] def processSlices[A](asType: Int, transFcn: (Any => A)) = {
-      val (outRdd, firstImage) = parseSlices[A](srd, asType, transFcn, sorted = true, partitions = srd.count.toInt)
+      val (outRdd, firstImage) = parseSlices[A](srd, asType, transFcn, sorted = true,
+        partitions = srd.count.toInt)
       val timgDim = new D3int(firstImage.getDim.x, firstImage.getDim.y, srd.count.toInt)
       val efImg = TImgTools.MakeEditable(firstImage)
       efImg.setDim(timgDim)
@@ -200,16 +215,17 @@ object IOOps {
 
   import scala.{specialized => spec}
 
-  implicit class toDSImgs[@spec(Boolean, Byte, Short, Int, Long, Float, Double) V](inVal: Iterable[(D3int,TImgBlock[Array[V]])]) {
+  implicit class toDSImgs[@spec(Boolean, Byte, Short, Int, Long, Float,
+    Double) V](inVal: Iterable[(D3int, TImgBlock[Array[V]])]) {
     def toTImg(path: TypedPath)(implicit elSize: D3float, vc: ClassTag[V]): TImg = {
-      val inSeq = inVal.toIndexedSeq.sortWith((a,b) => (a._1.z < b._1.z) )
+      val inSeq = inVal.toIndexedSeq.sortWith((a, b) => (a._1.z < b._1.z))
 
       val headP = inSeq.head
-      val dim = new D3int(headP._2.getDim().x,headP._2.getDim().y,inSeq.size)
-      val pos =  new D3int(headP._1.x,headP._1.y,headP._1.z)
+      val dim = new D3int(headP._2.getDim().x, headP._2.getDim().y, inSeq.size)
+      val pos = new D3int(headP._1.x, headP._1.y, headP._1.z)
 
       val imageType = TImgTools.identifySliceType(headP._2.get)
-      new FlattenedDSImg[V](dim,pos,elSize,imageType,inSeq,path)
+      new FlattenedDSImg[V](dim, pos, elSize, imageType, inSeq, path)
     }
   }
 
@@ -249,10 +265,12 @@ object IOOps {
   }
 
 
-  implicit class StreamSliceToDTImg[T <: TSliceReader](srd: DStream[(String, T)])(implicit lm: ClassTag[T]) {
+  implicit class StreamSliceToDTImg[T <: TSliceReader](srd: DStream[(String,
+    T)])(implicit lm: ClassTag[T]) {
 
     def loadAsBinary() = {
-      processSlices[Array[Boolean]](TImgTools.IMAGETYPE_BOOL, inObj => inObj.asInstanceOf[Array[Boolean]])
+      processSlices[Array[Boolean]](TImgTools.IMAGETYPE_BOOL,
+        inObj => inObj.asInstanceOf[Array[Boolean]])
     }
 
     def loadAsLabels() = {
@@ -260,7 +278,8 @@ object IOOps {
     }
 
     def loadAsValues() = {
-      processSlices[Array[Double]](TImgTools.IMAGETYPE_DOUBLE, inObj => inObj.asInstanceOf[Array[Double]])
+      processSlices[Array[Double]](TImgTools.IMAGETYPE_DOUBLE,
+        inObj => inObj.asInstanceOf[Array[Double]])
     }
 
     private[IOOps] def processSlices[A](asType: Int, transFcn: (Any => A)) = {
@@ -279,21 +298,28 @@ object IOOps {
 
   import tipl.tools.GrayAnalysis
   import tipl.util.TypedPath
+
   /**
    * Allow strings to be read in directly as images
    */
   implicit class TIPLString(val inString: String) {
     lazy val sc = SparkGlobal.getContext(inString).sc
     val baseString = new TypedPath(inString)
+
     def readAsTImg() = TImgTools.ReadTImg(baseString)
+
     def readTiff() = sc.tiffFolder(inString)
-    def addDensityColumn(inImg: TImgRO,outName: TypedPath=new TypedPath(""),analysisName: String = "Density") = {
-      val outfileName = if(outName.length<1) baseString.append("_dens.csv") else outName
-      GrayAnalysis.AddDensityColumn(inImg,baseString,outfileName,analysisName)
+
+    def addDensityColumn(inImg: TImgRO, outName: TypedPath = new TypedPath(""),
+                         analysisName: String = "Density") = {
+      val outfileName = if (outName.length < 1) baseString.append("_dens.csv") else outName
+      GrayAnalysis.AddDensityColumn(inImg, baseString, outfileName, analysisName)
     }
-    def addRegionColumn(labImg: TImgRO,regImg: TImgRO ,outName: TypedPath=new TypedPath(""),analysisName: String = "Density") = {
-      val outfileName = if(outName.length<1) baseString.append("_dens.csv") else outName
-      GrayAnalysis.AddRegionColumn(labImg,regImg,baseString,outfileName,analysisName)
+
+    def addRegionColumn(labImg: TImgRO, regImg: TImgRO, outName: TypedPath = new TypedPath(""),
+                        analysisName: String = "Density") = {
+      val outfileName = if (outName.length < 1) baseString.append("_dens.csv") else outName
+      GrayAnalysis.AddRegionColumn(labImg, regImg, baseString, outfileName, analysisName)
     }
   }
 

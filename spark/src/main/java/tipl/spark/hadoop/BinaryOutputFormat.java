@@ -47,7 +47,8 @@ class BinaryOutputFormat<K, V> extends FileOutputFormat<K, V> {
         CompressionCodec codec = null;
         String extension = "";
         if (isCompressed) {
-            Class<? extends CompressionCodec> codecClass = getOutputCompressorClass(job, GzipCodec.class);
+            Class<? extends CompressionCodec> codecClass = getOutputCompressorClass(job,
+                    GzipCodec.class);
             codec = ReflectionUtils.newInstance(codecClass, conf);
             extension = codec.getDefaultExtension();
         }
@@ -57,7 +58,8 @@ class BinaryOutputFormat<K, V> extends FileOutputFormat<K, V> {
         if (!isCompressed) {
             return new BinaryRecordWriter<K, V>(fileOut);
         } else {
-            return new BinaryRecordWriter<K, V>(new DataOutputStream(codec.createOutputStream(fileOut)));
+            return new BinaryRecordWriter<K, V>(new DataOutputStream(codec.createOutputStream
+                    (fileOut)));
         }
     }
 

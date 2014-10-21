@@ -10,7 +10,9 @@ import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
 
 /**
- * This has all the static functions and settings for dealing with spark, particularly allowing for a custom configuration from the command line and singleton access to the JavaSparkContext. It also calculates partitions and a few other commonly used operations.
+ * This has all the static functions and settings for dealing with spark,
+ * particularly allowing for a custom configuration from the command line and singleton access to
+ * the JavaSparkContext. It also calculates partitions and a few other commonly used operations.
  *
  * @author mader
  */
@@ -56,7 +58,8 @@ abstract public class SparkGlobal {
     static public boolean inheritContext(final JavaSparkContext activeContext) {
         if (activeContext != null) currentContext = activeContext;
         else {
-            throw new IllegalArgumentException("The context cannot be inherited because it is null");
+            throw new IllegalArgumentException("The context cannot be inherited because it is " +
+                    "null");
         }
         return true;
     }
@@ -79,13 +82,16 @@ abstract public class SparkGlobal {
         if (currentContext == null) currentContext = getContext("temporaryContext");
         return currentContext;
     }
+
     /**
      * For a stopping of the spark context (isn't really necessary)
-     * @note this is automatically done when the VM shutsdown but something else might find it useful
+     *
+     * @note this is automatically done when the VM shutsdown but something else might find it
+     * useful
      */
     static public void stopContext() {
-    	if (currentContext!=null) currentContext.stop();
-    	currentContext = null;
+        if (currentContext != null) currentContext.stop();
+        currentContext = null;
     }
 
     /**
@@ -98,10 +104,12 @@ abstract public class SparkGlobal {
 
         if (currentContext == null) {
             if (maxCores > 0) System.setProperty("spark.cores.max", "" + maxCores);
-            if (memorySettings.length() > 0) System.setProperty("spark.executor.memory", "" + memorySettings);
+            if (memorySettings.length() > 0)
+                System.setProperty("spark.executor.memory", "" + memorySettings);
             if (sparkLocal.length() > 0) System.setProperty("spark.local.dir", "" + sparkLocal);
             if (useKyro) {
-                System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
+                System.setProperty("spark.serializer", "org.apache.spark.serializer" +
+                        ".KryoSerializer");
                 System.setProperty("spark.kryo.registrator", "tipl.spark.TIPLRegistrator");
                 System.setProperty("spark.kryoserializer.buffer.mb", "" + kyroBufferSize);
             }
@@ -114,14 +122,20 @@ abstract public class SparkGlobal {
             System.setProperty("spark.akka.frameSize", "" + maxMBforReduce);
             System.setProperty("spark.hadoop.validateOutputSpecs", "false");
 
-            System.setProperty("spark.storage.memoryFraction", "" + memFraction); // there is a fair amount of overhead in my scripts
-            System.setProperty("spark.shuffle.consolidateFiles", "true"); // consolidates intermediate files
+            System.setProperty("spark.storage.memoryFraction", "" + memFraction); // there is a
+            // fair amount of overhead in my scripts
+            System.setProperty("spark.shuffle.consolidateFiles",
+                    "true"); // consolidates intermediate files
             System.setProperty("spark.speculation", "true"); // start rerunning long running jobs
-            System.setProperty("spark.reducer.maxMbInFlight", "" + maxMBforReduce); // size of data to send to each reduce task (should be larger than any output)
-            System.setProperty("spark.ui.retainedStages", "" + retainedStages); // number of stages to retain before GC
-            System.setProperty("spark.cleaner.ttl", "" + metaDataMemoryTime); // time to remember metadata
+            System.setProperty("spark.reducer.maxMbInFlight", "" + maxMBforReduce); // size of
+            // data to send to each reduce task (should be larger than any output)
+            System.setProperty("spark.ui.retainedStages", "" + retainedStages); // number of
+            // stages to retain before GC
+            System.setProperty("spark.cleaner.ttl", "" + metaDataMemoryTime); // time to remember
+            // metadata
 
-            currentContext = new JavaSparkContext(getMasterName(), jobName, System.getenv("SPARK_HOME"), JavaSparkContext.jarOfClass(SparkGlobal.class));
+            currentContext = new JavaSparkContext(getMasterName(), jobName,
+                    System.getenv("SPARK_HOME"), JavaSparkContext.jarOfClass(SparkGlobal.class));
 
             StopSparkeAtFinish(currentContext);
         }
@@ -177,12 +191,14 @@ abstract public class SparkGlobal {
             case DISK_ONLY:
                 return StorageLevel.DISK_ONLY();
             default:
-                throw new IllegalArgumentException("Spark Persistance Storage Setting is not known:" + inSparkLevel);
+                throw new IllegalArgumentException("Spark Persistance Storage Setting is not " +
+                        "known:" + inSparkLevel);
         }
     }
 
     /**
-     * asserts the persistence on a DTImg or JavaRDD if the sparkpersistence value is above 0 otherwise it does nothing
+     * asserts the persistence on a DTImg or JavaRDD if the sparkpersistence value is above 0
+     * otherwise it does nothing
      *
      * @param inImage
      */
@@ -276,20 +292,24 @@ abstract public class SparkGlobal {
      * @return
      */
     private static ArgumentParser activeParser(ArgumentParser sp) {
-    	sp.createNewLayer("Spark Settings");
-        masterName = sp.getOptionString("@masternode", getMasterName(), "The name of the master node to connect to");
+        sp.createNewLayer("Spark Settings");
+        masterName = sp.getOptionString("@masternode", getMasterName(),
+                "The name of the master node to connect to");
         memorySettings = sp.getOptionString("@sparkmemory", memorySettings, "The memory per job");
         sparkLocal = sp.getOptionString("@sparklocal", sparkLocal, "The local drive to cache onto");
         useKyro = sp.getOptionBoolean("@sparkkyro", useKyro, "Use the kyro serializer");
-        useCompression = sp.getOptionBoolean("@sparkcompression", useCompression, "Use compression in spark for RDD and Shuffles");
+        useCompression = sp.getOptionBoolean("@sparkcompression", useCompression,
+                "Use compression in spark for RDD and Shuffles");
 
-        setSlicesPerCore(sp.getOptionInt("@sparkpartitions", getSlicesPerCore(), "The number of slices to load onto a single operating core",
+        setSlicesPerCore(sp.getOptionInt("@sparkpartitions", getSlicesPerCore(),
+                "The number of slices to load onto a single operating core",
                 1, Integer.MAX_VALUE));
-        setSparkPersistance(sp.getOptionInt("@sparkpersist", getSparkPersistenceValue(), "Image default persistance options:" + getPersistenceText(),
+        setSparkPersistance(sp.getOptionInt("@sparkpersist", getSparkPersistenceValue(),
+                "Image default persistance options:" + getPersistenceText(),
                 -1, 4));
 
-
-        setMaxCores(sp.getOptionInt("@sparkcores", maxCores, "The maximum number of cores each job can use (-1 is no maximum)",
+        setMaxCores(sp.getOptionInt("@sparkcores", maxCores, "The maximum number of cores each " +
+                        "job can use (-1 is no maximum)",
                 -1, Integer.MAX_VALUE));
         return sp;//.subArguments("@");
     }

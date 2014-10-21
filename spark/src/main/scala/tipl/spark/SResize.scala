@@ -4,28 +4,15 @@
 package tipl.spark
 
 import org.apache.spark.SparkContext._
-import org.apache.spark.rdd.PairRDDFunctions._
-import org.apache.spark.rdd.RDD
-import tipl.util.ArgumentParser
-import tipl.tools.BaseTIPLPluginIn
-import scala.math.sqrt
-import tipl.formats.TImgRO.CanExport
-import tipl.util.TIPLGlobal
-import tipl.formats.TImg
-import tipl.util.TImgTools
-import tipl.formats.TImgRO
-import tipl.tools.BaseTIPLPluginIO
-import tipl.tools.IVoronoiTransform
-import tipl.util.D3int
-import tipl.formats.PureFImage
-import tipl.tests.TestPosFunctions
-import tipl.spark.TypeMacros._
-import tipl.spark.DTImgOps._
-import scala.reflect.ClassTag
 import org.apache.spark.api.java.JavaPairRDD
-
+import tipl.formats.{PureFImage, TImg, TImgRO}
+import tipl.spark.TypeMacros._
+import tipl.tests.TestPosFunctions
+import tipl.tools.BaseTIPLPluginIO
 import tipl.util.TIPLOps._
-import tipl.util.TImgBlock
+import tipl.util.{ArgumentParser, D3int, TImgBlock, TImgTools}
+
+import scala.reflect.ClassTag
 
 /**
  * A spark based code to resize an image
@@ -87,17 +74,24 @@ class SResize extends BaseTIPLPluginIO {
 
 }
 
+
 object SResize {
 
-  case class sstats(minx: Int, maxx: Int, miny: Int, maxy: Int, count: Int)
 
-  def applyResize[A](inImg: TImgRO, outDim: D3int, outPos: D3int, findEdge: Boolean)(implicit aa: ClassTag[A]) = {
+  case class SStats(minx: Int, maxx: Int, miny: Int, maxy: Int, count: Int)
+
+
+  def applyResize[A](inImg: TImgRO, outDim: D3int, outPos: D3int, findEdge: Boolean)(implicit aa:
+  ClassTag[A]) = {
 
     val imClass = TImgTools.imageTypeToClass(inImg.getImageType)
     inImg match {
-      case dImg: DTImg[_] if imClass == TImgTools.IMAGECLASS_LABEL => dtResize(dImg.asDTInt, outDim, outPos, findEdge)
-      case dImg: DTImg[_] if imClass == TImgTools.IMAGECLASS_VALUE => dtResize(dImg.asDTDouble, outDim, outPos, findEdge)
-      case dImg: DTImg[_] if imClass == TImgTools.IMAGECLASS_BINARY => dtResize(dImg.asDTBool, outDim, outPos, findEdge)
+      case dImg: DTImg[_] if imClass == TImgTools.IMAGECLASS_LABEL => dtResize(dImg.asDTInt,
+        outDim, outPos, findEdge)
+      case dImg: DTImg[_] if imClass == TImgTools.IMAGECLASS_VALUE => dtResize(dImg.asDTDouble,
+        outDim, outPos, findEdge)
+      case dImg: DTImg[_] if imClass == TImgTools.IMAGECLASS_BINARY => dtResize(dImg.asDTBool,
+        outDim, outPos, findEdge)
       case kvImg: KVImg[A] => kvResize(kvImg, outDim, outPos)
       case normImg: TImgRO if imClass == TImgTools.IMAGECLASS_LABEL =>
         val dnormImg = normImg.toDTLabels
@@ -111,7 +105,9 @@ object SResize {
         val dnormImg = normImg.toDTBinary
         val resizeImg = dtResize(dnormImg, outDim, outPos, findEdge)
         TImgTools.ChangeImageType(resizeImg, normImg.getImageType())
-      case normImg: TImgRO if imClass == TImgTools.IMAGECLASS_OTHER => throw new IllegalArgumentException(" Image Type Other is not supported yet inside Resize:Spark :" + inImg.getImageType)
+      case normImg: TImgRO if imClass == TImgTools.IMAGECLASS_OTHER => throw new
+          IllegalArgumentException(" Image Type Other is not supported yet inside Resize:Spark :"
+            + inImg.getImageType)
     }
   }
 
@@ -131,12 +127,14 @@ object SResize {
       TImgTools.SimpleDimensions(outDim, aImg.getElSize, outPos),
       aImg.getImageType, resImg)
   }
+
   /**
    * Resize a DTImg
    * @param ibasePos is the new upper corner position
    * @param ibaseDim is the new dimensions
    */
-  def dtResize[B <: AnyVal](dImg: DTImg[Array[B]], ibaseDim: D3int, ibasePos: D3int, find_edges: Boolean)(implicit aa: ClassTag[B]) = {
+  def dtResize[B <: AnyVal](dImg: DTImg[Array[B]], ibaseDim: D3int, ibasePos: D3int,
+                            find_edges: Boolean)(implicit aa: ClassTag[B]) = {
     var basePos = ibasePos
     var baseDim = ibaseDim
     var finalPos = basePos + baseDim
@@ -145,29 +143,29 @@ object SResize {
 
       val sliceStats = imgObj.map(inpt => (inpt._1.z, inpt._2)). // get rid of the d3int
         mapValues {
-          inBlock =>
-            val ptArray = inBlock.get()
-            val bPos = inBlock.getPos
-            val bDim = inBlock.getDim
-            var minx = bDim.x
-            var miny = bDim.y
-            var maxx = 0
-            var maxy = 0
-            var count = 0
-            for (
-              iy <- 0 until bDim.y;
-              ix <- 0 until bDim.x;
-              idx = iy * bDim.x + ix
-              if ptArray(idx)
-            ) {
-              if (ix < minx) minx = ix
-              if (ix > maxx) maxx = ix
-              if (iy < miny) miny = iy
-              if (iy > maxy) maxy = iy
-              count += 1
-            }
-            sstats(minx + bPos.x, maxx + bPos.x, miny + bPos.y, maxy + bPos.y, count)
-        }.filter(_._2.count > 0)
+        inBlock =>
+          val ptArray = inBlock.get()
+          val bPos = inBlock.getPos
+          val bDim = inBlock.getDim
+          var minx = bDim.x
+          var miny = bDim.y
+          var maxx = 0
+          var maxy = 0
+          var count = 0
+          for (
+            iy <- 0 until bDim.y;
+            ix <- 0 until bDim.x;
+            idx = iy * bDim.x + ix
+            if ptArray(idx)
+          ) {
+            if (ix < minx) minx = ix
+            if (ix > maxx) maxx = ix
+            if (iy < miny) miny = iy
+            if (iy > maxy) maxy = iy
+            count += 1
+          }
+          SStats(minx + bPos.x, maxx + bPos.x, miny + bPos.y, maxy + bPos.y, count)
+      }.filter(_._2.count > 0)
       basePos = new D3int(
         sliceStats.map(_._2.minx).min(),
         sliceStats.map(_._2.miny).min(),
@@ -194,10 +192,12 @@ object SResize {
 
       val oldDim = inBlock._2.getDim
       val oldSlice = inBlock._2.get
-      val outPos = new D3int(basePos.x, basePos.y, oldPos.z) // the slices get cropped by z stays the same value
+      val outPos = new D3int(basePos.x, basePos.y, oldPos.z) // the slices get cropped by z stays
+      // the same value
 
       val outSlice = new Array[B](sliceLength)
-      for (iy <- 0 until baseDim.y; ix <- 0 until baseDim.x) { // ix and iy are in the output slice
+      for (iy <- 0 until baseDim.y; ix <- 0 until baseDim.x) {
+        // ix and iy are in the output slice
         val newInd = iy * baseDim.x + ix
         // absolute position coordinates
         val ax = ix + outPos.x
@@ -215,9 +215,9 @@ object SResize {
     val missingSlices = zFilter.sparkContext.
       parallelize(basePos.z until finalPos.z, baseDim.z).
       map { z =>
-        val outPos = new D3int(basePos.x, basePos.y, z)
-        (outPos, outPos)
-      }
+      val outPos = new D3int(basePos.x, basePos.y, z)
+      (outPos, outPos)
+    }
     // combine all the slices with the resized old image and then merge them
     val combSlices = missingSlices.leftOuterJoin(resImg).mapValues {
       inVals =>
@@ -245,7 +245,8 @@ object SResize {
    * @param basePos is the new upper corner position
    * @param baseDim is the new dimensions
    */
-  def dtResizeWithoutGenerics[A](dImg: DTImg[A], baseDim: D3int, basePos: D3int)(implicit aa: ClassTag[A]) = {
+  def dtResizeWithoutGenerics[A](dImg: DTImg[A], baseDim: D3int, basePos: D3int)(implicit aa:
+  ClassTag[A]) = {
     val finalPos = basePos + baseDim
     val imType = dImg.getImageType
     val zFilter = dImg.getBaseImg.rdd.filter { inBlock =>
@@ -261,7 +262,8 @@ object SResize {
       val outDim = new D3int(baseDim.x, baseDim.y, 1)
 
       val outSlice = TypeMacros.makeImgBlock(baseDim.x * baseDim.y, imType)
-      for (iy <- 0 until baseDim.y; ix <- 0 until baseDim.x) { // ix and iy are in the output slice
+      for (iy <- 0 until baseDim.y; ix <- 0 until baseDim.x) {
+        // ix and iy are in the output slice
         val newInd = iy * baseDim.x + ix
         // absolute position coordinates
         val ax = ix + outPos.x
@@ -270,7 +272,8 @@ object SResize {
         val ox = ax - oldPos.x
         val oy = ay - oldPos.y
         val oldInd = oy * oldDim.x + ox
-        if (oldInd >= 0 && oldInd < oldSliceLen) TypeMacros.arraySetter(outSlice, newInd, oldSlice, oldInd, imType)
+        if (oldInd >= 0 && oldInd < oldSliceLen) TypeMacros.arraySetter(outSlice, newInd,
+          oldSlice, oldInd, imType)
       }
       (outPos, new TImgBlock[A](outSlice.asInstanceOf[A], outPos, outDim))
     }
@@ -280,6 +283,7 @@ object SResize {
       dImg.getImageType())
   }
 }
+
 
 object SResizeTest extends SKVoronoi {
   def main(args: Array[String]): Unit = {

@@ -25,6 +25,7 @@ public final class TIPLPluginAnnotation {
         }
     }
 
+
     @TIPLPluginManager.PluginInfo(pluginType = "Filter",
             desc = "Spark-based filtering and scale",
             sliceBased = false, sparkBased = true)
@@ -33,6 +34,7 @@ public final class TIPLPluginAnnotation {
             return new SFilterScale();
         }
     }
+
 
     @TIPLPluginManager.PluginInfo(pluginType = "kVoronoi",
             desc = "Spark-based surface voronoi tesselation",
@@ -43,6 +45,7 @@ public final class TIPLPluginAnnotation {
             return new SKVoronoi();
         }
     }
+
 
     @TIPLPluginManager.PluginInfo(pluginType = "Resize",
             desc = "Spark-based Resize tool",

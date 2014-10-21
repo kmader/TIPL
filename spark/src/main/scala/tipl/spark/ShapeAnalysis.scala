@@ -17,6 +17,8 @@ import scala.collection.JavaConversions._
  *
  */
 class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
+
+
   @TIPLPluginManager.PluginInfo(pluginType = "ShapeAnalysis",
     desc = "Spark-based shape analysis",
     sliceBased = false, sparkBased = true)
@@ -25,6 +27,7 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
       new ShapeAnalysis
     }
   }
+
 
   override def setParameter(p: ArgumentParser, prefix: String): ArgumentParser = {
     analysisName = p.getOptionString(prefix + "analysis", analysisName, "Name of analysis")
@@ -38,7 +41,6 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
   override def getPluginName() = {
     "ShapeAnalysis:Spark"
   }
-
 
   var singleGV: Array[GrayVoxels] = Array()
 
@@ -71,8 +73,8 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
     else output
   }
 
-
 }
+
 
 object ShapeAnalysis {
   /**
@@ -104,6 +106,7 @@ object ShapeAnalysis {
     hullObj.getArea
   }
 }
+
 
 object SATest extends ShapeAnalysis {
   def main(args: Array[String]): Unit = {
