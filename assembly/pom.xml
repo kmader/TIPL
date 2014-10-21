@@ -90,10 +90,22 @@
 
     <build>
         <plugins>
+            <!-- disable scalastyle -->
+            <plugin>
+                <groupId>org.scalastyle</groupId>
+                <artifactId>scalastyle-maven-plugin</artifactId>
+                <version>0.4.0</version>
+                <executions>
+                    <execution>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Use the shade plugin to create a big JAR with all the dependencies -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
+                <version>2.2</version>
                 <configuration>
                     <shadedArtifactAttached>false</shadedArtifactAttached>
                     <outputFile>${tipl.jar}</outputFile>

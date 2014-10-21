@@ -191,7 +191,7 @@ object TIPLOps {
     def componentLabel(kernel: Int = 0, neighborhood: D3int = new D3int(1, 1, 1)) = {
       val plugObj = TIPLPluginManager.createBestPluginIO("ComponentLabel", Array(inputImage))
       plugObj.LoadImages(Array(inputImage))
-      plugObj.setParameter("-kernel=" + kernel + " -neighborhood" + neighborhood)
+      plugObj.setParameter("-kernel=" + kernel + " -neighborhood=" + neighborhood)
       plugObj.execute
       plugObj.ExportImages(inputImage)(0)
     }
