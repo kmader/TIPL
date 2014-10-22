@@ -164,31 +164,31 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
                         final TImgSlice<boolean[]> inBlock = arg0._2();
                         final boolean[] cSlice = inBlock.get();
                         final D3int spos = inBlock.getPos();
-                        final D3int sdim = inBlock.getDim();
-                        final D3int gOffset = new D3int(0, 0, 0);
+                        final D3int sdim = new D3int(inBlock.getDim(),1);
+                        final D3int gOffset = D3int.zero;
                         final long[] oSlice = new long[cSlice.length];
-                        for (int z = 0; z < sdim.z; z++) {
-                            for (int y = 0; y < sdim.y; y++) {
-                                for (int x = 0; x < sdim.x; x++) {
-                                    int off = (z * sdim.y + y) * sdim.x + x;
-                                    if (cSlice[off]) {
-                                        long label;
-                                        // the default label is just the index of the voxel in
-                                        // the whole image
-                                        if (oSlice[off] == 0)
-                                            label = ((z + spos.z) * wholeSize.y + (y + spos.y)) *
-                                                    wholeSize.x + x + spos.x;
-                                        else label = oSlice[off];
-                                        oSlice[off] = label;
-                                        for (D4int scanPos : BaseTIPLPluginIn.getScanPositions
-                                                (mKernel, new D3int(x, y, z), gOffset, off, sdim,
-                                                        ns)) {
-                                            if (cSlice[scanPos.offset])
-                                                oSlice[scanPos.offset] = label;
-                                        }
+                        final int z = 0;
+                        for (int y = 0; y < sdim.gy(); y++) {
+                            for (int x = 0; x < sdim.gx(); x++) {
+                                int off = (z * sdim.gy() + y) * sdim.gx() + x;
+                                if (cSlice[off]) {
+                                    long label;
+                                    // the default label is just the index of the voxel in
+                                    // the whole image
+                                    if (oSlice[off] == 0)
+                                        label = ((z + spos.z) * wholeSize.y + (y + spos.y)) *
+                                                wholeSize.x + x + spos.x;
+                                    else label = oSlice[off];
+                                    oSlice[off] = label;
+                                    for (D4int scanPos : BaseTIPLPluginIn.getScanPositions
+                                            (mKernel, new D3int(x, y, z), gOffset, off, sdim,
+                                                    ns)) {
+                                        if (cSlice[scanPos.offset])
+                                            oSlice[scanPos.offset] = label;
                                     }
                                 }
                             }
+
                         }
                         return new Tuple2<D3int, TImgSlice<long[]>>(arg0._1(),
                                 new TImgSlice<long[]>(oSlice, inBlock.getPos(), inBlock.getDim()));
@@ -734,15 +734,15 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
 
         @Override
         public Tuple2<D3int, OmnidirectionalMap> call(Tuple2<D3int, Iterable<TImgSlice<long[]>>>
-                                                                      inTuple) {
+                                                              inTuple) {
             final long start = System.currentTimeMillis();
             final D3int ns = getNeighborSize();
 
             final List<TImgSlice<long[]>> inBlocks = IteratorUtils.toList(inTuple._2().iterator());
             final TImgSlice<long[]> templateBlock = inBlocks.get(0);
-            final D3int blockSize = templateBlock.getDim();
+            final D3int blockSize = new D3int(templateBlock.getDim(),1);
             final BaseTIPLPluginIn.morphKernel mKernel = getMKernel();
-            final int eleCount = (int) templateBlock.getDim().prod();
+            final int eleCount = (int) blockSize.prod();
 
             // for every item in the offset==0 block, calculate a list of touching components
             final Set<Long>[] neighborList = new Set[eleCount];
@@ -750,22 +750,23 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
             // the output image
             for (final TImgSlice<long[]> cBlock : inBlocks) {
                 final long[] curBlock = cBlock.get();
-                for (int zp = 0; zp < templateBlock.getDim().z; zp++) {
-                    for (int yp = 0; yp < templateBlock.getDim().y; yp++) {
-                        for (int xp = 0; xp < templateBlock.getDim().x; xp++) {
-                            final int off = ((zp) * blockSize.y + (yp))
-                                    * blockSize.x + (xp);
+                final int zp =0;
+                for (int yp = 0; yp < templateBlock.getDim().gy(); yp++) {
+                    for (int xp = 0; xp < templateBlock.getDim().gx(); xp++) {
+                        final int off = ((zp) * blockSize.gy() + (yp))
+                                * blockSize.gx() + (xp);
 
-                            for (D4int cPos : BaseTIPLPluginIn.getScanPositions(mKernel,
-                                    new D3int(xp, yp, zp), cBlock.getOffset(), off, blockSize,
-                                    ns)) {
-                                final long cval = curBlock[cPos.offset];
-                                if (cval > 0) neighborList[off].add(cval);
-                            }
+                        for (D4int cPos : BaseTIPLPluginIn.getScanPositions(mKernel,
+                                new D3int(xp, yp, zp), cBlock.getOffset(), off,
+                                blockSize,
+                                ns)) {
+                            final long cval = curBlock[cPos.offset];
+                            if (cval > 0) neighborList[off].add(cval);
                         }
                     }
                 }
             }
+
 
             OmnidirectionalMap pairs = new OmnidirectionalMap(2 * eleCount);
 

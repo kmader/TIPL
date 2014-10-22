@@ -35,7 +35,8 @@ object FlatFieldCorrection {
 
     // structure for statSlices is (filename,(imstats,imArray))
     val statSlices = doubleSlices.mapValues {
-      cArr => (ImStats(cArr.get.min, cArr.get.sum / cArr.getDim.prod, cArr.get.max), cArr.get())
+      cArr => (ImStats(cArr.get.min, cArr.get.sum / (cArr.getDim.gx*cArr.getDim.gy), cArr.get.max),
+        cArr.get())
     }
     val darks = statSlices.filter { cImg => cImg._2._1.mean < 700}
     val flats = statSlices.filter { cImg => cImg._2._1.mean > 1750}

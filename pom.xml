@@ -147,37 +147,6 @@
 
                 </configuration>
             </plugin>
-
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.1</version>
-                <configuration>
-                    <skip>${javadoc.skip}</skip>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                    <!-- put all the javadocs together into a single folder -->
-                    <execution>
-                        <id>aggregate</id>
-                        <goals>
-                            <goal>aggregate</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-
-                        </configuration>
-                    </execution>
-
-                </executions>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -316,17 +285,24 @@
                                 <javacArg>-target</javacArg>
                                 <javacArg>${java.version}</javacArg>
                             </javacArgs>
-                            <!-- The following plugin is required to use quasiquotes in Scala 2.10 and is used
-                                 by Spark SQL for code generation. -->
-
-                            <!-- <compilerPlugins>
-                                 <compilerPlugin>
-                                     <groupId>org.scalamacros</groupId>
-                                     <artifactId>paradise_${scala.version}</artifactId>
-                                     <version>${scala.macros.version}</version>
-                                 </compilerPlugin>
-                             </compilerPlugins> -->
                         </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.10.1</version>
+                        <configuration>
+                            <skip>${javadoc.skip}</skip>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
@@ -381,14 +357,36 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.9</version>
+                        <version>2.10.1</version>
                         <configuration>
+                            <skip>${javadoc.skip}</skip>
                             <minmemory>64m</minmemory>
                             <maxmemory>2g</maxmemory>
                             <outputDirectory>${project.build.directory}</outputDirectory>
                             <detectLinks>true</detectLinks>
                         </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                            <!-- put all the javadocs together into a single folder -->
+                            <execution>
+                                <id>aggregate</id>
+                                <goals>
+                                    <goal>aggregate</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
+
+
                 </plugins>
             </build>
         </profile>

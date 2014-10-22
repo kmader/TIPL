@@ -117,5 +117,6 @@ public class D3int implements ID3int {
         this.y=y;
     }
 
-    public static D3int zero = new D3int(0,0,0);
+    public static final D3int zero = new D3int(0,0,0);
+    public static final D3int one = new D3int(1,1,1);
 }

@@ -221,7 +221,8 @@ object IOOps {
       val inSeq = inVal.toIndexedSeq.sortWith((a, b) => (a._1.z < b._1.z))
 
       val headP = inSeq.head
-      val dim = new D3int(headP._2.getDim().x, headP._2.getDim().y, inSeq.size)
+
+      val dim = new D3int(headP._2.getDim().gx, headP._2.getDim().gy, inSeq.size)
       val pos = new D3int(headP._1.x, headP._1.y, headP._1.z)
 
       val imageType = TImgTools.identifySliceType(headP._2.get)

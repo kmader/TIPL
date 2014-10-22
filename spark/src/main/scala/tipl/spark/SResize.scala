@@ -146,7 +146,7 @@ object SResize {
         inBlock =>
           val ptArray = inBlock.get()
           val bPos = inBlock.getPos
-          val bDim = inBlock.getDim
+          val bDim = new D3int(inBlock.getDim,1)
           var minx = bDim.x
           var miny = bDim.y
           var maxx = 0
@@ -190,7 +190,7 @@ object SResize {
 
       val oldPos = inBlock._1
 
-      val oldDim = inBlock._2.getDim
+      val oldDim = new D3int(inBlock._2.getDim,1)
       val oldSlice = inBlock._2.get
       val outPos = new D3int(basePos.x, basePos.y, oldPos.z) // the slices get cropped by z stays
       // the same value
@@ -257,7 +257,7 @@ object SResize {
       val oldPos = inBlock._1
       val oldDim = inBlock._2.getDim
       val oldSlice = inBlock._2.get
-      val oldSliceLen = oldDim.x * oldDim.y
+      val oldSliceLen = oldDim.gx * oldDim.gy
       val outPos = new D3int(basePos.x, basePos.y, oldPos.z)
       val outDim = new D3int(baseDim.x, baseDim.y, 1)
 
@@ -271,7 +271,7 @@ object SResize {
         // back to the original slice coordinates and index
         val ox = ax - oldPos.x
         val oy = ay - oldPos.y
-        val oldInd = oy * oldDim.x + ox
+        val oldInd = oy * oldDim.gx + ox
         if (oldInd >= 0 && oldInd < oldSliceLen) TypeMacros.arraySetter(outSlice, newInd,
           oldSlice, oldInd, imType)
       }

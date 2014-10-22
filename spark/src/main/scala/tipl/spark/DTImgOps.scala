@@ -30,7 +30,7 @@ object DTImgOps {
     inImg.getBaseImg.rdd.flatMap {
       cPoint =>
         val pos = cPoint._1
-        val dim = cPoint._2.getDim
+        val dim = new D3int(cPoint._2.getDim,1)
         val obj = cPoint._2.get
         val outArr = TypeMacros.castArr(obj, imgType)
         for {z <- 0 until dim.z
@@ -73,8 +73,8 @@ object DTImgOps {
       val fele = srd.first
       val sPos = fele._1
       val odim = fele._2.getDim
-      val ndim = new D3int(odim.x, odim.y, srd.count.asInstanceOf[Int])
-      val baseImg = TImgTools.SimpleDimensions(odim, elSize, sPos)
+      val ndim = new D3int(odim, srd.count.asInstanceOf[Int])
+      val baseImg = TImgTools.SimpleDimensions(ndim, elSize, sPos)
       val imgtype = TImgTools.identifySliceType(fele._2.get)
       wrap(baseImg, imgtype)
 

@@ -128,7 +128,7 @@ object Sinograms {
     // sort projects by filename and replace with an index
     val idProjs = projs.
       map(inval => (inval._2, inval._1.z)).
-      map { inProj => (inProj._2, new DenseMatrix(objSize.x, objSize.y, inProj._1.toArray)) }.
+      map { inProj => (inProj._2, new DenseMatrix(objSize.gx, objSize.gy, inProj._1.toArray)) }.
       repartition(3 * sc.getExecutorStorageStatus.length)
     // calculate the projCount (largest dimension of the output array
 
@@ -137,7 +137,7 @@ object Sinograms {
       inPart =>
         val firstProj = inPart.next
         var outSino = (0 until scala.math.min(firstProj._2.cols, settings.maxSino)).
-          map { c => (c, DenseMatrix.zeros[Double](objSize.x, projCount + 1)) }
+          map { c => (c, DenseMatrix.zeros[Double](objSize.gx, projCount + 1)) }
 
         for (curProj <- inPart ++ Seq(firstProj)) {
           for (c <- 0 until outSino.length) outSino(c)._2(::, curProj._1) := curProj._2(::, c)

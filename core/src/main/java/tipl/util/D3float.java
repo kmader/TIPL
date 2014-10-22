@@ -47,4 +47,7 @@ public class D3float implements Serializable {
 		return "" + String.format("%.4f", x) + "," + String.format("%.4f", y)
 				+ "," + String.format("%.4f", z) + "";
 	}
+
+    public static final D3float zero = new D3float(0);
+    public static final D3float one = new D3float(1,1,1);
 }

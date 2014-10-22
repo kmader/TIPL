@@ -132,7 +132,7 @@ object KVImg {
       flatMap {
       cPoint =>
         val pos = cPoint._1
-        val dim = cPoint._2.getDim
+        val dim = new D3int(cPoint._2.getDim,1)
         val curSlice = cPoint._2.get
         for {z <- 0 until dim.z
              y <- 0 until dim.y

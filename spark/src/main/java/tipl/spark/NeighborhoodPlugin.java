@@ -4,10 +4,8 @@ import org.apache.commons.collections.IteratorUtils;
 import scala.Tuple2;
 import tipl.formats.TImgRO;
 import tipl.tools.BaseTIPLPluginIn;
-import tipl.util.D3int;
-import tipl.util.D4int;
-import tipl.util.ITIPLPlugin;
-import tipl.util.TImgSlice;
+import tipl.util.*;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -91,9 +89,9 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
 
             final List<TImgSlice<U>> inBlocks = IteratorUtils.toList(inTuple._2().iterator());
             final TImgSlice<U> templateBlock = inBlocks.get(0);
-            final D3int blockSize = templateBlock.getDim();
+            final D3int blockSize = new D3int(templateBlock.getDim(),1);
             final BaseTIPLPluginIn.morphKernel mKernel = getKernel();
-            final int eleCount = (int) templateBlock.getDim().prod();
+            final int eleCount = (int) templateBlock.getDim().gx()*templateBlock.getDim().gy();
             // the output image
             final V outData = createObj(eleCount);
             final BaseTIPLPluginIn.filterKernel[] kernelList = new BaseTIPLPluginIn
@@ -101,10 +99,10 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
             for (int i = 0; i < eleCount; i++) kernelList[i] = getImageKernel();
             for (final TImgSlice<U> cBlock : inBlocks) {
                 final U curBlock = cBlock.get();
-                for (int zp = 0; zp < templateBlock.getDim().z; zp++) {
-                    for (int yp = 0; yp < templateBlock.getDim().y; yp++) {
-                        for (int xp = 0; xp < templateBlock.getDim().x; xp++) {
-                            final int off = ((zp) * blockSize.y + (yp))
+                final int zp = 0;
+                    for (int yp = 0; yp < templateBlock.getDim().gy(); yp++) {
+                        for (int xp = 0; xp < templateBlock.getDim().gx(); xp++) {
+                            final int off = ((0) * blockSize.y + (yp))
                                     * blockSize.x + (xp);
                             final BaseTIPLPluginIn.filterKernel curKernel = kernelList[off];
                             for (D4int cPos : BaseTIPLPluginIn.getScanPositions(mKernel,
@@ -118,7 +116,7 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
                             }
                         }
                     }
-                }
+
             }
             for (int i = 0; i < eleCount; i++) setEle(outData, i, kernelList[i].value());
             return new Tuple2<D3int, TImgSlice<V>>(inTuple._1(),
@@ -152,15 +150,14 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
             final D3int ns = getNeighborSize();
             final List<TImgSlice<float[]>> inBlocks = IteratorUtils.toList(inTuple._2().iterator());
             final TImgSlice<float[]> templateBlock = inBlocks.get(0);
-            final D3int blockSize = templateBlock.getDim();
+            final D3int blockSize = new D3int(templateBlock.getDim(),1);
             final BaseTIPLPluginIn.morphKernel mKernel = getKernel();
             // the output image
             final float[] outData = new float[templateBlock.get().length];
             // Make the output image first as kernels, then add the respective
             // points to it
             final BaseTIPLPluginIn.filterKernel[] curKernels = new BaseTIPLPluginIn.filterKernel[
-                    (int) blockSize
-                    .prod()];
+                    blockSize.gx()*blockSize.gy()];
 
             for (int ci = 0; ci < curKernels.length; ci++)
                 curKernels[ci] = getImageKernel();
@@ -173,9 +170,9 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
                 final int offy = 0;
                 final int offz = cBlock.getOffset().z;
                 if (Math.abs(offz) <= ns.z) {
-                    for (int yp = 0; yp < templateBlock.getDim().y; yp++) {
-                        for (int xp = 0; xp < templateBlock.getDim().x; xp++) {
-                            final int off = (yp) * blockSize.x + (xp);
+                    for (int yp = 0; yp < templateBlock.getDim().gy(); yp++) {
+                        for (int xp = 0; xp < templateBlock.getDim().gx(); xp++) {
+                            final int off = (yp) * blockSize.gx() + (xp);
                             final BaseTIPLPluginIn.filterKernel curKernel = curKernels[off];
                             // the offset position
                             final int ix = xp + offx;

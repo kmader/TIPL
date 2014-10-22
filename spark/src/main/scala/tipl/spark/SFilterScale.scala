@@ -148,7 +148,7 @@ object SFilterScale {
       val cPos = curSlice._1
       val curBlock = curSlice._2
       val curArr = curBlock.get
-      val curDim = curBlock.getDim
+      val curDim = new D3int(curBlock.getDim,1)
       val blockPos = curBlock.getPos
       val zp = blockPos.z
       for (yp <- 0 until curDim.y) {

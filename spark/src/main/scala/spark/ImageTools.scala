@@ -189,7 +189,7 @@ object ImageTools2D {
     inImg.mapValues {
       cSlice =>
         val cSliceArr = cSlice.get
-        val imgDim = cSlice.getDim
+        val imgDim = new D3int(cSlice.getDim,1)
         val imgPos = cSlice.getPos
         for {
           y <- 0 until imgDim.y
@@ -209,9 +209,9 @@ object ImageTools2D {
         val imgDim = cSlice.getDim
         val imgPos = cSlice.getPos
         for {
-          y <- 0 until imgDim.y
-          x <- 0 until imgDim.x
-          oVal = cSliceArr(y * imgDim.x + x)
+          y <- 0 until imgDim.gy
+          x <- 0 until imgDim.gx
+          oVal = cSliceArr(y * imgDim.gx + x)
           if oVal >= threshold
         } yield (new D3int(imgPos.x + x, imgPos.y + y, imgPos.z), oVal)
     }

@@ -13,11 +13,6 @@ import scala.{specialized => spec}
  *
  * @author mader
  */
-object ATImgRO {
-  private final val serialVersionUID: Long = -8883859233940303695L
-}
-
-
 trait TImgROLike extends TImgRO {
 
   def baseSize: TImgTools.HasDimensions
@@ -117,11 +112,26 @@ abstract class ImageRDD[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
                                                                                 ClassTag[T])
   extends TImg.ATImg(dim, pos, elSize, imageType) {
   type objType
-  def getRdd(): RDD[(D3int,objType )]
 
+  def getRdd(): RDD[(D3int, objType)]
+
+  /**
+   * A map by point on all the points in the image
+   * @param f
+   * @param newType
+   * @tparam U
+   * @return
+   */
   def pointMap[U: ClassTag](f: (D3int, T) => U, newType: Int): ImageRDD[U]
 
-  def sliceMap[U: ClassTag](f: (D3int, Array[T]) => Array[U], newType: Int): ImageRDD[U] = ???
+  /**
+   * A map by slice on all slices in the image
+   * @param f
+   * @param newType
+   * @tparam U
+   * @return
+   */
+  def sliceMap[U: ClassTag](f: (D3int, Array[T]) => Array[U], newType: Int): ImageRDD[U]
 
   override def getSampleName: String = getRdd().dependencies.mkString(",")
 
@@ -136,15 +146,45 @@ object ImageRDD {
                     elSize: D3float,
                     imageType: Int,
                     path: TypedPath,
-                    baseImg: RDD[(D3int, T)])(implicit lm:
-  ClassTag[T]) extends
-  ImageRDD[T](dim, pos, elSize, imageType, path) {
+                    baseImg: RDD[(D3int, T)])(implicit lm: ClassTag[T]) extends ImageRDD[T](dim,
+    pos, elSize, imageType, path) {
 
     override type objType = T
+
     def pointMap[U](f: (D3int, T) => U, newType: Int)(implicit um: ClassTag[U]): ImageRDD[U] = {
       new PointRDD[U](dim, pos, elSize, newType, path.append(f.toString()),
-        baseImg.map(ikv => (ikv._1, f(ikv._1, ikv._2)))
-      )
+        baseImg.map(ikv => (ikv._1, f(ikv._1, ikv._2))))
+    }
+
+    /**
+     * A map by slice on all slices in the image
+     * @param f
+     * @param newType
+     * @tparam U
+     * @return
+     */
+    override def sliceMap[U: ClassTag](f: (D3int, Array[T]) => Array[U],
+                                       newType: Int): ImageRDD[U] = {
+      val sliceSize = dim.x * dim.y
+      val sliceDim = new D3int(getDim(), 1)
+      val sliceAsList = baseImg.map {
+        curElement: (D3int, T) => // create indices
+          (curElement._1.z, ((curElement._1.y - pos.y) * dim.x + curElement._1.x - pos.x,
+            curElement._2))
+      }.groupBy(_._1).map {
+        iVal =>
+          val (curSlice, nList) = iVal
+          val oKey = new D3int(getPos(), curSlice)
+          val fullSlice = new Array[T](sliceSize)
+          nList.foreach {
+            indVal =>
+              fullSlice(indVal._2._1) = indVal._2._2
+          }
+          (oKey,
+            new TImgSlice[Array[U]](f(oKey, fullSlice), oKey, sliceDim))
+      }
+      new SliceRDD[U](dim, pos, elSize, newType, path.append(f.toString()), sliceAsList)
+
     }
 
     /* The function to collect all the key value pairs and return it as the appropriate array for a
@@ -170,7 +210,8 @@ object ImageRDD {
         getShortScaleFactor())
     }
 
-    override def getRdd(): RDD[(D3int, objType)] = baseImg//.mapValues(_.asInstanceOf[AnyRef])
+    override def getRdd(): RDD[(D3int, objType)] = baseImg //.mapValues(_.asInstanceOf[AnyRef])
+
   }
 
 
@@ -179,9 +220,7 @@ object ImageRDD {
                     elSize: D3float,
                     imageType: Int,
                     path: TypedPath,
-                    baseImg: RDD[(D3int,
-                      TImgSlice[Array[T]])])(implicit lm:
-  ClassTag[T]) extends
+                    baseImg: RDD[(D3int, TImgSlice[Array[T]])])(implicit lm: ClassTag[T]) extends
   ImageRDD[T](dim, pos, elSize, imageType, path) {
 
     override type objType = TImgSlice[Array[T]]
@@ -195,8 +234,26 @@ object ImageRDD {
             val slice = block.get()
             (pos, new TImgSlice[Array[U]](slice.map(cval => f(pos, cval)), block.getPos,
               block.getDim))
-        }
-      )
+        })
+
+    }
+
+    /**
+     * A map by slice on all slices in the image
+     * @param f
+     * @param newType
+     * @tparam U
+     * @return
+     */
+    override def sliceMap[U: ClassTag](f: (D3int, Array[T]) => Array[U],
+                                       newType: Int): ImageRDD[U] = {
+      new SliceRDD[U](dim, pos, elSize, newType, path.append(f.toString()),
+        baseImg.map {
+          inKV =>
+            val (pos, slice) = inKV
+            (pos, new TImgSlice[Array[U]](f(pos, slice.get), slice.getPos,
+              slice.getDim))
+        })
 
     }
 
@@ -217,7 +274,8 @@ object ImageRDD {
         getShortScaleFactor)
     }
 
-    override def getRdd(): RDD[Tuple2[D3int, objType]] = baseImg//.mapValues(_.asInstanceOf[AnyRef])
+    override def getRdd(): RDD[Tuple2[D3int, objType]] = baseImg
+
   }
 
 
