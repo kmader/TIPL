@@ -1,21 +1,22 @@
 package tipl.spark
 
-import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
-import tipl.formats.{ TImg, TImgRO }
-import tipl.util.{TImgBlock, D3float, D3int, TImgSlice, TImgTools, TypedPath}
+import org.apache.spark.rdd.RDD
+import tipl.formats.{TImg, TImgRO}
+import tipl.util.{D3float, D3int, TImgSlice, TImgTools, TypedPath}
 
 import scala.reflect.ClassTag
-import scala.{ specialized => spec }
+import scala.{specialized => spec}
 
 /**
-  * an abstract class with all of the standard TImgRO functions but getPoly
-  *
-  * @author mader
-  */
+ * an abstract class with all of the standard TImgRO functions but getPoly
+ *
+ * @author mader
+ */
 object ATImgRO {
   private final val serialVersionUID: Long = -8883859233940303695L
 }
+
 
 trait TImgROLike extends TImgRO {
 
@@ -58,11 +59,12 @@ trait TImgROLike extends TImgRO {
   def isGood: Boolean = baseDimensions.isGood
 }
 
+
 trait TImgLike extends TImgROLike with TImg {
 
   /**
-    * Create a new object by wrapping the RO in a ATImg
-    */
+   * Create a new object by wrapping the RO in a ATImg
+   */
   val baseDimensionsRW: TImg = new TImg.ATImgWrappingTImgRO(baseDimensions)
 
   def inheritedAim(imgArray: Array[Boolean], idim: D3int, offset: D3int): TImg =
@@ -91,7 +93,7 @@ trait TImgLike extends TImgROLike with TImg {
   def setPos(inData: D3int) = baseDimensionsRW.setPos(inData)
 
   def InitializeImage(dPos: D3int, cDim: D3int, dOffset: D3int, elSize: D3float,
-    imageType: Int): Boolean =
+                      imageType: Int): Boolean =
     baseDimensionsRW.InitializeImage(dPos, cDim, dOffset, elSize, imageType)
 
   def setCompression(inData: Boolean) = baseDimensionsRW.setCompression(inData)
@@ -102,39 +104,121 @@ trait TImgLike extends TImgROLike with TImg {
 
 }
 
+
 /**
-  * Created by mader on 10/13/14.
-  */
+ * Created by mader on 10/13/14.
+ */
 abstract class ImageRDD[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](dim: D3int,
-  pos: D3int,
-  elSize: D3float,
-  imageType: Int, path: TypedPath, baseImg: Either[RDD[(D3int, TImgBlock[T])], RDD[(D3int,
-  T)]])(implicit lm: ClassTag[T])
+                                                                                 pos: D3int,
+                                                                                 elSize: D3float,
+                                                                                 imageType: Int,
+                                                                                 path: TypedPath)
+                                                                                (implicit lm:
+                                                                                ClassTag[T])
   extends TImg.ATImg(dim, pos, elSize, imageType) {
+  type objType
+  def getRdd(): RDD[(D3int,objType )]
 
-  def this(newImg: ImageRDD[_],baseImg: Either[RDD[(D3int, TImgBlock[T])], RDD[(D3int,
-    T)]])(implicit lm: ClassTag[T]) = this(newImg.getDim,newImg.getPos,newImg.getElSize,newImg.getImageType,newImg.getPath,
-    baseImg)
+  def pointMap[U: ClassTag](f: (D3int, T) => U, newType: Int): ImageRDD[U]
 
-  def map[U](f: (D3int, T) => U)(implicit um: ClassTag[U]): ImageRDD[U] = {
-    val newBase = baseImg.fold(
-      { dsObj =>
-        val bob = dsObj.mapValues(inVal => inVal.get())
-        Left(bob.map{
-          inKV =>
-            val (pos,slice) = inKV
-            (pos,slice.map(f(pos,_)))
-        })
-      }, {
-        kvObj =>
-          Right(kvObj.map(ikv => (ikv._1,f(ikv._1,ikv._2))))
-      })
-    new ImageRDD[U](this,newBase)
-  }
-  def map[U: ClassTag](f: (D3int, Array[T]) => Array[U]): ImageRDD[U] = ???
+  def sliceMap[U: ClassTag](f: (D3int, Array[T]) => Array[U], newType: Int): ImageRDD[U] = ???
+
+  override def getSampleName: String = getRdd().dependencies.mkString(",")
 
 }
 
+
 object ImageRDD {
+
+
+  class PointRDD[T](dim: D3int,
+                    pos: D3int,
+                    elSize: D3float,
+                    imageType: Int,
+                    path: TypedPath,
+                    baseImg: RDD[(D3int, T)])(implicit lm:
+  ClassTag[T]) extends
+  ImageRDD[T](dim, pos, elSize, imageType, path) {
+
+    override type objType = T
+    def pointMap[U](f: (D3int, T) => U, newType: Int)(implicit um: ClassTag[U]): ImageRDD[U] = {
+      new PointRDD[U](dim, pos, elSize, newType, path.append(f.toString()),
+        baseImg.map(ikv => (ikv._1, f(ikv._1, ikv._2)))
+      )
+    }
+
+    /* The function to collect all the key value pairs and return it as the appropriate array for a
+ given slice
+* @see tipl.formats.TImgRO#getPolyImage(int, int)
+*/
+    override def getPolyImage(sliceNumber: Int, asType: Int): AnyRef = {
+      assert(TImgTools.isValidType(asType))
+      val sliceSize = dim.x * dim.y
+
+      val sliceAsList = baseImg.filter(_._1.z == (sliceNumber + pos.z)).map {
+        curElement: (D3int, T) =>
+          ((curElement._1.y - pos.y) * dim.x + curElement._1.x - pos.x, curElement._2)
+      }.sortByKey(true)
+      val tSlice = (0 until sliceSize).zip(new Array[T](sliceSize))
+      // since particularly after thresholds many points are missing,
+      // we need to add them back before making a slice out of the data
+      val allPoints = baseImg.sparkContext.parallelize(tSlice)
+      val missingPoints = allPoints.subtractByKey(sliceAsList)
+      val fixedList = sliceAsList.union(missingPoints)
+      // convert this array into the proper output format
+      TImgTools.convertArrayType(fixedList.map(_._2).collect(), imageType, asType, getSigned(),
+        getShortScaleFactor())
+    }
+
+    override def getRdd(): RDD[(D3int, objType)] = baseImg//.mapValues(_.asInstanceOf[AnyRef])
+  }
+
+
+  class SliceRDD[T](dim: D3int,
+                    pos: D3int,
+                    elSize: D3float,
+                    imageType: Int,
+                    path: TypedPath,
+                    baseImg: RDD[(D3int,
+                      TImgSlice[Array[T]])])(implicit lm:
+  ClassTag[T]) extends
+  ImageRDD[T](dim, pos, elSize, imageType, path) {
+
+    override type objType = TImgSlice[Array[T]]
+
+    def pointMap[U](f: (D3int, T) => U, newType: Int)(implicit um: ClassTag[U]): ImageRDD[U] = {
+      new SliceRDD[U](dim, pos, elSize, newType, path.append(f.toString()),
+        baseImg.
+          map {
+          inKV =>
+            val (pos, block) = inKV
+            val slice = block.get()
+            (pos, new TImgSlice[Array[U]](slice.map(cval => f(pos, cval)), block.getPos,
+              block.getDim))
+        }
+      )
+
+    }
+
+    override def getPolyImage(sliceNumber: Int, asType: Int): AnyRef = {
+      if ((sliceNumber < 0) || (sliceNumber >= getDim.z)) throw new IllegalArgumentException(this
+        .getSampleName + ": Slice requested (" + sliceNumber + ") exceeds image dimensions " +
+        getDim)
+      val zPos: Int = getPos.z + sliceNumber
+
+      val outSlices = this.baseImg.lookup(new D3int(getPos.x, getPos.y, zPos))
+      if (outSlices.size != 1) {
+        throw new IllegalArgumentException(this.getSampleName + ", lookup failed (#" + outSlices
+          .size + " found):" + sliceNumber + " (z:" + zPos + "), of " + getDim + " of #" + this
+          .baseImg.count + " blocks")
+      }
+      val curSlice = outSlices(0).get
+      return TImgTools.convertArrayType(curSlice, getImageType, asType, getSigned,
+        getShortScaleFactor)
+    }
+
+    override def getRdd(): RDD[Tuple2[D3int, objType]] = baseImg//.mapValues(_.asInstanceOf[AnyRef])
+  }
+
 
 }

@@ -829,7 +829,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
             final D3int cPos = new D3int(imgPos.x, imgPos.y, imgPos.z
                     + sliceNum);
             return new Tuple2<D3int, TImgSlice<W>>(cPos, new TImgSlice.TImgSliceFile<W>(
-                    imgPath, sliceNum, imgType, cPos, sliceDim, TImgSlice.zero));
+                    imgPath, sliceNum, imgType, cPos, sliceDim, D3int.zero));
         }
     }
 
