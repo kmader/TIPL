@@ -7,7 +7,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.api.java.JavaPairRDD
 import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
-import tipl.util.TImgBlock
+import tipl.util.TImgSlice
 import tipl.util.D3int
 import tipl.util.D3float
 import tipl.util.TImgTools
@@ -55,13 +55,13 @@ object DTImgOps {
   }
 
 
-  implicit class RichDtRDD[A](srd: RDD[(D3int, TImgBlock[A])]) extends
-  NeighborhoodOperation[TImgBlock[A], TImgBlock[A]] {
+  implicit class RichDtRDD[A](srd: RDD[(D3int, TImgSlice[A])]) extends
+  NeighborhoodOperation[TImgSlice[A], TImgSlice[A]] {
 
     private[RichDtRDD] def blockShift(offset: D3int) = {
-      (p: (D3int, TImgBlock[A])) => {
+      (p: (D3int, TImgSlice[A])) => {
         val nPos = p._1 + offset
-        (nPos, new TImgBlock[A](p._2.getClone(), nPos, offset))
+        (nPos, new TImgSlice[A](p._2.getClone(), nPos, offset))
       }
     }
 
@@ -89,7 +89,7 @@ object DTImgOps {
       DTImg.WrapRDD[A](baseObj, JavaPairRDD.fromRDD(srd), imtype)
     }
 
-    def spreadSlices(windSize: D3int): (RDD[(D3int, Iterable[TImgBlock[A]])]) = {
+    def spreadSlices(windSize: D3int): (RDD[(D3int, Iterable[TImgSlice[A]])]) = {
       var curOut = srd.mapValues(p => Iterable(p))
 
       for (curOffset <- 1 to windSize.z) {
@@ -111,13 +111,13 @@ object DTImgOps {
     def apply[B](mapFun: (Double => B))(implicit B: ClassTag[B]) = {
       srd.mapValues { inBlock =>
         val outArray = (for (cval <- inBlock.getAsDouble()) yield mapFun(cval)).toArray
-        new TImgBlock[Array[B]](outArray, inBlock)
+        new TImgSlice[Array[B]](outArray, inBlock)
       }
     }
 
     def blockOperation(windSize: D3int, kernel: Option[BaseTIPLPluginIn.morphKernel],
-                       mapFun: (Iterable[TImgBlock[A]] => TImgBlock[A])): RDD[(D3int,
-      TImgBlock[A])] = {
+                       mapFun: (Iterable[TImgSlice[A]] => TImgSlice[A])): RDD[(D3int,
+      TImgSlice[A])] = {
       val spread = srd.spreadSlices(windSize).collectSlices(windSize, kernel, mapFun)
       spread
     }
@@ -128,9 +128,9 @@ object DTImgOps {
   /**
    * A class of a spread RDD image (after a flatMap/spread operation)
    */
-  implicit class SpreadRDD[A](srd: RDD[(D3int, Iterable[TImgBlock[A]])]) extends Serializable {
+  implicit class SpreadRDD[A](srd: RDD[(D3int, Iterable[TImgSlice[A]])]) extends Serializable {
     def collectSlices(windSize: D3int, kernel: Option[BaseTIPLPluginIn.morphKernel],
-                      coFun: (Iterable[TImgBlock[A]] => TImgBlock[A])) = {
+                      coFun: (Iterable[TImgSlice[A]] => TImgSlice[A])) = {
       srd.mapValues(coFun)
     }
   }
@@ -168,7 +168,7 @@ object DTImgOps {
           val bArr = inImages._2.getAsDouble()
           val outArray = new Array[Double](aArr.length)
           for (i <- 0 until aArr.length) outArray(i) = combFunc(aArr(i), bArr(i))
-          new TImgBlock[Array[Double]](outArray, inImages._1) // inherit from first block
+          new TImgSlice[Array[Double]](outArray, inImages._1) // inherit from first block
       }
       DTImg.WrapRDD[Array[Double]](ip, JavaPairRDD.fromRDD(jImg), TImgTools.IMAGETYPE_DOUBLE)
     }
@@ -233,7 +233,7 @@ object DTImgOps {
           T)) => e1._1 < e2._1).map {
           _._2
         }
-        (imgVec._1, new TImgBlock[Array[T]](sList, imgVec._1, dim))
+        (imgVec._1, new TImgSlice[Array[T]](sList, imgVec._1, dim))
     }
 
 

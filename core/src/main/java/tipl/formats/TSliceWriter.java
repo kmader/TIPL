@@ -1,6 +1,5 @@
 package tipl.formats;
 
-import java.io.FileFilter;
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -14,7 +13,7 @@ import org.scijava.annotations.IndexItem;
 import org.scijava.annotations.Indexable;
 
 import tipl.util.TIPLGlobal;
-import tipl.util.TImgBlock;
+import tipl.util.TImgSlice;
 import tipl.util.TypedPath;
 
 /**
@@ -117,5 +116,5 @@ public interface TSliceWriter extends Serializable {
 	 * @param outSlice the data to write
 	 * @param outSlicePosition the position to write it too
 	 */
-	public void WriteSlice(TImgBlock outSlice,int outSlicePosition);
+	public void WriteSlice(TImgSlice outSlice,int outSlicePosition);
 }

@@ -15,7 +15,6 @@ import tipl.formats.FImage;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.TSliceWriter;
-import tipl.formats.TImg.ArrayBackedTImg;
 import tipl.util.*;
 
 import java.io.*;
@@ -47,7 +46,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
     /**
      * should be final but sometimes it changes *
      */
-    private final JavaPairRDD<D3int, TImgBlock<T>> baseImg;
+    private final JavaPairRDD<D3int, TImgSlice<T>> baseImg;
     private String procLog = "";
 
 
@@ -60,7 +59,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param imgType
      * @param path
      */
-    DTImg(TImgTools.HasDimensions parent, JavaPairRDD<D3int, TImgBlock<T>> newImage,
+    DTImg(TImgTools.HasDimensions parent, JavaPairRDD<D3int, TImgSlice<T>> newImage,
           int imgType, TypedPath path) {
         super(parent, imgType);
         this.baseImg = newImage;//.partitionBy(SparkGlobal.getPartitioner(getDim()));
@@ -101,7 +100,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param imgType
      * @return
      */
-    private static <U> JavaPairRDD<D3int, TImgBlock<U>> ImportImage(
+    private static <U> JavaPairRDD<D3int, TImgSlice<U>> ImportImage(
             final JavaSparkContext jsc, final TypedPath imgName, final int imgType) {
         assert (TImgTools.isValidType(imgType));
         final TImgRO cImg = TImgTools.ReadTImg(imgName, false, true);
@@ -129,7 +128,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param imgType
      * @return
      */
-    protected static <U> JavaPairRDD<D3int, TImgBlock<U>> ImportImageSerial(
+    protected static <U> JavaPairRDD<D3int, TImgSlice<U>> ImportImageSerial(
             final JavaSparkContext jsc, final TypedPath imgName, final int imgType) {
         assert (TImgTools.isValidType(imgType));
         final TImgRO cImg = TImgTools.ReadTImg(imgName, false, true);
@@ -143,16 +142,16 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
         }
 
         return jsc.parallelize(l, partitionCount).flatMapToPair(new PairFlatMapFunction<int[],
-                D3int, TImgBlock<U>>() {
+                D3int, TImgSlice<U>>() {
 
             @Override
-            public Iterable<Tuple2<D3int, TImgBlock<U>>> call(int[] sliceRange)
+            public Iterable<Tuple2<D3int, TImgSlice<U>>> call(int[] sliceRange)
                     throws Exception {
-                final PairFunction<Integer, D3int, TImgBlock<U>> standardPairFcn = new
+                final PairFunction<Integer, D3int, TImgSlice<U>> standardPairFcn = new
                         ReadSlice<U>(imgName, imgType, cImg.getPos(), cImg.getDim());
 
-                ArrayList<Tuple2<D3int, TImgBlock<U>>> outSlices = new ArrayList<Tuple2<D3int,
-                        TImgBlock<U>>>(sliceRange[1] - sliceRange[0] + 1);
+                ArrayList<Tuple2<D3int, TImgSlice<U>>> outSlices = new ArrayList<Tuple2<D3int,
+                        TImgSlice<U>>>(sliceRange[1] - sliceRange[0] + 1);
 
                 for (int s = sliceRange[0]; s < sliceRange[1]; s++) {
                     outSlices.add(standardPairFcn.call(s));
@@ -172,28 +171,28 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param imgType
      * @return
      */
-    private static <U> JavaPairRDD<D3int, TImgBlock<U>> MigrateImage(
+    private static <U> JavaPairRDD<D3int, TImgSlice<U>> MigrateImage(
             final JavaSparkContext jsc, TImgRO cImg, final int imgType) {
         assert (TImgTools.isValidType(imgType));
         final D3int imgDim = cImg.getDim();
         final D3int imgPos = cImg.getPos();
         final D3int sliceDim = new D3int(imgDim.x, imgDim.y, 1);
         final D3int zero = new D3int(0);
-        final List<Tuple2<D3int, TImgBlock<U>>> inSlices = new ArrayList<Tuple2<D3int,
-                TImgBlock<U>>>(
+        final List<Tuple2<D3int, TImgSlice<U>>> inSlices = new ArrayList<Tuple2<D3int,
+                TImgSlice<U>>>(
                 imgDim.z);
         for (int i = 0; i < imgDim.z; i++) {
             final int curSlice = i;
             final D3int nPos = new D3int(imgPos.x, imgPos.y, imgPos.z + i);
-            TImgBlock<U> curBlock;
+            TImgSlice<U> curBlock;
             if (futureTImgMigrate)
-                curBlock = new TImgBlock.TImgBlockFromImage<U>(cImg, curSlice, imgType, nPos,
+                curBlock = new TImgSlice.TImgSliceFromImage<U>(cImg, curSlice, imgType, nPos,
                         sliceDim, zero);
             else
-                curBlock = new TImgBlock<U>((U) cImg.getPolyImage(curSlice, imgType), nPos,
+                curBlock = new TImgSlice<U>((U) cImg.getPolyImage(curSlice, imgType), nPos,
                         sliceDim);
 
-            inSlices.add(new Tuple2<D3int, TImgBlock<U>>(nPos, curBlock));
+            inSlices.add(new Tuple2<D3int, TImgSlice<U>>(nPos, curBlock));
         }
         final int partitionCount = SparkGlobal.calculatePartitions(cImg.getDim().z);
         return jsc.parallelizePairs(inSlices, partitionCount);
@@ -209,7 +208,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @return
      */
     static public <Fc> DTImg<Fc> WrapRDD(TImgTools.HasDimensions parent, JavaPairRDD<D3int,
-            TImgBlock<Fc>> newImage,
+            TImgSlice<Fc>> newImage,
                                          int imgType) {
         DTImg<Fc> outImage = new DTImg<Fc>(parent, newImage, imgType,
                 TypedPath.virtualPath(newImage.toString()));
@@ -226,7 +225,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      */
     static public <Fc> DTImg<Fc> ReadImage(JavaSparkContext jsc, final TypedPath imgName,
                                            int imgType) {
-        JavaPairRDD<D3int, TImgBlock<Fc>> newImage = ImportImage(jsc, imgName, imgType);
+        JavaPairRDD<D3int, TImgSlice<Fc>> newImage = ImportImage(jsc, imgName, imgType);
         TImgTools.HasDimensions parent = TImgTools.ReadTImg(imgName);
         DTImg<Fc> outImage = new DTImg<Fc>(parent, newImage, imgType, imgName);
         return outImage;
@@ -242,18 +241,18 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      */
     static public <Fc> DTImg<Fc> ConvertTImg(JavaSparkContext jsc, final TImgRO inImage,
                                              int imgType) {
-        JavaPairRDD<D3int, TImgBlock<Fc>> newImage = MigrateImage(jsc, inImage, imgType);
+        JavaPairRDD<D3int, TImgSlice<Fc>> newImage = MigrateImage(jsc, inImage, imgType);
         return new DTImg<Fc>(inImage, newImage, imgType, inImage.getPath());
     }
 
     static public <Fc> DTImg<Fc> ReadObjectFile(JavaSparkContext jsc, final TypedPath imgName,
                                                 int imgType) {
-        final JavaRDD<Tuple2<D3int, TImgBlock<Fc>>> newImage = jsc.objectFile(imgName.getPath());
-        final Tuple2<D3int, TImgBlock<Fc>> cTuple = newImage.first();
-        final TImgBlock<Fc> cBlock = cTuple._2();
-        JavaPairRDD<D3int, TImgBlock<Fc>> baseImg = newImage.mapToPair(new PairFunction<Tuple2<D3int, TImgBlock<Fc>>, D3int, TImgBlock<Fc>>() {
+        final JavaRDD<Tuple2<D3int, TImgSlice<Fc>>> newImage = jsc.objectFile(imgName.getPath());
+        final Tuple2<D3int, TImgSlice<Fc>> cTuple = newImage.first();
+        final TImgSlice<Fc> cBlock = cTuple._2();
+        JavaPairRDD<D3int, TImgSlice<Fc>> baseImg = newImage.mapToPair(new PairFunction<Tuple2<D3int, TImgSlice<Fc>>, D3int, TImgSlice<Fc>>() {
             @Override
-            public Tuple2<D3int, TImgBlock<Fc>> call(final Tuple2<D3int, TImgBlock<Fc>> arg0)
+            public Tuple2<D3int, TImgSlice<Fc>> call(final Tuple2<D3int, TImgSlice<Fc>> arg0)
                     throws Exception {
                 return arg0;
             }
@@ -309,7 +308,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
         return new JavaSparkContext(getBaseImg().context());
     }
 
-    public JavaPairRDD<D3int, TImgBlock<T>> getBaseImg() {
+    public JavaPairRDD<D3int, TImgSlice<T>> getBaseImg() {
         return baseImg;
     }
 
@@ -328,10 +327,10 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
         final TypedPath absTP = path.makeAbsPath();
         final TSliceWriter cWriter = TSliceWriter.Writers.ChooseBest(this,
                 absTP, imageType);
-        baseImg.foreach(new VoidFunction<Tuple2<D3int, TImgBlock<T>>>() {
+        baseImg.foreach(new VoidFunction<Tuple2<D3int, TImgSlice<T>>>() {
 
             @Override
-            public void call(Tuple2<D3int, TImgBlock<T>> arg0) throws Exception {
+            public void call(Tuple2<D3int, TImgSlice<T>> arg0) throws Exception {
 
                 cWriter.WriteSlice(arg0._2(), arg0._1().z);
 
@@ -357,12 +356,12 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
         String plPath = absTP + "procLog.log";
         final boolean isSigned = this.getSigned();
         final float ssf = this.getShortScaleFactor();
-        baseImg.foreach(new VoidFunction<Tuple2<D3int, TImgBlock<T>>>() {
+        baseImg.foreach(new VoidFunction<Tuple2<D3int, TImgSlice<T>>>() {
 
             @Override
-            public void call(final Tuple2<D3int, TImgBlock<T>> inBlock) throws Exception {
+            public void call(final Tuple2<D3int, TImgSlice<T>> inBlock) throws Exception {
                 final D3int pos = inBlock._1();
-                final TImgBlock<T> startingBlock = inBlock._2();
+                final TImgSlice<T> startingBlock = inBlock._2();
                 final OutputStreamWriter outFile = new OutputStreamWriter(new FileOutputStream
                         (absTP + "block." + pos.x + "_" + pos.y + "_" + pos.z + ".csv"), "UTF-8");
                 T curPts = startingBlock.get();
@@ -415,7 +414,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
 
         final int zPos = getPos().z + sliceNumber;
 
-        List<TImgBlock<T>> outSlices = this.baseImg.lookup(new D3int(getPos().x, getPos().y, zPos));
+        List<TImgSlice<T>> outSlices = this.baseImg.lookup(new D3int(getPos().x, getPos().y, zPos));
 
         if (outSlices.size() != 1) throw
                 new IllegalArgumentException(this.getSampleName() + ", " +
@@ -439,7 +438,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
                                           Object[] sliceData) {
         final TImg tempConstruct = new ArrayBackedTImg(dim, pos, elSize, stype, sliceData);
         final JavaSparkContext cJsc = SparkGlobal.getContext();
-        final JavaPairRDD<D3int, TImgBlock<T>> oldImage = MigrateImage(cJsc,
+        final JavaPairRDD<D3int, TImgSlice<T>> oldImage = MigrateImage(cJsc,
                 tempConstruct, stype);
         return DTImg.WrapRDD(tempConstruct, oldImage, getImageType());
     }
@@ -460,7 +459,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @return
      */
     public <U> DTImg<U> map(
-            final PairFunction<Tuple2<D3int, TImgBlock<T>>, D3int, TImgBlock<U>> mapFunc,
+            final PairFunction<Tuple2<D3int, TImgSlice<T>>, D3int, TImgSlice<U>> mapFunc,
             final int outType) {
         return DTImg.WrapRDD(this, this.baseImg.mapToPair(mapFunc).partitionBy(SparkGlobal
                 .getPartitioner(getDim())), outType);
@@ -474,7 +473,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @return
      */
     <U> DTImg<U> mapValues(
-            final Function<TImgBlock<T>, TImgBlock<U>> mapFunc,
+            final Function<TImgSlice<T>, TImgSlice<U>> mapFunc,
             final int outType) {
         return DTImg.WrapRDD(this, this.baseImg.mapValues(mapFunc).partitionBy(SparkGlobal
                 .getPartitioner(getDim())), outType);
@@ -487,10 +486,10 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @return
      */
     public DTImg<double[]> applyVoxelFunction(final FImage.VoxelFunction inFunction) {
-        return mapValues(new Function<TImgBlock<T>, TImgBlock<double[]>>() {
+        return mapValues(new Function<TImgSlice<T>, TImgSlice<double[]>>() {
 
             @Override
-            public TImgBlock<double[]> call(TImgBlock<T> startingBlock) throws Exception {
+            public TImgSlice<double[]> call(TImgSlice<T> startingBlock) throws Exception {
 
                 T curPts = startingBlock.get();
                 D3int sPos = startingBlock.getPos();
@@ -509,7 +508,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
                     }
                 }
 
-                return new TImgBlock<double[]>(outPts, startingBlock);
+                return new TImgSlice<double[]>(outPts, startingBlock);
 
             }
 
@@ -523,15 +522,15 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      */
     private static <To, Tn> DTImg<Tn> changeType(DTImg<To> inImage, final int outType) {
         assert (TImgTools.isValidType(outType));
-        return inImage.mapValues(new Function<TImgBlock<To>, TImgBlock<Tn>>() {
+        return inImage.mapValues(new Function<TImgSlice<To>, TImgSlice<Tn>>() {
             @Override
-            public TImgBlock<Tn> call(TImgBlock<To> startingBlock) throws Exception {
+            public TImgSlice<Tn> call(TImgSlice<To> startingBlock) throws Exception {
                 To curPts = startingBlock.get();
                 Tn ipts = (Tn) TImgTools.convertArrayType(curPts, TImgTools.identifySliceType
                                 (curPts),
                         outType, true, 1, Integer.MAX_VALUE);
 
-                return new TImgBlock<Tn>(ipts, startingBlock);
+                return new TImgSlice<Tn>(ipts, startingBlock);
             }
         }, outType);
     }
@@ -589,9 +588,9 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @return a subselection of the image
      */
     DTImg<T> subselect(
-            final Function<Tuple2<D3int, TImgBlock<T>>, Boolean> filtFunc
+            final Function<Tuple2<D3int, TImgSlice<T>>, Boolean> filtFunc
     ) {
-        final JavaPairRDD<D3int, TImgBlock<T>> subImg = this.baseImg.filter(filtFunc);
+        final JavaPairRDD<D3int, TImgSlice<T>> subImg = this.baseImg.filter(filtFunc);
         DTImg<T> outImage = DTImg.WrapRDD(this, subImg, this.getImageType());
         //TODO Only works on slices
         int sliceCount = (int) subImg.count();
@@ -611,10 +610,10 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
     public DTImg<T> subselectPos(
             final Function<D3int, Boolean> filtFunc
     ) {
-        return subselect(new Function<Tuple2<D3int, TImgBlock<T>>, Boolean>() {
+        return subselect(new Function<Tuple2<D3int, TImgSlice<T>>, Boolean>() {
 
             @Override
-            public Boolean call(Tuple2<D3int, TImgBlock<T>> arg0)
+            public Boolean call(Tuple2<D3int, TImgSlice<T>> arg0)
                     throws Exception {
                 return filtFunc.call(arg0._1());
             }
@@ -632,10 +631,10 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      */
     public <U> DTImg<U> spreadMap(
             final int spreadWidth,
-            final PairFunction<Tuple2<D3int, Iterable<TImgBlock<T>>>, D3int,
-                    TImgBlock<U>> mapFunc) {
+            final PairFunction<Tuple2<D3int, Iterable<TImgSlice<T>>>, D3int,
+                    TImgSlice<U>> mapFunc) {
 
-        JavaPairRDD<D3int, Iterable<TImgBlock<T>>> joinImg;
+        JavaPairRDD<D3int, Iterable<TImgSlice<T>>> joinImg;
         joinImg = this.spreadSlices(spreadWidth).
                 groupByKey(getPartitions()).
                 partitionBy(SparkGlobal.getPartitioner(getDim()));
@@ -646,11 +645,11 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
 
     public void showPartitions() {
         //this.baseImg.mapPartition()
-        List<String> curPartitions = this.baseImg.mapPartitions(new FlatMapFunction<Iterator<Tuple2<D3int, TImgBlock<T>>>, String>() {
+        List<String> curPartitions = this.baseImg.mapPartitions(new FlatMapFunction<Iterator<Tuple2<D3int, TImgSlice<T>>>, String>() {
 
             @Override
             public Iterable<String> call(
-                    Iterator<Tuple2<D3int, TImgBlock<T>>> arg0)
+                    Iterator<Tuple2<D3int, TImgSlice<T>>> arg0)
                     throws Exception {
                 List<String> outList = new LinkedList<String>();
                 outList.add("\nPartition:");
@@ -688,30 +687,30 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
     }
 
     // Here are the specialty functions for DTImages
-    public JavaPairRDD<D3int, List<TImgBlock<T>>> spreadSlices3(int windSize) {
-        JavaPairRDD<D3int, TImgBlock<T>> down1 = baseImg.mapToPair(new BlockShifter(new D3int(0,
+    public JavaPairRDD<D3int, List<TImgSlice<T>>> spreadSlices3(int windSize) {
+        JavaPairRDD<D3int, TImgSlice<T>> down1 = baseImg.mapToPair(new BlockShifter(new D3int(0,
                 0, -1)));
-        JavaPairRDD<D3int, TImgBlock<T>> up1 = baseImg.mapToPair(new BlockShifter(new D3int(0, 0,
+        JavaPairRDD<D3int, TImgSlice<T>> up1 = baseImg.mapToPair(new BlockShifter(new D3int(0, 0,
                 1)));
-        JavaPairRDD<D3int, Tuple3<Iterable<TImgBlock<T>>, Iterable<TImgBlock<T>>,
-                Iterable<TImgBlock<T>>>> joinImg = baseImg.cogroup(down1, up1,
+        JavaPairRDD<D3int, Tuple3<Iterable<TImgSlice<T>>, Iterable<TImgSlice<T>>,
+                Iterable<TImgSlice<T>>>> joinImg = baseImg.cogroup(down1, up1,
                 SparkGlobal.getPartitioner(getDim()));
-        return joinImg.mapValues(new Function<Tuple3<Iterable<TImgBlock<T>>,
-                Iterable<TImgBlock<T>>, Iterable<TImgBlock<T>>>, List<TImgBlock<T>>>() {
+        return joinImg.mapValues(new Function<Tuple3<Iterable<TImgSlice<T>>,
+                Iterable<TImgSlice<T>>, Iterable<TImgSlice<T>>>, List<TImgSlice<T>>>() {
 
             @Override
-            public List<TImgBlock<T>> call(
-                    Tuple3<Iterable<TImgBlock<T>>, Iterable<TImgBlock<T>>,
-                            Iterable<TImgBlock<T>>> arg0)
+            public List<TImgSlice<T>> call(
+                    Tuple3<Iterable<TImgSlice<T>>, Iterable<TImgSlice<T>>,
+                            Iterable<TImgSlice<T>>> arg0)
                     throws Exception {
                 // TODO Auto-generated method stub
-                List<TImgBlock<T>> alist = org.apache.commons.collections.IteratorUtils.toList
+                List<TImgSlice<T>> alist = org.apache.commons.collections.IteratorUtils.toList
                         (arg0._1().iterator());
-                List<TImgBlock<T>> blist = org.apache.commons.collections.IteratorUtils.toList
+                List<TImgSlice<T>> blist = org.apache.commons.collections.IteratorUtils.toList
                         (arg0._2().iterator());
-                List<TImgBlock<T>> clist = org.apache.commons.collections.IteratorUtils.toList
+                List<TImgSlice<T>> clist = org.apache.commons.collections.IteratorUtils.toList
                         (arg0._3().iterator());
-                List<TImgBlock<T>> outList = new ArrayList(alist.size() + blist.size() + clist
+                List<TImgSlice<T>> outList = new ArrayList(alist.size() + blist.size() + clist
                         .size());
                 outList.addAll(alist);
                 outList.addAll(blist);
@@ -729,7 +728,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param offsetList     the offsets of the starting position of the blocks
      * @return
      */
-    public JavaPairRDD<D3int, TImgBlock<T>> spreadBlocks(final D3int[] offsetList) {
+    public JavaPairRDD<D3int, TImgSlice<T>> spreadBlocks(final D3int[] offsetList) {
         return baseImg.flatMapToPair(new BlockSpreader(offsetList, getDim()));
     }
 
@@ -739,7 +738,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param windowSize range above and below to spread
      * @return
      */
-    JavaPairRDD<D3int, TImgBlock<T>> spreadSlices(final int windowSize) {
+    JavaPairRDD<D3int, TImgSlice<T>> spreadSlices(final int windowSize) {
         return baseImg.flatMapToPair(BlockSpreader.<T>SpreadSlices(windowSize, getDim()));
 
     }
@@ -751,7 +750,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @author mader
      */
     static class ReadSlice<W> implements
-            PairFunction<Integer, D3int, TImgBlock<W>> {
+            PairFunction<Integer, D3int, TImgSlice<W>> {
         final TypedPath imgPath;
         final int imgType;
         final D3int imgPos;
@@ -777,7 +776,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
         }
 
         @Override
-        public Tuple2<D3int, TImgBlock<W>> call(Integer sliceNum) {
+        public Tuple2<D3int, TImgSlice<W>> call(Integer sliceNum) {
             if (!TIPLGlobal.waitForReader())
                 throw new IllegalArgumentException("Timed Out Waiting for Reader" + this);
 
@@ -786,7 +785,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
             TIPLGlobal.returnReader();
             final D3int cPos = new D3int(imgPos.x, imgPos.y, imgPos.z
                     + sliceNum);
-            return new Tuple2<D3int, TImgBlock<W>>(cPos, new TImgBlock<W>(
+            return new Tuple2<D3int, TImgSlice<W>>(cPos, new TImgSlice<W>(
                     cSlice, cPos, sliceDim));
         }
     }
@@ -800,7 +799,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @author mader
      */
     static class ReadSlicePromise<W> implements
-            PairFunction<Integer, D3int, TImgBlock<W>> {
+            PairFunction<Integer, D3int, TImgSlice<W>> {
         final TypedPath imgPath;
         final int imgType;
         final D3int imgPos;
@@ -826,11 +825,11 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
         }
 
         @Override
-        public Tuple2<D3int, TImgBlock<W>> call(Integer sliceNum) {
+        public Tuple2<D3int, TImgSlice<W>> call(Integer sliceNum) {
             final D3int cPos = new D3int(imgPos.x, imgPos.y, imgPos.z
                     + sliceNum);
-            return new Tuple2<D3int, TImgBlock<W>>(cPos, new TImgBlock.TImgBlockFile<W>(
-                    imgPath, sliceNum, imgType, cPos, sliceDim, TImgBlock.zero));
+            return new Tuple2<D3int, TImgSlice<W>>(cPos, new TImgSlice.TImgSliceFile<W>(
+                    imgPath, sliceNum, imgType, cPos, sliceDim, TImgSlice.zero));
         }
     }
 
@@ -842,7 +841,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @author mader
      */
     public static class SliceToPoints<U> implements PairFlatMapFunction<Tuple2<D3int,
-            TImgBlock<U>>, D3int, Number> {
+            TImgSlice<U>>, D3int, Number> {
         final int imageType;
 
         public SliceToPoints(int inImageType) {
@@ -851,8 +850,8 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
 
         @Override
         public Iterable<Tuple2<D3int, Number>> call(
-                Tuple2<D3int, TImgBlock<U>> arg0) throws Exception {
-            TImgBlock<U> cBlock = arg0._2();
+                Tuple2<D3int, TImgSlice<U>> arg0) throws Exception {
+            TImgSlice<U> cBlock = arg0._2();
             final U curSlice = cBlock.get();
             final D3int dim = cBlock.getDim();
             final D3int pos = arg0._1();
@@ -936,8 +935,8 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param <T>
      * @author mader
      */
-    static class BlockShifter<T> implements PairFunction<Tuple2<D3int, TImgBlock<T>>, D3int,
-            TImgBlock<T>> {
+    static class BlockShifter<T> implements PairFunction<Tuple2<D3int, TImgSlice<T>>, D3int,
+            TImgSlice<T>> {
         final D3int inOffset;
 
         // Since we can't have constructors here (probably should make it into a subclass)
@@ -946,16 +945,16 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
         }
 
         @Override
-        public Tuple2<D3int, TImgBlock<T>> call(
-                Tuple2<D3int, TImgBlock<T>> inData) {
-            final TImgBlock<T> inSlice = inData._2();
+        public Tuple2<D3int, TImgSlice<T>> call(
+                Tuple2<D3int, TImgSlice<T>> inData) {
+            final TImgSlice<T> inSlice = inData._2();
             final D3int nOffset = this.inOffset;
 
             final D3int oPos = inData._1();
             final D3int nPos = new D3int(oPos.x + nOffset.x, oPos.y + nOffset.y,
                     oPos.z + nOffset.z);
-            return new Tuple2<D3int, TImgBlock<T>>(
-                    nPos, new TImgBlock<T>(inSlice
+            return new Tuple2<D3int, TImgSlice<T>>(
+                    nPos, new TImgSlice<T>(inSlice
                     .getClone(), nPos, inSlice.getDim(),
                     nOffset));
 
@@ -970,7 +969,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @author mader
      */
     protected static class BlockSpreader<T> implements PairFlatMapFunction<Tuple2<D3int,
-            TImgBlock<T>>, D3int, TImgBlock<T>> {
+            TImgSlice<T>>, D3int, TImgSlice<T>> {
 
         final D3int[] inOffsetList;
 
@@ -993,11 +992,11 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
         }
 
         @Override
-        public Iterable<Tuple2<D3int, TImgBlock<T>>> call(
-                Tuple2<D3int, TImgBlock<T>> inData) {
-            final TImgBlock<T> inSlice = inData._2();
-            final List<Tuple2<D3int, TImgBlock<T>>> outList = new ArrayList<Tuple2<D3int,
-                    TImgBlock<T>>>(inOffsetList.length);
+        public Iterable<Tuple2<D3int, TImgSlice<T>>> call(
+                Tuple2<D3int, TImgSlice<T>> inData) {
+            final TImgSlice<T> inSlice = inData._2();
+            final List<Tuple2<D3int, TImgSlice<T>>> outList = new ArrayList<Tuple2<D3int,
+                    TImgSlice<T>>>(inOffsetList.length);
             for (final D3int nOffset : this.inOffsetList) {
                 final D3int oPos = inData._1();
                 final D3int nPos = new D3int(oPos.x + nOffset.x, oPos.y + nOffset.y,
@@ -1007,8 +1006,8 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
                  * they drift between machines (I think)
                  */
                 if (nPos.z >= 0 & nPos.z < imgDim.z)
-                    outList.add(new Tuple2<D3int, TImgBlock<T>>(
-                            nPos, new TImgBlock<T>(inSlice
+                    outList.add(new Tuple2<D3int, TImgSlice<T>>(
+                            nPos, new TImgSlice<T>(inSlice
                             .getClone(), nPos, inSlice.getDim(),
                             nOffset)));
             }

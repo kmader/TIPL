@@ -2,6 +2,7 @@ package tipl.spark;
 
 import com.esotericsoftware.kryo.Kryo;
 import org.apache.spark.serializer.KryoRegistrator;
+import tipl.util.TImgSlice;
 
 /**
  * A class to load several of the more heavily used classes into the Kyro serializer for
@@ -16,7 +17,7 @@ class TIPLRegistrator implements KryoRegistrator {
 
         arg0.register(tipl.util.D3int.class);
         arg0.register(tipl.util.D4int.class);
-        arg0.register(tipl.util.TImgBlock.class);
+        arg0.register(TImgSlice.class);
         arg0.register(tipl.util.ITIPLPlugin.class);
         arg0.register(tipl.util.ITIPLPluginIn.class);
         arg0.register(tipl.util.ITIPLPluginOut.class);

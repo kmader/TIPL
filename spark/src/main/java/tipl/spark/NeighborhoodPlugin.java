@@ -7,8 +7,7 @@ import tipl.tools.BaseTIPLPluginIn;
 import tipl.util.D3int;
 import tipl.util.D4int;
 import tipl.util.ITIPLPlugin;
-import tipl.util.TImgBlock;
-
+import tipl.util.TImgSlice;
 import java.io.Serializable;
 import java.util.List;
 
@@ -30,8 +29,8 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
      * @param inBlocks
      * @return
      */
-    public Tuple2<D3int, TImgBlock<V>> GatherBlocks(
-            Tuple2<D3int, Iterable<TImgBlock<U>>> inBlocks);
+    public Tuple2<D3int, TImgSlice<V>> GatherBlocks(
+            Tuple2<D3int, Iterable<TImgSlice<U>>> inBlocks);
 
     /**
      * THe simplist implementation of the float filter
@@ -86,12 +85,12 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
         abstract protected V createObj(int size);
 
         @Override
-        public Tuple2<D3int, TImgBlock<V>> GatherBlocks(
-                Tuple2<D3int, Iterable<TImgBlock<U>>> inTuple) {
+        public Tuple2<D3int, TImgSlice<V>> GatherBlocks(
+                Tuple2<D3int, Iterable<TImgSlice<U>>> inTuple) {
             final D3int ns = getNeighborSize();
 
-            final List<TImgBlock<U>> inBlocks = IteratorUtils.toList(inTuple._2().iterator());
-            final TImgBlock<U> templateBlock = inBlocks.get(0);
+            final List<TImgSlice<U>> inBlocks = IteratorUtils.toList(inTuple._2().iterator());
+            final TImgSlice<U> templateBlock = inBlocks.get(0);
             final D3int blockSize = templateBlock.getDim();
             final BaseTIPLPluginIn.morphKernel mKernel = getKernel();
             final int eleCount = (int) templateBlock.getDim().prod();
@@ -100,7 +99,7 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
             final BaseTIPLPluginIn.filterKernel[] kernelList = new BaseTIPLPluginIn
                     .filterKernel[eleCount];
             for (int i = 0; i < eleCount; i++) kernelList[i] = getImageKernel();
-            for (final TImgBlock<U> cBlock : inBlocks) {
+            for (final TImgSlice<U> cBlock : inBlocks) {
                 final U curBlock = cBlock.get();
                 for (int zp = 0; zp < templateBlock.getDim().z; zp++) {
                     for (int yp = 0; yp < templateBlock.getDim().y; yp++) {
@@ -122,8 +121,8 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
                 }
             }
             for (int i = 0; i < eleCount; i++) setEle(outData, i, kernelList[i].value());
-            return new Tuple2<D3int, TImgBlock<V>>(inTuple._1(),
-                    new TImgBlock<V>(outData, templateBlock.getPos(),
+            return new Tuple2<D3int, TImgSlice<V>>(inTuple._1(),
+                    new TImgSlice<V>(outData, templateBlock.getPos(),
                             templateBlock.getDim()));
         }
 
@@ -148,11 +147,11 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
         final public static boolean show_debug = false;
 
         @Override
-        public Tuple2<D3int, TImgBlock<float[]>> GatherBlocks(
-                Tuple2<D3int, Iterable<TImgBlock<float[]>>> inTuple) {
+        public Tuple2<D3int, TImgSlice<float[]>> GatherBlocks(
+                Tuple2<D3int, Iterable<TImgSlice<float[]>>> inTuple) {
             final D3int ns = getNeighborSize();
-            final List<TImgBlock<float[]>> inBlocks = IteratorUtils.toList(inTuple._2().iterator());
-            final TImgBlock<float[]> templateBlock = inBlocks.get(0);
+            final List<TImgSlice<float[]>> inBlocks = IteratorUtils.toList(inTuple._2().iterator());
+            final TImgSlice<float[]> templateBlock = inBlocks.get(0);
             final D3int blockSize = templateBlock.getDim();
             final BaseTIPLPluginIn.morphKernel mKernel = getKernel();
             // the output image
@@ -166,7 +165,7 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
             for (int ci = 0; ci < curKernels.length; ci++)
                 curKernels[ci] = getImageKernel();
 
-            for (final TImgBlock<float[]> cBlock : inBlocks) {
+            for (final TImgSlice<float[]> cBlock : inBlocks) {
                 final float[] curBlock = cBlock.get();
 
                 // the offset of the current block
@@ -208,8 +207,8 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
             }
             for (int i = 0; i < outData.length; i++)
                 outData[i] = (int) curKernels[i].value();
-            return new Tuple2<D3int, TImgBlock<float[]>>(inTuple._1(),
-                    new TImgBlock<float[]>(outData, templateBlock.getPos(),
+            return new Tuple2<D3int, TImgSlice<float[]>>(inTuple._1(),
+                    new TImgSlice<float[]>(outData, templateBlock.getPos(),
                             templateBlock.getDim()));
         }
 

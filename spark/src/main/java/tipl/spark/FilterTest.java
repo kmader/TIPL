@@ -12,11 +12,8 @@ import scala.Tuple3;
 import tipl.formats.TImgRO;
 import tipl.tests.TestPosFunctions;
 import tipl.tools.BaseTIPLPluginIn;
-import tipl.util.ArgumentParser;
-import tipl.util.D3int;
-import tipl.util.TImgBlock;
-import tipl.util.TImgTools;
-import tipl.util.TypedPath;
+import tipl.util.*;
+import tipl.util.TImgSlice;
 
 import java.util.List;
 
@@ -28,11 +25,11 @@ import java.util.List;
  */
 @SuppressWarnings("serial")
 public class FilterTest extends NeighborhoodPlugin.FloatFilter {
-    public static String ImageSummary(final JavaPairRDD<D3int, TImgBlock<float[]>> inImg) {
+    public static String ImageSummary(final JavaPairRDD<D3int, TImgSlice<float[]>> inImg) {
         Tuple3<Double, Double, Double> imSum = inImg.map(new Function<Tuple2<D3int,
-                TImgBlock<float[]>>, Tuple3<Double, Double, Double>>() {
+                TImgSlice<float[]>>, Tuple3<Double, Double, Double>>() {
             @Override
-            public Tuple3<Double, Double, Double> call(Tuple2<D3int, TImgBlock<float[]>> arg0)
+            public Tuple3<Double, Double, Double> call(Tuple2<D3int, TImgSlice<float[]>> arg0)
                     throws Exception {
                 return countSlice(arg0._2().get());
             }
@@ -49,10 +46,10 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
         });
         String outString = printImSummary(imSum) + "\n";
 
-        final List<Integer> keyList = inImg.map(new Function<Tuple2<D3int, TImgBlock<float[]>>,
+        final List<Integer> keyList = inImg.map(new Function<Tuple2<D3int, TImgSlice<float[]>>,
                 Integer>() {
             @Override
-            public Integer call(Tuple2<D3int, TImgBlock<float[]>> arg0) throws Exception {
+            public Integer call(Tuple2<D3int, TImgSlice<float[]>> arg0) throws Exception {
                 return arg0._1().z;
             }
         }).collect();
@@ -132,13 +129,13 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 
         for (int ic = 0; ic < iters; ic++) {
             filtImg = filtImg.spreadMap(f.getNeighborSize().z, new PairFunction<Tuple2<D3int,
-                    Iterable<TImgBlock<float[]>>>, D3int, TImgBlock<float[]>>() {
+                    Iterable<TImgSlice<float[]>>>, D3int, TImgSlice<float[]>>() {
                 @Override
-                public Tuple2<D3int, TImgBlock<float[]>> call(
-                        Tuple2<D3int, Iterable<TImgBlock<float[]>>> arg0)
+                public Tuple2<D3int, TImgSlice<float[]>> call(
+                        Tuple2<D3int, Iterable<TImgSlice<float[]>>> arg0)
                         throws Exception {
                     long start = System.currentTimeMillis();
-                    Tuple2<D3int, TImgBlock<float[]>> outVal = f.GatherBlocks(arg0);
+                    Tuple2<D3int, TImgSlice<float[]>> outVal = f.GatherBlocks(arg0);
                     // add execution time
                     timeElapsed.$plus$eq((double) (System.currentTimeMillis() - start));
                     mapOperations.$plus$eq(1);
@@ -152,17 +149,17 @@ public class FilterTest extends NeighborhoodPlugin.FloatFilter {
 
         if (imagePath.length() > 0) {
             DTImg<boolean[]> thOutImg = filtImg.map(new PairFunction<Tuple2<D3int,
-                    TImgBlock<float[]>>, D3int, TImgBlock<boolean[]>>() {
+                    TImgSlice<float[]>>, D3int, TImgSlice<boolean[]>>() {
 
                 @Override
-                public Tuple2<D3int, TImgBlock<boolean[]>> call(
-                        Tuple2<D3int, TImgBlock<float[]>> arg0) throws Exception {
-                    final TImgBlock<float[]> inBlock = arg0._2();
+                public Tuple2<D3int, TImgSlice<boolean[]>> call(
+                        Tuple2<D3int, TImgSlice<float[]>> arg0) throws Exception {
+                    final TImgSlice<float[]> inBlock = arg0._2();
                     final float[] cSlice = inBlock.get();
                     final boolean[] oSlice = new boolean[cSlice.length];
                     for (int i = 0; i < oSlice.length; i++) oSlice[i] = cSlice[i] > threshold;
-                    return new Tuple2<D3int, TImgBlock<boolean[]>>(arg0._1(),
-                            new TImgBlock<boolean[]>(oSlice, inBlock.getPos(), inBlock.getDim()));
+                    return new Tuple2<D3int, TImgSlice<boolean[]>>(arg0._1(),
+                            new TImgSlice<boolean[]>(oSlice, inBlock.getPos(), inBlock.getDim()));
                 }
 
             }, TImgTools.IMAGETYPE_BOOL);

@@ -21,6 +21,8 @@ public class D3int implements ID3int {
 		setVals(xi.x, xi.y, xi.z);
 	}
 
+    public D3int(final ID2int xyi, final int zi) {setVals(xyi.gx(),xyi.gy(),zi);}
+
 	public D3int(final int xi) {
 		setVals(xi, xi, xi);
 	}
@@ -114,4 +116,6 @@ public class D3int implements ID3int {
         this.x=x;
         this.y=y;
     }
+
+    public static D3int zero = new D3int(0,0,0);
 }

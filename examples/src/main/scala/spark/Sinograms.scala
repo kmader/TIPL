@@ -3,7 +3,7 @@ package spark.images
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import tipl.spark.IOOps._
-import tipl.util.TImgBlock
+import tipl.util.TImgSlice
 import tipl.util.TImgTools
 import tipl.spark.SparkGlobal
 import breeze.linalg._

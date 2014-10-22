@@ -13,7 +13,7 @@ import tipl.settings.FilterSettings.filterGenerator
 import tipl.spark.TypeMacros._
 import tipl.tests.TestPosFunctions
 import tipl.tools.{BaseTIPLPluginIO, BaseTIPLPluginIn}
-import tipl.util.{ArgumentParser, D3int, TImgBlock, TImgTools}
+import tipl.util.{ArgumentParser, D3int, TImgSlice, TImgTools}
 
 import scala.collection.GenTraversableOnce
 import scala.collection.JavaConversions._
@@ -51,7 +51,7 @@ class SFilterScale extends BaseTIPLPluginIO with FilterSettings.HasFilterSetting
 
     outputSize = new D3int((insize.x * up.x) / dn.x, (insize.y * up.y) / dn.y,
       (insize.z * up.z) / dn.z)
-    val imRdd: RDD[(D3int, TImgBlock[Array[Double]])] = inputImage.getBaseImg.rdd
+    val imRdd: RDD[(D3int, TImgSlice[Array[Double]])] = inputImage.getBaseImg.rdd
 
     outputImage = SFilterScale.partBasedFilterMap(imRdd, up,
       ImageTools.spread_blocks_gen(_, up, dn), sfg)
@@ -59,7 +59,7 @@ class SFilterScale extends BaseTIPLPluginIO with FilterSettings.HasFilterSetting
   }
 
   var inputImage: DTImg[Array[Double]] = null
-  var outputImage: RDD[(D3int, TImgBlock[Array[Double]])] = null
+  var outputImage: RDD[(D3int, TImgSlice[Array[Double]])] = null
   var outputSize: D3int = null
 
   override def LoadImages(inImages: Array[TImgRO]) = {
@@ -86,23 +86,23 @@ class SFilterScale extends BaseTIPLPluginIO with FilterSettings.HasFilterSetting
 object SFilterScale {
 
 
-  case class partialFilter[T](newpos: D3int, block: TImgBlock[T], finished: Boolean)
+  case class partialFilter[T](newpos: D3int, block: TImgSlice[T], finished: Boolean)
 
 
   /**
    * a basic spread function
    */
   val simple_spread = (windSize: D3int) =>
-    (pvec: (D3int, TImgBlock[Array[Double]])) =>
+    (pvec: (D3int, TImgSlice[Array[Double]])) =>
       ImageTools.spread_blocks(pvec, windSize.z)
 
   /**
    * A partition based filter command that should be more
    */
-  def partBasedFilterMap(inImg: RDD[(D3int, TImgBlock[Array[Double]])],
+  def partBasedFilterMap(inImg: RDD[(D3int, TImgSlice[Array[Double]])],
                          upWindSize: D3int,
-                         spread_fun: (((D3int, TImgBlock[Array[Double]])) =>
-                           GenTraversableOnce[(D3int, TImgBlock[Array[Double]])]),
+                         spread_fun: (((D3int, TImgSlice[Array[Double]])) =>
+                           GenTraversableOnce[(D3int, TImgSlice[Array[Double]])]),
                          filt: filterGenerator) = {
     val neededSlices = 2 * upWindSize.z + 1
     val outImg = inImg.mapPartitions {
@@ -135,7 +135,7 @@ object SFilterScale {
     (outImg.filter(_._2.finished) ++ betweenSlices).mapValues(_.block)
   }
 
-  def partBasedFilterReduce(inSpreadImg: List[(D3int, TImgBlock[Array[Double]])],
+  def partBasedFilterReduce(inSpreadImg: List[(D3int, TImgSlice[Array[Double]])],
                             upWindSize: D3int,
                             filt: filterGenerator): (D3int, partialFilter[Array[Double]]) = {
     val templateImg = inSpreadImg.head
@@ -169,7 +169,7 @@ object SFilterScale {
       _.value()
     }.toArray
     val inBlock = templateImg._2
-    val outBlock = new TImgBlock[Array[Double]](outSlice, inBlock.getPos, inBlock.getDim)
+    val outBlock = new TImgSlice[Array[Double]](outSlice, inBlock.getPos, inBlock.getDim)
 
     (templateImg._1, partialFilter[Array[Double]](templateImg._1, outBlock, false))
   }

@@ -1,12 +1,21 @@
 package tipl.spark
 
 import org.apache.spark.rdd.RDD
-import tipl.formats.TImgRO.ATImgRO
+import org.apache.spark.SparkContext._
 import tipl.formats.{ TImg, TImgRO }
-import tipl.util.{ D3float, D3int, TImgBlock, TImgTools, TypedPath }
+import tipl.util.{TImgBlock, D3float, D3int, TImgSlice, TImgTools, TypedPath}
 
 import scala.reflect.ClassTag
 import scala.{ specialized => spec }
+
+/**
+  * an abstract class with all of the standard TImgRO functions but getPoly
+  *
+  * @author mader
+  */
+object ATImgRO {
+  private final val serialVersionUID: Long = -8883859233940303695L
+}
 
 trait TImgROLike extends TImgRO {
 
@@ -14,7 +23,7 @@ trait TImgROLike extends TImgRO {
 
   def imageType: Int
 
-  var baseDimensions: TImgRO = new ATImgRO(baseSize, imageType) {
+  var baseDimensions: TImgRO = new TImgRO.ATImgRO(baseSize, imageType) {
     println("Warning: Creating mock TImgRO class!")
 
     override def getPolyImage(sliceNumber: Int, asType: Int): AnyRef = null
@@ -96,11 +105,36 @@ trait TImgLike extends TImgROLike with TImg {
 /**
   * Created by mader on 10/13/14.
   */
-abstract class ImageRDD[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T, U](dim: D3int,
+abstract class ImageRDD[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](dim: D3int,
   pos: D3int,
   elSize: D3float,
-  imageType: Int,
-  baseImg: RDD[(D3int, TImgBlock[Array[T]])], path: TypedPath)(implicit lm: ClassTag[T])
-  extends RDD[(D3int, TImgBlock[Array[T]])](baseImg) {
+  imageType: Int, path: TypedPath, baseImg: Either[RDD[(D3int, TImgBlock[T])], RDD[(D3int,
+  T)]])(implicit lm: ClassTag[T])
+  extends TImg.ATImg(dim, pos, elSize, imageType) {
+
+  def this(newImg: ImageRDD[_],baseImg: Either[RDD[(D3int, TImgBlock[T])], RDD[(D3int,
+    T)]])(implicit lm: ClassTag[T]) = this(newImg.getDim,newImg.getPos,newImg.getElSize,newImg.getImageType,newImg.getPath,
+    baseImg)
+
+  def map[U](f: (D3int, T) => U)(implicit um: ClassTag[U]): ImageRDD[U] = {
+    val newBase = baseImg.fold(
+      { dsObj =>
+        val bob = dsObj.mapValues(inVal => inVal.get())
+        Left(bob.map{
+          inKV =>
+            val (pos,slice) = inKV
+            (pos,slice.map(f(pos,_)))
+        })
+      }, {
+        kvObj =>
+          Right(kvObj.map(ikv => (ikv._1,f(ikv._1,ikv._2))))
+      })
+    new ImageRDD[U](this,newBase)
+  }
+  def map[U: ClassTag](f: (D3int, Array[T]) => Array[U]): ImageRDD[U] = ???
+
+}
+
+object ImageRDD {
 
 }

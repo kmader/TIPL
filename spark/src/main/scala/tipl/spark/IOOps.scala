@@ -206,7 +206,7 @@ object IOOps {
 
       val outArr = srdMixed.mapValues {
         cBnd =>
-          new TImgBlock[A](transFcn(cBnd._1), cBnd._2, cBnd._3)
+          new TImgSlice[A](transFcn(cBnd._1), cBnd._2, cBnd._3)
       }
       (outArr, fst)
     }
@@ -216,7 +216,7 @@ object IOOps {
   import scala.{specialized => spec}
 
   implicit class toDSImgs[@spec(Boolean, Byte, Short, Int, Long, Float,
-    Double) V](inVal: Iterable[(D3int, TImgBlock[Array[V]])]) {
+    Double) V](inVal: Iterable[(D3int, TImgSlice[Array[V]])]) {
     def toTImg(path: TypedPath)(implicit elSize: D3float, vc: ClassTag[V]): TImg = {
       val inSeq = inVal.toIndexedSeq.sortWith((a, b) => (a._1.z < b._1.z))
 
@@ -290,7 +290,7 @@ object IOOps {
         (cval.polyReadImage(asType), cval.getPos(), cval.getDim())
       }.mapValues {
         cBnd =>
-          new TImgBlock[A](transFcn(cBnd._1), cBnd._2, cBnd._3)
+          new TImgSlice[A](transFcn(cBnd._1), cBnd._2, cBnd._3)
       }
 
     }

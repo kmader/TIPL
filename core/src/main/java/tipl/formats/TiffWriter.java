@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import tipl.util.D3int;
-import tipl.util.TImgBlock;
+import tipl.util.TImgSlice;
 import tipl.util.TImgTools;
 import tipl.util.TypedPath;
 
@@ -104,7 +104,7 @@ public class TiffWriter implements TSliceWriter {
 	}
 
 	@Override
-	public void WriteSlice(TImgBlock outSlice, int outSlicePosition) {
+	public void WriteSlice(TImgSlice outSlice, int outSlicePosition) {
 		final String coutName = outpath + "/"
 				+ String.format("%04d", outSlicePosition) + ".tif";
 		if (outSlicePosition == 0)
@@ -139,7 +139,7 @@ public class TiffWriter implements TSliceWriter {
 	 * @param in the slice (as an image block)
 	 * @return a bufferedimage
 	 */
-	protected BufferedImage sliceAsImage(final TImgBlock in) {
+	protected BufferedImage sliceAsImage(final TImgSlice in) {
 		Object curSliceData=in.get();
 		final int imageType=TImgTools.identifySliceType(curSliceData);
 		

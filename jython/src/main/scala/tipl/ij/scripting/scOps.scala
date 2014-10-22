@@ -2,7 +2,8 @@ package tipl.ij.scripting
 
 import ij.IJ
 import tipl.formats.TImgRO
-import tipl.util.{TImgTools, TImgBlock}
+import tipl.util.TImgSlice.TImgSliceAsTImg
+import tipl.util.{TImgTools, TImgSlice}
 
 
 
@@ -12,9 +13,9 @@ import tipl.util.{TImgTools, TImgBlock}
   *
   */
         object scOps {
-             implicit class ijConvertableBlock[T](inBlock: TImgBlock[T]) {
+             implicit class ijConvertableBlock[T](inBlock: TImgSlice[T]) {
                def asTImg() = {
-                 new TImgBlock.TImgBlockAsTImg(inBlock)
+                 new TImgSliceAsTImg(inBlock)
                }
              }
              implicit class ijConvertibleImage(inImg: TImgRO) {

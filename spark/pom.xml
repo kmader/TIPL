@@ -73,6 +73,40 @@
     </dependencies>
 
     <build>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>3.3</version>
+                    <configuration>
+                        <reportPlugins>
+                            <plugin>
+                                <artifactId>maven-project-info-reports-plugin</artifactId>
+                            </plugin>
+                            <plugin>
+                                <groupId>net.alchim31.maven</groupId>
+                                <artifactId>scala-maven-plugin</artifactId>
+                                <reports>
+                                    <report>doc</report>
+                                </reports>
+                                <configuration>
+                                    <aggregateDirectOnly>false</aggregateDirectOnly>
+                                    <sendJavaToScalac>false</sendJavaToScalac>
+                                </configuration>
+                            </plugin>
+                            <plugin>
+                                <artifactId>maven-javadoc-plugin</artifactId>
+                                <reports>
+                                    <report>aggregate</report>
+                                </reports>
+                            </plugin>
+                        </reportPlugins>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <plugins>
 
             <plugin>
@@ -101,6 +135,21 @@
             </plugin>
         </plugins>
     </build>
+
+    <!-- skip the dependencies resolution which takes ages -->
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </reporting>
 
 
 </project>

@@ -10,7 +10,7 @@ import tipl.spark.TypeMacros._
 import tipl.tests.TestPosFunctions
 import tipl.tools.BaseTIPLPluginIO
 import tipl.util.TIPLOps._
-import tipl.util.{ArgumentParser, D3int, TImgBlock, TImgTools}
+import tipl.util.{ArgumentParser, D3int, TImgSlice, TImgTools}
 
 import scala.reflect.ClassTag
 
@@ -208,7 +208,7 @@ object SResize {
         val oldInd = oy * oldDim.x + ox
         if (oldInd > 0 && oldInd < oldSlice.length) outSlice(newInd) = oldSlice(oldInd)
       }
-      (outPos, new TImgBlock[Array[B]](outSlice, outPos, outDim))
+      (outPos, new TImgSlice[Array[B]](outSlice, outPos, outDim))
     }
     // add the missing z slices
     val oldImgPos = dImg.getPos
@@ -223,9 +223,9 @@ object SResize {
       inVals =>
         inVals._2 match {
           // if the slice is present return it as it is
-          case hasSlice: Some[TImgBlock[Array[B]]] => hasSlice.get
+          case hasSlice: Some[TImgSlice[Array[B]]] => hasSlice.get
           // otherwise create a new empty slice
-          case None => new TImgBlock[Array[B]](new Array[B](sliceLength), inVals._1, outDim)
+          case None => new TImgSlice[Array[B]](new Array[B](sliceLength), inVals._1, outDim)
         }
     }
     DTImg.WrapRDD[Array[B]](
@@ -275,7 +275,7 @@ object SResize {
         if (oldInd >= 0 && oldInd < oldSliceLen) TypeMacros.arraySetter(outSlice, newInd,
           oldSlice, oldInd, imType)
       }
-      (outPos, new TImgBlock[A](outSlice.asInstanceOf[A], outPos, outDim))
+      (outPos, new TImgSlice[A](outSlice.asInstanceOf[A], outPos, outDim))
     }
     DTImg.WrapRDD[A](
       TImgTools.SimpleDimensions(baseDim, dImg.getElSize, basePos),

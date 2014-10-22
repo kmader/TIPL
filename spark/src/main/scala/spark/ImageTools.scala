@@ -3,7 +3,7 @@ package spark.images
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import tipl.util.{D3int, TImgBlock}
+import tipl.util.{D3int, TImgSlice}
 
 /**
  * A series of tools that are useful for image data
@@ -35,7 +35,7 @@ object ImageTools {
    * @param pvec is the current block
    * @param zSize is the spreading to perform
    */
-  def spread_blocks[S](pvec: (D3int, TImgBlock[S]), zSize: Int) = {
+  def spread_blocks[S](pvec: (D3int, TImgSlice[S]), zSize: Int) = {
     val pos = pvec._1
     val origblock = pvec._2
 
@@ -49,7 +49,7 @@ object ImageTools {
    * @param up is the upscaling factor (blocks spread from -up.z to up.z
    * @param dn is the downscaling factor the output position will be scaled by this number
    */
-  def spread_blocks_gen[S](pvec: (D3int, TImgBlock[S]), up: D3int, dn: D3int) = {
+  def spread_blocks_gen[S](pvec: (D3int, TImgSlice[S]), up: D3int, dn: D3int) = {
 
     val pos = pvec._1
     val origblock = pvec._2
@@ -184,7 +184,7 @@ case class D2int(x: Int, y: Int)
  */
 object ImageTools2D {
   /** create a Key-value Image with only points above a certain value **/
-  def BlockImageToKVImage[T](sc: SparkContext, inImg: RDD[(D3int, TImgBlock[Array[T]])],
+  def BlockImageToKVImage[T](sc: SparkContext, inImg: RDD[(D3int, TImgSlice[Array[T]])],
                              threshold: T)(implicit num: Numeric[T]) = {
     inImg.mapValues {
       cSlice =>
@@ -201,7 +201,7 @@ object ImageTools2D {
   }
 
   /** create a Key-value Image with only points above a certain value **/
-  def BlockImageToKVImageDouble(sc: SparkContext, inImg: RDD[(D3int, TImgBlock[Array[Double]])],
+  def BlockImageToKVImageDouble(sc: SparkContext, inImg: RDD[(D3int, TImgSlice[Array[Double]])],
                                 threshold: Double) = {
     inImg.mapValues {
       cSlice =>

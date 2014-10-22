@@ -18,7 +18,7 @@ class DSImgPartition(val prev: Partition, val startIndex: Long)
 
 class FlattenedDSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
 (dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg: IndexedSeq[(D3int,
-  TImgBlock[Array[T]])], path: TypedPath)
+  TImgSlice[Array[T]])], path: TypedPath)
 (implicit lm: ClassTag[T])
   extends TImg.ATImg(dim, pos, elSize, imageType) {
   override def getPolyImage(sliceNumber: Int, asType: Int): AnyRef =
@@ -39,11 +39,11 @@ class FlattenedDSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
  */
 class DSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
 (dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg: RDD[(D3int,
-  TImgBlock[Array[T]])], path: TypedPath)
+  TImgSlice[Array[T]])], path: TypedPath)
 (implicit lm: ClassTag[T])
   extends TImg.ATImg(dim, pos, elSize, imageType) {
 
-  def this(hd: TImgTools.HasDimensions, baseImg: RDD[(D3int, TImgBlock[Array[T]])],
+  def this(hd: TImgTools.HasDimensions, baseImg: RDD[(D3int, TImgSlice[Array[T]])],
            imageType: Int)(implicit lm: ClassTag[T]) =
     this(hd.getDim, hd.getPos, hd.getElSize, imageType, baseImg, TypedPath.virtualPath("Nothing")
     )(lm)
@@ -108,7 +108,7 @@ object DSImg {
   def MigrateImage[@spec(Boolean, Byte, Short, Int, Long, Float, Double) U](sc: SparkContext,
                                                                             cImg: TImgRO,
                                                                             imgType: Int):
-  RDD[(D3int, TImgBlock[Array[U]])] = {
+  RDD[(D3int, TImgSlice[Array[U]])] = {
     assert((TImgTools.isValidType(imgType)))
     val imgDim: D3int = cImg.getDim
     val imgPos: D3int = cImg.getPos
@@ -119,9 +119,9 @@ object DSImg {
       map { curSlice =>
       val nPos = new D3int(imgPos.x, imgPos.y, imgPos.z + curSlice)
       (nPos,
-        if (futureTImgMigrate) new TImgBlock.TImgBlockFromImage[Array[U]](cImg, curSlice,
+        if (futureTImgMigrate) new TImgSlice.TImgSliceFromImage[Array[U]](cImg, curSlice,
           imgType, nPos, sliceDim, zero)
-        else new TImgBlock[Array[U]](cImg.getPolyImage(curSlice, imgType).asInstanceOf[Array[U]],
+        else new TImgSlice[Array[U]](cImg.getPolyImage(curSlice, imgType).asInstanceOf[Array[U]],
           nPos, sliceDim)
         )
     }
@@ -135,12 +135,12 @@ object DSImg {
    * @author mader
    */
   def BlockShifter[T](inOffset: D3int) = {
-    (inData: (D3int, TImgBlock[T])) =>
-      val inSlice: TImgBlock[T] = inData._2
+    (inData: (D3int, TImgSlice[T])) =>
+      val inSlice: TImgSlice[T] = inData._2
       val nOffset: D3int = inOffset
       val oPos: D3int = inData._1
       val nPos: D3int = new D3int(oPos.x + nOffset.x, oPos.y + nOffset.y, oPos.z + nOffset.z)
-      (nPos, new TImgBlock[T](inSlice.getClone, nPos, inSlice.getDim, nOffset))
+      (nPos, new TImgSlice[T](inSlice.getClone, nPos, inSlice.getDim, nOffset))
   }
 
 }

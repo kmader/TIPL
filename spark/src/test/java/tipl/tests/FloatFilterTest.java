@@ -8,7 +8,7 @@ import tipl.spark.NeighborhoodPlugin.FloatFilterSlice;
 import tipl.tools.BaseTIPLPluginIn;
 import tipl.util.D3int;
 import tipl.util.D4int;
-import tipl.util.TImgBlock;
+import tipl.util.TImgSlice;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,19 +19,19 @@ public class FloatFilterTest {
 
     private static final TImgRO lineImg = TestPosFunctions.wrapItAs(400,
             new TestPosFunctions.LinesFunction(), 3);
-    private static final List<TImgBlock<float[]>> someSlices = makeSomeSlices(lineImg);
+    private static final List<TImgSlice<float[]>> someSlices = makeSomeSlices(lineImg);
     private static final float[] inSlice = (float[]) lineImg.getPolyImage(5, 3);
     private final FloatFilter ff = new FloatFilterTestImpl();
     private FloatFilter ffSlice = new FloatFilterTestImpl2();
 
-    private static List<TImgBlock<float[]>> makeSomeSlices(TImgRO testImg) {
-        List<TImgBlock<float[]>> imList = new ArrayList<TImgBlock<float[]>>();
+    private static List<TImgSlice<float[]>> makeSomeSlices(TImgRO testImg) {
+        List<TImgSlice<float[]>> imList = new ArrayList<TImgSlice<float[]>>();
         for (int i = 0; i < FloatFilterTest.lineImg.getDim().z; i++) {
             D3int pos = new D3int(0, 0, 2);
             D3int offset = new D3int(0, 0, 2 - i);
             D3int dim = new D3int(FloatFilterTest.lineImg.getDim().x,
                     FloatFilterTest.lineImg.getDim().y, 1);
-            imList.add(new TImgBlock<float[]>((float[]) FloatFilterTest.lineImg.getPolyImage(1,
+            imList.add(new TImgSlice<float[]>((float[]) FloatFilterTest.lineImg.getPolyImage(1,
                     3), pos, dim, offset));
         }
         return imList;
@@ -94,8 +94,8 @@ public class FloatFilterTest {
     @Test
     public void testGatherBlocks() {
         int startSlice = 2;
-        TImgBlock<float[]> outSlice = ff.GatherBlocks(new Tuple2<D3int,
-                Iterable<TImgBlock<float[]>>>(new D3int(0, 0, startSlice),
+        TImgSlice<float[]> outSlice = ff.GatherBlocks(new Tuple2<D3int,
+                Iterable<TImgSlice<float[]>>>(new D3int(0, 0, startSlice),
                 someSlices))._2();
         System.out.println(String.format("i\tIn\tOut"));
         for (int i = 0; i < inSlice.length; i++) {
