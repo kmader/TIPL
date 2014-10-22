@@ -78,13 +78,26 @@
             <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
+
+                <version>1.0-RC2</version>
                 <configuration>
+                    <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+                    <junitxml>.</junitxml>
+                    <filereports>${project.build.directory}/SparkTestSuite.txt</filereports>
+                    <argLine>-Xmx3g -XX:MaxPermSize=${MaxPermGen} -XX:ReservedCodeCacheSize=512m</argLine>
+                    <stderr/>
                     <environmentVariables>
-                        <SPARK_HOME>${basedir}/..</SPARK_HOME>
                         <SPARK_TESTING>1</SPARK_TESTING>
-                        <!-- <SPARK_CLASSPATH>${spark.classpath}</SPARK_CLASSPATH> -->
                     </environmentVariables>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

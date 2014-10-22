@@ -167,6 +167,7 @@
     <orderEntry type="library" name="Maven: org.scijava:scijava-common:2.33.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: com.googlecode.gentyref:gentyref:1.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.bushe:eventbus:1.4" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe.genjavadoc:genjavadoc-plugin_2.10.4:0.8" level="project" />
     <orderEntry type="module" module-name="tipl-ccgeom" />
   </component>
 </module>
