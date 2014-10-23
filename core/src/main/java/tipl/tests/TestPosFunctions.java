@@ -109,8 +109,8 @@ public abstract class TestPosFunctions implements PureFImage.PositionFunction,Se
 		/**
 		 * Creates a noisy version of an object
 		 * @param iphf starting phase function
-		 * @param possiblephases the list of possible phases
-		 * @param noiselevel the probability of a flip at a given point
+		 * @param ipossiblephases the list of possible phases
+		 * @param inoiselevel the probability of a flip at a given point
 		 */
 		public PhaseNoise(final TestPosFunctions iphf, final int[] ipossiblephases,final double inoiselevel) {
 			phFun=iphf;
@@ -215,7 +215,65 @@ public abstract class TestPosFunctions implements PureFImage.PositionFunction,Se
 			return ((x + y) % 2 == 1);
 		}
 	}
-	
+
+
+    /**
+     * distance from edges
+     *
+     * @author mader
+     *
+     */
+    public static class BoxDistances extends TestPosFunctions {
+
+        protected final D3float[] boxCorners=new D3float[8];
+        protected final double[] rng;
+
+        public BoxDistances(final float x,final float y, final float z) {
+            final D3float lowerPos = D3float.zero;
+            final D3float upperPos = new D3float(x,y,z);
+            int bci=0;
+            for(int i = 0; i<=1; i++) {
+                for (int j = 0; j<=1; j++) {
+                    for (int k = 0; k<=1; k++) {
+                        boxCorners[bci]=new D3float((1-i)*lowerPos.x+i*upperPos.x,
+                                (1-j)*lowerPos.y+j*upperPos.y,
+                                (1-k)*lowerPos.z+k*upperPos.z);
+                        bci++;
+                    }
+                }
+            }
+            rng = new double[] {  0, Math.max(Math.max(x, y),z) };
+        }
+        public BoxDistances( final float x) {
+            this(x,x,x);
+        }
+        @Override
+        public double[] getRange() {
+            return rng;
+        }
+
+        @Override
+        public double rget(final long x, final long y, final long z) {
+            return minDistance(x,y,z,boxCorners);
+        }
+        /**
+         * Find the minimum distance between a point and a list of points
+         * @param x
+         * @param y
+         * @param z
+         * @param ptlist
+         * @return
+         */
+        public static double minDistance(final float x, final float y, final float z,
+                                         final D3float[] ptlist) {
+            double minDist=ptlist[0].distance(x,y,z);
+            for(int i=1;i<ptlist.length;i++) {
+                double cDist = ptlist[i].distance(x,y,z);
+                if(cDist<minDist) minDist=cDist;
+            }
+            return minDist;
+        }
+    }
 	
 	/**
 	 * layered material (xy slices stacked in z)
@@ -253,10 +311,9 @@ public abstract class TestPosFunctions implements PureFImage.PositionFunction,Se
 			if (zwidth>0) phase+=Math.round(z/zwidth)%2;
 			return ((phase%2)>0) ? phase1 : phase2;
 		}
-
 	}
 	/**
-	 * Radially (cylinrical) layers centered at a predetermined point
+	 * Radially (cylindrical) layers centered at a predetermined point
 	 * @author mader
 	 *
 	 */
@@ -508,7 +565,7 @@ public abstract class TestPosFunctions implements PureFImage.PositionFunction,Se
 	 */
 	public static TImgRO wrapIt(final int sizeX,
 			final PureFImage.PositionFunction pf) {
-		return wrapItAs(sizeX, pf, 10);
+		return wrapItAs(sizeX, pf, TImgTools.IMAGETYPE_BOOL);
 	}
 
 	/**

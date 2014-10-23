@@ -48,6 +48,13 @@ public class D3float implements Serializable {
 				+ "," + String.format("%.4f", z) + "";
 	}
 
+    public double distance(final D3float p2) {
+        return distance(p2.x,p2.y,p2.z);
+    }
+    public double distance(final double x, final double y, final double z) {
+        return Math.sqrt(Math.pow(this.x-x,2)+Math.pow(this.y-y,2)+Math.pow(this.z-z,2));
+    }
+
     public static final D3float zero = new D3float(0);
     public static final D3float one = new D3float(1,1,1);
 }

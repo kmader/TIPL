@@ -1,9 +1,10 @@
 package tipl.spark
 
+import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import tipl.formats.{TImg, TImgRO}
-import tipl.util.{D3float, D3int, TImgSlice, TImgTools, TypedPath}
+import tipl.util.{ITIPLPluginIO, D3float, D3int, TImgSlice, TImgTools, TypedPath}
 
 import scala.reflect.ClassTag
 import scala.{specialized => spec}
@@ -139,6 +140,7 @@ abstract class ImageRDD[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
 
 
 object ImageRDD {
+
 
 
   class PointRDD[T](dim: D3int,
@@ -278,5 +280,38 @@ object ImageRDD {
 
   }
 
+
+  trait LoadImagesAsDSImg extends ITIPLPluginIO {
+    var inImgs: Array[TImgRO] = null
+    def LoadImages(inImgs: Array[TImgRO]): Unit = {
+      this.inImgs = inImgs
+    }
+    def getDSImg[T](sc: SparkContext, imgType: Int,index: Int)(implicit tm: ClassTag[T]): DSImg[T]
+    = {
+      require(inImgs!=null)
+      require(index>=0 && index<inImgs.length)
+      new DSImg[T](sc, inImgs(index), imgType)
+    }
+
+    def ExportDSImg[T](templateIm: TImgRO): DSImg[T]
+
+    override def ExportImages(templateIm: TImgRO): Array[TImg] = {
+      Array(ExportDSImg(templateIm))
+    }
+
+  }
+
+  trait LoadImagesAsKVImg {
+    var inImgs: Array[TImgRO] = null
+    def LoadImages(inImgs: Array[TImgRO]): Unit = {
+      this.inImgs = inImgs
+    }
+    def getKVImg[T](sc: SparkContext, imgType: Int,index: Int)(implicit tm: ClassTag[T]): KVImg[T]
+    = {
+      require(inImgs!=null)
+      require(index>=0 && index<inImgs.length)
+      new KVImg[T](sc, inImgs(index), imgType)
+    }
+  }
 
 }

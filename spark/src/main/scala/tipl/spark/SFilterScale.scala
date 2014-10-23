@@ -67,10 +67,14 @@ class SFilterScale extends BaseTIPLPluginIO with FilterSettings.HasFilterSetting
   }
 
   override def ExportImages(templateIm: TImgRO): Array[TImg] = {
+    Array(ExportDTImg(templateIm))
+  }
+
+  def ExportDTImg(templateIm: TImgRO): DTImg[Array[Double]] = {
     val jpr = JavaPairRDD.fromRDD(outputImage)
     val outImage = DTImg.WrapRDD[Array[Double]](templateIm, jpr, TImgTools.IMAGETYPE_DOUBLE)
     outImage.setDim(outputSize)
-    Array(outImage)
+    outImage
   }
 
   override def getInfo(request: String): Object = {

@@ -6,17 +6,15 @@ package tipl.spark
 import org.apache.spark.SparkContext._
 import org.apache.spark.api.java.JavaPairRDD
 import org.apache.spark.rdd.RDD
-import scala.reflect.ClassTag
-import tipl.util.TImgSlice
-import tipl.util.D3int
-import tipl.util.D3float
-import tipl.util.TImgTools
-import tipl.util.TImgTools.HasDimensions
-import tipl.util.TIPLOps._
-import tipl.tools.BaseTIPLPluginIn
-import scala.util.Sorting.stableSort
 import tipl.formats.TImgRO
+import tipl.tools.BaseTIPLPluginIn
+import tipl.util.TIPLOps._
+import tipl.util.{D3float, D3int, TImgSlice, TImgTools}
+import tipl.util.TImgTools.HasDimensions
 
+import scala.reflect.ClassTag
+import scala.util.Sorting.stableSort
+import scala.{specialized => spec}
 
 /**
  * A collection of useful functions for DTImg classes to allow more complicated analyses
@@ -24,10 +22,12 @@ import tipl.formats.TImgRO
  *
  */
 object DTImgOps {
-
   private[spark] def DTImgToKVRDD(inImg: DTImg[_]) = {
     val imgType = inImg.getImageType
-    inImg.getBaseImg.rdd.flatMap {
+    DTrddToKVrdd(inImg.getBaseImg.rdd,imgType)
+  }
+  private[spark] def DTrddToKVrdd[V](inImg: RDD[(D3int,TImgSlice[V])],imgType: Int) = {
+    inImg.flatMap {
       cPoint =>
         val pos = cPoint._1
         val dim = new D3int(cPoint._2.getDim,1)
@@ -42,6 +42,25 @@ object DTImgOps {
 
     //val onImg = TypeMacros.correctlyTypeDTImg(inImg)
   }
+
+  private[spark] def DTrddToKVrdd[@spec(Boolean, Byte, Short, Int, Long, Float,
+    Double) T](inImg: RDD[(D3int,TImgSlice[Array[T]])]): RDD[(D3int, T)] = {
+    inImg.flatMap {
+      cPoint =>
+        val pos = cPoint._1
+        val dim = new D3int(cPoint._2.getDim,1)
+        val obj = cPoint._2.get
+        val outArr = obj
+        for {z <- 0 until dim.z
+             y <- 0 until dim.y
+             x <- 0 until dim.x
+        }
+        yield (new D3int(pos.x + x, pos.y + y, pos.z + z), outArr((z * dim.y + y) * dim.x + x))
+    }
+
+    //val onImg = TypeMacros.correctlyTypeDTImg(inImg)
+  }
+
 
   def DTImgToKV(inImg: DTImg[_]) = {
     new KVImg(inImg, inImg.getImageType, DTImgToKVRDD(inImg))
