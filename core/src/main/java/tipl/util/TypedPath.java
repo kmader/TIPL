@@ -239,4 +239,13 @@ public class TypedPath implements Serializable {
     }
     public TypedPath appendDir(String dirName) { return appendDir(dirName,true); }
 
+    /**
+     * Return true if the current path is empty
+     * @note now  this is narrowly defined as equaling ""
+     * @return
+     */
+    public boolean isEmpty() {
+        return this.getPath().equals("");
+    }
+
 }

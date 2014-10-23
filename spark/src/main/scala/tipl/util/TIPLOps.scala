@@ -7,7 +7,7 @@ import org.apache.spark.rdd.RDD
 import tipl.formats.{FImage, TImg, TImgRO}
 import tipl.settings.FilterSettings
 import tipl.spark.DTImgOps._
-import tipl.spark.{DTImg, KVImg, SKVoronoi, ShapeAnalysis}
+import tipl.spark.{DTImg, KVImg}
 import tipl.tools.{BaseTIPLPluginIn, GrayAnalysis, HildThickness}
 
 import scala.math.{pow, sqrt}
@@ -160,14 +160,15 @@ object TIPLOps {
      * The kVoronoi operation
      */
     def kvoronoi(mask: TImgRO): Array[TImg] = {
-      val plugObj = new SKVoronoi
-      plugObj.LoadImages(Array(inputImage, mask))
+      val imgList = Array(inputImage, mask)
+      val plugObj = TIPLPluginManager.createBestPluginIO("KVoronoi", imgList)
+      plugObj.LoadImages(imgList)
       plugObj.execute
       plugObj.ExportImages(mask)
     }
 
     def shapeAnalysis(outfile: String): Unit = {
-      val plugObj = new ShapeAnalysis
+      val plugObj = TIPLPluginManager.createBestPluginIO("ShapeAnalysis", Array(inputImage))
       plugObj.LoadImages(Array(inputImage))
       plugObj.setParameter("-csvname=" + outfile)
       plugObj.execute

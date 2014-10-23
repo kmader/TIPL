@@ -39,8 +39,6 @@ public class IOUtilities {
 
     }
 
-
-
     /**
      * List directory contents for a resource folder. Not recursive.
      * This is basically a brute-force implementation.

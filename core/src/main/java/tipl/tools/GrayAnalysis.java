@@ -1853,7 +1853,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		}
 		long start = System.currentTimeMillis();
 		boolean gfiltGood = true;
-		final boolean useInsert=!insName.equals(""); // if it is not empty
+		final boolean useInsert=!insName.isEmpty(); // if it is not empty
 		if (useGFILT)
 			gfiltGood = gfiltA.isGood();
 		if ((mapA.isGood()) & (gfiltGood)) {
