@@ -42,6 +42,17 @@ ClassTag[T])
   def this(sc: SparkContext, cImg: TImgRO, imageType: Int)(implicit lm: ClassTag[T]) =
     this(cImg, imageType, KVImg.TImgToKVRdd[T](sc, cImg, imageType))(lm)
 
+
+  def map[U: ClassTag](f: ((D3int,T)) => (D3int,U),newDim: D3int=dim,newPos: D3int=pos,
+                       newElSize: D3float = elSize,newImageType: Int=imageType): KVImg[U] =
+    new KVImg[U](newDim,newPos,newElSize,newImageType,getBaseImg.map(f))
+
+  def mapValues[U: ClassTag](f: (T) => U,newImageType: Int=imageType): KVImg[U] =
+    new KVImg[U](dim,pos,elSize,newImageType,getBaseImg.mapValues(f))
+
+  def filter(f: ((D3int,T)) => Boolean): KVImg[T] =
+    new KVImg[T](dim,pos,elSize,imageType,getBaseImg.filter(f))
+
   def getBaseImg() = baseImg
 
   /* The function to collect all the key value pairs and return it as the appropriate array for a
