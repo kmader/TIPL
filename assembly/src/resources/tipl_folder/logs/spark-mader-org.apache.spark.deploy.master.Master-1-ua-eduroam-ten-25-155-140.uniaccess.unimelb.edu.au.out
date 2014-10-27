@@ -1,0 +1,133 @@
+Spark Command: java -cp ::/Users/mader/Dropbox/tipl_maven/conf:/Users/mader/Dropbox/tipl_maven/assembly/target//tipl-assembly-1.0-SNAPSHOT.jar -XX:MaxPermSize=128m -Dspark.akka.logLifecycleEvents=true -Xms512m -Xmx512m org.apache.spark.deploy.master.Master --ip ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au --port 7077 --webui-port 8080
+========================================
+
+Java HotSpot(TM) 64-Bit Server VM warning: ignoring option MaxPermSize=128m; support was removed in 8.0
+Using Spark's default log4j profile: org/apache/spark/log4j-defaults.properties
+14/10/26 08:43:45 INFO Master: Registered signal handlers for [TERM, HUP, INT]
+14/10/26 08:43:45 INFO SecurityManager: Changing view acls to: mader,
+14/10/26 08:43:45 INFO SecurityManager: Changing modify acls to: mader,
+14/10/26 08:43:45 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: Set(mader, ); users with modify permissions: Set(mader, )
+14/10/26 08:43:46 INFO Slf4jLogger: Slf4jLogger started
+14/10/26 08:43:46 INFO Remoting: Starting remoting
+14/10/26 08:43:46 INFO Remoting: Remoting started; listening on addresses :[akka.tcp://sparkMaster@ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au:7077]
+14/10/26 08:43:46 INFO Utils: Successfully started service 'sparkMaster' on port 7077.
+14/10/26 08:43:46 INFO Master: Starting Spark master at spark://ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au:7077
+14/10/26 08:43:46 INFO Utils: Successfully started service 'MasterUI' on port 8080.
+14/10/26 08:43:46 INFO MasterWebUI: Started MasterWebUI at http://ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au:8080
+14/10/26 08:43:46 INFO Master: I have been elected leader! New state: ALIVE
+14/10/26 08:45:11 INFO Master: Registering worker ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au:62822 with 2 cores, 2.0 GB RAM
+14/10/26 08:45:33 INFO Master: Registering worker ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au:62829 with 1 cores, 2.0 GB RAM
+14/10/26 08:45:46 INFO Master: Registering worker ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au:62834 with 1 cores, 2.0 GB RAM
+14/10/26 10:20:55 WARN Master: Removing worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822 because we got no heartbeat in 60 seconds
+14/10/26 10:20:55 INFO Master: Removing worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822 on ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au:62822
+14/10/26 10:20:55 WARN Master: Removing worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834 because we got no heartbeat in 60 seconds
+14/10/26 10:20:55 INFO Master: Removing worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834 on ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au:62834
+14/10/26 10:20:55 WARN Master: Removing worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829 because we got no heartbeat in 60 seconds
+14/10/26 10:20:55 INFO Master: Removing worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829 on ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au:62829
+14/10/26 10:21:11 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:21:12 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:21:12 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:21:15 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:21:15 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:21:19 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:21:24 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:21:27 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:21:49 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:21:49 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:21:49 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:21:53 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:21:54 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:21:57 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:22:04 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:22:09 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:22:12 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:22:19 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:22:24 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:22:27 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:22:34 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:22:39 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:22:42 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:22:49 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:22:54 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:22:57 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:23:04 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:23:09 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:23:12 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:23:19 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:23:24 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:23:27 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:23:34 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:23:39 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:23:42 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:23:49 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:23:54 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:23:57 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:24:04 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:24:09 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:24:12 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:24:19 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:24:24 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:24:27 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:24:34 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:24:39 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:24:42 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:24:49 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:24:54 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:24:57 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:25:04 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:25:09 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:25:12 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:25:19 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:25:24 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:25:27 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:25:34 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:25:39 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:25:42 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:25:49 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:25:54 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:25:57 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:26:04 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:26:09 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:26:12 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:26:19 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:26:24 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:26:27 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:26:34 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:26:39 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:26:42 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:26:49 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:26:54 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:26:57 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:27:04 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:27:09 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:27:12 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:27:19 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:27:24 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:27:27 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:27:34 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:27:39 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:27:42 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:27:49 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:27:54 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:27:57 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:28:04 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:28:09 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:28:12 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:28:19 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:28:24 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:28:27 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:28:34 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:28:39 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:28:42 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:28:49 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:28:54 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:28:57 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:29:04 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:29:09 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:29:12 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:29:19 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:29:24 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:29:27 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
+14/10/26 10:29:34 WARN Master: Got heartbeat from unregistered worker worker-20141026084510-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62822
+14/10/26 10:29:39 WARN Master: Got heartbeat from unregistered worker worker-20141026084545-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62834
+14/10/26 10:29:42 WARN Master: Got heartbeat from unregistered worker worker-20141026084533-ua-eduroam-ten-25-155-140.uniaccess.unimelb.edu.au-62829
