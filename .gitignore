@@ -10,4 +10,6 @@ build/TIPL.jar
 *.csv
 *.txt
 *.xml
+*.exe
 README
+
