@@ -34,6 +34,7 @@ package tipl.deepzoom;
  *
  *  Contributor(s):
  *    Glenn Lawrence  <glenn.c.lawrence@gmail.com>
+ *    Kevin Mader <kevin.mader@gmail.com>
  *
  *  Alternatively, the contents of this file may be used under the terms of
  *  either the GNU General Public License Version 3 or later (the "GPL"), or
@@ -48,6 +49,10 @@ package tipl.deepzoom;
  *  the terms of any one of the MPL, the GPL or the LGPL.
  */
 
+import tipl.formats.TImgRO;
+import tipl.tools.BaseTIPLPluginIn;
+import tipl.util.*;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -61,109 +66,87 @@ import java.util.Vector;
 import java.util.Iterator;
 
 /**
- *
+ * Modified from original version to integrate with TIPL
  * @author Glenn Lawrence
+ * @author Kevin Mader
  */
-public class JDZ {
+public class JDZ extends BaseTIPLPluginIn {
 
     static final String xmlHeader = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
     static final String schemaName = "http://schemas.microsoft.com/deepzoom/2009";
 
-    private enum CmdParseState { DEFAULT, OUTPUTDIR, TILESIZE, OVERLAP, INPUTFILE };
-    static Boolean deleteExisting = true;
-    static String tileFormat = "jpg";
+    boolean deleteExisting = true;
+    String tileFormat = "jpg";
 
     // The following can be overriden/set by the indicated command line arguments
-    static int tileSize = 256;            // -tilesize
-    static int tileOverlap = 1;           // -overlap
-    static File outputDir = null;         // -outputdir or -o
-    static Boolean verboseMode = false;   // -verbose or -v
-    static Boolean debugMode = false;     // -debug
-    static Vector<File> inputFiles = new Vector();  // must follow all other args
+     int tileSize = 256;            // -tilesize
+     int tileOverlap = 1;           // -overlap
+     TypedPath outputDir = TypedPath.localFile(new File("."));         // -outputdir or -o
+     boolean verboseMode = false;   // -verbose or -v
+     TypedPath inputFile = TypedPath.localFile(new File("."));  // must follow all other args
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-
-        try {
-            try {
-                parseCommandLine(args);
-                if (outputDir == null)
-                    outputDir = new File(".");
-                if (debugMode) {
-                    System.out.printf("tileSize=%d ", tileSize);
-                    System.out.printf("tileOverlap=%d ", tileOverlap);
-                    System.out.printf("outputDir=%s\n", outputDir.getPath());
-                }
-
-            } catch (Exception e) {
-                System.out.println("Invalid command line: " + e.getMessage());
-                return;
-            }
-
-            if (!outputDir.exists())
-                throw new FileNotFoundException("Output directory does not exist: "
-                        + outputDir.getPath());
-            if (!outputDir.isDirectory())
-                throw new FileNotFoundException("Output directory is not a directory: "
-                        + outputDir.getPath());
-
-            Iterator<File> itr = inputFiles.iterator();
-            while (itr.hasNext())
-                processImageFile(itr.next(), outputDir);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ITIPLPluginIn jdz = new JDZ();
+        jdz.setParameter(TIPLGlobal.activeParser(args),"");
+        jdz.execute();
     }
 
-    /**
-     * Process the command line arguments
-     * @param args the command line arguments
-     */
-    private static void parseCommandLine(String[] args) throws Exception {
-        CmdParseState state = CmdParseState.DEFAULT;
-        for (int count = 0; count < args.length; count++) {
-            String arg = args[count];
-            switch (state) {
-                case DEFAULT:
-                    if (arg.equals("-verbose") || arg.equals("-v"))
-                        verboseMode = true;
-                    else if (arg.equals("-debug")) {
-                        verboseMode = true;
-                        debugMode = true;
-                    }
-                    else if (arg.equals("-outputdir") || arg.equals("-o"))
-                        state = CmdParseState.OUTPUTDIR;
-                    else if (arg.equals("-tilesize"))
-                        state = CmdParseState.TILESIZE;
-                    else if (arg.equals("-overlap"))
-                        state = CmdParseState.OVERLAP;
-                    else
-                        state = CmdParseState.INPUTFILE;
-                    break;
-                case OUTPUTDIR:
-                    outputDir = new File(arg);
-                    state = CmdParseState.DEFAULT;
-                    break;
-                case TILESIZE:
-                    tileSize = Integer.parseInt(arg);
-                    state = CmdParseState.DEFAULT;
-                    break;
-                case OVERLAP:
-                    tileOverlap = Integer.parseInt(arg);
-                    state = CmdParseState.DEFAULT;
-                    break;
-            }
-            if (state == CmdParseState.INPUTFILE) {
-                File inputFile = new File(arg);
-                if (!inputFile.exists())
-                    throw new FileNotFoundException("Missing input file: " + inputFile.getPath());
-                inputFiles.add(inputFile);
-            }
+    @TIPLPluginManager.PluginInfo(pluginType = "JDZ",
+            desc = "Java DeepZoom Tool",
+            sliceBased = false)
+    final public static class dzFactory implements TIPLPluginManager.TIPLPluginFactory {
+        @Override
+        public ITIPLPlugin get() {
+            return new JDZ();
         }
-        if (inputFiles.size() == 0)
-            throw new Exception("No input files given");
+    };
+
+    @Override public ArgumentParser setParameter(ArgumentParser p, String prefix)  {
+        inputFile = p.getOptionPath(prefix + "input", inputFile, "The input image to mosaic");
+        tileFormat = p.getOptionString("tileformat",tileFormat,"Format for the tile images");
+        outputDir = p.getOptionPath(prefix+"outputdir",outputDir,"The output directory");
+        tileSize = p.getOptionInt(prefix+"tilesize",tileSize,"Size of the tiles");
+        tileOverlap = p.getOptionInt(prefix+"tileoverlap",tileOverlap,"Overlap between tiles");
+        verboseMode = p.getOptionBoolean(prefix+"verbose",verboseMode,"Verbose");
+        deleteExisting = p.getOptionBoolean(prefix+"delexisting",deleteExisting,
+                "Delete existing folders");
+        if (!outputDir.getFile().exists())
+            throw new IllegalArgumentException("Output directory does not exist: "
+                    + outputDir.getPath());
+        if (!outputDir.getFile().isDirectory())
+            throw new IllegalArgumentException("Output directory is not a directory: "
+                    + outputDir.getPath());
+        return p;
+    }
+
+    @Override
+    public boolean execute() {
+        if (TIPLGlobal.getDebug()) {
+            System.out.printf("tileSize=%d ", tileSize);
+            System.out.printf("tileOverlap=%d ", tileOverlap);
+            System.out.printf("outputDir=%s\n", outputDir.getPath());
+        }
+        try {
+            processImageFile(inputFile, outputDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println(this+": Problem reading or writing files"+e);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String getPluginName() {
+        return "JavaDeepZoom";
+    }
+
+    @Override
+    public void LoadImages(TImgRO[] inImages) {
+
     }
 
     /**
@@ -172,15 +155,15 @@ public class JDZ {
      * @param inFile the file containing the image
      * @param outputDir the output directory
      */
-    private static void processImageFile(File inFile, File outputDir) throws IOException {
+    private void processImageFile(TypedPath inFile, TypedPath outputDir) throws IOException {
         if (verboseMode)
             System.out.printf("Processing image file: %s\n", inFile);
 
-        String fileName = inFile.getName();
+        String fileName = inFile.getFile().getName();
         String nameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
         String pathWithoutExtension = outputDir + File.separator + nameWithoutExtension;
 
-        BufferedImage image = loadImage(inFile);
+        TileableImage image = loadImage(inFile);
 
         int originalWidth = image.getWidth();
         int originalHeight = image.getHeight();
@@ -189,7 +172,7 @@ public class JDZ {
 
         int nLevels = (int)Math.ceil(Math.log(maxDim) / Math.log(2));
 
-        if (debugMode)
+        if (TIPLGlobal.getDebug())
             System.out.printf("nLevels=%d\n", nLevels);
 
         // Delete any existing output files and folders for this image
@@ -205,14 +188,14 @@ public class JDZ {
         File imgDir = new File(pathWithoutExtension);
         if (imgDir.exists()) {
             if (deleteExisting) {
-                if (debugMode)
+                if (TIPLGlobal.getDebug())
                     System.out.printf("Deleting directory: %s\n", imgDir);
                 deleteDir(imgDir);
             } else
                 throw new IOException("Image directory already exists in output dir: " + imgDir);
         }
 
-        imgDir = createDir(outputDir, nameWithoutExtension);
+        imgDir = createDir(outputDir.getFile(), nameWithoutExtension);
 
         double width = originalWidth;
         double height = originalHeight;
@@ -220,7 +203,7 @@ public class JDZ {
         for (int level = nLevels; level >= 0; level--) {
             int nCols = (int)Math.ceil(width / tileSize);
             int nRows = (int)Math.ceil(height / tileSize);
-            if (debugMode)
+            if (TIPLGlobal.getDebug())
                 System.out.printf("level=%d w/h=%f/%f cols/rows=%d/%d\n",
                         level, width, height, nCols, nRows);
 
@@ -237,10 +220,10 @@ public class JDZ {
             height = Math.ceil(height / 2);
             if (width > 10 && height > 10) {
                 // resize in stages to improve quality
-                image = resizeImage(image, width * 1.66, height * 1.66);
-                image = resizeImage(image, width * 1.33, height * 1.33);
+                image = image.resize(width * 1.66, height * 1.66).
+                        resize(width * 1.33, height * 1.33);
             }
-            image = resizeImage(image, width, height);
+            image = image.resize(width, height);
         }
 
         saveImageDescriptor(originalWidth, originalHeight, descriptor);
@@ -290,16 +273,76 @@ public class JDZ {
 
     /**
      * Loads image from file
-     * @param file the file containing the image
+     * @param imageName the file containing the image
      */
-    private static BufferedImage loadImage(File file) throws IOException {
-        BufferedImage result = null;
+    private static TileableImage loadImage(TypedPath imageName) throws IOException {
         try {
-            result = ImageIO.read(file);
+            return new TBIImgImpl(ImageIO.read(imageName.getFile()));
         } catch (Exception e) {
-            throw new IOException("Cannot read image file: " + file);
+            throw new IOException("Cannot read image file: " + imageName);
         }
-        return result;
+
+
+    }
+
+    /**
+     * Class for any image which can be tiled easily since it can be resized and written into a
+     * bufferimage
+     */
+    static public interface TileableImage {
+        public int getWidth();
+        public int getHeight();
+        public int getType();
+        public boolean writeTileInBufferedImage(BufferedImage img,int w,int h,int x,int y);
+        public TileableImage resize(double width, double height);
+    }
+
+
+    /**
+     * The working implementation for a simple bufferedimage object
+     */
+    static private class TBIImgImpl extends TileableBImage {
+        final BufferedImage bi;
+        public TBIImgImpl(BufferedImage bi) {
+            this.bi=bi;
+        }
+        @Override
+        public BufferedImage getAsBI() {
+            return bi;
+        }
+    }
+    static abstract public class TileableBImage implements TileableImage {
+        abstract public BufferedImage getAsBI();
+        @Override
+        public boolean writeTileInBufferedImage(BufferedImage img,int w,int h,int x,int y) {
+            Graphics2D g = img.createGraphics();
+            return g.drawImage(getAsBI(), 0, 0, w, h, x, y, x+w, y+h, null);
+        }
+
+        /**
+         * Returns resized image
+         * NB - useful reference on high quality image resizing can be found here:
+         *   http://today.java.net/pub/a/today/2007/04/03/perils-of-image-getscaledinstance.html
+         * @param width the required width
+         * @param height the frequired height
+         */
+        @Override
+        public TileableImage resize(double width, double height) {
+            int w = (int)width;
+            int h = (int)height;
+            final BufferedImage result = new BufferedImage(w, h, getType());
+            Graphics2D g = result.createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g.drawImage(getAsBI(), 0, 0, w, h, 0, 0, getWidth(), getHeight(), null);
+            return new TBIImgImpl(result);
+        }
+        @Override
+        public int getWidth() {return getAsBI().getWidth();}
+        @Override
+        public int getHeight() {return getAsBI().getHeight();}
+        @Override
+        public int getType() {return getAsBI().getType();}
     }
 
     /**
@@ -309,7 +352,7 @@ public class JDZ {
      * @param row - the tile's row (i.e. y) index
      * @param col - the tile's column (i.e. x) index
      */
-    private static BufferedImage getTile(BufferedImage img, int row, int col) {
+    private BufferedImage getTile(TileableImage img, int row, int col) {
         int x = col * tileSize - (col == 0 ? 0 : tileOverlap);
         int y = row * tileSize - (row == 0 ? 0 : tileOverlap);
         int w = tileSize + (col == 0 ? 1 : 2) * tileOverlap;
@@ -320,7 +363,7 @@ public class JDZ {
         if (y + h > img.getHeight())
             h = img.getHeight() - y;
 
-        if (debugMode)
+        if (TIPLGlobal.getDebug())
             System.out.printf("getTile: row=%d, col=%d, x=%d, y=%d, w=%d, h=%d\n",
                     row, col, x, y, w, h);
 
@@ -328,37 +371,20 @@ public class JDZ {
         assert(h > 0);
 
         BufferedImage result = new BufferedImage(w, h, img.getType());
-        Graphics2D g = result.createGraphics();
-        g.drawImage(img, 0, 0, w, h, x, y, x+w, y+h, null);
+        img.writeTileInBufferedImage(result, w, h, x, y);
+
 
         return result;
     }
 
-    /**
-     * Returns resized image
-     * NB - useful reference on high quality image resizing can be found here:
-     *   http://today.java.net/pub/a/today/2007/04/03/perils-of-image-getscaledinstance.html
-     * @param width the required width
-     * @param height the frequired height
-     * @param img the image to be resized
-     */
-    private static BufferedImage resizeImage(BufferedImage img, double width, double height) {
-        int w = (int)width;
-        int h = (int)height;
-        BufferedImage result = new BufferedImage(w, h, img.getType());
-        Graphics2D g = result.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        g.drawImage(img, 0, 0, w, h, 0, 0, img.getWidth(), img.getHeight(), null);
-        return result;
-    }
+
 
     /**
      * Saves image to the given file
      * @param img the image to be saved
      * @param path the path of the file to which it is saved (less the extension)
      */
-    private static void saveImage(BufferedImage img, String path) throws IOException {
+    private void saveImage(BufferedImage img, String path) throws IOException {
         File outputFile = new File(path + "." + tileFormat);
         try {
             ImageIO.write(img, tileFormat, outputFile);
@@ -373,7 +399,7 @@ public class JDZ {
      * @param height image height
      * @param file the file to which it is saved
      */
-    private static void saveImageDescriptor(int width, int height, File file) throws IOException {
+    private void saveImageDescriptor(int width, int height, File file) throws IOException {
         Vector lines = new Vector();
         lines.add(xmlHeader);
         lines.add("<Image TileSize=\"" + tileSize + "\" Overlap=\"" + tileOverlap +
@@ -399,5 +425,4 @@ public class JDZ {
             throw new IOException("Unable to write to text file: " + file);
         }
     }
-
 }

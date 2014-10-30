@@ -766,9 +766,11 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
     @Override
     public ArgumentParser setParameter(final ArgumentParser p,
                                        final String cPrefix) {
+        p.createNewLayer(getPluginName());
         System.out
-                .println("setParameter with arguments has not yet been implemented for "
+                .println("Using default setParameter implementation"
                         + getPluginName());
+
         neighborSize = p.getOptionD3int(cPrefix + "neighborhood", neighborSize,
                 "Size of neighborhood to use in kernel");
         final int kernel = p.getOptionInt(cPrefix + "kernel", 0,
