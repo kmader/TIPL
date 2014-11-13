@@ -35,6 +35,7 @@
 
     <modules>
         <module>core</module>
+        <module>file-io</module>
         <module>ccgeom</module>
         <module>VIB-lib</module>
         <module>workflows</module>
