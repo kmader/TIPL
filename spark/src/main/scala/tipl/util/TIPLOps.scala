@@ -91,8 +91,26 @@ object TIPLOps {
     }
   }
 
+  /**
+   * valid for a list of TImgRO objects
+   * @param inputImageList list of images
+   * @tparam T any image type
+   * @return an object with many more operators than TImgRO or array
+   */
+  implicit def TImgListToRichTImgList[T <: TImgRO](inputImageList: Array[T]) = new
+      RichTImgList[T](inputImageList)
 
-  implicit class RichTImgList[T <: TImgRO](val inputImageList: Array[T]) {
+  /**
+   * valid for a single TImgRO objects
+   * @param inputImage single object (to be converted to a one element list)
+   * @tparam T any image type
+   * @return an object with many more operators than TImgRO or array
+   */
+  implicit def TImgToRichTImgList[T <: TImgRO](inputImage: T) = new
+      RichTImgList[TImgRO](Array[TImgRO](inputImage))
+
+  class RichTImgList[T <: TImgRO](val inputImageList: Array[T]) {
+
     def pluginIO(name: String): ITIPLPluginIO = {
       TIPLPluginManager.createBestPluginIO[T](name, inputImageList)
     }
@@ -101,12 +119,27 @@ object TIPLOps {
       TIPLPluginManager.createBestPlugin[T](name, inputImageList)
     }
 
+    def pluginIn(name: String): ITIPLPluginIn = {
+      TIPLPluginManager.createBestPluginIn[T](name, inputImageList)
+    }
+
     def run(name: String, parameters: String): Array[TImg] = {
       val plug = pluginIO(name)
       plug.LoadImages(inputImageList.asInstanceOf[Array[TImgRO]])
       plug.setParameter(parameters)
       plug.execute()
       plug.ExportImages(inputImageList(0))
+    }
+
+    def show(index: Int = 0) = {
+      val ip = tipl.ij.TImgToImagePlus.MakeImagePlus(inputImageList(index))
+      ip.show(inputImageList(index).getPath().getPath())
+    }
+
+    def show3D(index: Int = 0) = {
+      val vvPlug = pluginIn("VolumeViewer")
+      vvPlug.LoadImages(Array[TImgRO](inputImageList(index)))
+      vvPlug.execute("waitForClose")
     }
   }
 

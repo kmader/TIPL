@@ -650,7 +650,7 @@ public class JDZ extends BaseTIPLPluginIn {
 
         @Override
         public int getHeight() {
-            return tilesX * getSliceHeight();
+            return tilesY * getSliceHeight();
         }
 
         @Override
@@ -658,19 +658,42 @@ public class JDZ extends BaseTIPLPluginIn {
             return iimg.getImageType();
         }
 
+        protected static int getSliceInd(int xInd, int yInd,int tilesX) {
+            return tilesX*yInd+xInd;
+        }
+
         @Override
         public boolean writeTileInBufferedImage(BufferedImage img, int w, int h, int x, int y) {
             //TODO implement write tile
 
             Graphics2D g = img.createGraphics();
-            int[] neededSlices = new int[]{1, 2, 3};
-            for (int slice : neededSlices) {
-                g.drawImage(sliceToPanel(iimg, slice, scale, getSliceWidth(), getSliceHeight()),
-                        0, 0, w, h, x, y, x + h,
-                        y + h, null);
+
+            int curX = x;
+            while (curX<(x+h)) {
+                int xInd = (int) Math.ceil( ((double)curX)/getSliceWidth());
+                curX = xInd*getSliceWidth();
+                int curY = y;
+                while (curY<(y+h)) {
+                    int yInd = (int) Math.ceil(((double)curY)/getSliceHeight());
+                    curY = yInd*getSliceHeight();
+                    int osX = x-curX; // output starting position in x
+                    int osY = y-curY; // output starting position in y
+
+                    int outWidth = Math.min(w,getSliceWidth());
+                    int outHeight = Math.min(h,getSliceHeight());
+
+                    g.drawImage(sliceToPanel(iimg, getSliceInd(xInd,yInd,tilesX), scale,
+                                    getSliceWidth(),
+                                    getSliceHeight()),
+                            osX, osY, osX+outWidth, osY+outHeight, // output image coordinates
+                            0, 0, outWidth,  outHeight, // input image coordinates
+                            null);
+                }
             }
-            throw new IllegalArgumentException("WriteTile has not yet been implemented");
-            // return true;
+
+
+            //throw new IllegalArgumentException("WriteTile has not yet been implemented");
+             return true;
         }
 
         @Override

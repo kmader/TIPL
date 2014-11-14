@@ -71,6 +71,28 @@ public class TIPLPluginManager {
     }
 
     /**
+     * get the best suited plugin for the given images and return an input plugin instead of
+     * standard one
+     * @param curInfo information on the plugin to get
+     * @return an instance of the plugin
+     * @throws InstantiationException
+     */
+    public static ITIPLPluginIn getPluginIn(PluginInfo curInfo) {
+        return (ITIPLPluginIn) getPlugin(curInfo);
+    }
+
+    /**
+     * get the best suited plugin for the given images and return an output plugin instead of
+     * standard one
+     * @param curInfo information on the plugin to get
+     * @return an instance of the plugin
+     * @throws InstantiationException
+     */
+    public static ITIPLPluginOut getPluginOut(PluginInfo curInfo) {
+        return (ITIPLPluginOut) getPlugin(curInfo);
+    }
+
+    /**
      * Get a list of all the plugin factories that exist
      * @return
      * @throws InstantiationException
@@ -244,6 +266,17 @@ public class TIPLPluginManager {
      */
     public static <T extends TImgTools.HasDimensions> ITIPLPlugin createBestPlugin(final String pluginType, final T[] inImages) {
         return getPlugin(getBestPlugin(pluginType, inImages));
+    }
+
+    /**
+     * get the best suited plugin taking input for the given images
+     * @param pluginType name of the plugin
+     * @param inImages the input images
+     * @return an instance of the plugin as a pluginin object (supporting loadimages)
+     */
+    public static <T extends TImgTools.HasDimensions> ITIPLPluginIn createBestPluginIn(final String
+                                                                                            pluginType, final T[] inImages) {
+        return getPluginIn(getBestPlugin(pluginType, inImages));
     }
 
     /**

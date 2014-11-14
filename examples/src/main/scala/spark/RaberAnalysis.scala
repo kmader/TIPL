@@ -69,7 +69,16 @@ object RaberAnalysis {
 
     tImgs.foreach(saveFiles("ufilt", _))
 
+    // make a rendering
+    tImgs.foreach{
+      inObj =>
+        val (path,img) = inObj
+        img.show()
+    }
+
+
     import tipl.settings.FilterSettings
+
     val filtImgs = tImgs.mapValues(_.filter(1, 1, filterType = FilterSettings.MEDIAN))
     filtImgs.foreach(saveFiles("gfilt", _))
     val threshImgs = filtImgs.mapValues(_(_ > 2))

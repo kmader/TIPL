@@ -22,22 +22,6 @@ object scOps {
       new TImgSliceAsTImg(inBlock)
     }
   }
-  implicit class ijConvertibleImage(inImg: TImgRO) {
-    lazy val is = tipl.ij.TImgToImageStack.MakeImageStack(inImg)
-
-    def show() = {
-      val ip = tipl.ij.TImgToImagePlus.MakeImagePlus(inImg)
-      ip.show(inImg.getPath().getPath())
-    }
-
-    def show3D() = {
-      val vvPlug = new tipl.ij.volviewer.Volume_Viewer
-      vvPlug.LoadImages(Array[TImgRO](inImg))
-      vvPlug.run("")
-      vvPlug.waitForClose()
-    }
-
-  }
 
   implicit class rddImage[V](inImg: RDD[(D3int,TImgSlice[V])]) {
     def show() = {
