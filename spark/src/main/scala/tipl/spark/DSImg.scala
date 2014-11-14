@@ -15,8 +15,7 @@ class DSImgPartition(val prev: Partition, val startIndex: Long)
   override val index: Int = prev.index
 }
 
-
-class FlattenedDSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
+class FlatDSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
 (dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg: IndexedSeq[(D3int,
   TImgSlice[Array[T]])], path: TypedPath)
 (implicit lm: ClassTag[T])
@@ -131,7 +130,7 @@ object DSImg {
   /**
    * A simple block shifting function
    *
-   * @param <T>
+   * @tparam T the type of of the slice involved
    * @author mader
    */
   def BlockShifter[T](inOffset: D3int) = {

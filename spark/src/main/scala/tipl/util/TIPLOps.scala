@@ -136,10 +136,28 @@ object TIPLOps {
       ip.show(inputImageList(index).getPath().getPath())
     }
 
-    def show3D(index: Int = 0) = {
+    /**
+     * Show a 3d rendering view of the object
+     * @param index
+     * @param p
+     * @return
+     */
+    def show3D(index: Int = 0, p: Option[ArgumentParser] = None) = {
       val vvPlug = pluginIn("VolumeViewer")
       vvPlug.LoadImages(Array[TImgRO](inputImageList(index)))
+      p.foreach(apval => vvPlug.setParameter(apval,""))
       vvPlug.execute("waitForClose")
+    }
+
+    /**
+     * Render a 3d image and save it to disk
+     * @param output the path to save the image to
+     * @param index
+     */
+    def render3D(output: TypedPath,index: Int = 0, extargs: String = ""): Unit = {
+        val p = TIPLGlobal.activeParser("-batch -snapshot"+extargs)
+        p.getOptionPath("output",output,"")
+        show3D(index,Some(p))
     }
   }
 

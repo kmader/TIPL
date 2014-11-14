@@ -217,7 +217,8 @@ object IOOps {
   import scala.{specialized => spec}
 
   implicit class toDSImgs[@spec(Boolean, Byte, Short, Int, Long, Float,
-    Double) V](inVal: Iterable[(D3int, TImgSlice[Array[V]])]) {
+    Double) V](inVal: Iterable[(D3int, TImgSlice[Array[V]])]) extends Serializable {
+
     def toTImg(path: TypedPath)(implicit elSize: D3float, vc: ClassTag[V]): TImg = {
       val inSeq = inVal.toIndexedSeq.sortWith((a, b) => (a._1.z < b._1.z))
 
@@ -227,7 +228,7 @@ object IOOps {
       val pos = new D3int(headP._1.x, headP._1.y, headP._1.z)
 
       val imageType = TImgTools.identifySliceType(headP._2.get)
-      new FlattenedDSImg[V](dim, pos, elSize, imageType, inSeq, path)
+      new FlatDSImg[V](dim, pos, elSize, imageType, inSeq, path)
     }
   }
 

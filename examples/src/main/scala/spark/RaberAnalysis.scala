@@ -1,20 +1,22 @@
 package spark
 
-import org.apache.spark.SparkContext._
-import tipl.formats.TImgRO
-import tipl.spark.IOOps._
-import tipl.spark.SparkGlobal
-import tipl.util.TIPLOps._
-import tipl.util.{D3int, TImgSlice, TImgTools, TypedPath}
+
 
 /**
  * Created by mader on 10/16/14.
  */
 object RaberAnalysis {
   def main(args: Array[String]): Unit = {
+
+    import org.apache.spark.SparkContext._
+    import tipl.formats.TImgRO
+    import tipl.spark.IOOps._
+    import tipl.spark.SparkGlobal
+    import tipl.util.TIPLOps._
+    import tipl.util.{D3int, TImgSlice, TImgTools, TypedPath}
     val p = SparkGlobal.activeParser(args)
 
-    implicit val sc = SparkGlobal.getContext("RaberAnalysis").sc
+    val sc = SparkGlobal.getContext("RaberAnalysis").sc
     val useAll = false
     val imgPath = if (useAll) {
       "/Volumes/WORKDISK/WorkData/Raber/bci102014/brain*/*.tif"
@@ -73,7 +75,7 @@ object RaberAnalysis {
     tImgs.foreach{
       inObj =>
         val (path,img) = inObj
-        img.show()
+        img.show3D()
     }
 
 

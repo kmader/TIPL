@@ -170,6 +170,7 @@
     <orderEntry type="library" name="Maven: org.scala-lang:jline:2.10.4" level="project" />
     <orderEntry type="library" name="Maven: org.fusesource.jansi:jansi:1.4" level="project" />
     <orderEntry type="module" module-name="tipl-ccgeom" />
+    <orderEntry type="module" module-name="tipl-volviewer" />
   </component>
 </module>
 

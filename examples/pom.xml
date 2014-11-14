@@ -56,6 +56,12 @@
             <artifactId>tipl-spark</artifactId>
             <version>${tipl.version}</version>
         </dependency>
+        <!-- for running jakobs example with visualizations -->
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-volviewer</artifactId>
+            <version>${tipl.version}</version>
+        </dependency>
 
     </dependencies>
 
