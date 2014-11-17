@@ -1,17 +1,81 @@
 package tipl.blocks
 
-import java.io.{ ByteArrayOutputStream, File, FileWriter, PrintStream }
-import java.util.concurrent.{ Executors, TimeUnit }
+import java.io.{ByteArrayOutputStream, File, FileWriter, PrintStream}
+import java.util.concurrent.{Executors, TimeUnit}
 
+import org.apache.spark.SparkContext
+import tipl.formats.TImgRO
+import tipl.settings.FilterSettings
 import tipl.spark.SparkGlobal
-import tipl.util.{ ArgumentList, ArgumentParser, TIPLGlobal, TypedPath }
+import tipl.util.{ArgumentList, ArgumentParser, TIPLGlobal, TypedPath}
 
 import scala.collection.concurrent.Map
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext, Future, future }
-import scala.util.{ Failure, Success }
+import scala.concurrent.{Await, ExecutionContext, Future, future}
+import scala.util.{Failure, Success}
 
 object ParameterSweep {
+  case class NamedParameter(name: String, parameter: String) {
+    def +(nm: NamedParameter): NamedParameter =
+      NamedParameter(name+"_"+nm.name,parameter+" "+nm.parameter)
+
+  }
+
+
+  /**
+   * Common sets of parameters to use for Sweeps
+   */
+  object Parameters {
+    val filters = Array(NamedParameter("NearestNeighbor","-filter="+FilterSettings
+      .NEAREST_NEIGHBOR),
+      NamedParameter("Median","-filter="+FilterSettings.MEDIAN),
+      NamedParameter("Gaussian","-filter="+FilterSettings.GAUSSIAN))
+
+
+    def linearRange(name: String,parameter: String,min: Double, max: Double,
+                    steps: Int): Array[NamedParameter] = {
+      fixedRange(name,parameter,(0 until steps).map(i => i*(max-min)/steps+min).toArray)
+    }
+
+    def logRange(name: String,parameter: String,min: Double, max: Double,
+                    steps: Int): Array[NamedParameter] = {
+      val lmin = Math.log10(min)
+      val lmax = Math.log10(max)
+      fixedRange(name,parameter,(0 until steps).map(i => i*(lmax-lmin)/steps+lmin).map(Math.pow
+        (10,_)).toArray)
+    }
+
+    def fixedRange(name: String, parameter: String, vals: Array[Double]): Array[NamedParameter] =
+      vals.map(cval => NamedParameter(name+":"+cval.toString,"-"+parameter+"="+cval.toString))
+
+  }
+
+  object SparkSweep {
+    import tipl.util.TIPLOps._
+    /**
+     * Run sweep over a list of existing parameters
+     * @param sc
+     * @param inImg image to analyze
+     * @param blockName name of the block to run
+     * @param parms default starting parameters
+     * @param sweepVals the values to sweep with
+     * @return
+     */
+    def runSweep(sc: SparkContext,inImg: TImgRO,blockName: String, parms: String,
+                 sweepVals: Array[NamedParameter]*) = {
+      var aChain = sc.parallelize(sweepVals.head)
+      for (iVals <- sweepVals.tail) {
+        val bChain = sc.parallelize(iVals)
+        aChain = aChain.cartesian(bChain).map(cval => cval._1 + cval._2)
+      }
+      val nImg = sc.broadcast(inImg)
+      aChain.map{
+        curParm =>
+          (curParm.name,nImg.value.run(blockName,parms+curParm.parameter))
+      }
+    }
+  }
+
   val baosMap: Map[String, ByteArrayOutputStream] =
     new scala.collection.concurrent.TrieMap[String, ByteArrayOutputStream]()
   val psMap: Map[String, PrintStream] =

@@ -15,9 +15,13 @@ object RaberAnalysis {
     import tipl.util.TIPLOps._
     import tipl.util.{D3int, TImgSlice, TImgTools, TypedPath}
     val p = SparkGlobal.activeParser(args)
+    val useAll = true
+    val doRender = false
+    val thresh = 40
+
 
     val sc = SparkGlobal.getContext("RaberAnalysis").sc
-    val useAll = false
+
     val imgPath = if (useAll) {
       "/Volumes/WORKDISK/WorkData/Raber/bci102014/brain*/*.tif"
     } else {
@@ -72,18 +76,22 @@ object RaberAnalysis {
     tImgs.foreach(saveFiles("ufilt", _))
 
     // make a rendering
-    tImgs.foreach{
-      inObj =>
-        val (path,img) = inObj
-        img.show3D()
+
+    if (doRender) {
+      tImgs.foreach{
+        inObj =>
+          val (path,img) = inObj
+          img.render3D(path.append("render.tif"))
+      }
     }
+
 
 
     import tipl.settings.FilterSettings
 
     val filtImgs = tImgs.mapValues(_.filter(1, 1, filterType = FilterSettings.MEDIAN))
     filtImgs.foreach(saveFiles("gfilt", _))
-    val threshImgs = filtImgs.mapValues(_(_ > 2))
+    val threshImgs = filtImgs.mapValues(_(_ > thresh))
     threshImgs.foreach(saveFiles("thresh", _))
 
     val clImgs = filtImgs.map {

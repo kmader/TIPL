@@ -63,7 +63,7 @@ public class FilterSettings implements Serializable {
 	public ArgumentParser setParameter(final ArgumentParser p,
 			final String prefix) {
 		final int filterType = p
-				.getOptionInt(prefix + "filter", 0,
+				.getOptionInt(prefix + "filter", NEAREST_NEIGHBOR,
 						filterHelpString);
 		final double filterParameter = p
 				.getOptionDouble(
