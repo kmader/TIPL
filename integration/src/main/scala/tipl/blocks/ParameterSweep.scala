@@ -74,6 +74,28 @@ object ParameterSweep {
           (curParm.name,nImg.value.run(blockName,parms+curParm.parameter))
       }
     }
+    /**
+     * Run sweep over a list of existing parameters
+     * @param sc
+     * @param inImgs all images to analyze
+     * @param blockName name of the block to run
+     * @param parms default starting parameters
+     * @param sweepVals the values to sweep with
+     * @return
+     */
+    def runSweep(sc: SparkContext,inImgs: Seq[TImgRO],blockName: String, parms: String,
+                 sweepVals: Array[NamedParameter]*) = {
+      var aChain = sc.parallelize(sweepVals.head)
+      for (iVals <- sweepVals.tail) {
+        val bChain = sc.parallelize(iVals)
+        aChain = aChain.cartesian(bChain).map(cval => cval._1 + cval._2)
+      }
+      sc.parallelize(inImgs).cartesian(aChain).map{
+        curIP =>
+          val (nImg,curParm) = curIP
+          ((curParm.name,nImg.getSampleName()),nImg.run(blockName,parms+curParm.parameter))
+      }
+    }
   }
 
   val baosMap: Map[String, ByteArrayOutputStream] =

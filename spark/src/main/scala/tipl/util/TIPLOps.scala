@@ -155,7 +155,11 @@ object TIPLOps {
      * @param index
      */
     def render3D(output: TypedPath,index: Int = 0, extargs: String = ""): Unit = {
-        val p = TIPLGlobal.activeParser("-batch -snapshot"+extargs)
+        val mode = 4; // volume
+        val argStr = "-batch -snapshot -rendermode="+mode+(
+          if(extargs.length>0)
+            " "+extargs else "")
+        val p = TIPLGlobal.activeParser(argStr.split(" "))
         p.getOptionPath("output",output,"")
         show3D(index,Some(p))
     }
@@ -254,6 +258,11 @@ object TIPLOps {
       GrayAnalysis.StartLacunaAnalysis(inputImage, outPath, analysisName, includeShapeTensor)
 
     //TODO modernize this function as well
+    /**
+     *
+     * @param csvFile
+     * @return thicknessmap, distance map, ridge map
+     */
     def thickness(csvFile: TypedPath): Array[TImgRO] = {
       HildThickness.DTO(inputImage, csvFile)
     }

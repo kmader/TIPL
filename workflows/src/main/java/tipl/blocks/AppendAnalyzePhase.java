@@ -46,7 +46,7 @@ public class AppendAnalyzePhase extends AnalyzePhase {
     public ArgumentParser setParameterBlock(final ArgumentParser inp) {
         TypedPath seedFileName = inp.getOptionPath(prefix + "seedfile", "seedfile.csv",
                 "Shape file to append");
-        TypedPath phase = inp.getOptionPath(prefix + "phase", "phase2", "Phase name");
+        phaseName = inp.getOptionPath(prefix + "phase", "phase2", "Phase name");
         SNA = new ShapeAndNeighborAnalysis(seedFileName, phaseName);
         final ArgumentParser p = SNA.getNeighborPlugin().setParameter(inp,
                 prefix);
@@ -63,6 +63,6 @@ public class AppendAnalyzePhase extends AnalyzePhase {
 
     @Override
     protected String getDescription() {
-        return "Add a density, and neigbhorhood analysis to an existing shape analysis";
+        return "Add a density, and neighborhood analysis to an existing shape analysis";
     }
 }

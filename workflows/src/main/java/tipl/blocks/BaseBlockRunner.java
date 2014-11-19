@@ -187,16 +187,22 @@ public class BaseBlockRunner implements IBlockRunner, ITIPLBlock {
         }
         p.checkForInvalid();
     }
-
     /**
      * @param args
      */
     public static void main(String[] args) {
+        main(TIPLGlobal.activeParser(args));
+    }
+
+    /**
+     * Feed in the argument parser object itself (allows for custom starting paths)
+     * @param p
+     */
+    public static void main(ArgumentParser p ) {
         System.out.println("BaseBlockRunner v" + kVer);
         System.out.println("Runs a series of blocks by their name");
         System.out.println(" By Kevin Mader (kevin.mader@gmail.com)");
 
-        ArgumentParser p = TIPLGlobal.activeParser(args);
         final String blocknames = p.getOptionString("blocknames", "",
                 "Class names of the blocks to run");
         final boolean simpleNames = p.getOptionBoolean("simplenames", false,

@@ -428,11 +428,30 @@ public class ArgumentParser extends ArgumentList {
             // ", Default Location (Path:"+defFilename+")" : "(string)"));
         } else {
             cArg = new ArgumentList.TypedArgument<TypedPath>(opt, helpString,defArgument,
-                    typePathParse);
+                    customPathParser);
         }
         putArg(opt, cArg);
         return cArg.getValue();
     }
+
+    /**
+     *  Allows a custom pathway to be used for creating typedpaths from strings
+     */
+    public strParse<TypedPath> customPathParser = typePathParse;
+
+    /**
+     * Sets the root directory as the prefix for all future directories accessed in the code
+     * @param rootDir
+     */
+    public void setRootDirectory(final String rootDir) {
+        customPathParser =  new strParse<TypedPath>() {
+            @Override
+            public TypedPath valueOf(final String inStr) {
+                return new TypedPath(rootDir+"/"+inStr);
+            }
+        };
+    }
+
 
     public String getOptionString(final String inOpt, final String defVal,
                                   final String helpString) {

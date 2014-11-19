@@ -1,5 +1,7 @@
 package spark
 
+import tipl.blocks.BaseBlockRunner
+import tipl.util.TIPLGlobal
 
 
 /**
@@ -15,19 +17,26 @@ object RaberAnalysis {
     import tipl.util.TIPLOps._
     import tipl.util.{D3int, TImgSlice, TImgTools, TypedPath}
     val p = SparkGlobal.activeParser(args)
+    val runLocal = false
     val useAll = true
-    val doRender = false
+    val doRender = true
     val thresh = 40
 
 
     val sc = SparkGlobal.getContext("RaberAnalysis").sc
 
-    val imgPath = if (useAll) {
-      "/Volumes/WORKDISK/WorkData/Raber/bci102014/brain*/*.tif"
+    val rootPath = if (runLocal) {
+      "/Users/mader/Dropbox/WorkRelated/Raber/bci102014"
     } else {
-      "/Volumes/WORKDISK/WorkData/Raber/bci102014/brain*23/a*.tif"
+      "/Volumes/WORKDISK/WorkData/Raber/bci102014"
     }
-    val savePath = "/Volumes/WORKDISK/WorkData/Raber/bci102014/results/"
+
+    val savePath = rootPath+"/results/"
+    val imgPath = if (useAll) {
+      rootPath+"/brain*/*.tif"
+    } else {
+      rootPath+"/brain*23/a*.tif"
+    }
     val PERSIST_LEVEL = org.apache.spark.storage.StorageLevel.MEMORY_AND_DISK
 
     val basePath = TypedPath.localFile(new java.io.File(savePath))
@@ -78,38 +87,94 @@ object RaberAnalysis {
     // make a rendering
 
     if (doRender) {
-      tImgs.foreach{
+      tImgs.foreach {
         inObj =>
-          val (path,img) = inObj
-          img.render3D(path.append("render.tif"))
+          val (path, img) = inObj
+          img.render3D(path.append("render_ufilt.tif"), extargs = "-crmin=0 -crmax=100 -usecr " +
+            "-lutnr=4")
       }
     }
-
-
 
     import tipl.settings.FilterSettings
 
     val filtImgs = tImgs.mapValues(_.filter(1, 1, filterType = FilterSettings.MEDIAN))
     filtImgs.foreach(saveFiles("gfilt", _))
     val threshImgs = filtImgs.mapValues(_(_ > thresh))
-    threshImgs.foreach(saveFiles("thresh", _))
+    threshImgs.foreach(saveFiles("threshold", _))
 
-    val clImgs = filtImgs.map {
-      inVal =>
-        val curImg = inVal._2
-        val clImg = curImg.componentLabel()
-        clImg.shapeAnalysis(inVal._1.append("clpor_0.csv"))
-        (inVal._1, clImg)
+    if (doRender) {
+      threshImgs.foreach {
+        inObj =>
+          val (path, img) = inObj
+          img.render3D(path.append("render_thresh.tif"))
+      }
     }
-    clImgs.foreach(saveFiles("cl", _))
-
-    threshImgs.
+    case class DTOutput(thickness: TImgRO, distance: TImgRO, ridge: TImgRO)
+    // generate the distance map and the ridge file
+    val dtImgs = threshImgs.
       map {
       inVal =>
         val thImgs = inVal._2.thickness(inVal._1.append("dto.csv"))
         (inVal._1,
-          thImgs(0))
-    }.foreach(saveFiles("dto", _))
+          DTOutput(thImgs(0),thImgs(1),thImgs(2)))
+    }
+    dtImgs.foreach(inObj => {
+      val (path, imgs) = inObj
+      saveFiles("dto", (path,imgs.thickness))
+      saveFiles("dist", (path,imgs.distance))
+      saveFiles("ridge", (path,imgs.ridge))
+      if (doRender) {
+        imgs.thickness.render3D(path.append("render_dto.tif"), extargs = "-crmin=0 -crmax=120 " +
+          "-usecr " +
+          "-lutnr=4")
+        imgs.ridge.render3D(path.append("render_ridge.tif"), extargs = "-crmin=0 -crmax=120 " +
+          "-usecr " +
+          "-lutnr=4")
+      }
+
+    }
+    )
+
+    val clImgs = threshImgs.map {
+      inVal =>
+        val curImg = inVal._2
+        val clImg = curImg.componentLabel()
+        clImg.shapeAnalysis(inVal._1.append("pores_0.csv"))
+        (inVal._1, clImg)
+    }
+    clImgs.foreach(saveFiles("cl", _))
+
+    if (doRender) {
+      clImgs.foreach {
+        inObj =>
+          val (path, img) = inObj
+          img.render3D(path.append("render_cl.tif"), extargs = "-crmin=0 -crmax=100 -usecr " +
+            "-lutnr=4")
+      }
+    }
+
+
+
+
+
+    // run Append Analyze Phase Block
+    val baseStr = "-blocknames=AnalyzePhase,AppendAnalyzePhase -simplenames"
+    clImgs.foreach(
+      inObj => {
+        val (path,_) = inObj
+
+        val apStr = "-apb1:segmented=ridge.tif -apb1:labeled=subvessels.tif -apb1:minvoxcount=30 " +
+          "-apb1:neighborhood=1,1,1 -apb1:phase=subvessels -apb1:mask=threshold.tif -apb1:density=sv_filled.tif -apb1:neighbors=sv_connections.tif"
+        val aapStr = "-aapb2:labeled=sv_filled.tif -aapb2:density=sv_density.tif -aapb2:neighbors=sv_neighbors.tif -aapb2:seedfile=subvessels_3.csv -aapb2:phase=full -aapb2:mask=mask.tif"
+
+
+        val runStr = baseStr +" "+ apStr +" "+ aapStr
+        val p = TIPLGlobal.activeParser(runStr.split(" "))
+        p.setRootDirectory(path.getPath())
+        BaseBlockRunner.main(p)
+      }
+    )
+
 
   }
 }

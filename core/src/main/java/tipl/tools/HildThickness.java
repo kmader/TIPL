@@ -90,21 +90,25 @@ public class HildThickness extends Thickness {
 		final TImg maskAim = TImgTools.ReadTImg(inAimFile);
 		final TImg[] mapAims = DTOD(maskAim);
 		if (outDistFile.length() > 0)
-			TImgTools.WriteTImg(mapAims[0],outDistFile);
+			TImgTools.WriteTImg(mapAims[DIST_INDEX],outDistFile);
 		if (outAimFile.length() > 0)
-			TImgTools.WriteTImg(mapAims[1],outAimFile);
+			TImgTools.WriteTImg(mapAims[THICK_INDEX],outAimFile);
 		if (histoFile.length() > 0)
-			GrayAnalysis.StartHistogram(mapAims[1], histoFile.append( ".tsv"));
+			GrayAnalysis.StartHistogram(mapAims[THICK_INDEX], histoFile.append( ".tsv"));
 		if (profileFile.length() > 0) {
-			GrayAnalysis.StartZProfile(mapAims[1], maskAim, profileFile
+			GrayAnalysis.StartZProfile(mapAims[THICK_INDEX], maskAim, profileFile
 					.append("_z.tsv"), 0.1f);
-			GrayAnalysis.StartRProfile(mapAims[1], maskAim, profileFile
+			GrayAnalysis.StartRProfile(mapAims[THICK_INDEX], maskAim, profileFile
 					.append( "_r.tsv"), 0.1f);
-			GrayAnalysis.StartRCylProfile(mapAims[1], maskAim, profileFile
+			GrayAnalysis.StartRCylProfile(mapAims[THICK_INDEX], maskAim, profileFile
 					.append("_rcyl.tsv"), 0.1f);
 		}
 		return true;
 	}
+
+    final static int THICK_INDEX = 0;
+    final static int DIST_INDEX = 1;
+    final static int RIDGE_INDEX = 2;
 
 	/**
 	 * Similar to DTObjection function in XIPL, takes a black and white input
@@ -123,18 +127,20 @@ public class HildThickness extends Thickness {
      * for the TIPLOps command
      * @param bwObject
      * @param histoFile
-     * @return TImgRO array (distance map, thickness map)
+     * @return TImgRO array (thickness map, distance map, ridge map)
      */
     public static TImgRO[] DTO(final TImgRO bwObject , final TypedPath histoFile) {
         final TImg[] mapAims = DTOD(bwObject);
+        final TImg thickAim = mapAims[THICK_INDEX];
+        final TImg distAim = mapAims[DIST_INDEX];
         if (histoFile.length() > 0)
-            GrayAnalysis.StartHistogram(mapAims[1], histoFile.append( ".tsv"));
+            GrayAnalysis.StartHistogram(thickAim, histoFile.append( ".tsv"));
         TypedPath profileFile = histoFile.append("");
-            GrayAnalysis.StartZProfile(mapAims[1], bwObject, profileFile
+            GrayAnalysis.StartZProfile(thickAim, bwObject, profileFile
                     .append("_z.tsv"), 0.1f);
-            GrayAnalysis.StartRProfile(mapAims[1], bwObject, profileFile
+            GrayAnalysis.StartRProfile(thickAim, bwObject, profileFile
                     .append( "_r.tsv"), 0.1f);
-            GrayAnalysis.StartRCylProfile(mapAims[1], bwObject, profileFile
+            GrayAnalysis.StartRCylProfile(thickAim, bwObject, profileFile
                     .append("_rcyl.tsv"), 0.1f);
         return mapAims;
     }
@@ -146,6 +152,7 @@ public class HildThickness extends Thickness {
 	 * 
 	 * @param bwObject
 	 *            The binary input image
+     * @return thickness map, ridge, and distance map
 	 */
 	public static TImg[] DTOD(final TImgRO bwObject) {
 
@@ -158,7 +165,8 @@ public class HildThickness extends Thickness {
 		final ITIPLPluginIO KT = TIPLPluginManager.createBestPluginIO("HildThickness", new TImg[] { distAim });
         KT.LoadImages(new TImg[] { distAim });
 		KT.execute();
-		return new TImg[] { distAim, KT.ExportImages(distAim)[0] };
+        final TImg[] ktOut = KT.ExportImages(distAim);
+		return new TImg[] { ktOut[0], ktOut[1],distAim };
 	}
 	public static void main(final String[] args) {
 		System.out.println("Hildebrand-based Thickness Map v"
@@ -257,7 +265,7 @@ public class HildThickness extends Thickness {
 
 	}
 	/** add the ridge file to the exported aim
-	 * 
+	 * @return the thickness map, and the ridge
 	 */
 	@Override
 	public TImg[] ExportImages(final TImgRO templateImage) {
