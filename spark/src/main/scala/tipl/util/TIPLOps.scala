@@ -32,7 +32,7 @@ object TIPLOps {
   /**
    * A version of D3float which can perform simple math operations
    */
-  implicit class RichD3float(ip: D3float) {
+  implicit class RichD3float(ip: D3float) extends Serializable {
     def -(ip2: D3float) = {
       new D3float(ip.x - ip2.x, ip.y - ip2.y, ip.z - ip2.z)
     }
@@ -73,7 +73,7 @@ object TIPLOps {
   /**
    * A version of D3int which can perform simple arithmetic
    */
-  implicit class RichD3int(ip: D3int) {
+  implicit class RichD3int(ip: D3int) extends Serializable {
     def -(ip2: D3int) = {
       new D3int(ip.x - ip2.x, ip.y - ip2.y, ip.z - ip2.z)
     }
@@ -91,6 +91,7 @@ object TIPLOps {
     }
   }
 
+
   /**
    * valid for a list of TImgRO objects
    * @param inputImageList list of images
@@ -106,10 +107,11 @@ object TIPLOps {
    * @tparam T any image type
    * @return an object with many more operators than TImgRO or array
    */
-  implicit def TImgToRichTImgList[T <: TImgRO](inputImage: T) = new
-      RichTImgList[TImgRO](Array[TImgRO](inputImage))
+  implicit def TImgToRichTImgList[T <: TImgRO](inputImage: T) =
+    new RichTImgList[TImgRO](Array[TImgRO](inputImage))
 
-  class RichTImgList[T <: TImgRO](val inputImageList: Array[T]) {
+
+  class RichTImgList[T <: TImgRO](val inputImageList: Array[T]) extends Serializable {
 
     def pluginIO(name: String): ITIPLPluginIO = {
       TIPLPluginManager.createBestPluginIO[T](name, inputImageList)
@@ -145,7 +147,7 @@ object TIPLOps {
     def show3D(index: Int = 0, p: Option[ArgumentParser] = None) = {
       val vvPlug = pluginIn("VolumeViewer")
       vvPlug.LoadImages(Array[TImgRO](inputImageList(index)))
-      p.foreach(apval => vvPlug.setParameter(apval,""))
+      p.foreach(apval => vvPlug.setParameter(apval, ""))
       vvPlug.execute("waitForClose")
     }
 
@@ -154,14 +156,20 @@ object TIPLOps {
      * @param output the path to save the image to
      * @param index
      */
-    def render3D(output: TypedPath,index: Int = 0, extargs: String = ""): Unit = {
-        val mode = 4; // volume
-        val argStr = "-batch -snapshot -rendermode="+mode+(
-          if(extargs.length>0)
-            " "+extargs else "")
-        val p = TIPLGlobal.activeParser(argStr.split(" "))
-        p.getOptionPath("output",output,"")
-        show3D(index,Some(p))
+    def render3D(output: TypedPath, index: Int = 0, extargs: String = ""): Unit = {
+      val mode = 4;
+      // volume
+      val argStr = "-batch -snapshot -rendermode=" + mode + (
+        if (extargs.length > 0) {
+          " " + extargs
+        } else {
+          ""
+        }
+        )
+
+      val p = TIPLGlobal.activeParser(argStr.split(" "))
+      p.getOptionPath("output", output, "")
+      show3D(index, Some(p))
     }
   }
 
@@ -287,7 +295,7 @@ object TIPLOps {
   import scala.{specialized => spec}
 
   implicit class RichFunction[@spec(Boolean, Byte, Short, Int, Long, Float,
-    Double) B](val mapFun: (Double => B))(implicit bm: ClassTag[B]) {
+    Double) B](val mapFun: (Double => B))(implicit bm: ClassTag[B]) extends Serializable {
 
     val outputType = TImgTools.identifySliceType(new Array[B](1))
     lazy val vf = new FImage.VoxelFunction() {

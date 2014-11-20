@@ -14,7 +14,7 @@ import tipl.util.TImgTools;
  * upper limit can be set as well when operated in flip mode it simply takes the reverse (less than
  * minimum and greater than maximum) *
  */
-public class ThresholdBlock extends BaseTIPLBlock {
+public class ThresholdBlock extends LocalTIPLBlock {
     @BaseTIPLBlock.BlockIdentity(blockName = "ThresholdBlock",
             inputNames = {"gray valued image"},
             outputNames = {"threshold image", "inverse threshold", "mask image"})
@@ -66,26 +66,21 @@ public class ThresholdBlock extends BaseTIPLBlock {
     final protected String opString = ">";
     final protected String iopString = "<";
 
+    final static String blockName = "ThresholdBlock";
+
+    @Deprecated
     public ThresholdBlock() {
-        super("Threshold");
-        prefix = "";
+        this(new LocalTIPLBlock.LocalIOHelper(),"");
     }
 
-    public ThresholdBlock(final String inPrefix) {
-        super("Threshold");
+    public ThresholdBlock(final BlockIOHelper helperTools,final String inPrefix) {
+        super(helperTools,blockName);
         prefix = inPrefix;
     }
 
-    /**
-     * for subclasses of this block
-     *
-     * @param namePrefix
-     * @param inPrefix
-     */
-    protected ThresholdBlock(final String namePrefix, final String inPrefix) {
-        super(namePrefix + "Threshold");
-        prefix = inPrefix;
-    }
+
+
+
 
     @Override
     protected IBlockImage[] bGetInputNames() {

@@ -10,7 +10,7 @@ import tipl.util.*;
  *
  * @author mader
  */
-public class GrowRegions extends BaseTIPLBlock {
+public class GrowRegions extends LocalTIPLBlock {
 
     @BaseTIPLBlock.BlockIdentity(blockName = "GrowRegionsBlock",
             inputNames = {"labeled image", "mask image"},
@@ -75,15 +75,17 @@ public class GrowRegions extends BaseTIPLBlock {
             new BlockImage("fillnh", "filled_nh.tif", "Filled Neighborhood",
                     false)};
 
+
+    @Deprecated
     public GrowRegions() {
-        super("GrowRegions");
-        prefix = "";
+        this(new LocalTIPLBlock.LocalIOHelper(),"");
     }
 
-    public GrowRegions(final String inPrefix) {
-        super("GrowRegions");
+    public GrowRegions(final BlockIOHelper helperTools,final String inPrefix) {
+        super(helperTools,"GrowRegions");
         prefix = inPrefix;
     }
+
 
     @Override
     protected IBlockImage[] bGetInputNames() {

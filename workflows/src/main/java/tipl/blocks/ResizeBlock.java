@@ -11,7 +11,7 @@ import tipl.util.TImgTools;
  *
  * @author mader
  */
-public class ResizeBlock extends BaseTIPLBlock {
+public class ResizeBlock extends LocalTIPLBlock {
 
     @BaseTIPLBlock.BlockIdentity(blockName = "ResizeBlock",
             inputNames = {"entire image"},
@@ -34,15 +34,18 @@ public class ResizeBlock extends BaseTIPLBlock {
             "output", "cropped.tif", "Resized image", true)};
     ITIPLPluginIO fs = new Resize();
 
+
+    @Deprecated
     public ResizeBlock() {
-        super(blockName);
-        prefix = "";
+        this(new LocalTIPLBlock.LocalIOHelper(),"");
     }
 
-    public ResizeBlock(final String inPrefix) {
-        super(blockName);
+    public ResizeBlock(final BlockIOHelper helperTools,final String inPrefix) {
+        super(helperTools,blockName);
         prefix = inPrefix;
     }
+
+
 
     @Override
     protected IBlockImage[] bGetInputNames() {

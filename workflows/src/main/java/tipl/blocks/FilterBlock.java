@@ -10,7 +10,7 @@ import tipl.util.*;
  *
  * @author mader
  */
-public class FilterBlock extends BaseTIPLBlock {
+public class FilterBlock extends LocalTIPLBlock {
 
     @BaseTIPLBlock.BlockIdentity(blockName = "FilterBlock",
             inputNames = {"unfiltered image"},
@@ -32,13 +32,14 @@ public class FilterBlock extends BaseTIPLBlock {
     public final IBlockImage[] outImages = new IBlockImage[]{new BlockImage(
             "gfilt", "gfilt.tif", "Post-filtering image", true)};
 
+
+    @Deprecated
     public FilterBlock() {
-        super(blockName);
-        prefix = "";
+        this(new LocalTIPLBlock.LocalIOHelper(),"");
     }
 
-    public FilterBlock(final String inPrefix) {
-        super(blockName);
+    public FilterBlock(final BlockIOHelper helperTools,final String inPrefix) {
+        super(helperTools,blockName);
         prefix = inPrefix;
     }
 

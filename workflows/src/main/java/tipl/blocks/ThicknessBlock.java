@@ -12,7 +12,7 @@ import tipl.util.TypedPath;
  * performs a thickness analysis (similar to the DTO function) using the best available kVoronoi and
  * HildThickness plugins *
  */
-public class ThicknessBlock extends BaseTIPLBlock {
+public class ThicknessBlock extends LocalTIPLBlock {
     @BaseTIPLBlock.BlockIdentity(blockName = "ThicknessBlock",
             inputNames = {"threshold image"},
             outputNames = {"thickness map", "distance map", "ridge map"})
@@ -41,29 +41,19 @@ public class ThicknessBlock extends BaseTIPLBlock {
             new BlockImage("ridge_map", "ridge.tif",
                     "Distance Ridge Map", false)};
 
+
+    final static String blockName = "ThicknessBlock";
+
+    @Deprecated
     public ThicknessBlock() {
-        super("ThicknessBlock");
-        setup();
-        prefix = "";
+        this(new LocalTIPLBlock.LocalIOHelper(),"");
     }
 
-    public ThicknessBlock(final String inPrefix) {
-        super("ThicknessBlock");
-        setup();
+    public ThicknessBlock(final BlockIOHelper helperTools,final String inPrefix) {
+        super(helperTools,blockName);
         prefix = inPrefix;
     }
 
-    /**
-     * for subclasses of this block
-     *
-     * @param namePrefix
-     * @param inPrefix
-     */
-    protected ThicknessBlock(final String namePrefix, final String inPrefix) {
-        super(namePrefix + "ThicknessBlock");
-        setup();
-        prefix = inPrefix;
-    }
 
     @Override
     protected IBlockImage[] bGetInputNames() {

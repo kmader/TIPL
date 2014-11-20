@@ -12,7 +12,7 @@ import tipl.util.TImgTools;
  *
  * @author mader
  */
-public class XDFBlock extends BaseTIPLBlock {
+public class XDFBlock extends LocalTIPLBlock {
     /**
      * XDF Block is the block designed for using the XDF plugin and calculating a number of
      * different analyses from the input. The primary is a simple two point correlation function of
@@ -48,13 +48,16 @@ public class XDFBlock extends BaseTIPLBlock {
 
     public final ITIPLPluginIO cXDF = new XDF();
 
+
+    final static String blockName = "XDFBlock";
+
+    @Deprecated
     public XDFBlock() {
-        super("XDF");
-        prefix = "";
+        this(new LocalTIPLBlock.LocalIOHelper(),"");
     }
 
-    public XDFBlock(final String inPrefix) {
-        super("XDF");
+    public XDFBlock(final BlockIOHelper helperTools,final String inPrefix) {
+        super(helperTools,blockName);
         prefix = inPrefix;
     }
 

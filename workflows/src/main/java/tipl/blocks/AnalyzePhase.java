@@ -11,7 +11,7 @@ import tipl.util.*;
  *
  * @author mader
  */
-public class AnalyzePhase extends BaseTIPLBlock {
+public class AnalyzePhase extends LocalTIPLBlock {
     public final IBlockImage[] inImages = new IBlockImage[]{
             new BlockImage("segmented", "segmented.tif", "Segmented image",
                     true),
@@ -29,26 +29,18 @@ public class AnalyzePhase extends BaseTIPLBlock {
     protected ShapeAndNeighborAnalysis SNA = new ShapeAndNeighborAnalysis(new TypedPath("NOT " +
             "INITIALIZED"));
     ITIPLPluginIO CL = TIPLPluginManager.createFirstPluginIO("ComponentLabel");
-
+    @Deprecated
     public AnalyzePhase() {
-        super("AnalyzePhase");
-        prefix = "";
+        this(new LocalTIPLBlock.LocalIOHelper(),"");
     }
 
-    /**
-     * Just for subclasses
-     *
-     * @param blockName
-     * @param anything
-     */
-    protected AnalyzePhase(final String blockName, boolean anything) {
-        super(blockName);
-    }
-
-    public AnalyzePhase(final String inPrefix) {
-        super("AnalyzePhase");
+    public AnalyzePhase(final BlockIOHelper helperTools,final String inPrefix) {
+        super(helperTools,"AnalyzePhase");
         prefix = inPrefix;
     }
+
+
+
 
     @Override
     protected IBlockImage[] bGetInputNames() {

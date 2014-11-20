@@ -22,15 +22,10 @@ public class AppendAnalyzePhase extends AnalyzePhase {
             new BlockImage("neighbors", "aneighbors.tif", "Neighbor Image", false)
     };
 
-    public AppendAnalyzePhase() {
-        super("AppendAnalyzePhase", true);
-        prefix = "";
+    public AppendAnalyzePhase(final BlockIOHelper helperTools, final String inPrefix) {
+        super(helperTools,inPrefix);
     }
 
-    public AppendAnalyzePhase(final String inPrefix) {
-        super("AppendAnalyzePhase", true);
-        prefix = inPrefix;
-    }
 
     @Override
     protected IBlockImage[] bGetInputNames() {

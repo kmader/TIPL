@@ -76,6 +76,56 @@ public abstract class LocalTIPLBlock implements ITIPLBlock {
     }
 
 
+    /**
+     * Images read from a linkedlist rather than IO
+     */
+    static public class CacheIOHelper extends LocalIOHelper {
+        final protected LinkedHashMap<String, TImgRO> imageCache;
+
+        public CacheIOHelper(LinkedHashMap<String, TImgRO> imageCache) {
+            this.imageCache=imageCache;
+        }
+
+        @Override
+        public void SaveImage(TImgRO imgObj, String nameArg) {
+            imageCache.put(nameArg,imgObj);
+        }
+
+        @Override
+        public boolean isReady(String prefix, IBlockInfo aboutMe) {
+            boolean retValue = true;
+
+            for (final IBlockImage cImage : aboutMe.getInputNames()) {
+                if (cImage.isEssential()) {
+                    final String carg = prefix + cImage.getName();
+                    if (!imageCache.containsKey(carg)) {
+                        System.out.println("Not ready for block " + toString()
+                                + ", file:" + carg +
+                                 " cannot be found");
+                        retValue = false;
+                    } else {
+                        System.out.println("Not ready for block " + toString()
+                                + ", argument:" + carg
+                                + " cannot be found / loaded");
+                        retValue = false;
+                    }
+                }
+            }
+            return retValue;
+        }
+
+        @Override
+        public TImgRO getInputFile(String argument) {
+            return imageCache.getOrDefault(argument,null);
+        }
+
+
+        @Override
+        public TypedPath getFileParameter(String argument) {
+            return TypedPath.virtualPath(argument);
+        }
+    }
+
     static public class LocalIOHelper implements BlockIOHelper {
         protected boolean saveToCache = false;
         protected boolean readFromCache = true;
@@ -124,6 +174,8 @@ public abstract class LocalTIPLBlock implements ITIPLBlock {
             }
 
         }
+
+
 
         /**
          * Background saving makes things faster but can cause issues
@@ -294,6 +346,8 @@ public abstract class LocalTIPLBlock implements ITIPLBlock {
         blockName = inName;
         prereqBlocks = earlierBlocks;
     }
+
+
 
     @Override
     public double memoryFactor() {

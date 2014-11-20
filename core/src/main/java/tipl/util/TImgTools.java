@@ -406,32 +406,38 @@ public class TImgTools {
         for (int i = 0; i < sliceSize; i++)
         {
             double outValue = 0;
+            // since the data is actually stored as an unsigned byte
+            double[] drgb= new double[3];
+            for(int k=0;k<3;k++) {
+                drgb[k]=grgb[i][k];
+                if (drgb[k]<0) drgb[k]+=127;
+            }
+
             switch(curMethod) {
                 case MEAN:
-                    outValue = (grgb[i][0]+grgb[i][1]+grgb[i][2])/3;
+                    outValue = (drgb[0]+drgb[1]+drgb[2])/3;
                     break;
                 case SUM:
-                    outValue = (grgb[i][0]+grgb[i][1]+grgb[i][2]);
+                    outValue = (drgb[0]+drgb[1]+drgb[2]);
                     break;
                 case MIN:
-                    outValue = Math.min(Math.min(grgb[i][0],grgb[i][1]),grgb[i][2]);
+                    outValue = Math.min(Math.min(drgb[0],drgb[1]),drgb[2]);
                     break;
                 case MAX:
-                    outValue = Math.max(Math.max(grgb[i][0],grgb[i][1]),grgb[i][2]);
+                    outValue = Math.max(Math.max(drgb[0],drgb[1]),drgb[2]);
                     break;
                 case INT:
                     outValue =  ((int)grgb[i][0] << 24) + ((int)grgb[i][1] << 8) + (int) grgb[i][2];
                     break;
                 case RED:
-                    outValue = grgb[i][0];
+                    outValue = drgb[0];
                     break;
                 case GREEN:
-                    outValue = grgb[i][1];
+                    outValue = drgb[1];
                     break;
                 case BLUE:
-                    outValue = grgb[i][2];
+                    outValue = drgb[2];
                     break;
-
             }
             gdouble[i] = outValue+(isSigned ? 127 : 0);
         }

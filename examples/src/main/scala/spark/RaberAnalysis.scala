@@ -18,20 +18,29 @@ object RaberAnalysis {
     import tipl.util.{D3int, TImgSlice, TImgTools, TypedPath}
     val p = SparkGlobal.activeParser(args)
     val runLocal = false
-    val useAll = true
-    val doRender = true
-    val thresh = 40
-
-
-    val sc = SparkGlobal.getContext("RaberAnalysis").sc
-
-    val rootPath = if (runLocal) {
+    val defPath = if (runLocal) {
       "/Users/mader/Dropbox/WorkRelated/Raber/bci102014"
     } else {
       "/Volumes/WORKDISK/WorkData/Raber/bci102014"
     }
+    val rootPath = p.getOptionPath("root",defPath,"The base path containing all of the images")
+      .getPath()
 
+    val useAll = p.getOptionBoolean("useall",true,"Use all of the images or just a few to test")
+    val doRender = p.getOptionBoolean("render",true,"Make 3D renderings of the various steps")
+    val thresh = p.getOptionInt("thresh",40,"Single threshold value for the images")
+
+    val multiThresh = p.getOptionBoolean("multithresh",true,"Use multiple threshold values")
+    val minThresh = p.getOptionInt("minthresh",35,"Starting threshold")
+    val maxThresh = p.getOptionInt("maxthresh",71,"Final threshold")
+    val ssThresh = p.getOptionInt("step",7,"Step between threshold values")
+
+    val sc = SparkGlobal.getContext("RaberAnalysis").sc
     val savePath = rootPath+"/results/"
+    val checkpointDir = rootPath+"/checkpoint/"
+
+    sc.setCheckpointDir(checkpointDir)
+
     val imgPath = if (useAll) {
       rootPath+"/brain*/*.tif"
     } else {
@@ -72,7 +81,7 @@ object RaberAnalysis {
     val slicePerImg = gImgs.mapValues(_.size).collect
 
     implicit val elSize = new tipl.util.D3float(1.0)
-
+    // make the required directories and the a TImg from the slices
     val tImgs = gImgs.map {
       inKV =>
         (basePath.appendDir(inKV._1._1).appendDir(inKV._1._2),
@@ -97,9 +106,26 @@ object RaberAnalysis {
 
     import tipl.settings.FilterSettings
 
-    val filtImgs = tImgs.mapValues(_.filter(1, 1, filterType = FilterSettings.MEDIAN))
+    val filtImgs = tImgs.mapValues(_.filter(1, 1, filterType = FilterSettings.MEDIAN)).persist
+    (PERSIST_LEVEL)
+    filtImgs.checkpoint()
+
     filtImgs.foreach(saveFiles("gfilt", _))
-    val threshImgs = filtImgs.mapValues(_(_ > thresh))
+    // apply multiple threshold values if needed
+    val threshImgs = if (multiThresh) {
+
+      val threshVals = sc.parallelize(Range(minThresh,maxThresh,ssThresh))
+      filtImgs.cartesian(threshVals).map{
+        inObj =>
+          val ((path,img),cthresh) = inObj
+          (path.appendDir("thresh_"+cthresh.toString),
+            img(_>cthresh))
+      }.repartition((imgCount*threshVals.count).asInstanceOf[Int])
+    } else {
+      filtImgs.mapValues(_(_ > thresh))
+    }
+
+    threshImgs.checkpoint()
     threshImgs.foreach(saveFiles("threshold", _))
 
     if (doRender) {
@@ -152,9 +178,6 @@ object RaberAnalysis {
             "-lutnr=4")
       }
     }
-
-
-
 
 
     // run Append Analyze Phase Block
