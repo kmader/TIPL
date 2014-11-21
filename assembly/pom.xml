@@ -85,6 +85,17 @@
             <artifactId>tipl-jython</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-charts</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-examples</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     
     </dependencies>
 
@@ -172,92 +183,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>deb</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>buildnumber-maven-plugin</artifactId>
-                        <version>1.2</version>
-                        <executions>
-                            <execution>
-                                <phase>validate</phase>
-                                <goals>
-                                    <goal>create</goal>
-                                </goals>
-                                <configuration>
-                                    <shortRevisionLength>8</shortRevisionLength>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.vafer</groupId>
-                        <artifactId>jdeb</artifactId>
-                        <version>0.11</version>
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>jdeb</goal>
-                                </goals>
-                                <configuration>
-                                    <deb>${project.build.directory}/${deb.pkg.name}_${project.version}-${buildNumber}_all.deb</deb>
-                                    <attach>false</attach>
-                                    <compression>gzip</compression>
-                                    <dataSet>
-                                        <data>
-                                            <src>${tipl.jar}</src>
-                                            <type>file</type>
-                                            <mapper>
-                                                <type>perm</type>
-                                                <user>${deb.user}</user>
-                                                <group>${deb.user}</group>
-                                                <prefix>${deb.install.path}/jars</prefix>
-                                            </mapper>
-                                        </data>
-                                        <data>
-                                            <src>${basedir}/src/deb/RELEASE</src>
-                                            <type>file</type>
-                                            <mapper>
-                                                <type>perm</type>
-                                                <user>${deb.user}</user>
-                                                <group>${deb.user}</group>
-                                                <prefix>${deb.install.path}</prefix>
-                                            </mapper>
-                                        </data>
-                                        <data>
-                                            <src>${basedir}/../conf</src>
-                                            <type>directory</type>
-                                            <mapper>
-                                                <type>perm</type>
-                                                <user>${deb.user}</user>
-                                                <group>${deb.user}</group>
-                                                <prefix>${deb.install.path}/conf</prefix>
-                                                <filemode>744</filemode>
-                                            </mapper>
-                                        </data>
-                                        <data>
-                                            <src>${basedir}/../bin</src>
-                                            <type>directory</type>
-                                            <mapper>
-                                                <type>perm</type>
-                                                <user>${deb.user}</user>
-                                                <group>${deb.user}</group>
-                                                <prefix>${deb.install.path}/bin</prefix>
-                                                <filemode>${deb.bin.filemode}</filemode>
-                                            </mapper>
-                                        </data>
-                                    </dataSet>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

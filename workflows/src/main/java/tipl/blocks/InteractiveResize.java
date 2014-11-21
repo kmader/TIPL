@@ -30,13 +30,15 @@ public class InteractiveResize implements ITIPLDialog.DialogInteraction {
         irObj.execute();
     }
 
-    final protected BaseTIPLBlock resizeBlock;
+    final protected ITIPLBlock resizeBlock;
     final Future<ArgumentParser> fixedArgs;
     final ExecutorService dialogFetch;
 
+    final ITIPLBlock.BlockIOHelper ioHelper = new LocalTIPLBlock.LocalIOHelper();
+
     public InteractiveResize(String[] args) {
         ArgumentDialog.showDialogs = true;
-        resizeBlock = new ResizeBlock("");
+        resizeBlock = new ResizeBlock(ioHelper,"");
         dialogFetch = TIPLGlobal.getTaskExecutor();
 
         final ArgumentParser curArgs = resizeBlock.setParameter(TIPLGlobal.activeParser(args));

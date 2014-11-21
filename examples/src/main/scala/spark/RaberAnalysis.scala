@@ -2,20 +2,40 @@ package spark
 
 import tipl.blocks.BaseBlockRunner
 import tipl.util.TIPLGlobal
+import org.apache.spark.SparkContext._
+import tipl.formats.TImgRO
+import tipl.spark.IOOps._
+import tipl.spark.SparkGlobal
+import tipl.util.TIPLOps._
+import tipl.util.{D3int, TImgSlice, TImgTools, TypedPath}
+
 
 
 /**
  * Created by mader on 10/16/14.
  */
 object RaberAnalysis {
-  def main(args: Array[String]): Unit = {
 
-    import org.apache.spark.SparkContext._
-    import tipl.formats.TImgRO
-    import tipl.spark.IOOps._
-    import tipl.spark.SparkGlobal
-    import tipl.util.TIPLOps._
-    import tipl.util.{D3int, TImgSlice, TImgTools, TypedPath}
+
+  /**
+   * The parameters needed to run the analysis
+   * @param runLocal run using local drive
+   * @param doRender created 3D renderings of objects
+   * @param threshVals list of thresholds (just one for single threshold)
+   * @param imgPath
+   * @param savePath
+   * @param checkpointDir directory for checkpointing files
+   */
+  case class RAArgs(runLocal: Boolean,doRender: Boolean, threshVals: Array[Int],
+                    imgPath: String,
+                    savePath: String,
+                    checkpointDir: String) extends Serializable
+  /**
+   * Handle all of the parsing arguments
+   * @param args
+   * @return case class containing all the arguments bundled up
+   */
+  def parseArguments(args: Array[String]) = {
     val p = SparkGlobal.activeParser(args)
     val runLocal = false
     val defPath = if (runLocal) {
@@ -34,34 +54,42 @@ object RaberAnalysis {
     val minThresh = p.getOptionInt("minthresh",35,"Starting threshold")
     val maxThresh = p.getOptionInt("maxthresh",71,"Final threshold")
     val ssThresh = p.getOptionInt("step",7,"Step between threshold values")
-
-    val sc = SparkGlobal.getContext("RaberAnalysis").sc
     val savePath = rootPath+"/results/"
     val checkpointDir = rootPath+"/checkpoint/"
-
-    sc.setCheckpointDir(checkpointDir)
-
     val imgPath = if (useAll) {
       rootPath+"/brain*/*.tif"
     } else {
       rootPath+"/brain*23/a*.tif"
     }
+    p.checkForInvalid()
+    val threshVals = if (multiThresh) {
+      Range(minThresh,maxThresh,ssThresh).toArray
+    } else {
+      Array(thresh)
+    }
+    RAArgs(runLocal,doRender,threshVals,imgPath,
+      savePath,
+      checkpointDir)
+  }
+  def runAnalysis(inArgs: RAArgs): Unit = {
+    // setup spark context
+    val sc = SparkGlobal.getContext("RaberAnalysis").sc
+    val doCheckpoint = (inArgs.checkpointDir.length()>0)
+    if (doCheckpoint) sc.setCheckpointDir(inArgs.checkpointDir)
     val PERSIST_LEVEL = org.apache.spark.storage.StorageLevel.MEMORY_AND_DISK
 
-    val basePath = TypedPath.localFile(new java.io.File(savePath))
+    // make basepath into a typedpath object
+    val basePath = TypedPath.localFile(new java.io.File(inArgs.savePath))
 
     // read in all the tiff images and make groups later
 
-    val tiffSlices = sc.tiffFolder(imgPath)
+    val tiffSlices = sc.tiffFolder(inArgs.imgPath)
     val sliceCnt = tiffSlices.count
+
     // parse folder and path
     val gtifSlices = tiffSlices.map {
       inSlice =>
-        val imgName = inSlice._1.split("/").toList.reverse
-        val foldName = imgName(1)
-        val fileName = imgName(0).substring(0, imgName(0).lastIndexOf("."))
-        val sampName = fileName.substring(0, fileName.find("0"))
-        val sliceNum = fileName.substring(fileName.find("0"), fileName.length).toInt
+        val (foldName,sampName,sliceNum) = fileNameToImageName(inSlice._1)
         ((foldName, sampName), (new D3int(0, 0, sliceNum), inSlice._2))
     }
     // get image count
@@ -95,7 +123,7 @@ object RaberAnalysis {
 
     // make a rendering
 
-    if (doRender) {
+    if (inArgs.doRender) {
       tImgs.foreach {
         inObj =>
           val (path, img) = inObj
@@ -108,34 +136,32 @@ object RaberAnalysis {
 
     val filtImgs = tImgs.mapValues(_.filter(1, 1, filterType = FilterSettings.MEDIAN)).persist
     (PERSIST_LEVEL)
-    filtImgs.checkpoint()
+    if (doCheckpoint) filtImgs.checkpoint()
 
     filtImgs.foreach(saveFiles("gfilt", _))
     // apply multiple threshold values if needed
-    val threshImgs = if (multiThresh) {
-
-      val threshVals = sc.parallelize(Range(minThresh,maxThresh,ssThresh))
+    val threshImgs = {
+      val threshVals = sc.parallelize(inArgs.threshVals)
       filtImgs.cartesian(threshVals).map{
         inObj =>
           val ((path,img),cthresh) = inObj
           (path.appendDir("thresh_"+cthresh.toString),
             img(_>cthresh))
       }.repartition((imgCount*threshVals.count).asInstanceOf[Int])
-    } else {
-      filtImgs.mapValues(_(_ > thresh))
     }
 
-    threshImgs.checkpoint()
+    if (doCheckpoint) threshImgs.checkpoint()
     threshImgs.foreach(saveFiles("threshold", _))
 
-    if (doRender) {
+    if (inArgs.doRender) {
       threshImgs.foreach {
         inObj =>
           val (path, img) = inObj
           img.render3D(path.append("render_thresh.tif"))
       }
     }
-    case class DTOutput(thickness: TImgRO, distance: TImgRO, ridge: TImgRO)
+
+    case class DTOutput(thickness: TImgRO, distance: TImgRO, ridge: TImgRO) extends Serializable
     // generate the distance map and the ridge file
     val dtImgs = threshImgs.
       map {
@@ -149,7 +175,7 @@ object RaberAnalysis {
       saveFiles("dto", (path,imgs.thickness))
       saveFiles("dist", (path,imgs.distance))
       saveFiles("ridge", (path,imgs.ridge))
-      if (doRender) {
+      if (inArgs.doRender) {
         imgs.thickness.render3D(path.append("render_dto.tif"), extargs = "-crmin=0 -crmax=120 " +
           "-usecr " +
           "-lutnr=4")
@@ -170,7 +196,7 @@ object RaberAnalysis {
     }
     clImgs.foreach(saveFiles("cl", _))
 
-    if (doRender) {
+    if (inArgs.doRender) {
       clImgs.foreach {
         inObj =>
           val (path, img) = inObj
@@ -187,8 +213,11 @@ object RaberAnalysis {
         val (path,_) = inObj
 
         val apStr = "-apb1:segmented=ridge.tif -apb1:labeled=subvessels.tif -apb1:minvoxcount=30 " +
-          "-apb1:neighborhood=1,1,1 -apb1:phase=subvessels -apb1:mask=threshold.tif -apb1:density=sv_filled.tif -apb1:neighbors=sv_connections.tif"
-        val aapStr = "-aapb2:labeled=sv_filled.tif -aapb2:density=sv_density.tif -aapb2:neighbors=sv_neighbors.tif -aapb2:seedfile=subvessels_3.csv -aapb2:phase=full -aapb2:mask=mask.tif"
+          "-apb1:neighborhood=1,1,1 -apb1:phase=subvessels -apb1:mask=threshold.tif " +
+          "-apb1:density=sv_filled.tif -apb1:neighbors=sv_connections.tif"
+        val aapStr = "-aapb2:labeled=sv_filled.tif -aapb2:density=sv_density.tif " +
+          "-aapb2:neighbors=sv_neighbors.tif -aapb2:seedfile=subvessels_3.csv " +
+          "-aapb2:phase=full -aapb2:mask=mask.tif"
 
 
         val runStr = baseStr +" "+ apStr +" "+ aapStr
@@ -199,5 +228,24 @@ object RaberAnalysis {
     )
 
 
+  }
+
+  /**
+   * convert the path into a folder name, sample name, and slice number
+   * @param filePath
+   * @return tuple with foldername, samplename, and slicenumber
+   */
+  def fileNameToImageName(filePath: String): (String,String,Int) = {
+    val imgName = filePath.split("/").toList.reverse
+    val foldName = imgName(1)
+    val fileName = imgName(0).substring(0, imgName(0).lastIndexOf("."))
+    val sampName = fileName.substring(0, fileName.find("0"))
+    val sliceNum = fileName.substring(fileName.find("0"), fileName.length).toInt
+    (foldName,sampName,sliceNum)
+  }
+
+  def main(args: Array[String]): Unit = {
+    val inArgs = parseArguments(args)
+    runAnalysis(inArgs)
   }
 }

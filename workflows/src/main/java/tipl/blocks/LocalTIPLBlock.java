@@ -116,7 +116,13 @@ public abstract class LocalTIPLBlock implements ITIPLBlock {
 
         @Override
         public TImgRO getInputFile(String argument) {
-            return imageCache.getOrDefault(argument,null);
+            if (imageCache.containsKey(argument)) {
+                return imageCache.get(argument);
+            }
+            else {
+                throw new IllegalArgumentException(this+" does not have any image for " +
+                        "key:"+argument);
+            }
         }
 
 

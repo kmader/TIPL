@@ -44,6 +44,7 @@
         <module>integration</module>
         <module>charts</module>
         <module>jython</module>
+        <module>webgui</module>
         <module>examples</module>
     </modules>
     <properties>

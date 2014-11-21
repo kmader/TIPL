@@ -25,21 +25,16 @@ public class FoamThresholdBlock extends ThresholdBlock {
         }
     }
 
+    final static String blockName = "FoamThresholdBlock";
 
-    ;
-
-    /**
-     *
-     */
+    @Deprecated
     public FoamThresholdBlock() {
-        super("Foam", "");
+        this(new LocalTIPLBlock.LocalIOHelper(),"");
     }
 
-    /**
-     * @param inPrefix
-     */
-    public FoamThresholdBlock(String inPrefix) {
-        super("Foam", inPrefix);
+    public FoamThresholdBlock(final BlockIOHelper helperTools,final String inPrefix) {
+        super(helperTools,blockName);
+        prefix = inPrefix;
     }
 
     @Override
