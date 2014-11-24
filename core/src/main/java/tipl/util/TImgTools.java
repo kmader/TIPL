@@ -180,7 +180,7 @@ public class TImgTools {
      */
     public static Object convertArrayType(final Object inArray,
                                           final int inType, final int outType) {
-        return convertArrayType(inArray,inType,outType,false,1);
+        return convertArrayType(inArray,inType,outType,false,1.0f);
     }
     /**
      * Generic function for converting array types (with maxvalue as 127)
@@ -393,8 +393,8 @@ public class TImgTools {
 
     public static RGBConversion rgbConversionMethod = RGBConversion.MEAN;
 
-    @Deprecated
-    private static Object convertRGBArray(final byte[][] grgb, final int asType,
+
+    public static Object convertRGBArray(final byte[][] grgb, final int asType,
                                           final boolean isSigned,
                                           final float shortScaleFactor) {
         final RGBConversion curMethod = rgbConversionMethod;
@@ -444,8 +444,8 @@ public class TImgTools {
         return convertDoubleArray(gdouble, asType,isSigned,shortScaleFactor);
     }
 
-    @Deprecated
-    private static Object convertFloatArray(final float[] gf, final int asType,
+
+    public static Object convertFloatArray(final float[] gf, final int asType,
                                             final boolean isSigned, final float shortScaleFactor) {
         assert isValidType(asType);
         final int sliceSize = gf.length;
@@ -567,8 +567,7 @@ public class TImgTools {
 
     }
 
-    @Deprecated
-    private static Object convertIntArray(final int[] gi, final int asType,
+    public static Object convertIntArray(final int[] gi, final int asType,
                                           final boolean isSigned, final float ShortScaleFactor,
                                           final int maxVal) {
         final int sliceSize = gi.length;

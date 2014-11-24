@@ -205,6 +205,7 @@
     <orderEntry type="library" name="Maven: org.swinglabs:pdf-renderer:1.0.5" level="project" />
     <orderEntry type="module" module-name="tipl-examples" />
     <orderEntry type="library" name="Maven: org.apache.spark:spark-graphx_2.10:1.1.0" level="project" />
+    <orderEntry type="module" module-name="tipl-webgui" />
   </component>
 </module>
 

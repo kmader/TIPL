@@ -1,5 +1,6 @@
 package spark
 
+import org.apache.spark.ui.tipl.TiplUI
 import tipl.blocks.BaseBlockRunner
 import tipl.util.TIPLGlobal
 import org.apache.spark.SparkContext._
@@ -37,7 +38,7 @@ object RaberAnalysis {
    */
   def parseArguments(args: Array[String]) = {
     val p = SparkGlobal.activeParser(args)
-    val runLocal = false
+    val runLocal = true
     val defPath = if (runLocal) {
       "/Users/mader/Dropbox/WorkRelated/Raber/bci102014"
     } else {
@@ -74,6 +75,7 @@ object RaberAnalysis {
   def runAnalysis(inArgs: RAArgs): Unit = {
     // setup spark context
     val sc = SparkGlobal.getContext("RaberAnalysis").sc
+    TiplUI.attachUI(sc)
     val doCheckpoint = (inArgs.checkpointDir.length()>0)
     if (doCheckpoint) sc.setCheckpointDir(inArgs.checkpointDir)
     val PERSIST_LEVEL = org.apache.spark.storage.StorageLevel.MEMORY_AND_DISK
