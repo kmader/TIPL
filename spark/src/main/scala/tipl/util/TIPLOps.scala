@@ -19,7 +19,6 @@ import scala.reflect.ClassTag
 
 object TIPLOps {
 
-
   trait NeighborhoodOperation[T, U] {
     def blockOperation(windSize: D3int, kernel: Option[BaseTIPLPluginIn.morphKernel],
                        mapFun: (Iterable[T] => U)): RDD[(D3int, U)]

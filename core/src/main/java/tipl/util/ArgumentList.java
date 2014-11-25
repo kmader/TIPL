@@ -134,6 +134,13 @@ public class ArgumentList implements Serializable {
 		 * @return an array of the names
 		 */
 		public Collection<String> getAllLayers();
+
+        /**
+         * A method to get all of the values organized by layer
+         * @return a map of each layer and all the components inside it
+         */
+        public Map<String,Map<S,T>> getAllItems();
+
 		/**
 		 * Get all of the objects in a current layer
 		 * @param key
@@ -189,7 +196,12 @@ public class ArgumentList implements Serializable {
 			return lhm.keySet();
 		}
 
-		@Override
+        @Override
+        public Map<String, Map<S,T>> getAllItems() {
+            return lhm;
+        }
+
+        @Override
 		public Map<S, T> getLayer(String key) {
 			return lhm.get(key);
 		}
