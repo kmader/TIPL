@@ -7,6 +7,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.api.java.JavaPairRDD
 import org.apache.spark.rdd.RDD
 import tipl.formats.TImgRO
+import tipl.spark.DSImg.D3IntSlicePartitioner
 import tipl.tools.BaseTIPLPluginIn
 import tipl.util.TIPLOps._
 import tipl.util.{D3float, D3int, TImgSlice, TImgTools}
@@ -24,9 +25,10 @@ import scala.{specialized => spec}
 object DTImgOps {
   private[spark] def DTImgToKVRDD(inImg: DTImg[_]) = {
     val imgType = inImg.getImageType
-    DTrddToKVrdd(inImg.getBaseImg.rdd,imgType)
+    DTrddToKVrdd(inImg.getBaseImg.rdd,imgType,inImg.getPos,inImg.getDim)
   }
-  private[spark] def DTrddToKVrdd[V](inImg: RDD[(D3int,TImgSlice[V])],imgType: Int) = {
+  private[spark] def DTrddToKVrdd[V](inImg: RDD[(D3int,TImgSlice[V])],imgType: Int,pos: D3int,
+                                     dim: D3int) = {
     inImg.flatMap {
       cPoint =>
         val pos = cPoint._1
@@ -38,13 +40,14 @@ object DTImgOps {
              x <- 0 until dim.x
         }
         yield (new D3int(pos.x + x, pos.y + y, pos.z + z), outArr((z * dim.y + y) * dim.x + x))
-    }
+    }.partitionBy(new D3IntSlicePartitioner(pos,dim))
 
     //val onImg = TypeMacros.correctlyTypeDTImg(inImg)
   }
 
   private[spark] def DTrddToKVrdd[@spec(Boolean, Byte, Short, Int, Long, Float,
-    Double) T](inImg: RDD[(D3int,TImgSlice[Array[T]])]): RDD[(D3int, T)] = {
+    Double) T : ClassTag](inImg: RDD[(D3int,TImgSlice[Array[T]])], pos: D3int, dim: D3int): RDD[
+    (D3int, T)] = {
     inImg.flatMap {
       cPoint =>
         val pos = cPoint._1
@@ -56,7 +59,7 @@ object DTImgOps {
              x <- 0 until dim.x
         }
         yield (new D3int(pos.x + x, pos.y + y, pos.z + z), outArr((z * dim.y + y) * dim.x + x))
-    }
+    }.partitionBy(new D3IntSlicePartitioner(pos,dim))
 
     //val onImg = TypeMacros.correctlyTypeDTImg(inImg)
   }

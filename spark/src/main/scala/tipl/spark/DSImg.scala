@@ -38,7 +38,7 @@ class FlatDSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
  */
 class DSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
 (dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg: RDD[(D3int,
-  TImgSlice[Array[T]])], path: TypedPath)
+  TImgSlice[Array[T]])], path: TypedPath, var desiredPartitions: Int = 100)
 (implicit lm: ClassTag[T])
   extends TImg.ATImg(dim, pos, elSize, imageType) {
 
@@ -60,6 +60,7 @@ class DSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
       imageType), cImg.getPath())(lm)
 
   def getBaseImg() = baseImg
+
 
   /**
    * A fairly simple operation of filtering the RDD for the correct slice and returning that slice
@@ -90,9 +91,85 @@ class DSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
     }
   }
 }
-
-
+import scala.{specialized => spec}
+import tipl.util.D3int
 object DSImg {
+  abstract class SlicePartitioner(minVal: Int,
+                                  maxVal: Int, partitions: Int) extends
+  org.apache.spark.Partitioner {
+    type T
+    require(minVal<maxVal)
+    require(partitions>0)
+
+    def this(minVal: Int, maxVal: Int) = this(minVal,maxVal,SparkGlobal.calculatePartitions
+      (maxVal-minVal))
+
+    override def numPartitions: Int = Math.min(partitions,maxVal-minVal)
+    override def getPartition(key: Any): Int = {
+      val sliceId = key match {
+        case slice: D3int => slice.gz()
+        case slice: Int => slice
+        case slice: Number => slice.doubleValue()
+      }
+      if (sliceId>=minVal & sliceId<=maxVal)
+        Math.floor(((sliceId-minVal))/(maxVal-minVal+1)*numPartitions).toInt
+      else
+        throw new IllegalArgumentException("Slice not in range of partitioner:"+this)
+    }
+    /**
+     * A list of all the keys
+     * @return
+     */
+    def getAllKeys(): Array[T]
+  }
+
+  case class D3IntSlicePartitioner(pos: D3int, dim: D3int) extends SlicePartitioner(pos.z,pos
+    .z+dim.z) {
+    type T = D3int
+
+    override def getAllKeys(): Array[T] = (for(ipos <- pos.z to (pos.z+dim.z)) yield new
+        D3int(pos.x,
+      pos.y,ipos))
+      .toArray
+  }
+  case class IntSlicePartitioner(minVal: Int, maxVal: Int) extends SlicePartitioner(minVal,maxVal) {
+    type T = Int
+    def getAllKeys(): Array[Int] = (for(i <- minVal to maxVal) yield i)
+      .toArray
+  }
+
+
+  case class OldD3IntSlicePartitioner(minVal: Int, maxVal: Int,
+    partitions: Int)
+    extends org.apache.spark.Partitioner {
+
+    def this(mnVal: Int, mxVal: Int) = this(mnVal,mxVal,
+      SparkGlobal.calculatePartitions(mxVal-mnVal))
+
+    def this(pos: D3int, dim: D3int) = this(pos.z,pos.z+dim.z,SparkGlobal
+      .calculatePartitions(dim.z))
+
+    /**
+     * There should not be empty partitions so at the worst it is one slice per partition
+     * @return
+     */
+    override def numPartitions: Int = Math.min(partitions,maxVal-minVal)
+    override def getPartition(key: Any): Int = {
+      val sliceId = key match {
+        case slice: D3int => slice.gz()
+        case slice: Int => slice
+        case slice: Number => slice.doubleValue()
+      }
+      if (sliceId>=minVal & sliceId<=maxVal)
+        Math.floor(((sliceId-minVal))/(maxVal-minVal+1)*numPartitions).toInt
+      else
+        throw new IllegalArgumentException("Slice not in range of partitioner:"+this)
+    }
+
+    def getAllKeys(): Array[(Int,Int)] = (for(i <- minVal to maxVal) yield (i,getPartition(i)))
+      .toArray
+  }
+
   val futureTImgMigrate = false
 
   /**
@@ -114,7 +191,7 @@ object DSImg {
     val sliceDim: D3int = new D3int(imgDim.x, imgDim.y, 1)
     val zero: D3int = new D3int(0)
     val partitionCount: Int = SparkGlobal.calculatePartitions(cImg.getDim.z)
-    sc.parallelize(0 until imgDim.z, partitionCount). // create indices with correct partitioning
+    sc.parallelize(0 until imgDim.z). // create indices with correct partitioning
       map { curSlice =>
       val nPos = new D3int(imgPos.x, imgPos.y, imgPos.z + curSlice)
       (nPos,
@@ -123,10 +200,9 @@ object DSImg {
         else new TImgSlice[Array[U]](cImg.getPolyImage(curSlice, imgType).asInstanceOf[Array[U]],
           nPos, sliceDim)
         )
-    }
+    }.partitionBy(new D3IntSlicePartitioner(imgPos,imgDim))
 
   }
-
   /**
    * A simple block shifting function
    *

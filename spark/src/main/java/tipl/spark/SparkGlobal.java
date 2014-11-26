@@ -8,6 +8,7 @@ import scala.Tuple2;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
+import tipl.util.TImgTools;
 
 /**
  * This has all the static functions and settings for dealing with spark,
@@ -251,34 +252,18 @@ abstract public class SparkGlobal {
         return calculatePartitions(slices, getSlicesPerCore());
     }
 
-    static public Partitioner getPartitioner(final D3int dim) {
-        return new Partitioner() {
-            final int slCnt = dim.z;
-            final int ptCnt = SparkGlobal.calculatePartitions(dim.z);
-            final int slPpt = SparkGlobal.getSlicesPerCore();
+    /**
+     * Get the default slice-based partitioner from DSImg. This greatly speeds up lookup operations
+     * @param pos position of the first slice
+     * @param dim the dimensions of the entire image
+     * @return partitioner object
+     */
+    static public Partitioner getPartitioner(final D3int pos,final D3int dim) {
+        return new DSImg.D3IntSlicePartitioner(pos, dim);
+    }
 
-            @Override
-            public int getPartition(Object arg0) {
-                D3int curPos;
-                if (arg0 instanceof Tuple2) {
-                    curPos = ((Tuple2<D3int, ?>) arg0)._1;
-                } else if (arg0 instanceof D3int) {
-                    curPos = (D3int) arg0;
-
-                } else {
-                    throw new IllegalArgumentException("Object Cannot Be partitioned!!!!!" + arg0);
-                }
-                return (int) Math.floor(curPos.z * 1.0 / slPpt);
-
-
-            }
-
-            @Override
-            public int numPartitions() {
-                return ptCnt;
-            }
-
-        };
+    static public Partitioner getPartitioner(final TImgTools.HasDimensions imgObj) {
+        return getPartitioner(imgObj.getPos(), imgObj.getDim());
     }
 
     static public ArgumentParser activeParser(String[] args) {

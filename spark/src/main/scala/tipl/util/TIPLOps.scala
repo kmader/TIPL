@@ -19,6 +19,22 @@ import scala.reflect.ClassTag
 
 object TIPLOps {
 
+
+  /**
+   * Allow the nice get (option) and getorelse to be used on array objects
+   * @param inArr
+   * @tparam T
+   */
+  implicit class optionArray[T](inArr: Array[T]) {
+    def get(ind: Int): Option[T] = {
+      if(ind>=0 & ind<inArr.length) Some(inArr(ind))
+      else None
+    }
+    def getOrElse(ind: Int, elseVal: T) = {
+      if(ind>=0 & ind<inArr.length) inArr(ind)
+      else elseVal
+    }
+  }
   trait NeighborhoodOperation[T, U] {
     def blockOperation(windSize: D3int, kernel: Option[BaseTIPLPluginIn.morphKernel],
                        mapFun: (Iterable[T] => U)): RDD[(D3int, U)]

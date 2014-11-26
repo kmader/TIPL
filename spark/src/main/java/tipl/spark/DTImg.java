@@ -194,8 +194,8 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
 
             inSlices.add(new Tuple2<D3int, TImgSlice<U>>(nPos, curBlock));
         }
-        final int partitionCount = SparkGlobal.calculatePartitions(cImg.getDim().z);
-        return jsc.parallelizePairs(inSlices, partitionCount);
+        return jsc.parallelizePairs(inSlices).partitionBy(new DSImg.D3IntSlicePartitioner(imgPos,
+                imgDim));
     }
 
 
@@ -461,7 +461,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
         final PairFunction<Tuple2<D3int, TImgSlice<T>>, D3int, TImgSlice<U>> mapFunc,
         final int outType) {
             return DTImg.WrapRDD(this, this.baseImg.mapToPair(mapFunc).partitionBy(SparkGlobal
-                    .getPartitioner(getDim())), outType);
+                    .getPartitioner(getPos(),getDim())), outType);
         }
 
         /**
@@ -475,7 +475,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
         final Function<TImgSlice<T>, TImgSlice<U>> mapFunc,
         final int outType) {
             return DTImg.WrapRDD(this, this.baseImg.mapValues(mapFunc).partitionBy(SparkGlobal
-                    .getPartitioner(getDim())), outType);
+                    .getPartitioner(getPos(),getDim())), outType);
         }
 
         /**
@@ -637,7 +637,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
             JavaPairRDD<D3int, Iterable<TImgSlice<T>>> joinImg;
             joinImg = this.spreadSlices(spreadWidth).
                     groupByKey(getPartitions()).
-                    partitionBy(SparkGlobal.getPartitioner(getDim()));
+                    partitionBy(SparkGlobal.getPartitioner(getPos(),getDim()));
 
             return DTImg.WrapRDD(this, joinImg.
                     mapToPair(mapFunc), TImgTools.IMAGETYPE_FLOAT);
@@ -694,7 +694,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
                 1)));
         JavaPairRDD<D3int, Tuple3<Iterable<TImgSlice<T>>, Iterable<TImgSlice<T>>,
                 Iterable<TImgSlice<T>>>> joinImg = baseImg.cogroup(down1, up1,
-                SparkGlobal.getPartitioner(getDim()));
+                SparkGlobal.getPartitioner(getPos(),getDim()));
         return joinImg.mapValues(new Function<Tuple3<Iterable<TImgSlice<T>>,
                 Iterable<TImgSlice<T>>, Iterable<TImgSlice<T>>>, List<TImgSlice<T>>>() {
 

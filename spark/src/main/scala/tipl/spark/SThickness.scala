@@ -63,7 +63,7 @@ object SThickness extends Serializable {
     val sc = sth.sc
     val tImg = new DSImg[Double](sc, testImg, testImg.getImageType)
     var thickMap = tImg.getBaseImg()//.persist(StorageLevel.DISK_ONLY)
-    val basePts = DTImgOps.DTrddToKVrdd(thickMap)
+    val basePts = DTImgOps.DTrddToKVrdd(thickMap,tImg.getPos,tImg.getDim)
     val allPts = basePts.filter(_._2>testRad/2.0).repartition(50).mapPartitionsWithIndex((i,j) =>
       List((i,j)).toIterator)
     val preStr = "Before Stats:"+basePts.map(_._2).stats()
@@ -73,7 +73,7 @@ object SThickness extends Serializable {
       val nPts = allPts.lookup(i)(0).toArray
       println("Points to scan:"+nPts.length+"\n\t"+nPts.mkString(","))
       thickMap = fillRadius(thickMap,nPts)
-      val thkSts = DTImgOps.DTrddToKVrdd(thickMap).map(_._2).stats()
+      val thkSts = DTImgOps.DTrddToKVrdd(thickMap,tImg.getPos,tImg.getDim).map(_._2).stats()
       postStr = ("Current Stats:"+thkSts)
       println(postStr)
     }

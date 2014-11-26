@@ -210,7 +210,7 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
         JavaPairRDD<D3int, Iterable<TImgSlice<long[]>>> fannedImage;
         if (false)
             fannedImage = labeledImage.spreadSlices(neighborSize.z).
-                    groupByKey().partitionBy(SparkGlobal.getPartitioner(labeledImage.getDim()));
+                    groupByKey().partitionBy(SparkGlobal.getPartitioner(labeledImage));
         else
             fannedImage = labeledImage.getBaseImg().groupByKey();
 
@@ -297,7 +297,7 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
         }
 
         JavaPairRDD<D3int, TImgSlice<long[]>> newlabeledImage = labeledImage.getBaseImg().
-                join(mergeCmds, SparkGlobal.getPartitioner(labeledImage.getDim()))
+                join(mergeCmds, SparkGlobal.getPartitioner(labeledImage))
                 .mapValues(new Function<Tuple2<TImgSlice<long[]>, Map<Long, Long>>,
                         TImgSlice<long[]>>() {
 

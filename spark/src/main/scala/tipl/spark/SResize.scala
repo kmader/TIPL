@@ -56,7 +56,7 @@ class SResize extends BaseTIPLPluginIO {
   var inImage: TImgRO = null
   var outImg: TImg = null
   var objDim: D3int = null
-  lazy val partitioner = SparkGlobal.getPartitioner(objDim)
+  lazy val partitioner = SparkGlobal.getPartitioner(inImage)
 
   /**
    * The first image is the

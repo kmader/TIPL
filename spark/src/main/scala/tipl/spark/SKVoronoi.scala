@@ -4,6 +4,7 @@
 package tipl.spark
 
 
+import org.apache.spark.Partitioner
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import tipl.util.ArgumentParser
@@ -21,6 +22,7 @@ import tipl.formats.PureFImage
 import tipl.tests.TestPosFunctions
 import tipl.spark.TypeMacros._
 import tipl.util.TypedPath
+import tipl.util.TIPLOps._
 
 /**
  * A spark based code to perform shape analysis similarly to the code provided GrayAnalysis
@@ -103,71 +105,84 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
 
   override def execute(): Boolean = {
     print("Starting Plugin..." + getPluginName)
-    val curKernel: Option[BaseTIPLPluginIn.morphKernel] =
-      if (neighborKernel == null) {
-        None
-      } else {
-        Some(neighborKernel)
-      }
-    var changes = 1L
-    var curDist = 0f
-    var iter = 0
-    var empty_vx = labeledDistanceMap.filter(get_empty).count
-    var mean_dist = labeledDistanceMap.map(get_distance).mean
-    var mean_label = labeledDistanceMap.map(get_label).mean
-    println("KSM - MD:" + mean_dist + "\tML" + mean_label)
-    println("KSM - Dist:" + curDist + ", Iter:" + iter + ", Ops:" + 0 + ", " +
-      "Changes:" + changes + ", Empty:" + empty_vx)
-    while ((
-      (curDist <= maxUsuableDistance) |
-        (maxUsuableDistance < 0)) & (changes > 0)) {
-      val spreadObj = labeledDistanceMap.
-        flatMap(spread_voxels(_, neighborSize, curKernel, curDist))
-      val vox_involved = spreadObj.count
-      labeledDistanceMap = spreadObj.groupByKey.
-        filter(remove_edges).mapValues(collect_voxels).partitionBy(partitioner)
+    labeledDistanceMap match {
+      case Some(ldm) =>
+        var varLDM = ldm
 
-      changes = labeledDistanceMap.filter(get_change).count
-      empty_vx = labeledDistanceMap.filter(get_empty).count
-      mean_dist = labeledDistanceMap.map(get_distance).mean
-      mean_label = labeledDistanceMap.map(get_label).mean
-      println("KSM - MD:" + mean_dist + "\tML" + mean_label)
-      println("KSM -Dist:" + curDist + ", Iter:" + iter + ", Ops:" + vox_involved + ", " +
-        "Changes:" + changes + ", Empty:" + empty_vx)
-      println("KSM - " + labeledDistanceMap.takeSample(true, 10, 50).mkString(", "))
+        val curKernel: Option[BaseTIPLPluginIn.morphKernel] =
+          if (neighborKernel == null) {
+            None
+          } else {
+            Some(neighborKernel)
+          }
+        var changes = 1L
+        var curDist = 0f
+        var iter = 0
+        var empty_vx = varLDM.filter(get_empty).count
+        var mean_dist = varLDM.map(get_distance).mean
+        var mean_label = varLDM.map(get_label).mean
+        println("KSM - MD:" + mean_dist + "\tML" + mean_label)
+        println("KSM - Dist:" + curDist + ", Iter:" + iter + ", Ops:" + 0 + ", " +
+          "Changes:" + changes + ", Empty:" + empty_vx)
+        while ((
+          (curDist <= maxUsuableDistance) |
+            (maxUsuableDistance < 0)) & (changes > 0)) {
+          val spreadObj = varLDM.
+            flatMap(spread_voxels(_, neighborSize, curKernel, curDist))
+          val vox_involved = spreadObj.count
 
-      iter += 1
-      curDist += stepSize
+          varLDM = {
+            val tvLDM = spreadObj.groupByKey.
+              filter(remove_edges).mapValues(collect_voxels)
+            partitioner match {
+              case Some(cpt) => tvLDM.partitionBy(cpt)
+              case None => tvLDM
+            }
+          }
+          changes = ldm.filter(get_change).count
+          empty_vx = ldm.filter(get_empty).count
+          mean_dist = ldm.map(get_distance).mean
+          mean_label = ldm.map(get_label).mean
+          println("KSM - MD:" + mean_dist + "\tML" + mean_label)
+          println("KSM -Dist:" + curDist + ", Iter:" + iter + ", Ops:" + vox_involved + ", " +
+            "Changes:" + changes + ", Empty:" + empty_vx)
+          println("KSM - " + ldm.takeSample(true, 10, 50).mkString(", "))
 
+          iter += 1
+          curDist += stepSize
+
+        }
+        labeledDistanceMap = Some(varLDM)
+        true
+      case None => throw new IllegalArgumentException(this + " has not been loaded yet")
     }
-    true
+
   }
 
   val fillImage = (tempObj: TImgTools.HasDimensions, defValue: Double) => {
     val defFloat = new PureFImage.ConstantValue(defValue)
     KVImgOps.createFromPureFun(SparkGlobal.getContext(getPluginName()), tempObj, defFloat).toKVFloat
   }
-  var labeledDistanceMap: RDD[(D3int, ((Long, Float), Boolean))] = null
-  var objDim: D3int = null
-  lazy val partitioner = SparkGlobal.getPartitioner(objDim)
-
+  var labeledDistanceMap: Option[RDD[(D3int, ((Long, Float), Boolean))]] = None
+  var objDim: Option[D3int] = None
+  var partitioner: Option[Partitioner] = None
   /**
    * The first image is the
    */
   override def LoadImages(inImages: Array[TImgRO]) = {
     var labelImage = inImages(0)
-    objDim = labelImage.getDim
-    var maskImage = if (inImages.length > 1) inImages(1) else null
-
-    val labeledImage = labelImage.toKV.toKVLong.getBaseImg.partitionBy(partitioner)
+    objDim = Some(labelImage.getDim)
+    val liPart = SparkGlobal.getPartitioner (labelImage)
+    partitioner = Some(liPart)
+    val labeledImage = labelImage.toKV.toKVLong.getBaseImg.partitionBy(liPart)
 
     // any image filled with all negative distances
     val initialDistances = fillImage(labelImage, -1).getBaseImg
     val inMask = (ival: (D3int, Float)) => ival._2 > 0
     val toBoolean = (ival: Float) => true
-    val maskedImage = (maskImage match {
-      case m: TImgRO => m.toKV().toKV.toKVFloat
-      case _ => fillImage(labelImage, 1)
+    val maskedImage = (inImages.get(1) match {
+      case Some(m) => m.toKV().toKV.toKVFloat
+      case None => fillImage(labelImage, 1)
     }).getBaseImg.filter(inMask).mapValues(toBoolean)
     if (TIPLGlobal.getDebug()) println("KSM-MaskedImage:\t" + maskedImage + "\t" + maskedImage
       .first)
@@ -182,20 +197,26 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
       else ((avec._1, java.lang.Float.MAX_VALUE.floatValue), false)
     }
 
-    labeledDistanceMap = labeledImage.join(maskDistance).
-      mapValues(fix_dist).partitionBy(partitioner)
+    labeledDistanceMap = Some(labeledImage.join(maskDistance).
+      mapValues(fix_dist).partitionBy(liPart))
     if (TIPLGlobal.getDebug()) println("KSM-LDMap:\t" + labeledDistanceMap + "\t" +
-      labeledDistanceMap.first)
-    if (TIPLGlobal.getDebug()) println("KSM-" + labeledDistanceMap.takeSample(true, 10,
+      labeledDistanceMap.get.first)
+    if (TIPLGlobal.getDebug()) println("KSM-" + labeledDistanceMap.get.takeSample(true, 10,
       50).mkString(", "))
   }
 
   override def ExportDistanceAim(inObj: CanExport): TImg = {
-    new KVImg[Float](inObj, TImgTools.IMAGETYPE_FLOAT, labeledDistanceMap.mapValues(_._1._2))
+    labeledDistanceMap match {
+      case Some(ldm) => new KVImg[Float](inObj, TImgTools.IMAGETYPE_FLOAT, ldm.mapValues(_._1._2))
+      case None => throw new IllegalArgumentException(this+" has not yet been run!")
+    }
   }
 
   override def ExportVolumesAim(inObj: CanExport): TImg = {
-    new KVImg[Long](inObj, TImgTools.IMAGETYPE_LONG, labeledDistanceMap.mapValues(_._1._1))
+    labeledDistanceMap match {
+      case Some(ldm) => new KVImg[Long](inObj, TImgTools.IMAGETYPE_LONG, ldm.mapValues(_._1._1))
+      case None => throw new IllegalArgumentException(this + " has not yet been run!")
+    }
   }
 
   override def ExportImages(templateImage: TImgRO): Array[TImg] = {
