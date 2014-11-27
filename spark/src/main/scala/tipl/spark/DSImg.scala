@@ -6,6 +6,7 @@ import org.apache.spark.{Partition, SparkContext}
 import tipl.formats.{TImg, TImgRO}
 import tipl.util._
 
+import scala.collection.mutable.{Map => MuMap}
 import scala.reflect.ClassTag
 import scala.{specialized => spec}
 
@@ -14,6 +15,7 @@ class DSImgPartition(val prev: Partition, val startIndex: Long)
   extends Partition with Serializable {
   override val index: Int = prev.index
 }
+
 
 class FlatDSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
 (dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg: IndexedSeq[(D3int,
@@ -90,10 +92,29 @@ class DSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
           curSlice))(inBlock)
     }
   }
+  import DSImg.FancyTImgSlice
+
+  def changeTypes[V](outType: Int)(implicit ctv: ClassTag[V],num: Numeric[V]): DSImg[V] = {
+    new DSImg[V](this,getBaseImg.mapValues(_.changeType[V](outType)),outType)
+  }
+
 }
-import scala.{specialized => spec}
+
 import tipl.util.D3int
+
+import scala.{specialized => spec}
 object DSImg {
+
+  implicit class FancyTImgSlice[T : ClassTag](ts: TImgSlice[Array[T]]) {
+    def changeType[V](outType: Int)(implicit ctv: ClassTag[V],numv: Numeric[V]): TImgSlice[Array[V]]
+    = {
+      TImgTools.isValidType(outType)
+      new TImgSlice[Array[V]](
+        TypeMacros.castArr(ts.getAsDouble,outType).asInstanceOf[Array[V]]
+        ,ts)
+    }
+  }
+
   abstract class SlicePartitioner(minVal: Int,
                                   maxVal: Int, partitions: Int) extends
   org.apache.spark.Partitioner {
@@ -111,10 +132,11 @@ object DSImg {
         case slice: Int => slice
         case slice: Number => slice.doubleValue()
       }
-      if (sliceId>=minVal & sliceId<=maxVal)
-        Math.floor(((sliceId-minVal))/(maxVal-minVal+1)*numPartitions).toInt
-      else
-        throw new IllegalArgumentException("Slice not in range of partitioner:"+this)
+      if (sliceId>=minVal & sliceId<=maxVal) {
+        Math.floor(((sliceId - minVal)) / (maxVal - minVal + 1) * numPartitions).toInt
+      } else {
+        throw new IllegalArgumentException("Slice not in range of partitioner:" + this)
+      }
     }
     /**
      * A list of all the keys
@@ -132,41 +154,10 @@ object DSImg {
       pos.y,ipos))
       .toArray
   }
+
   case class IntSlicePartitioner(minVal: Int, maxVal: Int) extends SlicePartitioner(minVal,maxVal) {
     type T = Int
     def getAllKeys(): Array[Int] = (for(i <- minVal to maxVal) yield i)
-      .toArray
-  }
-
-
-  case class OldD3IntSlicePartitioner(minVal: Int, maxVal: Int,
-    partitions: Int)
-    extends org.apache.spark.Partitioner {
-
-    def this(mnVal: Int, mxVal: Int) = this(mnVal,mxVal,
-      SparkGlobal.calculatePartitions(mxVal-mnVal))
-
-    def this(pos: D3int, dim: D3int) = this(pos.z,pos.z+dim.z,SparkGlobal
-      .calculatePartitions(dim.z))
-
-    /**
-     * There should not be empty partitions so at the worst it is one slice per partition
-     * @return
-     */
-    override def numPartitions: Int = Math.min(partitions,maxVal-minVal)
-    override def getPartition(key: Any): Int = {
-      val sliceId = key match {
-        case slice: D3int => slice.gz()
-        case slice: Int => slice
-        case slice: Number => slice.doubleValue()
-      }
-      if (sliceId>=minVal & sliceId<=maxVal)
-        Math.floor(((sliceId-minVal))/(maxVal-minVal+1)*numPartitions).toInt
-      else
-        throw new IllegalArgumentException("Slice not in range of partitioner:"+this)
-    }
-
-    def getAllKeys(): Array[(Int,Int)] = (for(i <- minVal to maxVal) yield (i,getPartition(i)))
       .toArray
   }
 
@@ -216,6 +207,56 @@ object DSImg {
       val oPos: D3int = inData._1
       val nPos: D3int = new D3int(oPos.x + nOffset.x, oPos.y + nOffset.y, oPos.z + nOffset.z)
       (nPos, new TImgSlice[T](inSlice.getClone, nPos, inSlice.getDim, nOffset))
+  }
+
+  def posMapFun(pos: D3int, dim: D3int) = {
+    posVal: D3int =>
+      (posVal.z, (posVal.y - pos.y) * dim.x
+        + posVal.x - pos.x)
+  }
+
+  def fromKVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](inImg: KVImg[T])
+                                                                        (implicit T: ClassTag[T],
+                                                                          num: Numeric[T]):
+      DSImg[T] = {
+    val dim = inImg.getDim
+    val pos = inImg.getPos
+    val elSize = inImg.getElSize
+    val sliceSize = dim.x * dim.y
+    val indFun = posMapFun(pos,dim)
+
+    var rddObj = inImg.getBaseImg().
+      mapPartitions(
+      inPoints => {
+        val outMap = MuMap[Int, Array[T]]()
+        while (inPoints.hasNext) {
+          val cPt = inPoints.next()
+          val (z, ind) = indFun(cPt._1)
+          outMap.getOrElseUpdate(z, new Array[T](sliceSize))(ind)=cPt._2
+        }
+        outMap.toIterator
+      }
+    ,true).
+      groupByKey(SparkGlobal.getPartitioner(inImg)) // the slices might have somehow ended up on
+      // multiple partitions
+    val sslices = rddObj.map(
+      inSlice => {
+        val (id,slices) = inSlice
+        val oPos = new D3int(pos.x,pos.y,id)
+        val fArray = slices.reduce(
+          (slA,slB) => {
+            var i=0;
+            while(i<slA.length) {
+              slA(i)=num.plus(slA(i),slB(i))
+              i+=1
+            }
+            slA
+          }
+        )
+        (oPos,new TImgSlice[Array[T]](fArray,oPos,dim))
+      }
+    )
+    new DSImg[T](dim,pos,inImg.getElSize,inImg.getImageType,sslices,inImg.getPath)
   }
 
 }
