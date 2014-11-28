@@ -42,7 +42,7 @@ object RaberAnalysis {
     val defPath = if (runLocal) {
       "/Users/mader/Dropbox/WorkRelated/Raber/bci102014"
     } else {
-      "/Volumes/WORKDISK/WorkData/Raber/bci102014"
+      "/Volumes/WORKDISK/WorkData/Raber/bci102014_2"
     }
     val rootPath = p.getOptionPath("root",defPath,"The base path containing all of the images")
       .getPath()
@@ -60,7 +60,7 @@ object RaberAnalysis {
     val imgPath = if (useAll) {
       rootPath+"/brain*/*.tif"
     } else {
-      rootPath+"/brain*23/a*.tif"
+      rootPath+"/brain*3/a*.tif"
     }
     p.checkForInvalid()
     val threshVals = if (multiThresh) {
@@ -75,6 +75,7 @@ object RaberAnalysis {
   def runAnalysis(inArgs: RAArgs): Unit = {
     // setup spark context
     val sc = SparkGlobal.getContext("RaberAnalysis").sc
+    // get the gui running
     TiplUI.attachUI(sc)
     val doCheckpoint = (inArgs.checkpointDir.length()>0)
     if (doCheckpoint) sc.setCheckpointDir(inArgs.checkpointDir)
