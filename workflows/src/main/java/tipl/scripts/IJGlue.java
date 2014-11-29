@@ -1,8 +1,9 @@
 package tipl.scripts;
 
 import ij.IJ;
+import ij.ImagePlus;
 import tipl.formats.TImg;
-import tipl.formats.VirtualAim;
+import tipl.ij.TImgToImagePlus;
 import tipl.util.ArgumentParser;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
@@ -21,8 +22,8 @@ import tipl.util.TImgTools;
 public class IJGlue {
 
     public static void run(final TImg inImg, final String cmd, final String opts) {
-        final VirtualAim vaImg = new VirtualAim(inImg);
-        IJ.run(vaImg.getImagePlus(), cmd, opts);
+        final ImagePlus ijp = TImgToImagePlus.MakeImagePlus(inImg);
+        IJ.run(ijp, cmd, opts);
     }
 
     public final int LASTSTAGE = 11;

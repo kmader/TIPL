@@ -68,6 +68,17 @@
             <artifactId>tipl-ccgeom</artifactId>
             <version>${tipl.version}</version>
         </dependency>
+        <dependency> <!-- needed for sc functions functions -->
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-io</artifactId>
+            <version>${tipl.version}</version>
+        </dependency>
+        <dependency> <!-- needed for the imagej code -->
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-volviewer</artifactId>
+            <version>${tipl.version}</version>
+        </dependency>
+
 
 
     </dependencies>

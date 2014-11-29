@@ -37,6 +37,12 @@
             <artifactId>tipl-spark</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+
+        <dependency> <!-- needed for the imagej code for interactive resize and ijglue  -->
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-volviewer</artifactId>
+            <version>${tipl.version}</version>
+        </dependency>
         
         <dependency>
             <groupId>com.miglayout</groupId>
