@@ -2,6 +2,7 @@ package tipl.formats;
 
 import java.io.Serializable;
 
+import tipl.formats.TImgRO.FullReadable;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.TImgTools;
@@ -41,7 +42,7 @@ public interface TImg extends TImgRO, TImgRO.CanExport,
      */
     @Override
     public void setShortScaleFactor(float ssf);
-    static public class ArrayBackedTImg extends ATImg implements Serializable {
+    static public class ArrayBackedTImg extends ATImg implements Serializable, FullReadable {
     	final Object[] sliceData;
     	final int sliceType;
     	/**
@@ -76,6 +77,92 @@ public interface TImg extends TImgRO, TImgRO.CanExport,
 			return ArrayBackedTImg.class.getSimpleName()+",path:"+getPath()+", dim:"+getDim();
 		}
 
+        // the full readable methods (only temporarily here)
+
+        @Override
+        public boolean[] getBoolAim() {
+            final boolean[] outArray = new boolean[(int) getDim().prod()];
+            int curSliceIndex=0;
+            int sliceSize = getDim().x*getDim().y;
+            for(int z=0;z<getDim().z;z++) {
+                System.arraycopy(
+                        getPolyImage(z, TImgTools.IMAGETYPE_BOOL),
+                        0,
+                        outArray,
+                        curSliceIndex,
+                        sliceSize);
+                curSliceIndex+=sliceSize;
+            }
+            return outArray;
+        }
+
+        @Override
+        public char[] getByteAim() {
+            final char[] outArray = new char[(int) getDim().prod()];
+            int curSliceIndex=0;
+            int sliceSize = getDim().x*getDim().y;
+            for(int z=0;z<getDim().z;z++) {
+                System.arraycopy(
+                        getPolyImage(z, TImgTools.IMAGETYPE_CHAR),
+                        0,
+                        outArray,
+                        curSliceIndex,
+                        sliceSize);
+                curSliceIndex+=sliceSize;
+            }
+            return outArray;
+        }
+
+        @Override
+        public float[] getFloatAim() {
+            final float[] outArray = new float[(int) getDim().prod()];
+            int curSliceIndex=0;
+            int sliceSize = getDim().x*getDim().y;
+            for(int z=0;z<getDim().z;z++) {
+                System.arraycopy(
+                        getPolyImage(z, TImgTools.IMAGETYPE_FLOAT),
+                        0,
+                        outArray,
+                        curSliceIndex,
+                        sliceSize);
+                curSliceIndex+=sliceSize;
+            }
+            return outArray;
+        }
+
+        @Override
+        public int[] getIntAim() {
+            final int[] outArray = new int[(int) getDim().prod()];
+            int curSliceIndex=0;
+            int sliceSize = getDim().x*getDim().y;
+            for(int z=0;z<getDim().z;z++) {
+                System.arraycopy(
+                        getPolyImage(z, TImgTools.IMAGETYPE_INT),
+                        0,
+                        outArray,
+                        curSliceIndex,
+                        sliceSize);
+                curSliceIndex+=sliceSize;
+            }
+            return outArray;
+        }
+
+        @Override
+        public short[] getShortAim() {
+            final short[] outArray = new short[(int) getDim().prod()];
+            int curSliceIndex=0;
+            int sliceSize = getDim().x*getDim().y;
+            for(int z=0;z<getDim().z;z++) {
+                System.arraycopy(
+                        getPolyImage(z, TImgTools.IMAGETYPE_SHORT),
+                        0,
+                        outArray,
+                        curSliceIndex,
+                        sliceSize);
+                curSliceIndex+=sliceSize;
+            }
+            return outArray;
+        }
     }
     
     	

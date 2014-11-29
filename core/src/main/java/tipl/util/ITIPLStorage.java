@@ -127,5 +127,37 @@ public interface ITIPLStorage {
 	 */
 	public TImg wrapTImgRO(final TImgRO inImage);
 	public boolean RemoveTImgFromCache(String path);
+
+	/**
+	 * Get a version of the image which can be read as a single large array (useful for the old
+	 * style of plugins, but will soon be removed)
+	 * @param inImg
+	 * @return an image which can be read-entirely from top to bottom
+	 */
+	@Deprecated
+	public TImgRO.FullReadable makeTImgFullReadable(final TImgRO inImg);
+
+	/**
+	 * get the directory where scratch files are stored
+	 */
+	public TypedPath getScratchDirectory();
+	/**
+	 * set the directory where scratch files are stored
+	 */
+	public void setScratchDirectory(TypedPath scratchDirectory);
+
+	/**
+	 * does the storage method use scratch storage
+	 * @return
+	 */
+	public boolean getUseScratch();
+
+	/**
+	 * set the ability to use scratch
+	 * @param useScratch
+	 */
+	public void setUseScratch(boolean useScratch);
+
+
 	
 }

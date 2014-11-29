@@ -3,7 +3,6 @@ package tipl.tools;
 import tipl.formats.PureFImage;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.formats.VirtualAim;
 import tipl.util.*;
 
 import java.util.Random;
@@ -129,7 +128,7 @@ public class XDF extends BaseTIPLPluginMult {
      * function for creating an two point correlation using a labeled image and
      * a mask image
      */
-    public static XDF CreateLabeledXDF(VirtualAim labImg, VirtualAim maskImg,
+    public static XDF CreateLabeledXDF(TImgRO labImg, TImgRO maskImg,
                                        D3int rdfS, int inPhase, int outPhase) {
         final XDF cXDF = new XDF();
         cXDF.setParameter("-rdfsize=" + rdfS + ", -inphase=" + inPhase + ", -outphase=" + outPhase + " -asint");

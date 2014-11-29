@@ -93,7 +93,7 @@ abstract public class BaseTIPLPluginIn extends BaseTIPLPlugin implements
     /**
      * has the plug-in actually been run at least once
      */
-    int runCount = 0;
+    public int runCount = 0;
     /**
      * Dimensions of dataset which has been loaded
      */

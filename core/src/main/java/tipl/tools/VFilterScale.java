@@ -2,7 +2,6 @@ package tipl.tools;
 
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
-import tipl.formats.VirtualAim;
 import tipl.util.*;
 
 /**
@@ -52,13 +51,17 @@ public class VFilterScale extends FilterScale {
 	/**
 	 * Exports the VFilterScaled result based on a template aim
 	 * 
-	 * @param templateAim
+	 * @param rawTemplateAim
 	 *            input template aim file
 	 */
-	public TImg JunkExportAim(final VirtualAim templateAim) {
+	public TImg JunkExportAim(final TImgRO rawTemplateAim) {
 		if (isInitialized) {
 			if (runCount > 0) {
-				VirtualAim outVirtualAim;
+
+				final TImgRO.CanExport templateAim =
+						TImgTools.getStorage().wrapTImgRO(rawTemplateAim);
+
+				TImg outVirtualAim;
 				switch (curSettings.oimageType) {
 				case 10: // Boolean
 					outVirtualAim = templateAim.inheritedAim(outAimMask, odim,
@@ -84,9 +87,8 @@ public class VFilterScale extends FilterScale {
 					System.err.println("Input type not supported" + imageType);
 					return null;
 				}
-				outVirtualAim.pos = opos;
-				outVirtualAim.elSize = oelsize;
-				outVirtualAim.ischGuet = true;
+				outVirtualAim.setPos(opos);
+				outVirtualAim.setElSize(oelsize);
 				outVirtualAim.appendProcLog(procLog);
 				return outVirtualAim;
 

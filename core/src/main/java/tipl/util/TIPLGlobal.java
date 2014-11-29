@@ -1,7 +1,6 @@
 package tipl.util;
 
 import ij.ImageJ;
-import tipl.formats.VirtualAim;
 import tipl.util.TIPLMongo.ITIPLUsage;
 import tipl.util.TIPLMongo.TIPLUsage;
 
@@ -168,9 +167,12 @@ public class TIPLGlobal {
      */
     public static ArgumentParser activeParser(ArgumentParser sp) {
         sp.createNewLayer("Global Settings");
-        VirtualAim.scratchDirectory = sp.getOptionPath("@localdir",
-                VirtualAim.scratchDirectory, "Directory to save local data to");
-        VirtualAim.scratchLoading = sp.getOptionBoolean("@local", VirtualAim.scratchLoading, "Load image data from local filesystems");
+        TImgTools.getStorage().setScratchDirectory(sp.getOptionPath("@localdir",
+                TImgTools.getStorage().getScratchDirectory(), "Directory to save local data to"));
+
+        TImgTools.getStorage().setUseScratch(sp.getOptionBoolean("@local", TImgTools.getStorage()
+                .getUseScratch(), "Load image data from local filesystems"));
+
         TIPLGlobal.availableCores = sp.getOptionInt("@maxcores",
                 TIPLGlobal.availableCores,
                 "Number of cores/threads to use for processing");

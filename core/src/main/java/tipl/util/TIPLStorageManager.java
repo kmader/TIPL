@@ -1,0 +1,186 @@
+/**
+ *
+ */
+package tipl.util;
+
+import ij.IJ;
+import ij.gui.GenericDialog;
+import org.scijava.annotations.Index;
+import org.scijava.annotations.IndexItem;
+import org.scijava.annotations.Indexable;
+import tipl.formats.TImgRO;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.*;
+import java.util.Map.Entry;
+
+/**
+ * A manager for the storage options to keep them separate from the core implementation
+ * @author mader
+ */
+public class TIPLStorageManager {
+    private static final Map<StorageInfo, TIPLStorageFactory> storageList = new HashMap<StorageInfo, TIPLStorageFactory>() {
+        @Override
+        public TIPLStorageFactory get(Object ikey) {
+            final StorageInfo key = ((StorageInfo) ikey);
+            final String cVal = key.toString();
+            for (Entry<StorageInfo, TIPLStorageFactory> cKey : this.entrySet()) {
+                if (cKey.getKey().toString().equalsIgnoreCase(cVal)) return cKey.getValue();
+            }
+            throw new IllegalArgumentException("storage:" + key.storageType() + ":\t" + cVal + " cannot be found in the storage tree");
+        }
+    };
+
+
+    /**
+     * get the named storage from the list
+     * @param curInfo the information on the storage
+     * @return
+     */
+    public static ITIPLStorage getStorage(StorageInfo curInfo) {
+        System.out.println("Requesting:" + curInfo.toString() + "\t" + storageList.get(curInfo));
+
+
+        if (getAllStorage().contains(curInfo)) {
+            for (Entry<StorageInfo, TIPLStorageFactory> cf : storageList.entrySet()) {
+                if (cf.getKey().toString().equals(curInfo.toString())) {
+                    System.out.println("Found a match:" + curInfo);
+                    return cf.getValue().get();
+                }
+            }
+            return storageList.get(curInfo).get();
+        } else
+            throw new IllegalArgumentException("storage:" + curInfo.storageType() + " with info" + curInfo + " has not yet been loaded");
+    }
+
+
+    public static ITIPLStorage getFirstStorage(boolean withSpark) {
+       return getStorage(getStorages(withSpark).get(0));
+    }
+
+
+
+    /**
+     * Get a list of all the storage factories that exist
+     * @return
+     * @throws InstantiationException
+     */
+    public static List<StorageInfo> getAllStorage() {
+        if (storageList.size() > 1) return new ArrayList<StorageInfo>(storageList.keySet());
+        for (Iterator<IndexItem<StorageInfo>> cIter = Index.load(StorageInfo.class).iterator(); cIter.hasNext(); ) {
+            final IndexItem<StorageInfo> item = cIter.next();
+
+            final StorageInfo bName = item.annotation();
+
+            try {
+
+                final TIPLStorageFactory dBlock = (TIPLStorageFactory) Class.forName(item.className()).newInstance();
+                System.out.println(bName + " loaded as: " + dBlock);
+                if (bName.enabled()) storageList.put(bName, dBlock);
+            } catch (InstantiationException e) {
+                System.err.println("storage: " + bName.storageType() + " " + bName.desc() + " could not be loaded or instantiated by storage manager!\t" + e);
+                if (TIPLGlobal.getDebug()) e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                System.err.println("storage: " + bName.storageType() + " " + bName.desc() + " could not be found by storage manager!\t" + e);
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                System.err.println("storage: " + bName.storageType() + " " + bName.desc() + " was accessed illegally by storage manager!\t" + e);
+                e.printStackTrace();
+            }
+        }
+
+        return new ArrayList<StorageInfo>(storageList.keySet());
+    }
+
+    /**
+     * A list of storages with the given type/name
+     * @param storageType
+     * @return a hashmap of the storages
+     * @throws InstantiationException
+     */
+    public static List<StorageInfo> getStoragesNamed(final String storageType) {
+        List<StorageInfo> outList = new ArrayList<StorageInfo>();
+        for (StorageInfo cPlug : getAllStorage()) {
+            if (cPlug.storageType().equalsIgnoreCase(storageType))
+                outList.add(cPlug);
+        }
+        return outList;
+    }
+    public static List<StorageInfo> getStorages(final boolean withSpark) {
+        List<StorageInfo> outList = new ArrayList<StorageInfo>();
+        for (StorageInfo cPlug : getAllStorage()) {
+            if (cPlug.sparkBased()==withSpark)
+                outList.add(cPlug);
+        }
+        return outList;
+    }
+
+
+
+    /**
+     * StorageINfo stores information about the different storage options
+     *
+     * @author mader
+     *
+     */
+    @Target(ElementType.TYPE)
+    @Retention(RetentionPolicy.SOURCE)
+    @Indexable
+    public static @interface StorageInfo {
+        /**
+         * The name of the storage (VfilterScale is Filter so is FilterScale)
+         * @return
+         */
+        String storageType();
+
+        /**
+         * short description of the storage
+         * @return
+         */
+        String desc() default "";
+
+        /**
+         * does it operate on slices
+         * @return
+         */
+        boolean sliceBased() default false;
+
+        /**
+         * the largest image it can handle in voxels ( -1 means unlimited, or memory limited), default is the longest an array is allowed to be
+         * @return
+         */
+        long maximumSize() default Integer.MAX_VALUE - 1;
+
+
+        /**
+         * the speed rank of the storage from 0 slowest to 10 average to 20 highest (everything else being equal the fastest storage is taken)
+         * @return
+         */
+        int speedRank() default 10;
+
+        /**
+         * does the storage require Spark in order to run
+         * @return
+         */
+        boolean sparkBased() default false;
+
+        /**
+         * is the storage type enabled in production
+         */
+        boolean enabled() default true;
+    }
+
+
+    /**
+     * The static method to create a new TIPLstorage
+     * @author mader
+     *
+     */
+    public static interface TIPLStorageFactory {
+        public ITIPLStorage get();
+    }
+
+}

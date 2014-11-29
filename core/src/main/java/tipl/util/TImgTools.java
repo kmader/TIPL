@@ -6,7 +6,7 @@ package tipl.util;
 import tipl.formats.TImg;
 import tipl.formats.TImgRO;
 import tipl.formats.TImgRO.FullReadable;
-import tipl.formats.VirtualAim;
+
 
 import java.io.IOException;
 import java.util.Date;
@@ -101,8 +101,8 @@ public class TImgTools {
      */
     public static ITIPLStorage getStorage() {
         if (storageBackend == null) {
-            if(!useSparkStorage) storageBackend = new TIPLStorage();
-
+            storageBackend = TIPLStorageManager.getFirstStorage
+                    (useSparkStorage);
         }
         return storageBackend;
     }
@@ -1068,11 +1068,11 @@ public class TImgTools {
      * TImgRO currently uses VirtualAim, but this will be fixed soon
      *
      * @param inImg
-     * @return a fullreadable version of inImg
+     * @return a full-readable version of inImg
      */
     @Deprecated
     public static FullReadable makeTImgFullReadable(final TImgRO inImg) {
-        return VirtualAim.TImgToVirtualAim(inImg);
+        return getStorage().makeTImgFullReadable(inImg);
     }
 
     /**
