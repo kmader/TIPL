@@ -153,7 +153,10 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-                                <!-- use the transformers to combine all the annotations before making the final file -->
+                                <!-- use the transformers to combine all the annotations used for dependency injection
+                                before making the final file, new types must be manually added here. 
+                                The JSON annotations were used since they can be collected with the appendingtransfomer
+                                standard annotations cannot-->
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/json/tipl.blocks.BaseTIPLBlock$BlockIdentity</resource>
                                 </transformer>
@@ -165,6 +168,9 @@
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/json/tipl.formats.DirectoryReader$DReader</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/json/tipl.util.TIPLStorageManager$StorageInfo</resource>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>reference.conf</resource>

@@ -16,7 +16,6 @@ import tipl.formats.TiffFolder.TIFSliceReader
 import tipl.formats.{TImg, TImgRO}
 import tipl.spark.hadoop.TiffFileInputFormat
 import tipl.util._
-
 import scala.reflect.ClassTag
 
 /**

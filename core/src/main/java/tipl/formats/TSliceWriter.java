@@ -12,6 +12,7 @@ import org.scijava.annotations.Index;
 import org.scijava.annotations.IndexItem;
 import org.scijava.annotations.Indexable;
 
+import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgSlice;
 import tipl.util.TypedPath;
@@ -99,6 +100,25 @@ public interface TSliceWriter extends Serializable {
 			System.out.println("Loaded "+TSliceWriter.class.getName()+" Plugins:");
 			for(String cFilter: allFacts.keySet()) return allFacts.get(cFilter).get(outImage,path,imgType);
 			throw new IllegalArgumentException("No matching filters found:"+path);
+		}
+
+		/**
+		 * A simple function to write
+		 * @param tsw the initialized writer tool
+		 * @param inImage the image to be written
+		 */
+		public static void SimpleWrite(final TSliceWriter tsw,final TImgRO inImage, final int
+				imageType) {
+			for(int sliceNo=0;sliceNo<inImage.getDim().z;sliceNo++) {
+				final D3int cpos = new D3int(inImage.getPos().x,inImage.getPos().y,inImage.getPos
+						().z+sliceNo);
+				tsw.WriteSlice(
+
+						new TImgSlice.TImgSliceFromImage(inImage,sliceNo,imageType,cpos,inImage
+								.getDim(),D3int.zero)
+						,sliceNo);
+			}
+
 		}
 	}
 
