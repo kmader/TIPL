@@ -42,7 +42,7 @@
         <module>spark</module>
         <module>volviewer</module>
         <module>integration</module>
-        <module>charts</module>
+       <!-- throws stupid errors <module>charts</module> -->
         <module>jython</module>
         <module>webgui</module>
         <module>examples</module>

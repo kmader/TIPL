@@ -145,7 +145,7 @@
     <orderEntry type="module-library">
       <library name="Maven: com.sun:tools:1.4.2">
         <CLASSES>
-          <root url="jar:///Library/Java/JavaVirtualMachines/jdk1.7.0_40.jdk/Contents/Home/lib/tools.jar!/" />
+          <root url="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_20.jdk/Contents/Home/lib/tools.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -155,6 +155,8 @@
     <orderEntry type="library" name="Maven: com.googlecode.gentyref:gentyref:1.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.bushe:eventbus:1.4" level="project" />
     <orderEntry type="module" module-name="tipl-ccgeom" />
+    <orderEntry type="module" module-name="tipl-io" />
+    <orderEntry type="module" module-name="tipl-volviewer" />
     <orderEntry type="library" name="Maven: com.typesafe.genjavadoc:genjavadoc-plugin_2.10.4:0.8" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:scala-compiler:2.10.4" level="project" />
   </component>
