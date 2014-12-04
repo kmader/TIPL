@@ -61,6 +61,7 @@ public interface TypedPath extends Serializable {
      */
     public TypedPath appendDir(String dirName, boolean createDir);
 
+    public TypedPath appendDir(String dirName);
     /**
      * Get the contents of a directory
      */
@@ -109,12 +110,87 @@ public interface TypedPath extends Serializable {
 
     }
 
+    /**
+     * a non-standard filesystem which does not understand directories or listing operations and
+     * has them automatically blanked out
+     */
+    abstract public static class NonPosixTypedPath extends SimpleTypedPath {
+
+        protected NonPosixTypedPath(SimpleTypedPath inTp) {
+            super(inTp);
+        }
+
+        protected NonPosixTypedPath(String newPath, SimpleTypedPath oldTp) {
+            super(newPath, oldTp);
+        }
+
+        protected NonPosixTypedPath(String path, String type) {
+            super(path, type);
+        }
+
+        protected NonPosixTypedPath(String combPath) {
+            super(combPath);
+        }
+
+        @Override
+        public File getFile() {
+            throw new IllegalArgumentException(this+" cannot get a file object!");
+        }
+
+        @Override
+        public TypedPath getParent() {
+            throw new IllegalArgumentException(this+" does not have a parent");
+        }
+
+        @Override
+        public TypedPath appendDir(String dirName, boolean createDir) {
+            throw new IllegalArgumentException(this+"cannot have a directory appended");
+        }
+
+        @Override
+        public boolean delete() {
+            System.err.println(this + " cannot be deleted");
+            return false;
+        }
+
+        @Override
+        public boolean recursiveDelete() {
+            System.err.println(this+" cannot be deleted");
+            return false;
+        }
+
+        @Override
+        public boolean copyTo(TypedPath curObj) {
+            System.err.println("Copy is not a default supported operation in "+this);
+            return false;
+        }
+
+        @Override
+        public boolean isDirectory() {
+            return false;
+        }
+
+        public TypedPath makeAbsPath() { return this;}
+
+        public boolean exists() {
+            System.err.println("Using the default, naive implementation");
+            return true;
+        }
+
+        public TypedPath[] listFiles(PathFilter pf) {return new TypedPath[0];}
+
+    }
     abstract public static class SimpleTypedPath implements TypedPath {
         final protected String inStr;
         final protected String inType;
-
-
+        /**
+         * used for forcing a type into the image
+         */
         final static String pathTypeSplitChr = "::";
+
+        static public String[] splitPath(final String inPath) {
+            return inPath.split(TypedPath.SimpleTypedPath.pathTypeSplitChr);
+        }
 
         /**
          * A cloning command
@@ -126,15 +202,33 @@ public interface TypedPath extends Serializable {
         }
 
         protected SimpleTypedPath(final String newPath,final SimpleTypedPath oldTp) {
-            this.inStr = newPath;
-            this.inType = oldTp.getType();
+            String[] spStr = splitPath(newPath);
+            if(spStr.length<2) {
+                this.inStr = newPath;
+                this.inType = oldTp.getType();
+            } else {
+                this.inStr=spStr[0];
+                this.inType=spStr[1];
+            }
+
         }
 
-        @Deprecated
         protected SimpleTypedPath(final String path, final String type) {
             this.inStr = path;
             this.inType = type;
         }
+
+        protected SimpleTypedPath(final String combPath) {
+            String[] spStr = splitPath(combPath);
+            if(spStr.length<2) {
+                this.inStr = combPath;
+                this.inType = "";
+            } else {
+                this.inStr=spStr[0];
+                this.inType=spStr[1];
+            }
+        }
+
 
         public boolean isLocal() {
             return ((getPathType()==PATHTYPE.LOCAL));
@@ -143,16 +237,12 @@ public interface TypedPath extends Serializable {
         public String toString() {
             return inStr;
         }
+
         public String summary() {
             return "Path:"+getPath()+",Type:"+getType()+",FS:"+getPathType();
         }
 
-        public TypedPath makeAbsPath() { return this;}
 
-        public boolean exists() {
-            System.err.println("Using the default, naive implementation");
-            return true;
-        }
 
         /**
          * First checks the type (since some images might have the type without having the actual
@@ -190,42 +280,6 @@ public interface TypedPath extends Serializable {
         @Override
         public String getPath() {return this.getPath();}
 
-        @Override
-        public File getFile() {
-            throw new IllegalArgumentException(this+" cannot get a file object!");
-        }
-
-        @Override
-        public TypedPath getParent() {
-            throw new IllegalArgumentException(this+" does not have a parent");
-        }
-
-        @Override
-        public TypedPath appendDir(String dirName, boolean createDir) {
-            throw new IllegalArgumentException(this+"cannot have a directory appended");
-        }
-        @Override
-        public boolean delete() {
-           System.err.println(this + " cannot be deleted");
-            return false;
-        }
-
-        @Override
-        public boolean recursiveDelete() {
-            System.err.println(this+" cannot be deleted");
-            return false;
-        }
-
-        @Override
-        public boolean copyTo(TypedPath curObj) {
-            System.err.println("Copy is not a default supported operation in "+this);
-            return false;
-        }
-
-        @Override
-        public boolean isDirectory() {
-            return false;
-        }
 
 
         @Override
@@ -235,7 +289,8 @@ public interface TypedPath extends Serializable {
 
         public TypedPath[] listFiles() {return listFiles(PathFilter.empty);}
 
-
+        @Override
+        public TypedPath appendDir(String dirName) {return appendDir(dirName,true);}
 
     }
 

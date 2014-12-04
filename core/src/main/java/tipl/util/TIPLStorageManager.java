@@ -3,12 +3,9 @@
  */
 package tipl.util;
 
-import ij.IJ;
-import ij.gui.GenericDialog;
 import org.scijava.annotations.Index;
 import org.scijava.annotations.IndexItem;
 import org.scijava.annotations.Indexable;
-import tipl.formats.TImgRO;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -16,6 +13,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.*;
 import java.util.Map.Entry;
+import tipl.util.ITIPLFileSystem.FileSystemInfo;
 
 /**
  * A manager for the storage options to keep them separate from the core implementation
@@ -25,6 +23,7 @@ public class TIPLStorageManager {
     private static final Map<StorageInfo, TIPLStorageFactory> storageList = new HashMap<StorageInfo, TIPLStorageFactory>() {
         @Override
         public TIPLStorageFactory get(Object ikey) {
+            if (super.containsKey(ikey)) return super.get(ikey);
             final StorageInfo key = ((StorageInfo) ikey);
             final String cVal = key.toString();
             for (Entry<StorageInfo, TIPLStorageFactory> cKey : this.entrySet()) {
@@ -33,6 +32,10 @@ public class TIPLStorageManager {
             throw new IllegalArgumentException("storage:" + key.storageType() + ":\t" + cVal + " cannot be found in the storage tree");
         }
     };
+    /**
+     * the default filesystem (if it is null, the first successful is used)
+     */
+    public static ITIPLFileSystem injectedFileSystem = null;
 
     /**
      * Go through all the available storage engines to find one capable of reading a path of this
@@ -41,15 +44,18 @@ public class TIPLStorageManager {
      * @return
      */
     public static TypedPath openPath(final String pathStr) {
-        TypedPath cPath = doesPathExist( TImgTools.getStorage(),pathStr);
-        Iterator<StorageInfo> siIter = getAllStorage().iterator();
-
-        while((cPath==null) && siIter.hasNext()) {
-            StorageInfo cInfo = siIter.next();
-            cPath = doesPathExist(getStorage(cInfo),pathStr);
+        if (injectedFileSystem!=null) {
+            if(injectedFileSystem.isValidPath(pathStr)) return injectedFileSystem.openPath(pathStr);
         }
-        throw new IllegalArgumentException("No suitable storage environment found:"+pathStr);
+
+        for(FileSystemInfo fsi : getAllFileSystem()) {
+            if (getFileSystem(fsi).isValidPath(pathStr)) return getFileSystem(fsi).
+                    openPath(pathStr);
+        }
+
+        throw new IllegalArgumentException("No suitable filesystem environment found:"+pathStr);
     }
+
     /**
      * For files or datasets not based directly on real files (transforms of images)
      * @note The construction of File or Stream objects from these objects will eventually throw an error
@@ -57,12 +63,12 @@ public class TIPLStorageManager {
      * @return
      */
     public static TypedPath createVirtualPath(final String virtualName) {
-        return new VirtualTypedPath(virtualName,"");
+        return openPath("virtual://"+virtualName);
     }
 
-    protected static TypedPath doesPathExist(final ITIPLStorage cStorage,final String pathStr) {
+    protected static TypedPath isPathValid(final ITIPLFileSystem cStorage,final String pathStr) {
         try {
-            TypedPath outPath = cStorage.IdentifyPath(pathStr);
+            TypedPath outPath = cStorage.openPath(pathStr);
             if (outPath.exists()) return outPath;
             else return null;
         } catch (Exception e) {
@@ -71,22 +77,17 @@ public class TIPLStorageManager {
         }
     }
 
+
     /**
      * get the named storage from the list
      * @param curInfo the information on the storage
      * @return
      */
     public static ITIPLStorage getStorage(StorageInfo curInfo) {
-        System.out.println("Requesting:" + curInfo.toString() + "\t" + storageList.get(curInfo));
-
+        System.out.println("Requesting:" + curInfo.toString() + "\t" + storageList.
+                containsKey(curInfo));
 
         if (getAllStorage().contains(curInfo)) {
-            for (Entry<StorageInfo, TIPLStorageFactory> cf : storageList.entrySet()) {
-                if (cf.getKey().toString().equals(curInfo.toString())) {
-                    System.out.println("Found a match:" + curInfo);
-                    return cf.getValue().get();
-                }
-            }
             return storageList.get(curInfo).get();
         } else
             throw new IllegalArgumentException("storage:" + curInfo.storageType() + " with info" + curInfo + " has not yet been loaded");
@@ -218,5 +219,79 @@ public class TIPLStorageManager {
     public static interface TIPLStorageFactory {
         public ITIPLStorage get();
     }
+
+
+
+    private static final Map<ITIPLFileSystem.FileSystemInfo, ITIPLFileSystem> fsList = new HashMap<FileSystemInfo,
+            ITIPLFileSystem>() {
+        @Override
+        public ITIPLFileSystem get(Object ikey) {
+            if (super.containsKey(ikey)) return super.get(ikey);
+
+            final FileSystemInfo key = ((FileSystemInfo) ikey);
+            final String cVal = key.toString();
+            for (Entry<FileSystemInfo, ITIPLFileSystem> cKey : this.entrySet()) {
+                if (cKey.getKey().toString().equalsIgnoreCase(cVal)) return cKey.getValue();
+            }
+            throw new IllegalArgumentException("storage:" + key.name() + ":\t" + cVal + " cannot be " +
+                    "found in the storage tree");
+        }
+    };
+
+
+
+    /**
+     * Get a list of all the storage factories that exist
+     * @return
+     * @throws InstantiationException
+     */
+    public static List<FileSystemInfo> getAllFileSystem() {
+        if (fsList.size() > 1) return new ArrayList<FileSystemInfo>(fsList.keySet());
+
+        for (Iterator<IndexItem<FileSystemInfo>> cIter = Index.load(FileSystemInfo.class).
+                iterator(); cIter.hasNext(); ) {
+            final IndexItem<FileSystemInfo> item = cIter.next();
+
+            final FileSystemInfo bName = item.annotation();
+
+            try {
+
+                final ITIPLFileSystem dBlock = (ITIPLFileSystem) Class.forName(item.className()).newInstance();
+                System.out.println(bName + " loaded as: " + dBlock);
+                if (bName.enabled()) fsList.put(bName, dBlock);
+            } catch (InstantiationException e) {
+                System.err.println("filesystem: " + bName.name() + " " + bName.desc() + " could " +
+                        "not " +
+                        "be loaded or instantiated by storage manager!\t" + e);
+                if (TIPLGlobal.getDebug()) e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                System.err.println("filesystem: " + bName.name() + " " + bName.desc() + " could not be found by storage manager!\t" + e);
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                System.err.println("filesystem: " + bName.name() + " " + bName.desc() + " was accessed illegally by storage manager!\t" + e);
+                e.printStackTrace();
+            }
+        }
+
+        return new ArrayList<ITIPLFileSystem.FileSystemInfo>(fsList.keySet());
+    }
+
+
+    /**
+     * get the named storage from the list
+     * @param curInfo the information on the storage
+     * @return
+     */
+    public static ITIPLFileSystem getFileSystem(ITIPLFileSystem.FileSystemInfo curInfo) {
+        System.out.println("Requesting:" + curInfo.toString() + "\t" + fsList.containsKey(curInfo));
+
+        if (getAllFileSystem().contains(curInfo)) {
+            return fsList.get(curInfo);
+        } else
+            throw new IllegalArgumentException("storage:" + curInfo.name() + " with info" + curInfo
+                    + " has not yet been loaded");
+    }
+
+
 
 }

@@ -6,9 +6,29 @@ import java.io.*;
  * A virtual typed path for images only stored in memory
  * Created by mader on 12/4/14.
  */
-public class VirtualTypedPath extends TypedPath.SimpleTypedPath {
+public class VirtualTypedPath extends TypedPath.NonPosixTypedPath {
+
+    @ITIPLFileSystem.FileSystemInfo(name="Virtual Path", desc="A virtual path stored in " +
+            "memory, but not tracked")
+    static public class VTP extends ITIPLFileSystem.WebPrefixFileSystem {
+
+        public VTP() {
+            super(false, "virtual");
+        }
+
+
+        @Override
+        protected TypedPath openPath(String prefix, String contents, String originalString) {
+            return new VirtualTypedPath(contents);
+        }
+    }
+
+
     protected FileObject virtualFile = null;
 
+    public VirtualTypedPath(String newPath) {
+        super(newPath);
+    }
     public VirtualTypedPath(String newPath, String type) {
         super(newPath,type);
     }

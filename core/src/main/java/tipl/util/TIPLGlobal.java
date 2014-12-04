@@ -5,13 +5,6 @@ import tipl.util.TIPLMongo.ITIPLUsage;
 import tipl.util.TIPLMongo.TIPLUsage;
 
 import java.awt.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -280,17 +273,12 @@ public class TIPLGlobal {
     }
     @Deprecated
     public static void copyFile(final String sourceFile, final String destFile) {
-        copyFile(TImgTools.getStorage().IdentifyPath(sourceFile),TImgTools.getStorage().IdentifyPath(destFile));
-    }
-
-    @Deprecated
-    public static boolean DeleteFile(final TypedPath file) {
-        return file.delete();
+        copyFile(TIPLStorageManager.openPath(sourceFile),TIPLStorageManager.openPath(destFile));
     }
 
     @Deprecated
     public static boolean DeleteFile(final String file) {
-        return DeleteFile(TImgTools.getStorage().IdentifyPath(file));
+        return TIPLStorageManager.openPath(file).delete();
     }
 
 
