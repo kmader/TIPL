@@ -7,11 +7,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import tipl.formats.TImgRO.TImgStack;
-import tipl.util.D3float;
-import tipl.util.D3int;
-import tipl.util.ITIPLStorage;
-import tipl.util.TImgTools;
-import tipl.util.TypedPath;
+import tipl.util.*;
 
 /**
  * A simple image storage mechanism keeping the images in a large array of
@@ -163,8 +159,7 @@ public class SimpleStack<T> extends TImgStack implements Serializable {
 	 */
 	@Override
 	public TypedPath getPath() {
-		// TODO Auto-generated method stub
-		return TypedPath.virtualPath(getSampleName());
+		return TIPLStorageManager.createVirtualPath(getSampleName());
 	}
 
 	/*
@@ -174,7 +169,6 @@ public class SimpleStack<T> extends TImgStack implements Serializable {
 	 */
 	@Override
 	public Object getPolyImage(final int sliceNumber, final int asType) {
-		// TODO Auto-generated method stub
 		return TImgTools.convertArrayType(getSlice(sliceNumber), imageType,
 				asType, false, 1.0f, 128);
 	}

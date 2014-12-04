@@ -3,10 +3,7 @@ package tipl.tools;
 
 import java.io.FileWriter;
 
-import tipl.util.ArgumentParser;
-import tipl.util.D3float;
-import tipl.util.D3int;
-import tipl.util.TypedPath;
+import tipl.util.*;
 
 // Used as a replacement for the moment function as it allows much more control over data
 // and communication with webservices (potentially?)
@@ -147,7 +144,7 @@ public class Hist2D extends BaseTIPLPlugin {
 	String headerString = "";
 
 	String headerStr = "";
-	protected TypedPath outCsvName = new TypedPath("2dhistout.csv");
+	protected TypedPath outCsvName = TIPLStorageManager.openPath("2dhistout.csv");
 
 	String insName = "N/A";
 	boolean asList = false;

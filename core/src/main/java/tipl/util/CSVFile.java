@@ -1,10 +1,6 @@
 package tipl.util;
 
-import java.io.BufferedReader;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
@@ -120,8 +116,9 @@ public class CSVFile {
 	public static CSVFile FromPath(final TypedPath _filename, final int _headerlines) {
 		TypedPath filename = _filename;
 		try {
-			File file = new File(_filename.getPath());
-			return new CSVFile(new BufReadWrap(new BufferedReader(new FileReader(file))),_headerlines);
+			InputStream file = _filename.getFileObject().getInputStream();
+			return new CSVFile(new BufReadWrap(new BufferedReader(new InputStreamReader(file))),
+			_headerlines);
 		} catch (final Exception e) {
 			System.out.println("File cannot be opened? Does it exist");
 			e.printStackTrace();

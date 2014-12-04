@@ -128,7 +128,7 @@ public abstract class LocalTIPLBlock implements ITIPLBlock {
 
         @Override
         public TypedPath getFileParameter(String argument) {
-            return TypedPath.virtualPath(argument);
+            return TIPLStorageManager.createVirtualPath(argument);
         }
     }
 

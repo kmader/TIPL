@@ -211,7 +211,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
             TImgSlice<Fc>> newImage,
                                          int imgType) {
         DTImg<Fc> outImage = new DTImg<Fc>(parent, newImage, imgType,
-                TypedPath.virtualPath(newImage.toString()));
+                TIPLStorageManager.createVirtualPath(newImage.toString()));
         return outImage;
     }
 
@@ -323,10 +323,9 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      *
      * @param path
      */
-    public void DSave(TypedPath path) {
-        final TypedPath absTP = path.makeAbsPath();
+    public void DSave(final TypedPath path) {
         final TSliceWriter cWriter = TSliceWriter.Writers.ChooseBest(this,
-                absTP, imageType);
+                path.makeAbsPath(), imageType);
         baseImg.foreach(new VoidFunction<Tuple2<D3int, TImgSlice<T>>>() {
 
             @Override

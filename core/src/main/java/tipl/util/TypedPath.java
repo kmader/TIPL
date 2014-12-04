@@ -66,7 +66,7 @@ public interface TypedPath extends Serializable {
      */
     public boolean isDirectory();
 
-    public TypedPath[] listFiles();
+    public TypedPath[] listFiles(PathFilter pf);
 
     public boolean exists();
 
@@ -84,6 +84,14 @@ public interface TypedPath extends Serializable {
     public boolean delete();
 
     public boolean recursiveDelete();
+
+    public boolean copyTo(TypedPath outputFile);
+
+    /**
+     * Make the path absolute only works on local filesystems
+     * @return
+     */
+    public TypedPath makeAbsPath();
 
     /**
      * a more generic file tool that can easily be implemented for Hadoop and other FS later
@@ -209,6 +217,12 @@ public interface TypedPath extends Serializable {
         }
 
         @Override
+        public boolean copyTo(TypedPath curObj) {
+            System.err.println("Copy is not a default supported operation in "+this);
+            return false;
+        }
+
+        @Override
         public boolean isDirectory() {
             return false;
         }
@@ -218,6 +232,9 @@ public interface TypedPath extends Serializable {
         public TypedPath append(String fileName) {
             return changePath(this.getPath()+fileName);
         }
+
+        public TypedPath[] listFiles() {return listFiles(PathFilter.empty);}
+
 
 
     }

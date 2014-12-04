@@ -26,7 +26,7 @@ public class AnalyzePhase extends LocalTIPLBlock {
     public TypedPath phaseName;
     // public double sphKernelRadius;
     public boolean writeShapeTensor;
-    protected ShapeAndNeighborAnalysis SNA = new ShapeAndNeighborAnalysis(new TypedPath("NOT " +
+    protected ShapeAndNeighborAnalysis SNA = new ShapeAndNeighborAnalysis(TIPLStorageManager.openPath("NOT " +
             "INITIALIZED"));
     ITIPLPluginIO CL = TIPLPluginManager.createFirstPluginIO("ComponentLabel");
     @Deprecated

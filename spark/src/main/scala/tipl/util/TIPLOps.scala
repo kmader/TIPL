@@ -41,7 +41,7 @@ object TIPLOps {
   }
 
 
-  implicit def TypedPathFromFileObject(localFile: File): TypedPath = TypedPath.localFile(localFile)
+  implicit def TypedPathFromFileObject(localFile: File): TypedPath = new LocalTypedPath(localFile)
 
 
   /**
@@ -223,7 +223,7 @@ object TIPLOps {
      *
      */
     def write(path: String) {
-      write(new TypedPath(path))
+      write(TIPLStorageManager.openPath(path))
     }
 
     /**

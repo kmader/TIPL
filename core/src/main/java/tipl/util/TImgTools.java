@@ -1089,7 +1089,7 @@ public class TImgTools {
     }
     @Deprecated
     public static TImg ReadTImg(final String path) {
-        return ReadTImg(new TypedPath(path));
+        return ReadTImg(TIPLStorageManager.openPath(path));
     }
     public static TImg ReadTImg(final TypedPath path) {
         TImg outImg = getStorage().readTImg(path);
@@ -1138,7 +1138,7 @@ public class TImgTools {
     @Deprecated
     public static TImg ReadTImg(final String path, final boolean readFromCache,
                                 final boolean saveToCache) {
-        return ReadTImg(new TypedPath(path), readFromCache, saveToCache);
+        return ReadTImg(TIPLStorageManager.openPath(path), readFromCache, saveToCache);
     }
 
     public static boolean RemoveTImgFromCache(final String path) {

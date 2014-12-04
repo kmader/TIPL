@@ -47,7 +47,7 @@ public class VirtualTypedPath extends TypedPath.SimpleTypedPath {
 
 
     @Override
-    public TypedPath[] listFiles() {
+    public TypedPath[] listFiles(PathFilter pf) {
         return new TypedPath[0];
     }
 

@@ -5,10 +5,7 @@ package tipl.tests;
 
 import tipl.formats.TImgRO;
 import tipl.tools.BaseTIPLPluginIn;
-import tipl.util.D3int;
-import tipl.util.TIPLGlobal;
-import tipl.util.TImgTools;
-import tipl.util.TypedPath;
+import tipl.util.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -216,7 +213,7 @@ public abstract class TIPLTestingLibrary {
      * @return
      */
     static public TypedPath createTestImage(String imageName) {
-        TypedPath outPath = new TypedPath(imageName);
+        TypedPath outPath = TIPLStorageManager.openPath(imageName);
         if (cleanup) TIPLGlobal.DeleteTempAtFinish(outPath);
         return outPath;
     }
@@ -230,19 +227,10 @@ public abstract class TIPLTestingLibrary {
      * @return
      */
     static public TypedPath createTestFolder(String subDir) {
-        String outDir = "temp_test_folder"+File.separator+subDir;
-        File outDirName = (new File(outDir));
-        outDirName.mkdirs();
-
-        TypedPath outPath = new TypedPath(outDir) {
-            @Override public TypedPath append(String inName) {
-                final TypedPath tPath = super.append(inName);
-
-                return tPath;
-            }
-        };
-        if (cleanup) TIPLGlobal.DeleteTempAtFinish(outPath,true);
-        return outPath;
+        TypedPath subDirPath = TIPLStorageManager.openPath("temp_test_folder").appendDir(subDir,
+                true);
+        if (cleanup) TIPLGlobal.DeleteTempAtFinish(subDirPath,true);
+        return subDirPath;
     }
 
 }

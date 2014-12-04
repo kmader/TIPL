@@ -2,6 +2,7 @@ package tipl.formats;
 
 import java.io.Serializable;
 
+import tipl.util.TIPLStorageManager;
 import tipl.util.TImgTools;
 import tipl.util.TypedPath;
 
@@ -121,7 +122,7 @@ public class FImage extends FuncImage {
 
 	@Override
 	public TypedPath getPath() {
-		return TypedPath.virtualPath(vf.name() + " @ " + templateData.getPath());
+		return TIPLStorageManager.createVirtualPath(vf.name() + " @ " + templateData.getPath());
 	}
 
 	@Override
@@ -142,7 +143,7 @@ public class FImage extends FuncImage {
 	/**
 	 * Pulls value from VoxelFunction
 	 * 
-	 * @param xyzPos
+	 * @param cIndex the index of the value to lookup
 	 * @param v
 	 * @return value
 	 */

@@ -1,9 +1,6 @@
 package tipl.formats;
 
-import tipl.util.D3float;
-import tipl.util.D3int;
-import tipl.util.TImgTools;
-import tipl.util.TypedPath;
+import tipl.util.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -240,8 +237,7 @@ public interface TImgRO extends TImgTools.HasDimensions, Serializable {
          */
         @Override
         public TypedPath getPath() {
-            // TODO Auto-generated method stub
-            return TypedPath.virtualPath(this.toString());
+            return TIPLStorageManager.createVirtualPath(this.toString());
         }
         
         /* (non-Javadoc)
@@ -249,7 +245,6 @@ public interface TImgRO extends TImgTools.HasDimensions, Serializable {
          */
         @Override
         public float getShortScaleFactor() {
-            // TODO Auto-generated method stub
             return ssf;
         }
 

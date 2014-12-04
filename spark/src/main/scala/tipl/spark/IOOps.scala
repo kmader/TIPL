@@ -16,6 +16,7 @@ import tipl.formats.TiffFolder.TIFSliceReader
 import tipl.formats.{TImg, TImgRO}
 import tipl.spark.hadoop.TiffFileInputFormat
 import tipl.util._
+
 import scala.reflect.ClassTag
 
 /**
@@ -306,19 +307,19 @@ object IOOps {
    */
   implicit class TIPLString(val inString: String) {
     lazy val sc = SparkGlobal.getContext(inString).sc
-    val baseString = new TypedPath(inString)
+    val baseString = TIPLStorageManager.openPath(inString)
 
     def readAsTImg() = TImgTools.ReadTImg(baseString)
 
     def readTiff() = sc.tiffFolder(inString)
 
-    def addDensityColumn(inImg: TImgRO, outName: TypedPath = new TypedPath(""),
+    def addDensityColumn(inImg: TImgRO, outName: TypedPath = TIPLStorageManager.openPath(""),
                          analysisName: String = "Density") = {
       val outfileName = if (outName.length < 1) baseString.append("_dens.csv") else outName
       GrayAnalysis.AddDensityColumn(inImg, baseString, outfileName, analysisName)
     }
 
-    def addRegionColumn(labImg: TImgRO, regImg: TImgRO, outName: TypedPath = new TypedPath(""),
+    def addRegionColumn(labImg: TImgRO, regImg: TImgRO, outName: TypedPath = TIPLStorageManager.openPath(""),
                         analysisName: String = "Density") = {
       val outfileName = if (outName.length < 1) baseString.append("_dens.csv") else outName
       GrayAnalysis.AddRegionColumn(labImg, regImg, baseString, outfileName, analysisName)

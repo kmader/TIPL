@@ -63,8 +63,10 @@ public class GrowRegions extends LocalTIPLBlock {
     public TypedPath phaseName;
     protected boolean writeShapeTensor;
     protected double sphKernelRadius;
-    protected GrownShapeNeighborAnalysis SNA = new GrownShapeNeighborAnalysis(new TypedPath
-            ("TOTALLY INVALID"));
+    protected GrownShapeNeighborAnalysis SNA = new GrownShapeNeighborAnalysis(TIPLStorageManager.
+            createVirtualPath("TOTALLY " +
+                    "INVALID")
+    );
     public final IBlockImage[] inImages = new IBlockImage[]{
             new BlockImage("labels", "label.tif", "Labeled image", true),
             new BlockImage("mask", "mask.tif", "Mask Image", true)};

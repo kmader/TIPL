@@ -2,14 +2,12 @@ package spark
 
 import org.apache.spark.ui.tipl.TiplUI
 import tipl.blocks.BaseBlockRunner
-import tipl.util.TIPLGlobal
+import tipl.util._
 import org.apache.spark.SparkContext._
 import tipl.formats.TImgRO
 import tipl.spark.IOOps._
 import tipl.spark.SparkGlobal
 import tipl.util.TIPLOps._
-import tipl.util.{D3int, TImgSlice, TImgTools, TypedPath}
-
 
 
 /**
@@ -82,7 +80,7 @@ object RaberAnalysis {
     val PERSIST_LEVEL = org.apache.spark.storage.StorageLevel.MEMORY_AND_DISK
 
     // make basepath into a typedpath object
-    val basePath = TypedPath.localFile(new java.io.File(inArgs.savePath))
+    val basePath = TIPLStorageManager.openPath(inArgs.savePath)
 
     // read in all the tiff images and make groups later
 

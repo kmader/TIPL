@@ -36,14 +36,14 @@ public class SGEJob {
      */
     protected String argPrefix = "";
     protected int cores = 2;
-    protected TypedPath logName = new TypedPath("SGEJob.log");
+    protected TypedPath logName = TIPLStorageManager.openPath("SGEJob.log");
     protected String jobName = "TIPLDefaultJob";
     protected String queueName = "all.q";
-    protected TypedPath qsubPath = new TypedPath("/gpfs/home/gridengine/sge6.2u5p2/bin/lx26-amd64/qsub");
-    protected TypedPath tiplPath = new TypedPath("/afs/psi.ch/project/tipl/jar/");
-    protected TypedPath sparkJarPath = new TypedPath( "/afs/psi.ch/project/tipl/spark/lib/spark-assembly-1.0.1-hadoop2.2.0.jar");
-    protected TypedPath tiplPathBeta = new TypedPath( "/afs/psi.ch/project/tipl/jar/TIPL_beta.jar");
-    protected TypedPath javaCmdPath = new TypedPath("/afs/psi.ch/project/tipl/jvm/bin/java");
+    protected TypedPath qsubPath = TIPLStorageManager.openPath("/gpfs/home/gridengine/sge6.2u5p2/bin/lx26-amd64/qsub");
+    protected TypedPath tiplPath = TIPLStorageManager.openPath("/afs/psi.ch/project/tipl/jar/");
+    protected TypedPath sparkJarPath = TIPLStorageManager.openPath( "/afs/psi.ch/project/tipl/spark/lib/spark-assembly-1.0.1-hadoop2.2.0.jar");
+    protected TypedPath tiplPathBeta = TIPLStorageManager.openPath( "/afs/psi.ch/project/tipl/jar/TIPL_beta.jar");
+    protected TypedPath javaCmdPath = TIPLStorageManager.openPath("/afs/psi.ch/project/tipl/jvm/bin/java");
     protected String jobToRun = "ls -R *";
     protected boolean waitForJob = false;
     protected boolean includeSGERAM = true;
@@ -305,7 +305,7 @@ public class SGEJob {
      * code to set the defaults to the beamline cluster values
      */
     public void setBeamlineCluster() {
-        qsubPath = new TypedPath("/gridware/sge/bin/lx24-amd64/qsub");
+        qsubPath = TIPLStorageManager.openPath("/gridware/sge/bin/lx24-amd64/qsub");
         includeSGERAM = false;
         queueName = "tomcat_smp_standard.q";
 

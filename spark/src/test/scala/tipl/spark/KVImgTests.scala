@@ -1,16 +1,12 @@
 package tipl.spark
 
-import java.io.{File, FileWriter}
+import java.io.File
+
 import com.google.common.io.Files
-
-import org.apache.hadoop.io._
-
-import tipl.util.TIPLOps._
-
-import org.scalatest.{FunSuite, Suite}
-import tipl.util.D3int
-import tipl.util.TIPLGlobal
+import org.scalatest.FunSuite
 import tipl.spark.KVImgOps._
+import tipl.util.D3int
+import tipl.util.TIPLOps._
 
 /**
  * Created by mader on 10/10/14.
@@ -27,7 +23,7 @@ class KVImgTests extends FunSuite with LocalSparkContext {
 
   override def afterEach() {
     super.afterEach()
-    TIPLGlobal.RecursivelyDelete(tempDir)
+    tempDir.recursiveDelete()
   }
 
   test("Check if we even get a sparkcontext") {

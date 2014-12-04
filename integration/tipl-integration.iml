@@ -157,6 +157,8 @@
     <orderEntry type="module" module-name="tipl-ccgeom" />
     <orderEntry type="module" module-name="tipl-io" />
     <orderEntry type="module" module-name="tipl-volviewer" />
+    <orderEntry type="library" name="Maven: com.miglayout:miglayout-core:4.2" level="project" />
+    <orderEntry type="library" name="Maven: com.miglayout:miglayout-swing:4.2" level="project" />
     <orderEntry type="library" name="Maven: com.typesafe.genjavadoc:genjavadoc-plugin_2.10.4:0.8" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:scala-compiler:2.10.4" level="project" />
   </component>

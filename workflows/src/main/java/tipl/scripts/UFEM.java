@@ -139,7 +139,7 @@ public class UFEM implements Runnable {
      * ParameterSweeper needs to be able to instantiate the class to call the main
      */
     public UFEM() {
-        final TypedPath emptyPath = new TypedPath("");
+        final TypedPath emptyPath = TIPLStorageManager.openPath("");
         ufiltAimFile = emptyPath;
         gfiltAimFile = emptyPath;
         threshAimFile = emptyPath;
@@ -546,7 +546,7 @@ public class UFEM implements Runnable {
      */
     public static TypedPath originalName(final TypedPath inFile) {
         final int cPos = inFile.getPath().lastIndexOf(File.separator);
-        return new TypedPath(inFile.getPath().substring(0, cPos + 1) + "precont_"
+        return TIPLStorageManager.openPath(inFile.getPath().substring(0, cPos + 1) + "precont_"
                 + inFile.getPath().substring(cPos + 1));
     }
 

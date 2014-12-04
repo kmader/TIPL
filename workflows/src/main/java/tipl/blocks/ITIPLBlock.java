@@ -5,6 +5,7 @@ package tipl.blocks;
 
 import tipl.formats.TImgRO;
 import tipl.util.ArgumentParser;
+import tipl.util.TIPLStorageManager;
 import tipl.util.TypedPath;
 
 /**
@@ -26,7 +27,7 @@ public interface ITIPLBlock {
             name = iName;
             desc = iDesc;
             isess = essential;
-            dname = new TypedPath("");
+            dname = TIPLStorageManager.openPath("");
         }
 
         public BlockImage(final String iName, final TypedPath defName,
@@ -43,7 +44,7 @@ public interface ITIPLBlock {
             name = iName;
             desc = iDesc;
             isess = essential;
-            dname = new TypedPath(defName);
+            dname = TIPLStorageManager.openPath(defName);
         }
 
         @Override

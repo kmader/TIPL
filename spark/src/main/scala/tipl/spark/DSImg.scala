@@ -46,7 +46,7 @@ class DSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
 
   def this(hd: TImgTools.HasDimensions, baseImg: RDD[(D3int, TImgSlice[Array[T]])],
            imageType: Int)(implicit lm: ClassTag[T]) =
-    this(hd.getDim, hd.getPos, hd.getElSize, imageType, baseImg, TypedPath.virtualPath("Nothing")
+    this(hd.getDim, hd.getPos, hd.getElSize, imageType, baseImg, TIPLStorageManager.createVirtualPath("Nothing")
     )(lm)
 
   /**

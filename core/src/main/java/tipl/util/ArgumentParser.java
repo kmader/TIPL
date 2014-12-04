@@ -406,7 +406,7 @@ public class ArgumentParser extends ArgumentList {
             if (defFilename.lastIndexOf("//") > 0)
                 defaultPath = defFilename.substring(0,
                         defFilename.lastIndexOf("//") + 1);
-    	return getOptionPath(inOpt,new TypedPath(defFilename),helpString);
+    	return getOptionPath(inOpt,TIPLStorageManager.openPath(defFilename),helpString);
     }
     /**
      * Standard command for getting a path argument from the command line
@@ -419,7 +419,7 @@ public class ArgumentParser extends ArgumentList {
                                 final String helpString) {
         final String opt = formatKey(inOpt);
         ArgumentList.TypedArgument<TypedPath> cArg;
-        TypedPath defArgument = new TypedPath(defaultPath + defFilename);
+        TypedPath defArgument = TIPLStorageManager.openPath(defaultPath + defFilename);
         if (hasOption(opt)) {
             
             cArg = new ArgumentList.TypedArgument<TypedPath>(getOption(opt),
@@ -447,7 +447,7 @@ public class ArgumentParser extends ArgumentList {
         customPathParser =  new strParse<TypedPath>() {
             @Override
             public TypedPath valueOf(final String inStr) {
-                return new TypedPath(rootDir+"/"+inStr);
+                return TIPLStorageManager.openPath(rootDir+"/"+inStr);
             }
         };
     }

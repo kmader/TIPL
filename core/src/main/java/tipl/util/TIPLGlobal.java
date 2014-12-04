@@ -270,65 +270,28 @@ public class TIPLGlobal {
         availableReaders.incrementAndGet();
     }
 
-    /**
-     * a simple file copy function for managing outputs
-     */
-    public static void copyFile(final File sourceFile, final File destFile)
-            throws IOException {
-
-        if (!destFile.exists()) {
-            destFile.createNewFile();
-        }
-        if (useApacheForCopy) {
-            org.apache.commons.io.FileUtils.copyFile(sourceFile, destFile); // since standard java 1.6 does not support 2g+ files
-            return;
-        } else {
-            FileChannel source = null;
-            FileChannel destination = null;
-            try {
-                source = new FileInputStream(sourceFile).getChannel();
-                destination = new FileOutputStream(destFile).getChannel();
-                destination.transferFrom(source, 0, source.size());
-            } finally {
-                if (source != null) {
-                    source.close();
-                }
-                if (destination != null) {
-                    destination.close();
-                }
-            }
-        }
-
-    }
 
     /**
      * Utility Function Section
      */
-
+    @Deprecated
     public static void copyFile(final TypedPath sourceFile, final TypedPath destFile) {
-        if (!sourceFile.isLocal() || !destFile.isLocal()) throw new IllegalArgumentException("Both source and destination files must be local for copy function to work:"+sourceFile.summary()+" -> "+destFile.summary());
-        try {
-            copyFile(new File(sourceFile.getPath()), new File(destFile.getPath()));
-        } catch (final Exception e) {
-            e.printStackTrace();
-            System.out.println("Copy file failed (disk full?) " + sourceFile
-                    + ", " + destFile);
-            TIPLGlobal.runGC();
-        }
+        sourceFile.copyTo(destFile);
     }
-
+    @Deprecated
     public static void copyFile(final String sourceFile, final String destFile) {
         copyFile(TImgTools.getStorage().IdentifyPath(sourceFile),TImgTools.getStorage().IdentifyPath(destFile));
     }
 
+    @Deprecated
     public static boolean DeleteFile(final TypedPath file) {
         return file.delete();
     }
+
     @Deprecated
     public static boolean DeleteFile(final String file) {
         return DeleteFile(TImgTools.getStorage().IdentifyPath(file));
     }
-
 
 
     public static void DeleteTempAtFinish(final TypedPath delName) {
@@ -345,13 +308,8 @@ public class TIPLGlobal {
 
         curRuntime.addShutdownHook(new Thread() {
             public boolean SimpleDeleteFunction(final TypedPath file, final String whoDel) {
+                final boolean success = recursiveDelete ? file.recursiveDelete() : file.delete();
 
-                final File f1 = new File(file.getPath());
-                if (f1.isDirectory() && recursiveDelete) {
-                    System.out.println(f1+" is a directory and will be recursively deleted");
-                    RecursivelyDelete(delName);
-                }
-                final boolean success = f1.delete();
                 if (!success) {
                     System.out.println(whoDel + "\t" + "ERROR:" + file
                             + " could not be deleted.");
@@ -394,7 +352,7 @@ public class TIPLGlobal {
     public static synchronized void returnCores(final int finishedCores) {
         availableCores += finishedCores;
     }
-    public static boolean tryOpen(final String filename) { return tryOpen(new TypedPath(filename));}
+    public static boolean tryOpen(final String filename) { return tryOpen(TIPLStorageManager.openPath(filename));}
     /**
      * Function to try and open an aim file, return true if it is successful
      */

@@ -146,8 +146,7 @@ public abstract class DirectoryReader implements TReader {
 	 * is then returned or an exception is thrown
 	 **/
 	public static int FilterCount(final TypedPath path, final PathFilter cFilter) {
-		final File dir = new File(path.getPath());
-		final File[] imglist = dir.listFiles(cFilter);
+		final TypedPath[] imglist = path.listFiles(cFilter);
 		final int zlen = imglist.length;
 		String tempName = "None";
 		if (zlen > 0)

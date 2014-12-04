@@ -1,6 +1,7 @@
 package tipl.util;
 
 import java.io.*;
+import java.nio.channels.FileChannel;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.LinkedList;
@@ -34,7 +35,7 @@ public class LocalTypedPath extends TypedPath.SimpleTypedPath {
      */
     public LocalTypedPath(final File localF) { super(localF.getAbsolutePath(),"");}
     
-    private LocalTypedPath(final String path, final String type) {
+    public LocalTypedPath(final String path, final String type) {
     	super(path,type);
     }
 
@@ -131,22 +132,19 @@ public class LocalTypedPath extends TypedPath.SimpleTypedPath {
     	return new LocalTypedPath(newPath,this);
     }
 
-    public TypedPath append(String fileName) {
+    @Override
+    public LocalTypedPath append(String fileName) {
     	return new LocalTypedPath(getPath()+fileName,this);
     }
 
 
     public TypedPath appendDir(String dirName, boolean createDir) {
-        TypedPath outPath = append(getPathSeparator()+dirName+getPathSeparator());
+        LocalTypedPath outPath = append(getPathSeparator()+dirName+getPathSeparator());
         if (createDir) {
-            switch(pathType) {
-                case LOCAL:
-                    outPath.getFile().mkdirs();
-                    break;
-                default:
-                    System.err.println("Creating directories for types:"+pathType+" does not make sense");
+                outPath.getFile().mkdirs();
             }
-        }
+
+
         return outPath;
     }
 
@@ -232,6 +230,64 @@ public class LocalTypedPath extends TypedPath.SimpleTypedPath {
     public boolean recursiveDelete() {
         return RecursivelyDelete(this);
     }
+    @Override
+    public boolean copyTo(TypedPath outputFile) {
+        return copyFile(this,outputFile);
+    }
+    public static boolean copyFile(final TypedPath sourceFile, final TypedPath destFile) {
+
+        try {
+            if ((sourceFile instanceof LocalTypedPath) && (destFile instanceof LocalTypedPath)) {
+                copyFile(
+                        ((LocalTypedPath) sourceFile).getFile(),
+                        ((LocalTypedPath) destFile).getFile()
+                );
+                return true;
+            } else {
+                System.err.println("Copy is currently only supported from local to local");
+                return false;
+            }
+
+        } catch (final Exception e) {
+            e.printStackTrace();
+            System.out.println("Copy file failed (disk full?) " + sourceFile
+                    + ", " + destFile);
+            TIPLGlobal.runGC();
+            return false;
+        }
+    }
+
+    /**
+     * a simple file copy function for managing outputs
+     */
+    public static void copyFile(final File sourceFile, final File destFile)
+            throws IOException {
+
+        if (!destFile.exists()) {
+            destFile.createNewFile();
+        }
+        if (TIPLGlobal.useApacheForCopy) {
+            org.apache.commons.io.FileUtils.copyFile(sourceFile, destFile); // since standard java 1.6 does not support 2g+ files
+            return;
+        } else {
+            FileChannel source = null;
+            FileChannel destination = null;
+            try {
+                source = new FileInputStream(sourceFile).getChannel();
+                destination = new FileOutputStream(destFile).getChannel();
+                destination.transferFrom(source, 0, source.size());
+            } finally {
+                if (source != null) {
+                    source.close();
+                }
+                if (destination != null) {
+                    destination.close();
+                }
+            }
+        }
+
+    }
+
     /**
      * Delete files
      */
@@ -273,13 +329,6 @@ public class LocalTypedPath extends TypedPath.SimpleTypedPath {
             System.out.println("Directory:"+directory+" could not be recursively deleted");
             return false;
         }
-    }
-
-    protected static void nonLocalError(final TypedPath inst, String message) throws
-            IllegalArgumentException {
-        throw new IllegalArgumentException(message+", "+inst.summary()+
-                " is not local and cannot (yet) be done on non-local paths");
-
     }
 
 }

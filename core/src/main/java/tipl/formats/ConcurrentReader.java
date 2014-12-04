@@ -10,11 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import tipl.tools.BaseTIPLPluginIn;
-import tipl.util.D3float;
-import tipl.util.D3int;
-import tipl.util.TIPLGlobal;
-import tipl.util.TImgTools;
-import tipl.util.TypedPath;
+import tipl.util.*;
 
 /**
  * @author maderk
@@ -148,7 +144,7 @@ public class ConcurrentReader implements TImgRO {
 
 	@Override
 	public TypedPath getPath() {
-		return TypedPath.virtualPath("CR @ " + templateData.getPath());
+		return TIPLStorageManager.createVirtualPath("CR @ " + templateData.getPath());
 	}
 
 	@Override

@@ -51,7 +51,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
      */
     protected float threshVal = 0;
     protected String analysisName = "GrayAnalysis2D";
-    protected TypedPath gfiltName = new TypedPath("");
+    protected TypedPath gfiltName = TIPLStorageManager.createVirtualPath("");
     TImg gfiltAim;
     double totVox = 0;
     double totSum = 0;
@@ -575,7 +575,7 @@ public class GrayAnalysis2D extends Hist2D implements ITIPLPluginIn {
          */
         public int fbins = DEFAULTBINS;
         boolean valuesWaiting = false;
-        TypedPath ObjName = new TypedPath("");
+        TypedPath ObjName = TIPLStorageManager.createVirtualPath("");
         Future<double[]> psvals = null;
 
         public DiscreteReader() {

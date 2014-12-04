@@ -15,6 +15,7 @@ import tipl.util.D3int;
 import tipl.util.ITIPLStorage;
 import tipl.util.TImgTools;
 import tipl.util.TypedPath;
+import tipl.util.TIPLStorageManager;
 
 /** Interface for reading TImg files from a data source 
  * this is now serializable but obviously this only makes sense if they are on the path */
@@ -55,7 +56,7 @@ public interface TReader extends Serializable {
 		protected D3int offset = new D3int(0, 0, 0);
 		protected D3int pos = new D3int(0, 0, 0);
 		protected D3float elSize = new D3float(1, 1, 1);
-		protected TypedPath path = new TypedPath("");
+		protected TypedPath path = TIPLStorageManager.createVirtualPath("");
 		final protected String procLog = "";
 		protected int imageType;
 		protected int maxVal;

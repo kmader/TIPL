@@ -7,7 +7,7 @@ import tipl.formats.TImgRO
 import tipl.spark.TypeMacros._
 import tipl.tests.TestPosFunctions
 import tipl.tools.{BaseTIPLPluginIn, GrayAnalysis, GrayVoxels}
-import tipl.util.{ArgumentParser, D3int, ITIPLPlugin, TIPLPluginManager, TImgTools, TypedPath}
+import tipl.util._
 
 import scala.collection.JavaConversions._
 
@@ -36,7 +36,7 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
   }
 
   var analysisName = "Shape"
-  var outputName = new TypedPath("output.csv")
+  var outputName = TIPLStorageManager.openPath("output.csv")
 
   override def getPluginName() = {
     "ShapeAnalysis:Spark"

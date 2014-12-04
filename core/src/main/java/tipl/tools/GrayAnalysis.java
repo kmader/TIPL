@@ -8,6 +8,7 @@ import tipl.formats.TImgRO;
 import tipl.util.*;
 
 import java.io.FileWriter;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.Hashtable;
@@ -42,7 +43,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 				TImgRO inImage;
 				GrayAnalysis caGAobj = gaDummy;
 				String analysisName="Shape";
-				TypedPath outputName=new TypedPath("output.csv");
+				TypedPath outputName=TIPLStorageManager.openPath("output.csv");
 				@Override
 				public ArgumentParser setParameter(ArgumentParser p,
 						String prefix) {
@@ -179,8 +180,8 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
     protected String dlmChar = "\t";
     protected String headerString = "";
     protected String headerStr = "";
-    protected TypedPath csvName = new TypedPath("");
-    protected TypedPath insName = new TypedPath("");
+    protected TypedPath csvName = TIPLStorageManager.createVirtualPath("");
+    protected TypedPath insName = TIPLStorageManager.createVirtualPath("");
     protected String gfiltName = "";
     protected GrayVoxels[] intGvArray = new GrayVoxels[0];
     boolean useCount;
@@ -1388,7 +1389,9 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
                 }
 
             }
-            final FileWriter out = new FileWriter(csvName.getPath(), false);
+
+            final OutputStreamWriter out =
+                    new OutputStreamWriter(csvName.getFileObject().getOutputStream());
             out.write(headerStr);
             out.flush();
             out.close();
@@ -1502,7 +1505,8 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
     public void writeOutputToCSV(GrayVoxels[] gvArray, boolean useInsert, int startingIndex, boolean useLabel) {
         try {
 
-            final FileWriter out = new FileWriter(csvName.getPath(), true);
+            final OutputStreamWriter out =
+                    new OutputStreamWriter(csvName.getFileObject().getOutputStream());
             if (useInsert) {
 
                 final CSVFile insFile = CSVFile.FromPath(insName, 2);
@@ -1853,7 +1857,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		}
 		long start = System.currentTimeMillis();
 		boolean gfiltGood = true;
-		final boolean useInsert=!insName.isEmpty(); // if it is not empty
+		final boolean useInsert=(insName.length()>0); // if it is not empty
 		if (useGFILT)
 			gfiltGood = gfiltA.isGood();
 		if ((mapA.isGood()) & (gfiltGood)) {

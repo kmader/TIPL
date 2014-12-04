@@ -112,7 +112,7 @@ public class ArgumentList implements Serializable {
 	static public strParse<TypedPath> typePathParse = new strParse<TypedPath>() {
 		@Override
 		public TypedPath valueOf(final String inStr) {
-			return new TypedPath(inStr);
+			return TIPLStorageManager.openPath(inStr);
 		}
 	};
 	/**
