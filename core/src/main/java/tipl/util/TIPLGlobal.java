@@ -318,57 +318,18 @@ public class TIPLGlobal {
     }
 
     public static void copyFile(final String sourceFile, final String destFile) {
-        copyFile(new TypedPath(sourceFile),new TypedPath(destFile));
+        copyFile(TImgTools.getStorage().IdentifyPath(sourceFile),TImgTools.getStorage().IdentifyPath(destFile));
     }
 
     public static boolean DeleteFile(final TypedPath file) {
-        return DeleteFile(file, "Unk");
+        return file.delete();
     }
     @Deprecated
     public static boolean DeleteFile(final String file) {
-        return DeleteFile(new TypedPath(file), "Unk");
+        return DeleteFile(TImgTools.getStorage().IdentifyPath(file));
     }
 
-    /**
-     * Delete files
-     */
-    public static boolean DeleteFile(final TypedPath file, final String whoDel) {
-        if (!file.isLocal()) throw new IllegalArgumentException("File must be local for delete function to work:"+file.summary());
 
-        final File f1 = new File(file.getPath());
-        final boolean success = f1.delete();
-        if (!success) {
-            System.out.println(whoDel + "\t" + "ERROR:" + file
-                    + " could not be deleted.");
-            return false;
-        } else {
-            System.out.println(whoDel + "\t" + file + " successfully deleted.");
-            return true;
-        }
-    }
-    public static void RecursivelyDelete(final TypedPath delName) {
-        assert(delName.isLocal()); // needs to be local
-        Path directory = Paths.get(delName.getPath());
-        try {
-            Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    Files.delete(dir);
-                    return FileVisitResult.CONTINUE;
-                }
-
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Directory:"+directory+" could not be recursively deleted");
-        }
-    }
 
     public static void DeleteTempAtFinish(final TypedPath delName) {
         DeleteTempAtFinish(delName,false);

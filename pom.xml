@@ -65,6 +65,10 @@
         <tipl.version>1.0-SNAPSHOT</tipl.version>
         <!-- NB: Specify formatting of the maven.build.timestamp property. -->
         <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssZ</maven.build.timestamp.format>
+        
+        <!-- Don't let your Mac use a crazy non-standard encoding -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
     <repositories>
         <!-- Force imagej repsository for imageio/jai -->

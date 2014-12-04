@@ -1,9 +1,15 @@
 package tipl.formats;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
+import org.scijava.annotations.Indexable;
 import tipl.util.D3float;
 import tipl.util.D3int;
 import tipl.util.ITIPLStorage;
@@ -13,6 +19,38 @@ import tipl.util.TypedPath;
 /** Interface for reading TImg files from a data source 
  * this is now serializable but obviously this only makes sense if they are on the path */
 public interface TReader extends Serializable {
+
+	@Target(ElementType.TYPE)
+	@Retention(RetentionPolicy.SOURCE)
+	@Indexable
+	public static @interface ImgReader {
+		String name();
+		String desc() default "";
+
+		/**
+		 * @return Does the reader use or depend on spark
+		 */
+		boolean sparkBased() default false;
+		/**
+		 * @return the imagetypes supported by this reader
+		 */
+		int[] supportedTypes() default {};
+	}
+
+	/**
+	 * A standard interface for reading image data
+	 */
+	public static abstract interface ImgFactory {
+		public TReader get(TypedPath path);
+		/**
+		 * Does the current reader handle this path type
+		 * @param path
+		 * @return
+		 */
+		public boolean matchesPath(TypedPath path);
+
+	}
+
 	public static abstract class SliceReader implements TSliceReader {
 		protected D3int offset = new D3int(0, 0, 0);
 		protected D3int pos = new D3int(0, 0, 0);
@@ -25,6 +63,7 @@ public interface TReader extends Serializable {
 
 		protected float ShortScaleFactor = 1.0f;
 		protected D3int dim;
+
 
 		@Override
 		public boolean CheckSizes(final String otherPath) {
@@ -67,7 +106,6 @@ public interface TReader extends Serializable {
 
 		@Override
 		public TypedPath getPath() {
-			// TODO Auto-generated method stub
 			return path;
 		}
 
@@ -78,13 +116,11 @@ public interface TReader extends Serializable {
 
 		@Override
 		public String getProcLog() {
-			// TODO Auto-generated method stub
 			return procLog;
 		}
 
 		@Override
 		public String getSampleName() {
-			// TODO Auto-generated method stub
 			return path.getPath();
 		}
 
@@ -100,8 +136,7 @@ public interface TReader extends Serializable {
 
 		@Override
 		public boolean isGood() {
-			// TODO Auto-generated method stub
-			return false;
+			return true;
 		}
 
 		@Override
@@ -318,7 +353,7 @@ public interface TReader extends Serializable {
 	}
 
 	public interface TSliceFactory extends Serializable {
-		public TSliceReader ReadFile(File curfile) throws IOException;
+		public TSliceReader ReadFile(TypedPath curfile) throws IOException;
 	}
 
 	public static interface TSliceReader extends TImgTools.HasDimensions,Serializable {

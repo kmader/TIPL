@@ -159,5 +159,13 @@ public interface ITIPLStorage {
 	public void setUseScratch(boolean useScratch);
 
 
+	/**
+	 * Create a typed path object from a string
+	 * @param currentString
+	 * @return a typed path object
+	 */
+	public TypedPath IdentifyPath(final String currentString);
+
+
 	
 }

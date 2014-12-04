@@ -12,10 +12,7 @@ import org.scijava.annotations.Index;
 import org.scijava.annotations.IndexItem;
 import org.scijava.annotations.Indexable;
 
-import tipl.util.D3int;
-import tipl.util.TIPLGlobal;
-import tipl.util.TImgSlice;
-import tipl.util.TypedPath;
+import tipl.util.*;
 
 /**
  * Interface for writing TImg files to a data source on a slice by slice basis
@@ -25,12 +22,15 @@ import tipl.util.TypedPath;
  * @author mader
  *
  */
+import tipl.util.TImgTools.*;
+
 public interface TSliceWriter extends Serializable {
 	@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
 	@Retention(RetentionPolicy.SOURCE)
 	@Indexable
 	public static @interface DWriter {
 		String name();
+		int[] supportedTypes();
 		String type() default "";
 	}
 
@@ -81,7 +81,7 @@ public interface TSliceWriter extends Serializable {
 		}
 		/**
 		 * ChooseBest chooses the directory reader plugin which has the highest
-		 * number of matches in the given directory using the FileFilter
+		 * number of matches in the given directory using the PathFilter
 		 * 
 		 * @param path
 		 *            folder path name

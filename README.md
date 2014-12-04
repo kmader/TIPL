@@ -44,7 +44,8 @@ cd ..
 git push
 ```
 ## Building Notes
-The project is meant to be built in a Java first then Scala manner with the exception of a few files. Primarily ScalaPlugins.java which is used for loading the Plugins written in Scala into the SezPoz-based TIPLPluginManager. A simple space entered into this file and save will cause it to recompile after the scala code has been compiled resolving all errors.
+- The project is meant to be built in a Java first then Scala manner with the exception of a few files. Primarily ScalaPlugins.java which is used for loading the Plugins written in Scala into the SezPoz-based TIPLPluginManager. A simple space entered into this file and save will cause it to recompile after the scala code has been compiled resolving all errors.
+- The IDEA compiler can cause issues, using the SBT incrementally type works better
 ## Updating Libraries
 ### Updating Spark
 The TIPL code itself is separated from Spark but involves the spark code in a number of key areas. 

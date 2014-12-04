@@ -1,220 +1,57 @@
 package tipl.util;
 
-import java.io.File;
-import java.io.Serializable;
-
+import java.io.*;
 
 /**
- * Basically a fancy wrapper for a string class with added functionality
- * A class that allows paths to be specified in the format
- * path::extension and be parsed properly / handled correctly by
- * IO plugins which need to save stacks in folders in the proper format
- * the default extension is "" which maps to the first writing tool.
- * Additionally the tool support multiple types of path from local, to 
- * virtual, and hadoop formats making it clearer which can be read
- *
- * @author mader
+ * Created by mader on 12/4/14.
  */
-public class TypedPath implements Serializable {
-    final protected String inStr;
-    final protected String inType;
-    
+public interface TypedPath extends Serializable {
     public static enum PATHTYPE {
-    	UNDEFINED, LOCAL, VIRTUAL, HADOOP, IMAGEJ
+        UNDEFINED, LOCAL, VIRTUAL, REMOTE, IMAGEJ
     }
-    final protected TypedPath.PATHTYPE pathType;
+
     /**
-     * The type of the path (local, virtual, etc)
-     */
-    public PATHTYPE getPathType() {
-    	return pathType;
-    }
-    /**
-     * A cloning command
-     * @param inTp
-     */
-    public TypedPath(final TypedPath inTp) {
-        this.inStr = inTp.getPath();
-        this.inType = inTp.getType();
-        this.pathType = inTp.pathType;
-    }
-    /**
-     * Create a typed path object from a string
-     * @param currentString
-     * @return a typed path object
-     */
-    public static TypedPath IdentifyPath(final String currentString) {
-    	PATHTYPE defaultType = PATHTYPE.LOCAL; // assume local until proven otherwise
-    	
-    	if (currentString.toLowerCase().contains("://")) defaultType = PATHTYPE.HADOOP;
-    	
-    	String[] spStr = currentString.split(pathTypeSplitChr);
-    	final String inStr,inType;
-    	
-    	final PATHTYPE tempPathType;
-        switch(spStr.length) {
-        case 1:
-        	inStr = currentString;
-            inType = "";
-            tempPathType = defaultType;
-            break;
-        case 2:
-        	inStr = spStr[0];
-            inType = spStr[1];
-            tempPathType = defaultType;
-            break;
-        case 3:
-        	tempPathType = PATHTYPE.valueOf(spStr[0]);
-        	inStr = spStr[1];
-            inType = spStr[2];
-            break;
-        default:
-        	throw new IllegalArgumentException("Arguments:"+currentString+" ("+pathTypeSplitChr+")"+"cannot be parsed!");
-        }
-        return new TypedPath(inStr,inType,tempPathType);
-    }
-    
-    final static String pathTypeSplitChr = "::";
-    /**
-     * Create a new typed path object
-     * @param inStr the path to the object
-     * @param inPathType the type (suggestion, inStr can override if it is local)
-     */
-    protected TypedPath(final String inStr,TypedPath.PATHTYPE inPathType) {
-    	TypedPath parsePath = IdentifyPath(inStr);
-    	this.inStr = parsePath.getPath();
-    	this.inType = parsePath.getType();
-        this.pathType = (inPathType==PATHTYPE.UNDEFINED) ? parsePath.getPathType() : inPathType;
-    }
-    protected TypedPath(final String newPath,final TypedPath oldTp) {
-    	this.inStr = newPath;
-        this.inType = oldTp.getType();
-        this.pathType = oldTp.pathType;
-    }
-    public TypedPath(final String inStr) {
-         this(inStr,PATHTYPE.UNDEFINED);
-    }
-    
-    private TypedPath(final String path, final String type, final PATHTYPE pathType) {
-    	this.inStr = path;
-        this.inType = type;
-        this.pathType = pathType;
-    }
-    
-    /**
-     * For files or datasets not based directly on real files (transforms of images)
-     * @note The construction of File or Stream objects from these objects will eventually throw an error
-     * @param virtualName
+     * The type of the filesytem underlying the path
      * @return
      */
-    public static TypedPath virtualPath(final String virtualName) {
-    	return new TypedPath(virtualName,PATHTYPE.VIRTUAL);
-    }
+    public PATHTYPE getPathType();
+    public TypedPath getParent();
 
     /**
-     * Create a typed path from a local file object (ensures it is in fact local)
-     * @param localF a file object
-     * @return the typed path
+     * The length of the path
+     * @return the length of the path in characters (0 means it is empty)
      */
-    public static TypedPath localFile(final File localF) {
-        return new TypedPath(localF.getAbsolutePath(),PATHTYPE.LOCAL);
-    }
-    public static TypedPath hadoopPath(final String hadoopPath) {
-    	return new TypedPath(hadoopPath,PATHTYPE.HADOOP);
-    }
+    public int length();
+
+    public String getType();
+    public String getPath();
+
+    public boolean isLocal();
+
+    @Deprecated
+    public boolean isReadable();
+
+
+    public TypedPath changePath(String newPath);
+
     /**
-     * Create a typed path from a currently open ImageJ window
-     * @param windowName
+     * Use get FileObject instead
      * @return
      */
-    public static TypedPath imagejWindow(final String windowName) {
-    	return new TypedPath(windowName,PATHTYPE.IMAGEJ);
-    }
-    /** 
-     * Get a file object from the path (safer than creating it from the getPath command
-     * @return a file object
-     */
-    public File getFile() {
-    	if(isLocal()) return new File(getPath());
-    	else throw new IllegalArgumentException("A file-based object cannot be created from:"+pathType+" paths");
-    }
-    
-    
-    public String getParent() {
-    	return makeAbsPath().getFile().getParent();
-    }
-    
-    public TypedPath changePath(String newPath) {
-    	return new TypedPath(newPath,getType(),getPathType());
-    }
-    
-    
-    public int length() { return getPath().length();}
+    @Deprecated
+    public File getFile();
 
-    public boolean isReadable() {
-    	return ((pathType==PATHTYPE.LOCAL) || (pathType==PATHTYPE.HADOOP));
-    }
-    
-    public boolean isLocal() {
-    	return ((pathType==PATHTYPE.LOCAL));
-    }
 
-    public String getType() {
-        return this.inType;
-    }
+    public FileObject getFileObject();
 
-    public String getPath() {
-        return this.inStr;
-    }
+    public String summary();
 
     /**
-     * Get the path separator
-     * @return
-     */
-    public String getPathSeparator() {
-        return File.separator;
-    }
-
-
-    public String toString() {
-        return inStr;
-    }
-    public String summary() {
-    	return "Path:"+getPath()+",Type:"+getType()+",FS:"+pathType;
-    }
-    /**
-     * The full formatted path string 
-     * (iff a.pathString == b.pathString, a == b)
-     * @return string which can be fed to the constructed to regenerate the path
-     */
-    public String pathString() {
-    	if (getPathType()==PATHTYPE.LOCAL) {
-    		return (getType().length()>0) ? getPath()+pathTypeSplitChr+getType() : getPath();
-    	} else {
-    		return getPathType()+pathTypeSplitChr+getPath()+pathTypeSplitChr+getType();
-    	}
-    }
-    protected File getFileObj() {
-        if (!isLocal()) throw new IllegalArgumentException(summary()+" is not local and can not be converted to an file object");
-        return new File(getPath());
-    }
-    /** 
-     * Make the path absolute only works on local filesystems
-     * @return
-     */
-    public TypedPath makeAbsPath() {
-
-    	final String newPath = getFileObj().getAbsolutePath();
-    	return new TypedPath(newPath,this);
-    }
-    /** 
      * Add a filename to a directory
      * @param fileName the name of the file
      * @return the directory
      */
-    public TypedPath append(String fileName) {
-    	return new TypedPath(getPath()+fileName,this);
-    }
+    public TypedPath append(String fileName);
 
     /**
      * append a subdirectory to the current path
@@ -222,30 +59,213 @@ public class TypedPath implements Serializable {
      * @param createDir make directory (recursive)
      * @return the new path object to the directory
      */
-    public TypedPath appendDir(String dirName, boolean createDir) {
-        TypedPath outPath = append(getPathSeparator()+dirName+getPathSeparator());
-        if (createDir) {
-            switch(pathType) {
-                case LOCAL:
-                    outPath.getFileObj().mkdirs();
-                    break;
-                case HADOOP:
-                    throw new IllegalArgumentException(summary()+" is not local and cannot (yet) be done on non-local paths");
-                default:
-                    System.err.println("Creating directories for types:"+pathType+" does not make sense");
-            }
-        }
-        return outPath;
-    }
-    public TypedPath appendDir(String dirName) { return appendDir(dirName,true); }
+    public TypedPath appendDir(String dirName, boolean createDir);
 
     /**
-     * Return true if the current path is empty
-     * @note now  this is narrowly defined as equaling ""
-     * @return
+     * Get the contents of a directory
      */
-    public boolean isEmpty() {
-        return this.getPath().equals("");
+    public boolean isDirectory();
+
+    public TypedPath[] listFiles();
+
+    public boolean exists();
+
+    public boolean checkSuffix(String suffix);
+
+    public String getPathSeparator();
+
+    /**
+     * The full formatted path string
+     * (iff a.pathString == b.pathString, a == b)
+     * @return string which can be fed to the constructed to regenerate the path
+     */
+    public String pathString();
+
+    public boolean delete();
+
+    public boolean recursiveDelete();
+
+    /**
+     * a more generic file tool that can easily be implemented for Hadoop and other FS later
+     */
+    public static interface FileObject {
+        /**
+         * read file in
+         * @return as a binary array
+         */
+        public byte[] getData();
+        public String[] getText();
+        public InputStream getInputStream();
+
+        public OutputStream getOutputStream();
+
+    }
+
+    abstract public static class SimpleTypedPath implements TypedPath {
+        final protected String inStr;
+        final protected String inType;
+
+
+        final static String pathTypeSplitChr = "::";
+
+        /**
+         * A cloning command
+         * @param inTp
+         */
+        protected SimpleTypedPath(final SimpleTypedPath inTp) {
+            this.inStr = inTp.getPath();
+            this.inType = inTp.getType();
+        }
+
+        protected SimpleTypedPath(final String newPath,final SimpleTypedPath oldTp) {
+            this.inStr = newPath;
+            this.inType = oldTp.getType();
+        }
+
+        @Deprecated
+        protected SimpleTypedPath(final String path, final String type) {
+            this.inStr = path;
+            this.inType = type;
+        }
+
+        public boolean isLocal() {
+            return ((getPathType()==PATHTYPE.LOCAL));
+        }
+
+        public String toString() {
+            return inStr;
+        }
+        public String summary() {
+            return "Path:"+getPath()+",Type:"+getType()+",FS:"+getPathType();
+        }
+
+        public TypedPath makeAbsPath() { return this;}
+
+        public boolean exists() {
+            System.err.println("Using the default, naive implementation");
+            return true;
+        }
+
+        /**
+         * First checks the type (since some images might have the type without having the actual
+         * string (maybe?)
+         * @param suffix the suffix to look for in the file
+         * @return true if it contains this suffix
+         */
+        public boolean checkSuffix(String suffix) {
+            if (getType().trim().equalsIgnoreCase(suffix)) return true;
+            else return getPath().trim().toLowerCase().endsWith(suffix.toLowerCase());
+        }
+
+        /**
+         * Get the path separator
+         * @return
+         */
+        public String getPathSeparator() {
+            return File.separator;
+        }
+
+
+        public int length() { return getPath().length();}
+
+        public String pathString() {
+            if (getPathType()==PATHTYPE.LOCAL) {
+                return (getType().length()>0) ? getPath()+pathTypeSplitChr+getType() : getPath();
+            } else {
+                return getPathType()+pathTypeSplitChr+getPath()+pathTypeSplitChr+getType();
+            }
+        }
+
+        @Override
+        public String getType() {return this.inType;}
+
+        @Override
+        public String getPath() {return this.getPath();}
+
+        @Override
+        public File getFile() {
+            throw new IllegalArgumentException(this+" cannot get a file object!");
+        }
+
+        @Override
+        public TypedPath getParent() {
+            throw new IllegalArgumentException(this+" does not have a parent");
+        }
+
+        @Override
+        public TypedPath appendDir(String dirName, boolean createDir) {
+            throw new IllegalArgumentException(this+"cannot have a directory appended");
+        }
+        @Override
+        public boolean delete() {
+           System.err.println(this + " cannot be deleted");
+            return false;
+        }
+
+        @Override
+        public boolean recursiveDelete() {
+            System.err.println(this+" cannot be deleted");
+            return false;
+        }
+
+        @Override
+        public boolean isDirectory() {
+            return false;
+        }
+
+
+        @Override
+        public TypedPath append(String fileName) {
+            return changePath(this.getPath()+fileName);
+        }
+
+
+    }
+
+    /**
+     * A filter for abstract pathnames (based on FileFilter in java.io)
+     */
+    @FunctionalInterface
+    public interface PathFilter {
+        /**
+         * Tests whether or not the specified abstract pathname should be
+         * included in a pathname list.
+         *
+         * @param  pathname  The abstract pathname to be tested
+         * @return  <code>true</code> if and only if <code>pathname</code>
+         *          should be included
+         */
+        public boolean accept(TypedPath pathname);
+
+        public static final PathFilter empty = new PathFilter() {
+            public boolean accept(TypedPath pathname) { return true;}
+        };
+
+        /**
+         * generate an extension-checking path filter for multiple extension types given as a
+         * list (single items are automatically turned into lists)
+         *
+         */
+        public static final class ExtBased implements PathFilter {
+            final String[] ext;
+            /**
+             *
+             * @param ext extension to check against (with out the .)
+             */
+            public ExtBased(final String ext) {
+                this.ext=new String[]{ext};
+            }
+
+            public ExtBased(String... exts) {
+                this.ext = exts;
+            }
+            @Override
+            public boolean accept(TypedPath pathname) {
+
+                for (String cExt: ext) if(pathname.checkSuffix(cExt)) return true;
+                return false;
+            }
+        }
     }
 
 }

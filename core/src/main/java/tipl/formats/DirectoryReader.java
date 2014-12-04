@@ -25,6 +25,7 @@ import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
 import tipl.util.TImgTools;
 import tipl.util.TypedPath;
+import tipl.util.TypedPath.PathFilter;
 
 // Logging
 /**
@@ -37,19 +38,44 @@ public abstract class DirectoryReader implements TReader {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.SOURCE)
 	@Indexable
+	@Deprecated
 	public static @interface DReader {
 		String name();
+		String desc() default "";
+		int[] supportedTypes() default {};
 	}
 
-	public static abstract interface DRFactory {
-		public DirectoryReader get(TypedPath path);
 
-		public FileFilter getFilter();
+
+	public static abstract class DRFactory implements ImgFactory {
+
+		abstract public DirectoryReader get(TypedPath path);
+
+		abstract public TReader.TSliceReader getSliceReader(TypedPath slice);
+
+		/**
+		 *
+		 * @return a list of all the files in the given directory which match the critera
+		 */
+		abstract public TypedPath.PathFilter getFilter();
+
+		/**
+		 *
+		 * @param path the directory to check
+		 * @return true if a single image is kept
+		 */
+		@Override
+		public boolean matchesPath(TypedPath path) {
+			final TypedPath.PathFilter cPF = getFilter();
+			if (path.listFiles(cPF).length>0) return true;
+			else return false;
+		}
 	}
+
 	
-	public static HashMap<FileFilter, DRFactory> getAllFactories()
+	public static HashMap<PathFilter, DRFactory> getAllFactories()
 			throws InstantiationException {
-		final HashMap<FileFilter, DRFactory> current = new HashMap<FileFilter, DRFactory>();
+		final HashMap<PathFilter, DRFactory> current = new HashMap<PathFilter, DRFactory>();
 
         for (Iterator<IndexItem<DReader>> cIter = Index.load(DReader.class).iterator(); cIter.hasNext(); ) {
             final IndexItem<DReader> item = cIter.next();
@@ -59,7 +85,7 @@ public abstract class DirectoryReader implements TReader {
             try {
 
                 final DRFactory dBlock = (DRFactory) Class.forName(item.className()).newInstance();
-                final FileFilter f = dBlock.getFilter();
+                final TypedPath.PathFilter f = dBlock.getFilter();
                 System.out.println(bName + " loaded as: " + dBlock);
                 current.put(f, dBlock);
                 System.out.println(item.annotation().name() + " loaded as: " + dBlock);
@@ -77,19 +103,19 @@ public abstract class DirectoryReader implements TReader {
 		return current;
 	}
 
-	final static String version = "08-10-2014";
+	final static String version = "04-12-2014";
 
 
 	/**
 	 * ChooseBest chooses the directory reader plugin which has the highest
-	 * number of matches in the given directory using the FileFilter
+	 * number of matches in the given directory using the PathFilter
 	 * 
 	 * @param path
 	 *            folder path name
 	 * @return best suited directory reader
 	 */
 	public static DirectoryReader ChooseBest(final TypedPath path) {
-		HashMap<FileFilter, DRFactory> allFacts;
+		HashMap<PathFilter, DRFactory> allFacts;
 		try {
 			allFacts = getAllFactories();
 		} catch (final InstantiationException e) {
@@ -99,9 +125,9 @@ public abstract class DirectoryReader implements TReader {
 
 		}
 		System.out.println("Loaded DirectoryReader Plugins:");
-		FileFilter bestFilter = null;
+		PathFilter bestFilter = null;
 		int bestLen = 0;
-		for (final FileFilter cFilter : allFacts.keySet()) {
+		for (final PathFilter cFilter : allFacts.keySet()) {
 			final int zlen = FilterCount(path, cFilter);
 			if (zlen > bestLen) {
 				bestFilter = cFilter;
@@ -119,7 +145,7 @@ public abstract class DirectoryReader implements TReader {
 	 * the number of matches for each filter. The filter with the most matches
 	 * is then returned or an exception is thrown
 	 **/
-	public static int FilterCount(final TypedPath path, final FileFilter cFilter) {
+	public static int FilterCount(final TypedPath path, final PathFilter cFilter) {
 		final File dir = new File(path.getPath());
 		final File[] imglist = dir.listFiles(cFilter);
 		final int zlen = imglist.length;
@@ -154,7 +180,7 @@ public abstract class DirectoryReader implements TReader {
 		main(TIPLGlobal.activeParser(args));
 	}
 
-	protected File[] imglist;
+	protected TypedPath[] imglist;
 	protected D3int dim;
 	protected D3int pos = new D3int(0, 0, 0);
 	protected D3float elSize = new D3float(1, 1, 1);
@@ -169,19 +195,19 @@ public abstract class DirectoryReader implements TReader {
 	private int imageType=-1;
 
 
-	public DirectoryReader(final TypedPath path, final FileFilter filter,
+	public DirectoryReader(final TypedPath path, final TypedPath.PathFilter filter,
 			final TSliceFactory itsf) throws IOException {
 		dirPath = path;
-		final File dir = new File(path.getPath());
-		imglist = dir.listFiles(filter);
+
+		imglist = path.listFiles(filter);
 		final int zlen = imglist.length;
 		dim = new D3int(-1, -1, zlen);
 		// Sort the list of filenames because some operating systems do not
 		// handle this automatically
-		Arrays.sort(imglist, new Comparator<File>() {
+		Arrays.sort(imglist, new Comparator<TypedPath>() {
 			@Override
-			public int compare(final File f1, final File f2) {
-				return f1.getAbsolutePath().compareTo(f2.getAbsolutePath());
+			public int compare(final TypedPath f1, final TypedPath f2) {
+				return f1.getPath().compareTo(f2.getPath());
 			}
 		});
 
@@ -218,7 +244,6 @@ public abstract class DirectoryReader implements TReader {
 	 */
 	@Override
 	public TImg getImage() {
-		// TODO Auto-generated method stub
 		return new TReaderImg(this);
 	}
 
@@ -306,8 +331,9 @@ public abstract class DirectoryReader implements TReader {
 	@Override
 	public void ReadHeader() {
 		ParseFirstHeader();
-		File firstFile=imglist[0];
-		if (!firstFile.exists()) throw new IllegalArgumentException(this+":First file is not even found!!");
+		TypedPath firstFile=imglist[0];
+		if (!firstFile.exists()) throw new IllegalArgumentException(this+":First file is not " +
+				"even found!!");
 		try {
 			final TSliceReader tsr = tsf.ReadFile(firstFile);
 			final D3int cDim = tsr.getDim();
@@ -394,9 +420,6 @@ public abstract class DirectoryReader implements TReader {
 	 * @see tipl.formats.TReader#SetupReader(java.lang.String)
 	 */
 	@Override
-	public void SetupReader(final TypedPath inPath) {
-		// TODO Auto-generated method stub
-
-	}
+	abstract public void SetupReader(final TypedPath inPath);
 
 }

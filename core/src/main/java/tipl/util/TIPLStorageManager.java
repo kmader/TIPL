@@ -34,6 +34,42 @@ public class TIPLStorageManager {
         }
     };
 
+    /**
+     * Go through all the available storage engines to find one capable of reading a path of this
+     * type
+     * @param pathStr
+     * @return
+     */
+    public static TypedPath openPath(final String pathStr) {
+        TypedPath cPath = doesPathExist( TImgTools.getStorage(),pathStr);
+        Iterator<StorageInfo> siIter = getAllStorage().iterator();
+
+        while((cPath==null) && siIter.hasNext()) {
+            StorageInfo cInfo = siIter.next();
+            cPath = doesPathExist(getStorage(cInfo),pathStr);
+        }
+        throw new IllegalArgumentException("No suitable storage environment found:"+pathStr);
+    }
+    /**
+     * For files or datasets not based directly on real files (transforms of images)
+     * @note The construction of File or Stream objects from these objects will eventually throw an error
+     * @param virtualName
+     * @return
+     */
+    public static TypedPath createVirtualPath(final String virtualName) {
+        return new VirtualTypedPath(virtualName,"");
+    }
+
+    protected static TypedPath doesPathExist(final ITIPLStorage cStorage,final String pathStr) {
+        try {
+            TypedPath outPath = cStorage.IdentifyPath(pathStr);
+            if (outPath.exists()) return outPath;
+            else return null;
+        } catch (Exception e) {
+            System.err.println(pathStr+" cannot be located within "+cStorage+" ->" + e);
+            return null;
+        }
+    }
 
     /**
      * get the named storage from the list
