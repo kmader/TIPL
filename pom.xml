@@ -51,7 +51,7 @@
         <scala.major>2.10</scala.major>
         <scala.compile.version>2.10.4</scala.compile.version>
         <scala.version>2.10.4</scala.version>
-        <java.version>1.6</java.version>
+        <java.version>1.7</java.version>
 
         <scala.binary.version>2.10</scala.binary.version>
         <scala.macros.version>2.0.1</scala.macros.version>
@@ -138,6 +138,22 @@
     </dependencies>
 
     <build>
+        <pluginManagement>
+            <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>UTF-8</encoding>
+                    <maxmem>1024m</maxmem>
+                    <fork>true</fork>
+                </configuration>
+            </plugin>
+            </plugins>
+        </pluginManagement>
         <outputDirectory>target/classes</outputDirectory>
         <testOutputDirectory>target/test-classes</testOutputDirectory>
         <defaultGoal>install</defaultGoal>

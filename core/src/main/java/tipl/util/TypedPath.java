@@ -297,7 +297,6 @@ public interface TypedPath extends Serializable {
     /**
      * A filter for abstract pathnames (based on FileFilter in java.io)
      */
-    @FunctionalInterface
     public interface PathFilter {
         /**
          * Tests whether or not the specified abstract pathname should be
