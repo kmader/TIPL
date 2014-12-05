@@ -5,6 +5,7 @@ import java.io.File
 import com.google.common.io.Files
 import org.scalatest.FunSuite
 import tipl.spark.KVImgOps._
+import tipl.tests.LocalSparkContext
 import tipl.util.D3int
 import tipl.util.TIPLOps._
 

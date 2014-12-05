@@ -4,15 +4,12 @@
  * Created by mader on 10/10/14.
  */
 
-package tipl.spark
+package tipl.tests
 
 import _root_.io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.Suite
 import org.apache.spark.SparkContext
+import org.scalatest.{Suite, BeforeAndAfterAll, BeforeAndAfterEach}
 import tipl.spark.SparkGlobal
-
 
 /** Manages a local `sc` {@link SparkContext} variable, correctly stopping it after each test. */
 trait LocalSparkContext extends BeforeAndAfterEach with BeforeAndAfterAll {
@@ -26,7 +23,7 @@ trait LocalSparkContext extends BeforeAndAfterEach with BeforeAndAfterAll {
   }
 
   override def afterEach() {
-    resetSparkContext()
+    resetSparkContext() // don't reuse spark
     super.afterEach()
   }
 

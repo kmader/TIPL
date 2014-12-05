@@ -103,10 +103,12 @@ object TImgBlock {
    * Read from the given slice in the future (send the object across the wire and read it on the
    * other side, good for virtual objects)
    *
-   * @param <V>
+   * @param inImObj
+   * @param sliceNumber
+   * @param imageType
+   * @tparam V slice type (as array)
    * @author mader
    */
-
   class TImgBlockFromImage[V](inImObj: TImgRO,
                               sliceNumber: Int, imageType: Int)
     extends TImgBlockFuture[V](inImObj.getPos(),
@@ -117,7 +119,7 @@ object TImgBlock {
       inImObj.getPolyImage(sliceNumber, imageType).asInstanceOf[Array[V]]
 
     override def toString: String =
-      "TBF:sl=" + sliceNumber + ",obj=" + inImObj
+      "TBFImg:sl=" + sliceNumber + ",obj=" + inImObj
   }
 
 

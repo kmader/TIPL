@@ -2,7 +2,7 @@ package tipl.spark
 
 import org.scalatest.FunSuite
 import tipl.formats.TImgRO
-import tipl.tests.{TestPosFunctions, TIPLTestingLibrary}
+import tipl.tests.{LocalSparkContext, TestPosFunctions, TIPLTestingLibrary}
 import tipl.util.TImgTools
 
 /**

@@ -162,7 +162,7 @@ object DSImg {
       .toArray
   }
 
-  val futureTImgMigrate = false
+  var futureTImgMigrate = false
 
   /**
    * import an image from an existing TImgRO by reading in every slice (this

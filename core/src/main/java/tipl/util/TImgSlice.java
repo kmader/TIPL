@@ -187,7 +187,7 @@ public class TImgSlice<V> implements Serializable {
 
         @Override
         public String toString() {
-            return "TBF:sl=" + sliceNumber + ",obj=" + inImObj;
+            return "TBFSlice:sl=" + sliceNumber + ",obj=" + inImObj;
         }
 
     }
