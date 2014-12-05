@@ -222,8 +222,8 @@ public class TIPLStorageManager {
 
 
 
-    private static final Map<ITIPLFileSystem.FileSystemInfo, ITIPLFileSystem> fsList = new HashMap<FileSystemInfo,
-            ITIPLFileSystem>() {
+    private static final Map<ITIPLFileSystem.FileSystemInfo, ITIPLFileSystem> fsList =
+            new HashMap<FileSystemInfo, ITIPLFileSystem>() {
         @Override
         public ITIPLFileSystem get(Object ikey) {
             if (super.containsKey(ikey)) return super.get(ikey);
@@ -233,7 +233,8 @@ public class TIPLStorageManager {
             for (Entry<FileSystemInfo, ITIPLFileSystem> cKey : this.entrySet()) {
                 if (cKey.getKey().toString().equalsIgnoreCase(cVal)) return cKey.getValue();
             }
-            throw new IllegalArgumentException("storage:" + key.name() + ":\t" + cVal + " cannot be " +
+            throw new IllegalArgumentException("storage:" + key.name() + ":\t" + cVal +
+                    " cannot be " +
                     "found in the storage tree");
         }
     };
@@ -256,8 +257,9 @@ public class TIPLStorageManager {
 
             try {
 
-                final ITIPLFileSystem dBlock = (ITIPLFileSystem) Class.forName(item.className()).newInstance();
-                System.out.println(bName + " loaded as: " + dBlock);
+                final ITIPLFileSystem dBlock = (ITIPLFileSystem)
+                        Class.forName(item.className()).newInstance();
+                if (TIPLGlobal.getDebug()) System.out.println(bName + " loaded as: " + dBlock);
                 if (bName.enabled()) fsList.put(bName, dBlock);
             } catch (InstantiationException e) {
                 System.err.println("filesystem: " + bName.name() + " " + bName.desc() + " could " +
@@ -265,10 +267,12 @@ public class TIPLStorageManager {
                         "be loaded or instantiated by storage manager!\t" + e);
                 if (TIPLGlobal.getDebug()) e.printStackTrace();
             } catch (ClassNotFoundException e) {
-                System.err.println("filesystem: " + bName.name() + " " + bName.desc() + " could not be found by storage manager!\t" + e);
+                System.err.println("filesystem: " + bName.name() + " " + bName.desc() +
+                        " could not be found by storage manager!\t" + e);
                 e.printStackTrace();
             } catch (IllegalAccessException e) {
-                System.err.println("filesystem: " + bName.name() + " " + bName.desc() + " was accessed illegally by storage manager!\t" + e);
+                System.err.println("filesystem: " + bName.name() + " " + bName.desc() +
+                        " was accessed illegally by storage manager!\t" + e);
                 e.printStackTrace();
             }
         }
@@ -283,7 +287,8 @@ public class TIPLStorageManager {
      * @return
      */
     public static ITIPLFileSystem getFileSystem(ITIPLFileSystem.FileSystemInfo curInfo) {
-        System.out.println("Requesting:" + curInfo.toString() + "\t" + fsList.containsKey(curInfo));
+        if (TIPLGlobal.getDebug()) System.out.println("Requesting:" + curInfo.toString() + "\t" +
+                fsList.containsKey(curInfo));
 
         if (getAllFileSystem().contains(curInfo)) {
             return fsList.get(curInfo);

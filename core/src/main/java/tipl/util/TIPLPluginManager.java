@@ -75,7 +75,6 @@ public class TIPLPluginManager {
      * standard one
      * @param curInfo information on the plugin to get
      * @return an instance of the plugin
-     * @throws InstantiationException
      */
     public static ITIPLPluginIn getPluginIn(PluginInfo curInfo) {
         return (ITIPLPluginIn) getPlugin(curInfo);
@@ -86,7 +85,7 @@ public class TIPLPluginManager {
      * standard one
      * @param curInfo information on the plugin to get
      * @return an instance of the plugin
-     * @throws InstantiationException
+
      */
     public static ITIPLPluginOut getPluginOut(PluginInfo curInfo) {
         return (ITIPLPluginOut) getPlugin(curInfo);
@@ -94,8 +93,6 @@ public class TIPLPluginManager {
 
     /**
      * Get a list of all the plugin factories that exist
-     * @return
-     * @throws InstantiationException
      */
     public static List<PluginInfo> getAllPlugins() {
         if (pluginList.size() > 1) return new ArrayList<PluginInfo>(pluginList.keySet());

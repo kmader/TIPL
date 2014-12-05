@@ -319,7 +319,8 @@ object IOOps {
       GrayAnalysis.AddDensityColumn(inImg, baseString, outfileName, analysisName)
     }
 
-    def addRegionColumn(labImg: TImgRO, regImg: TImgRO, outName: TypedPath = TIPLStorageManager.openPath(""),
+    def addRegionColumn(labImg: TImgRO, regImg: TImgRO, outName: TypedPath =
+    TIPLStorageManager.openPath(""),
                         analysisName: String = "Density") = {
       val outfileName = if (outName.length < 1) baseString.append("_dens.csv") else outName
       GrayAnalysis.AddRegionColumn(labImg, regImg, baseString, outfileName, analysisName)

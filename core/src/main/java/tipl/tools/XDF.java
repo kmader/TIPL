@@ -21,24 +21,7 @@ public class XDF extends BaseTIPLPluginMult {
             return new XDF();
         }
     };
-    /**
-     * The command line executable version of the code The code run in the main
-     * function looks like this
-     * <p/>
-     * <pre>
-     *      <p> Read in the inputFile as an VirtualAim
-     *      <li>VirtualAim inputAim=TImgTools.ReadTImg(inputFile);
-     *      <p> Create a new XDF object with the input file, using float (3) type, and a (2*rdfs+1) x (2*rdfs+1) x (2*rdfs+1) sized space ranging from -rdfs to +rdfs in x,y, and z
-     *      <li>XDF cXDF=new XDF(inputAim,3,new D3int(rdfs,rdfs,rdfs));
-     *      <li>System.out.println("Calculating XDF "+inputFile+" ...");
-     *      <p> Run the XDF analysis with rdfIter iterations
-     *      <li>cXDF.run(rdfIter);
-     *      <p> Save the result using the inputAim as a template into the new aim outputAim
-     *      VirtualAim outputAim=cXDF.ExportAim(inputAim);
-     *      <p> Write the output aim as a short to the dist using the probability scalar from XDF
-     *      <li>outputAim.WriteAim(outputFile,1,(float) cXDF.probScalar());
-     * </pre>
-     */
+
     public static final String kVer = "131021_015";
     public final boolean supportsThreading = true;
     final int MAXDISTVAL = 32765;

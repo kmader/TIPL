@@ -319,6 +319,7 @@
                         <version>2.10.1</version>
                         <configuration>
                             <skip>${javadoc.skip}</skip>
+                            <failOnError>false</failOnError>
                         </configuration>
                         <executions>
                             <execution>

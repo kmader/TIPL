@@ -7,10 +7,6 @@ import java.io.Serializable;
 /**
  * PureFImage is simply an image which is a transform (VoxelFunction) of another
  * image, this is currently used to create Zimages, Rimages and the like
- * <p/>
- * <pre> v2 Fixed a bug in initialization order for PureFImage constructor. The mirrorImage command runs getProcLog which requires the function to be defined.
- * <p/>
- * <pre> v1
  */
 public class PureFImage implements TImgRO, TImgTools.ChangesDimensions {
 	public static final double[] intRange = {0, 2 ^ 31 - 1};

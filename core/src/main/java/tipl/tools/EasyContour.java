@@ -49,21 +49,19 @@ public class EasyContour extends BaseTIPLPluginBW {
     /**
      * The command line executable version of the code The code run in the main
      * function looks like this
-     * <p/>
-     * <pre>
-     *      <p> Read in the inputFile as an VirtualAim
-     *      <li>VirtualAim inputAim=TImgTools.ReadTImg(inputFile);
-     *      <p> Create a new Peel object with the input file, using float (3) type, and a (2*peelS+1) x (2*peelS+1) x (2*peelS+1) sized space ranging from -peelS to +peelS in x,y, and z
-     *      <li>Peel cPeel=new Peel(inputAim,3,new D3int(peelS,peelS,peelS));
-     *      <li>System.out.println("Calculating Peel "+inputFile+" ...");
-     *      <p> Run the Peel analysis with rdfIter iterations
-     *      <li>cPeel.run(rdfIter);
-     *      <p> Save the result using the inputAim as a template into the new aim outputAim
+     *      Read in the inputFile as an VirtualAim
+     *      VirtualAim inputAim=TImgTools.ReadTImg(inputFile);
+     *      Create a new Peel object with the input file, using float (3) type, and a (2*peelS+1) x (2*peelS+1) x (2*peelS+1) sized space ranging from -peelS to +peelS in x,y, and z
+     *      Peel cPeel=new Peel(inputAim,3,new D3int(peelS,peelS,peelS));
+     *      System.out.println("Calculating Peel "+inputFile+" ...");
+     *      Run the Peel analysis with rdfIter iterations
+     *      cPeel.run(rdfIter);
+     *       Save the result using the inputAim as a template into the new aim outputAim
      *      VirtualAim outputAim=cPeel.ExportAim(inputAim);
-     *      <p> Write the output aim as a short to the dist using the probability scalar from Peel
-     *      <li>outputAim.WriteAim(outputFile,1,(float) cPeel.probScalar());
-     * </pre>
+     *       Write the output aim as a short to the dist using the probability scalar from Peel
+     *      outputAim.WriteAim(outputFile,1,(float) cPeel.probScalar());
      */
+    @Deprecated
     public static void main(final String[] args) {
         final String kVer = "120105_001";
         System.out.println("Peel v" + kVer);

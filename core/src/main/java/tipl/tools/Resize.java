@@ -99,24 +99,9 @@ public class Resize extends BaseTIPLPluginMult {
 	/**
 	 * The command line executable version of the code The code that is run
 	 * (without reading the arguments) is
-	 * 
-	 * <pre>
-	 *      <li> System.out.println("Loading "+inputFile+" ...");
-	 *      <p> Read the input file as an aim
-	 *      <li> VirtualAim inputAim=TImgTools.ReadTImg(inputFile);
-	 *      <p> Create a new instance of the resize plugin using the aim file
-	 *      <li> Resize myResizer=new Resize(inputAim);
-	 *      <li> System.out.println("Resizing"+inputFile+" ...");
-	 *      <p> Use the >0 (default) criterion for removing the edges of the image
-	 *      <li>myResizer.find_edges();
-	 *      <p> Run the plugin and generate the output image
-	 *      <li>myResizer.run();
-	 *      <p> Save the output image into an aim file outputAim, use inputAim and its procedure log as a template
-	 *      <li>VirtualAim outputAim=myResizer.ExportAim(inputAim);
-	 *      <p> Write the outputAim file to the hard disk as outputFile as an 8bit (0) image
-	 *      <li>outputAim.WriteAim(outputFile,0);
-	 * </pre>
+	 *
 	 */
+	@Deprecated
 	public static void main(final String[] args) {
 
 		System.out.println("Resize v" + kVer);

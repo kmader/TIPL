@@ -15,10 +15,6 @@ import java.util.Date;
  * Library of static functions used for TImg (since TImg is just an interface)
  *
  * @author maderk
- *         <p/>
- *         <pre> v3 28May13 Added generic slice converting function
- *         <p/>
- *                 <pre> v2 04Feb13 Added elSize to the mirrorImage function
  */
 public class TImgTools {
     /**
