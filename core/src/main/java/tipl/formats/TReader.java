@@ -32,10 +32,6 @@ public interface TReader extends Serializable {
 		 * @return Does the reader use or depend on spark
 		 */
 		boolean sparkBased() default false;
-		/**
-		 * @return the imagetypes supported by this reader
-		 */
-		int[] supportedTypes() default {};
 	}
 
 	/**

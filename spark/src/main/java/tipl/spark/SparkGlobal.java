@@ -102,6 +102,10 @@ abstract public class SparkGlobal {
      * @return
      */
     static public JavaSparkContext getContext(final String jobName) {
+        return getContext(jobName,true);
+    }
+
+    static public JavaSparkContext getContext(final String jobName, boolean autoKill) {
 
         if (currentContext == null) {
             if (maxCores > 0) System.setProperty("spark.cores.max", "" + maxCores);
@@ -138,7 +142,7 @@ abstract public class SparkGlobal {
             currentContext = new JavaSparkContext(getMasterName(), jobName,
                     System.getenv("SPARK_HOME"), JavaSparkContext.jarOfClass(SparkGlobal.class));
 
-            StopSparkeAtFinish(currentContext);
+            if(autoKill) StopSparkeAtFinish(currentContext);
         }
         return currentContext;
     }

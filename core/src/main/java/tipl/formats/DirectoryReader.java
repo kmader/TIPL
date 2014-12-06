@@ -42,7 +42,6 @@ public abstract class DirectoryReader implements TReader {
 	public static @interface DReader {
 		String name();
 		String desc() default "";
-		int[] supportedTypes() default {};
 	}
 
 

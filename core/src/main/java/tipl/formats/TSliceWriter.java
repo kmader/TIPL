@@ -30,7 +30,6 @@ public interface TSliceWriter extends Serializable {
 	@Indexable
 	public static @interface DWriter {
 		String name();
-		int[] supportedTypes();
 		String type() default "";
 	}
 
