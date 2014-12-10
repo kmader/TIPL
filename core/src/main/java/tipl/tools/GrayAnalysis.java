@@ -1222,10 +1222,20 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 
     @Override
     public ArgumentParser setParameter(ArgumentParser inArgs, final String prefix) {
+        inArgs.createNewLayer("GrayAnalysis-Basic");
         useComma = inArgs.getOptionBoolean(prefix + "usecsv", useComma, "Use commas in output");
         useThresh = inArgs.getOptionBoolean(prefix + "usethresh", useThresh, "use threshold value");
+        lacunaMode = inArgs.getOptionBoolean(prefix + "lacuna", lacunaMode, "use lacuna mode");
+        noBlank = inArgs.getOptionBoolean(prefix + "noblank", noBlank, "remove blank lines where count is zero");
+
+        boxDist = inArgs.getOptionBoolean(prefix + "boxroidist", boxDist, "calculated distance based on a box of the region of interest (box edge distance)");
+        includeShapeTensor = inArgs.getOptionBoolean(prefix + "shapetensor", includeShapeTensor, "add columns for shape tensor");
+
+        analysisName = inArgs.getOptionString(prefix + "analysis", analysisName, "Name of analysis");
+        insName = inArgs.getOptionPath(prefix + "insert", insName, "insert results into an existing csv");
 
         // Columns to be written in output file
+        inArgs.createNewLayer("GrayAnalysis-Columns");
         meancol = !inArgs.getOptionBoolean(prefix + "meancol", meancol, "Add mean value column"); // Default Column
         stdcol = !inArgs.getOptionBoolean(prefix + "stdcol", stdcol, "Add standard deviation column"); // Default Column
         maxcol = inArgs.getOptionBoolean(prefix + "maxcol", maxcol, "Add max column"); // Special Column
@@ -1237,15 +1247,9 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
         gradcol = inArgs.getOptionBoolean(prefix + "gradcol", gradcol, "Add gradient columns"); // Special Column
         angcol = inArgs.getOptionBoolean(prefix + "angcol", angcol, "Add angular column (calculated from gradient"); // Special Column
         pcacols = inArgs.getOptionBoolean(prefix + "pcacols", pcacols, "Add principal component columns"); // Special Column
-        noThresh = inArgs.getOptionBoolean(prefix + "nothresh", noThresh, "don use threshold");
-        useShort = inArgs.getOptionBoolean(prefix + "useshort", useShort, "use short values for value image"); // use short for GFILT
-        useFloat = inArgs.getOptionBoolean(prefix + "usefloat", useFloat, "use float values for value image"); // use float for MAP (just labels in
-        // CSV file)
-        lacunaMode = inArgs.getOptionBoolean(prefix + "lacuna", lacunaMode, "use lacuna mode");
-        noBlank = inArgs.getOptionBoolean(prefix + "noblank", noBlank, "remove blank lines where count is zero");
 
-        boxDist = inArgs.getOptionBoolean(prefix + "boxroidist", boxDist, "calculated distance based on a box of the region of interest (box edge distance)");
-        includeShapeTensor = inArgs.getOptionBoolean(prefix + "shapetensor", includeShapeTensor, "add columns for shape tensor");
+
+        inArgs.createNewLayer("GrayAnalysis-Values");
         invertGFILT = inArgs.getOptionBoolean(prefix + "invert", invertGFILT, "invert the values in the value image (gfilt)");
         useGFILT = inArgs.getOptionBoolean(prefix + "gfilt", useGFILT, "use a gfilt image");
         threshVal = inArgs.getOptionFloat(prefix + "thresh", threshVal, "Threshold value to use");
@@ -1253,9 +1257,11 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
         fmax = inArgs.getOptionDouble(prefix + "fmax", fmax, "Max value for float binning of value image");
         fbins = inArgs.getOptionInt(prefix + "fbins", fbins, "Number of bins for float binning of" +
                 " value image");
+        noThresh = inArgs.getOptionBoolean(prefix + "nothresh", noThresh, "don use threshold");
+        useShort = inArgs.getOptionBoolean(prefix + "useshort", useShort, "use short values for value image"); // use short for GFILT
+        useFloat = inArgs.getOptionBoolean(prefix + "usefloat", useFloat, "use float values for value image"); // use float for MAP (just labels in
+        // CSV file)
 
-        analysisName = inArgs.getOptionString(prefix + "analysis", analysisName, "Name of analysis");
-        insName = inArgs.getOptionPath(prefix + "insert", insName, "insert results into an existing csv");
 
 
         if (useComma)
