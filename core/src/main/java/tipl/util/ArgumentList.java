@@ -756,8 +756,10 @@ public class ArgumentList implements Serializable {
 	 */
 	public static class RangedArgument<T extends Comparable<T>> extends
 	ArgumentList.ValidatedArgument<T> {
-		final T minVal;
-		final T maxVal;
+		public final T minVal;
+		public final T maxVal;
+
+
 
 		public RangedArgument(
 				final ArgumentList.TypedArgument<T> basisArgument,
@@ -822,11 +824,9 @@ public class ArgumentList implements Serializable {
 			parseTool=tParse;
 		}
 		/** just for the clone argument
-		 * 
-		 * @param inArg
-		 * @param inHelpText
-		 * @param defValue
-		 * @param tParse
+		 *
+		 * @param defValue default value
+		 * @param tParse function to parse the argument to a type
 		 */
 		protected TypedArgument(final String inName,final String inValue, final String inHelpText,
 				final T defValue, final ArgumentParser.strParse<T> tParse) {
@@ -964,7 +964,7 @@ public class ArgumentList implements Serializable {
 	 *
 	 */
 	public static class MultipleChoiceArgument extends ValidatedArgument<String> {
-		final String[] acceptableAnswers;
+		public final String[] acceptableAnswers;
 		public MultipleChoiceArgument(TypedArgument<String> basisArgument,final String[] acceptableAnswers) {
 			super(basisArgument);
 			this.acceptableAnswers=acceptableAnswers;

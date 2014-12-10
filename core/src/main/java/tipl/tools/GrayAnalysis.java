@@ -1251,7 +1251,8 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
         threshVal = inArgs.getOptionFloat(prefix + "thresh", threshVal, "Threshold value to use");
         fmin = inArgs.getOptionDouble(prefix + "fmin", fmin, "Min value for float binning of value image");
         fmax = inArgs.getOptionDouble(prefix + "fmax", fmax, "Max value for float binning of value image");
-        fbins = inArgs.getOptionInt(prefix + "fmin", fbins, "Number of bines for float binning of value image");
+        fbins = inArgs.getOptionInt(prefix + "fbins", fbins, "Number of bins for float binning of" +
+                " value image");
 
         analysisName = inArgs.getOptionString(prefix + "analysis", analysisName, "Name of analysis");
         insName = inArgs.getOptionPath(prefix + "insert", insName, "insert results into an existing csv");
