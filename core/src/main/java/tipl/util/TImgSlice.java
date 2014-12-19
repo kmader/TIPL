@@ -47,6 +47,8 @@ public class TImgSlice<V> implements Serializable {
         this.dim = dim;
     }
 
+
+
     /**
      * Create a new block with an offset given a chunk of data and position, dimensions
      *
@@ -149,6 +151,26 @@ public class TImgSlice<V> implements Serializable {
 
         abstract protected Fu getSliceData();
 
+    }
+
+    /**
+     * Create a TImgSlice from a given slice of TImgRO object
+     * @param imgObj input image to take slice from
+     * @param sliceNo the slice number to take
+     * @param outType the output type (should be matched to the type of V
+     * @param <V> the type of the data in the slice (must be an array)
+     * @return
+     */
+    static public <V> TImgSlice<V> fromTImg(final TImgRO imgObj, final int sliceNo, final int
+            outType) {
+        TImgTools.isValidType(outType);
+        assert(imgObj.getDim().z<=sliceNo);
+        assert(sliceNo>=0);
+        return new TImgSlice<V>(
+                (V) imgObj.getPolyImage(sliceNo,outType),
+                new D3int(imgObj.getPos().x,imgObj.getPos().y,imgObj.getPos().z+sliceNo),
+                imgObj.getDim()
+        );
     }
 
     /**
@@ -270,6 +292,33 @@ public class TImgSlice<V> implements Serializable {
             return TImgTools.identifySliceType(blockOfInterest.get());
         }
 
+    }
+
+    /**
+     * Quick check to see if they match
+     * @param sliceA
+     * @param sliceB
+     * @return true if they match in pos and dimension
+     */
+    static public boolean slicesSizeMatch(TImgSlice<?> sliceA, TImgSlice<?> sliceB) {
+        boolean matches = true;
+        matches &= sliceA.getDim().gx() == sliceB.getDim().gx();
+        matches &= sliceA.getDim().gy() == sliceB.getDim().gy();
+        matches &= sliceA.getPos().gx() == sliceB.getPos().gx();
+        matches &= sliceA.getPos().gy() == sliceB.getPos().gy();
+        return matches;
+    }
+
+    /**
+     * Throws an error if they do not match since they need to
+     * @param sliceA
+     * @param sliceB
+     */
+    static public void doSlicesSizeMatch(TImgSlice<?> sliceA, TImgSlice<?> sliceB) {
+        if(!slicesSizeMatch(sliceA,sliceB))
+            throw new IllegalArgumentException("Slices do not match in size:"+sliceA+" and " +
+                    ""+sliceB+", dim:"+sliceA.getDim()+"=="+sliceB.getDim()+", pos:"+sliceA
+                    .getPos()+"=="+sliceB.getPos());
     }
 
 

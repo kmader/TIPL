@@ -431,6 +431,7 @@ public abstract class TestPosFunctions implements PureFImage.PositionFunction,Se
 			return x;
 		}
 
+
 	}
 
 	/**
@@ -596,7 +597,7 @@ public abstract class TestPosFunctions implements PureFImage.PositionFunction,Se
 
 	@Override
 	public String name() {
-		return "TestPositionFunction!";
+		return this.getClass().getSimpleName()+"!";
 	}
 	/**
 	 * enables rotation and sets the values  to theta and phi in degrees (converted to radians)

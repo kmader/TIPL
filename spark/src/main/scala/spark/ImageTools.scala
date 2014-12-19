@@ -5,6 +5,8 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import tipl.util.{TImgSlice, D3int}
 
+import scala.reflect.ClassTag
+
 /**
  * A series of tools that are useful for image data
  */
@@ -84,7 +86,7 @@ object ImageTools extends Serializable {
    */
   def neighbor_feature_vector[S](irdd: RDD[(D3int, S)],
                                  windSize: D3int = new D3int(1, 1, 1),
-                                  defValue: S) = {
+                                  defValue: S)(implicit sm: ClassTag[S]) = {
     val spreadZero = ImageTools.spread_zero(windSize,false)
     val spreadRdd = irdd.
       flatMap(ImageTools.spread_voxels(_,windSize,false)).
