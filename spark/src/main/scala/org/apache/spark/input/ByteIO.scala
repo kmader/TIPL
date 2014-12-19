@@ -76,7 +76,7 @@ abstract class BinaryRecordReader[T](
     if (!processed) {
       val fileIn = fs.open(path)
       val innerBuffer = ByteStreams.toByteArray(fileIn)
-      value = parseByteArray(innerBuffer)
+      value = parseByteArray(path,innerBuffer)
       Closeables.close(fileIn, false)
 
       processed = true
@@ -86,7 +86,7 @@ abstract class BinaryRecordReader[T](
     }
   }
 
-  def parseByteArray(inArray: Array[Byte]): T
+  def parseByteArray(path: Path,inArray: Array[Byte]): T
 }
 
 
@@ -108,5 +108,5 @@ class ByteRecordReader(
                         index: Integer)
   extends BinaryRecordReader[Array[Byte]](split, context, index) {
 
-  def parseByteArray(inArray: Array[Byte]) = inArray
+  def parseByteArray(path: Path, inArray: Array[Byte]) = inArray
 }

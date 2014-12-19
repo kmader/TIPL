@@ -1,5 +1,6 @@
 package tipl.spark.hadoop
 
+import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 import org.apache.hadoop.mapreduce.lib.input.{CombineFileRecordReader, CombineFileSplit}
 import org.apache.spark.input.BinaryRecordReader
@@ -32,7 +33,7 @@ class TiffSliceRecordReader(
                              index: Integer)
   extends BinaryRecordReader[TIFSliceReader](split, context, index) {
 
-  def parseByteArray(inArray: Array[Byte]) = new TiffFolder.TIFSliceReader(inArray)
+  def parseByteArray(path: Path,inArray: Array[Byte]) = new TiffFolder.TIFSliceReader(inArray)
 }
 
 

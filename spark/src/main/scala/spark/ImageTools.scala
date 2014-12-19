@@ -3,21 +3,109 @@ package spark.images
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import tipl.util.{D3int, TImgSlice}
+import tipl.util.{TImgSlice, D3int}
 
 /**
  * A series of tools that are useful for image data
  */
-object ImageTools {
+object ImageTools extends Serializable {
   /**
    * spread voxels out (S instead of T since S includes for component labeling the long as well
    * (Long,T)
    */
-  def spread_voxels[S](pvec: (D3int, S), windSize: D3int = new D3int(1, 1, 1)) = {
+  def spread_voxels[S](pvec: (D3int, S),
+                       windSize: D3int = new D3int(1, 1, 1),
+                      startAtZero: Boolean = true
+                        ) = {
     val pos = pvec._1
     val label = pvec._2
-    for (x <- 0 to windSize.x; y <- 0 to windSize.y; z <- 0 to windSize.z)
-    yield (new D3int(pos.x + x, pos.y + y, pos.z + z), (label, x == 0 & y == 0 & z == 0))
+    val (sx,sy,sz) = if (startAtZero) (0,0,0) else (-windSize.x,-windSize.y,-windSize.z)
+    val (ex,ey,ez) = (windSize.x,windSize.y,windSize.z)
+
+      /**
+       * the voxels are spread to new pixels at pos+(x,y,z)
+       * at each of these pixels there is a feature vector length prod(windSize), or double that
+       * if startAtZero=false
+       * the indices of the feature vector are defined as
+       *  [(cpos.z-sz)*(ey-sy+1) + (cpos.sy-sy)]*(ex-sx+1) + cpos.x-sx
+       *  so new_pos = pos+(x,y,z) and cpos is new_pos-pos = (-x,-y,-z)
+       * the second value is the index
+        */
+
+    //
+
+    //
+    for (x <- sx to ex; y <- sy to ey; z <- sz to ez)
+    yield (new D3int(pos.x + x, pos.y + y, pos.z + z),
+      (label,
+
+        ((-z-sz)*(ey-sy+1)+(-y-sy))*(ex-sx+1)+(-x-sx)
+
+        ))
+  }
+  def spread_voxels_bin[S](pvec: (D3int, S),
+                           windSize: D3int = new D3int(1, 1, 1),
+                           startAtZero: Boolean = true
+                            ) = {
+    val zeroInd = spread_zero(windSize,startAtZero)
+    spread_voxels(pvec,windSize,startAtZero).map(
+      kv =>
+        (kv._1,(kv._2._1,kv._2._2==zeroInd))
+    )
+  }
+
+  /**
+   * The zero (0,0,0) index for the spread array given a window size and whether or not it starts
+   * at zero
+   * @param windSize the size of the window
+   * @param startAtZero start at 0 or -windSize
+   * @return the index of the zero point
+   */
+  def spread_zero(windSize: D3int = new D3int(1,1,1),
+                  startAtZero: Boolean = true) = spread_index(new D3int(0,0,0),windSize,startAtZero)
+
+  def spread_index(pos: D3int,windSize: D3int,
+                   startAtZero: Boolean): Int = {
+    if(startAtZero) {
+      0
+    } else {
+      val (sx,sy,sz) = (-windSize.x,-windSize.y,-windSize.z)
+      val (ex,ey,ez) = (windSize.x,windSize.y,windSize.z)
+      ((pos.z-sz)*(ey-sy+1)+(pos.y-sy))*(ex-sx+1)+(pos.x-sx)
+    }
+  }
+
+  /**
+   * Transform a position RDD into a feature vector RDD
+   * @param irdd image structure to operate on
+   * @param windSize size of the window
+   * @param defValue default value for filling the pixels outside
+   * @tparam S the type of the image data
+   */
+  def neighbor_feature_vector[S](irdd: RDD[(D3int, S)],
+                                 windSize: D3int = new D3int(1, 1, 1),
+                                  defValue: S) = {
+    val spreadZero = ImageTools.spread_zero(windSize,false)
+    val spreadRdd = irdd.
+      flatMap(ImageTools.spread_voxels(_,windSize,false)).
+      groupByKey().
+      filter( // remove edges
+        kv =>
+          kv._2.filter(_._2==spreadZero).size==1 // exactly one original point
+      )
+
+    val feat_vec_len = (2*windSize.x+1)*(2*windSize.y+1)*(2*windSize.z+1)
+    val fvRdd = spreadRdd.map(
+      kv => {
+        val outArr = Array.fill[S](feat_vec_len)(defValue)
+        val iter = kv._2.toIterator
+        while (iter.hasNext) {
+          val outVal = iter.next
+          outArr(outVal._2) = outVal._1
+        }
+        (kv._1, outArr)
+      }
+    )
   }
 
   /**
@@ -71,7 +159,7 @@ object ImageTools {
   def compLabeling[T](inImg: RDD[(D3int, T)], windSize: D3int = new D3int(1, 1, 1)) = {
     compLabelingCore(inImg, (inPoints: RDD[(D3int, (Long, T))]) =>
       inPoints.
-        flatMap(spread_voxels(_, windSize)))
+        flatMap(spread_voxels_bin(_, windSize)))
   }
 
     /** a very general component labeling routine using partitions to increase efficiency
@@ -83,7 +171,7 @@ object ImageTools {
     val partitionSpreadFunction = (inPoints: RDD[(D3int, (Long, T))]) => {
       inPoints.mapPartitions {
         cPart =>
-          val outVox = cPart.flatMap(spread_voxels[(Long, T)](_, windSize)).toList
+          val outVox = cPart.flatMap(spread_voxels_bin[(Long, T)](_, windSize)).toList
           val grpSpreadPixels = outVox.groupBy(_._1)
           grpSpreadPixels.
             mapValues(inGroup => inGroup.map(_._2).reduce(cl_merge_voxels[T])).
@@ -144,7 +232,7 @@ object ImageTools {
     var running = true
     var iterations = 0
     while (running) {
-      val spreadList = labelImg.flatMap(spread_voxels(_, windSize))
+      val spreadList = labelImg.flatMap(spread_voxels_bin(_, windSize))
       val mergeList = spreadList.groupByKey.map {
         cKeyValues =>
           val cPoints = cKeyValues._2
@@ -176,13 +264,13 @@ object ImageTools {
 }
 
 
-case class D2int(x: Int, y: Int)
+case class D2int(x: Int, y: Int) extends Serializable
 
 
 /**
  * A collection of tools for 2D imaging
  */
-object ImageTools2D {
+object ImageTools2D extends Serializable {
   /** create a Key-value Image with only points above a certain value **/
   def BlockImageToKVImage[T](sc: SparkContext, inImg: RDD[(D3int, TImgSlice[Array[T]])],
                              threshold: T)(implicit num: Numeric[T]) = {
@@ -200,21 +288,25 @@ object ImageTools2D {
     }
   }
 
+  def SliceToKVList[S](cSlice: TImgSlice[S],
+                      slicePos: Option[Int] = None,
+                       threshold: Double = Double.NegativeInfinity) = {
+    val cSliceArr = cSlice.getAsDouble()
+    val imgDim = cSlice.getDim
+    val imgPos = cSlice.getPos
+    val z = slicePos.getOrElse(imgPos.z)
+    for {
+      y <- 0 until imgDim.gy
+      x <- 0 until imgDim.gx
+      oVal = cSliceArr(y * imgDim.gx + x)
+      if oVal >= threshold
+    } yield (new D3int(imgPos.x + x, imgPos.y + y, z), oVal)
+  }
+
   /** create a Key-value Image with only points above a certain value **/
   def BlockImageToKVImageDouble(sc: SparkContext, inImg: RDD[(D3int, TImgSlice[Array[Double]])],
                                 threshold: Double) = {
-    inImg.mapValues {
-      cSlice =>
-        val cSliceArr = cSlice.get
-        val imgDim = cSlice.getDim
-        val imgPos = cSlice.getPos
-        for {
-          y <- 0 until imgDim.gy
-          x <- 0 until imgDim.gx
-          oVal = cSliceArr(y * imgDim.gx + x)
-          if oVal >= threshold
-        } yield (new D3int(imgPos.x + x, imgPos.y + y, imgPos.z), oVal)
-    }
+    inImg.mapValues(SliceToKVList(_,threshold=threshold))
   }
 
 
@@ -243,7 +335,7 @@ object ImageTools2D {
     var running = true
     var iterations = 0
     while (running & iterations < maxIters) {
-      val spreadList = labelImg.flatMap { inVox => ImageTools.spread_voxels(inVox, windSize)}
+      val spreadList = labelImg.flatMap { inVox => ImageTools.spread_voxels_bin(inVox, windSize)}
       val newLabels = spreadList.groupBy(_._1).mapValues {
         voxList =>
           voxList.map {
@@ -290,7 +382,7 @@ object ImageTools2D {
     var running = true
     var iterations = 0
     while (running) {
-      val spreadList = labelImg.flatMap(ImageTools.spread_voxels(_, windSize))
+      val spreadList = labelImg.flatMap(ImageTools.spread_voxels_bin(_, windSize))
       val mergeList = spreadList.toList.groupBy(_._1).map {
         cKeyValues =>
           val cPoints = cKeyValues._2
@@ -318,7 +410,5 @@ object ImageTools2D {
       running = replList.size > 0
     }
     labelImg
-
   }
-
 }

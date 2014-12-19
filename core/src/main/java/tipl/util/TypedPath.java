@@ -278,7 +278,7 @@ public interface TypedPath extends Serializable {
         public String getType() {return this.inType;}
 
         @Override
-        public String getPath() {return this.getPath();}
+        public String getPath() {return this.inStr;}
 
 
 

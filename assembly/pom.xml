@@ -49,6 +49,11 @@
         </dependency>
         <dependency>
             <groupId>quant.tipl</groupId>
+            <artifactId>tipl-io</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>quant.tipl</groupId>
             <artifactId>tipl-spark</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -171,6 +176,9 @@
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/json/tipl.util.TIPLStorageManager$StorageInfo</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/json/tipl.util.ITIPLFileSystem$FileSystemInfo</resource>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>reference.conf</resource>

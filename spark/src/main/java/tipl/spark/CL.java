@@ -41,7 +41,7 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
             maximumSize = -1,
             bytesPerVoxel = 3,
             sparkBased = true)
-    private final static class clSparkFactory implements TIPLPluginManager.TIPLPluginFactory {
+    public final static class clSparkFactory implements TIPLPluginManager.TIPLPluginFactory {
         @Override
         public ITIPLPlugin get() {
             return new CL();
