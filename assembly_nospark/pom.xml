@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>quant.tipl</groupId>
+        <artifactId>quant-tipl</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <groupId>quant.tipl</groupId>
+    <artifactId>tipl-assembly_nospark</artifactId>
+    <name>TIPL Assembly (spark-free)</name>
+    <url>http://www.4quant.com/</url>
+    <packaging>pom</packaging>
+
+    <properties>
+        <sbt.project.name>assembly_nospark</sbt.project.name>
+        <tipl.jar.basename>tipl-core-${project.version}.jar</tipl.jar.basename>
+        <tipl.jar>${project.build.directory}/${tipl.jar.basename}</tipl.jar>
+        <deb.pkg.name>tipl</deb.pkg.name>
+        <deb.install.path>/usr/share/tipl</deb.install.path>
+        <deb.user>root</deb.user>
+        <deb.bin.filemode>744</deb.bin.filemode>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-spark</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-ccgeom</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-VIB</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-workflows</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-volviewer</artifactId>
+            <version>${project.version}</version>
+        </dependency>   
+        
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-integration</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-jython</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-charts</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-examples</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-webgui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- disable scalastyle -->
+            <plugin>
+                <groupId>org.scalastyle</groupId>
+                <artifactId>scalastyle-maven-plugin</artifactId>
+                <version>0.4.0</version>
+                <executions>
+                    <execution>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Use the shade plugin to create a big JAR with all the dependencies -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <shadedArtifactAttached>false</shadedArtifactAttached>
+                    <outputFile>${tipl.jar}</outputFile>
+                    <artifactSet>
+                        <includes>
+                            <include>*:*</include>
+                        </includes>
+                        <excludes>
+                            <exclude>com.twitter:*</exclude>
+                            <exclude>org.json4s:*</exclude>
+                            <exclude>com.esotericsoftware.kryo:*</exclude>
+                            <exclude>com.esotericsoftware.*:*</exclude>
+                            <exclude>org.eclipse*:*</exclude>
+                            <exclude>com.googlecode.gentyref:*</exclude>
+                            <exclude>org.spark-project.akka:*</exclude>
+                            <exclude>org.scala-lang:*</exclude>
+                            <exclude>commons-io:*</exclude>
+                            <exclude>com.fasterxml.jackson.core:*</exclude>
+
+                            <exclude>org.scalanlp:*</exclude>
+                            <exclude>org.jfree:*</exclude>
+                            <exclude>org.bouncycastle:*</exclude>
+                            <exclude>jfree:*</exclude>
+                            <exclude>org.codehaus.jackson:*</exclude>
+                            <exclude>com.thoughtworks.paranamer:*</exclude>
+
+                            <exclude>com.codahale.metrics:*</exclude>
+                            <exclude>org.tachyonproject:*</exclude>
+                            <exclude>org.spark-project:*</exclude>
+                            <exclude>net.sf.py4j:*</exclude>
+                            <exclude>com.google.code.findbugs:*</exclude>
+
+                            <exclude>org.swinglabs:*</exclude>
+                            <exclude>org.apache.*:*</exclude>
+                            <exclude>concurrent:*</exclude>
+                            <exclude>commons-*:*</exclude>
+                            <exclude>org.slf4j*:*</exclude>
+                            <exclude>org.apache*:*</exclude>
+                            <exclude>org.hamcrest*:*</exclude>
+                            <exclude>org.reflections*:*</exclude>
+                            <exclude>org.jblas*:*</exclude>
+                            <exclude>org.xerial*:*</exclude>
+                            <exclude>org.scala*:*</exclude>
+                            <exclude>com.ning:*</exclude>
+                            <exclude>net.sourceforge.f2j:*</exclude>
+                            <exclude>org.fusesource.jansi:*</exclude>
+                            <exclude>org.spire-math:*</exclude>
+                            <exclude>org.uncommons*:*</exclude>
+                            <exclude>io.netty*:*</exclude>
+                            <exclude>net.jpountz*:*</exclude>
+                            <exclude>oro:*</exclude>
+                            <exclude>com.typesafe*:*</exclude>
+                            <exclude>com.github*:*</exclude>
+                            <exclude>junit:*</exclude>
+                            <exclude>log4j:*</exclude>
+                            <exclude>hsqldb:*</exclude>
+                            <exclude>net.java.dev.jets3t:*</exclude>
+                            <exclude>commons-codec:*</exclude>
+                            <exclude>jline:*</exclude>
+                            <exclude>dom4j:*</exclude>
+
+
+
+
+                        </excludes>
+                    </artifactSet>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>org/datanucleus/**</exclude>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            <!--  if this file is missing ij complains  <exclude>IJ_Props.txt</exclude> -->
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                                <!-- use the transformers to combine all the annotations used for dependency injection
+                                before making the final file, new types must be manually added here. 
+                                The JSON annotations were used since they can be collected with the appendingtransfomer
+                                standard annotations cannot-->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/json/tipl.blocks.BaseTIPLBlock$BlockIdentity</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/json/tipl.util.TIPLPluginManager$PluginInfo</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/json/tipl.formats.TSliceWriter$DWriter</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/json/tipl.formats.DirectoryReader$DReader</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/json/tipl.util.TIPLStorageManager$StorageInfo</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>reference.conf</resource>
+                                </transformer>
+                                <!-- skip for now
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>plugins.config</resource>
+                                </transformer>
+                                -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+                                    <resource>log4j.properties</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries> <!-- the default starting point is jython -->
+                                        <Main-Class>org.python.util.jython</Main-Class>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
