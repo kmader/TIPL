@@ -77,7 +77,10 @@ public class D3int implements ID3int {
     public boolean equals(Object rawOther) {
         if(rawOther==null) return false;
         if(!(rawOther instanceof D3int)) return false;
-        D3int other=(D3int) rawOther;
+        return isEqual((D3int) rawOther);
+    }
+
+    public boolean isEqual(D3int other) {
         if((this.x==other.x) & (this.y==other.y) & (this.z==other.z)) return true;
         return false;
     }

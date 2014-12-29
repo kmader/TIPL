@@ -4,7 +4,6 @@ import org.apache.spark.Partitioner;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.storage.StorageLevel;
-import scala.Tuple2;
 import tipl.util.ArgumentParser;
 import tipl.util.D3int;
 import tipl.util.TIPLGlobal;
@@ -208,19 +207,19 @@ abstract public class SparkGlobal {
      * @param inImage
      */
     @SuppressWarnings("rawtypes")
-    static public void assertPersistance(DTImg inImage) {
+    static public void assertPersistence(DTImg inImage) {
         if (sparkPersistence >= 0) inImage.persist(getSparkPersistence());
     }
 
-    @SuppressWarnings("rawtypes")
-    static public void assertPerstance(JavaRDD inRdd) {
+    static public <V> JavaRDD<V> assertPersistence(JavaRDD<V> inRdd) {
         if (sparkPersistence >= 0) {
             if (inRdd.getStorageLevel() != StorageLevel.NONE()) inRdd.unpersist();
-            inRdd.persist(getSparkPersistence());
+            return inRdd.persist(getSparkPersistence());
         }
+        return inRdd;
     }
 
-    private static void setSparkPersistance(int inPersist) {
+    private static void setSparkPersistence(int inPersist) {
         assert (inPersist < 4);
         assert (inPersist == -1 || inPersist >= 0);
         sparkPersistence = inPersist;
@@ -246,11 +245,12 @@ abstract public class SparkGlobal {
         assert (slices > 0);
         assert (slicesPerCore > 0);
         int partCount = 1;
-        if (slicesPerCore < slices) partCount = (int) Math.ceil(slices * 1.0 / slicesPerCore);
-        assert (partCount > 0 & partCount < slices);
+        if (slicesPerCore < slices) partCount = (int)
+                Math.ceil(slices * 1.0 / slicesPerCore);
+        assert(partCount > 0);
+        assert(partCount <= slices);
         return partCount;
     }
-
 
     static public int calculatePartitions(int slices) {
         return calculatePartitions(slices, getSlicesPerCore());
@@ -293,7 +293,7 @@ abstract public class SparkGlobal {
         setSlicesPerCore(sp.getOptionInt("@sparkpartitions", getSlicesPerCore(),
                 "The number of slices to load onto a single operating core",
                 1, Integer.MAX_VALUE));
-        setSparkPersistance(sp.getOptionInt("@sparkpersist", getSparkPersistenceValue(),
+        setSparkPersistence(sp.getOptionInt("@sparkpersist", getSparkPersistenceValue(),
                 "Image default persistance options:" + getPersistenceText(),
                 -1, 4));
 

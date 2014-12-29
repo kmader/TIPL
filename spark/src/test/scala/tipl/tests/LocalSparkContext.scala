@@ -15,17 +15,25 @@ import tipl.spark.SparkGlobal
 trait LocalSparkContext extends BeforeAndAfterEach with BeforeAndAfterAll {
   self: Suite =>
 
-  @transient var sc: SparkContext = _
+  @transient var sc: SparkContext = SparkGlobal.getContext("test",false).sc //_
 
   override def beforeAll() {
     InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory())
     super.beforeAll()
   }
 
+  override def afterAll() {
+    resetSparkContext()
+  }
+
+  override def beforeEach() {
+    super.beforeEach()
+  }
+
   override def afterEach() {
-    resetSparkContext() // don't reuse spark
     super.afterEach()
   }
+
 
   def resetSparkContext() = {
     LocalSparkContext.stop(sc)
@@ -38,6 +46,7 @@ trait LocalSparkContext extends BeforeAndAfterEach with BeforeAndAfterAll {
 
 
 object LocalSparkContext {
+
   def stop(sc: SparkContext) {
     SparkGlobal.stopContext()
     // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown

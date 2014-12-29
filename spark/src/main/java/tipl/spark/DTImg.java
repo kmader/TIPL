@@ -46,7 +46,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
     /**
      * should be final but sometimes it changes *
      */
-    private final JavaPairRDD<D3int, TImgSlice<T>> baseImg;
+    private transient JavaPairRDD<D3int, TImgSlice<T>> baseImg;
     private String procLog = "";
 
 
@@ -65,7 +65,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
         this.baseImg = newImage;//.partitionBy(SparkGlobal.getPartitioner(getDim()));
         TImgTools.mirrorImage(parent, this);
         this.path = path;
-        SparkGlobal.assertPersistance(this);
+        SparkGlobal.assertPersistence(this);
         int sliceCount = (int) baseImg.count();
         if (getDim().z != sliceCount) dim.z = sliceCount;
 
@@ -682,7 +682,9 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
      * @param setLevel the level from the storagelevel class
      */
     public void persist(StorageLevel setLevel) {
-        if (this.baseImg.getStorageLevel() == StorageLevel.NONE()) this.baseImg.persist(setLevel);
+        if (this.baseImg.getStorageLevel() == StorageLevel.NONE()) {
+            this.baseImg = this.baseImg.persist(setLevel);
+        }
     }
 
     // Here are the specialty functions for DTImages

@@ -4,6 +4,8 @@ import java.io.File
 
 import com.google.common.io.Files
 import org.scalatest.FunSuite
+import org.scalatest._
+import Matchers._
 import tipl.spark.KVImgOps._
 import tipl.tests.LocalSparkContext
 import tipl.util.D3int
@@ -65,8 +67,8 @@ class KVImgTests extends FunSuite with LocalSparkContext {
       map { i => (new D3int(i), 1 / i.toDouble)}
     val n: NumericRichKvRDD[Double] = NumericRichKvRDD[Double](kvnorm)
     val kvm = (n.times(kvnorm, kvinv)).map(_._2)
-    assert(kvm.min == 1)
-    assert(kvm.max == 1)
+    kvm.min.toDouble shouldBe  (1.0+-1e-3)
+    kvm.max.toDouble shouldBe (1.0+-1e-3)
   }
 
 }

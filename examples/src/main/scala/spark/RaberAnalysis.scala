@@ -1,20 +1,17 @@
 package spark
 
+import org.apache.spark.SparkContext._
 import org.apache.spark.ui.tipl.TiplUI
 import tipl.blocks.BaseBlockRunner
-import tipl.util._
-import org.apache.spark.SparkContext._
 import tipl.formats.TImgRO
 import tipl.spark.IOOps._
 import tipl.spark.SparkGlobal
 import tipl.util.TIPLOps._
-
-
+import tipl.util._
 /**
  * Created by mader on 10/16/14.
  */
 object RaberAnalysis {
-
 
   /**
    * The parameters needed to run the analysis
@@ -36,6 +33,7 @@ object RaberAnalysis {
    */
   def parseArguments(args: Array[String]) = {
     val p = SparkGlobal.activeParser(args)
+
     val runLocal = true
     val defPath = if (runLocal) {
       "/Users/mader/Dropbox/WorkRelated/Raber/bci102014"
