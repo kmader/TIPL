@@ -25,6 +25,32 @@ object VoxOps {
     def process(curvox: (D3int,A),voxs: Seq[(D3int,A)]): Seq[(D3int,B)]
   }
 
+  trait ArrayVoxOp[A,B] extends Serializable {
+    val atag: ClassTag[A]
+    val btag: ClassTag[B]
+    def neededVoxels(): Array[D3int]
+    def process(curvox: (D3int,A),voxs: Array[A]): Seq[(D3int,B)]
+  }
+
+  /**
+   * Converts an array operation to a standard operation
+   * @param avo the array operation to replace
+   * @param defVal the value to use around the border (if a value is missing)
+   * @tparam A the type of the input
+   * @tparam B the type of the output
+   */
+  class ArrayVoxOpToVoxOp[A,B](avo: ArrayVoxOp[A,B], defVal: A)(
+                                       implicit val atag: ClassTag[A],
+                                                val btag: ClassTag[B]) extends stationaryVoxOp[A,B]
+  {
+
+    override def relVoxels: Seq[D3int] = avo.neededVoxels()
+    override def process(curvox: (D3int, A), voxs: Seq[(D3int, A)]): Seq[(D3int, B)] = {
+      val vmap = voxs.toMap
+      avo.process(curvox,relVoxels.map(vmap.getOrElse(_,defVal)).toArray)
+    }
+  }
+
   trait stationaryVoxOp[A,B] extends VoxOp[A,B] {
     def relVoxels: Seq[D3int]
     override def neededVoxels(pos: D3int): Seq[D3int] = {
@@ -32,18 +58,37 @@ object VoxOps {
     }
   }
 
+  trait neighborhoodArrayVoxOp[A,B] extends ArrayVoxOp[A,B] {
+    def neighborSize: D3int
+
+    def isInside(a: D3int,b: D3int): Boolean
+    lazy val nvList = {
+      val lseq = for(z<- -neighborSize.gz to neighborSize.gz;
+                     y<- -neighborSize.gy to neighborSize.gy;
+                     x<- -neighborSize.gx  to neighborSize.gx;
+                     if isInside(new D3int(0), new D3int(x,y,z)))
+      yield new D3int(x,y,z)
+      lseq.toArray
+    }
+
+    override def neededVoxels() = nvList
+
+  }
+
+
+
   trait neighborhoodVoxOp[A,B] extends stationaryVoxOp[A,B] {
     def neighborSize: D3int
 
     def isInside(a: D3int,b: D3int): Boolean
-
-    def relVoxels: Seq[D3int] = {
-      for(x<- 0 to neighborSize.gx();
-          y<- 0 to neighborSize.gy();
-          z<- 0 to neighborSize.gz();
-          if isInside(new D3int(0), new D3int(x,y,z)))
-        yield new D3int(x,y,z)
+    lazy val nvList = {
+      for(z<- -neighborSize.gz to neighborSize.gz;
+                     y<- -neighborSize.gy to neighborSize.gy;
+                     x<- -neighborSize.gx  to neighborSize.gx;
+                     if isInside(new D3int(0), new D3int(x,y,z)))
+      yield new D3int(x,y,z)
     }
+    def relVoxels: Seq[D3int] = nvList
   }
 
   trait voxelNeighborFilter[A] extends neighborhoodVoxOp[A,Double] {
@@ -66,6 +111,8 @@ object VoxOps {
                           val btag: ClassTag[Double]) extends voxelNeighborFilter[A]
 
 
+  // voxel implementations
+
   trait canApplyVoxOp[A] extends Serializable {
     def apply[B](vo: VoxOp[A,B]): canApplyVoxOp[B]
   }
@@ -80,6 +127,7 @@ object VoxOps {
       new listVoxOpImp[B](oList.flatten)
     }
   }
+
 
   implicit class rddVoxOpImp[A](inRdd: RDD[(D3int,A)])(implicit val atag: ClassTag[A]) extends
   canApplyVoxOp[A] {
@@ -144,7 +192,6 @@ object VoxOps {
     def apply[B](vo: VoxOp[A, B],outType: Int = TImgTools.IMAGETYPE_UNKNOWN)= vo match {
       case nvo: neighborhoodVoxOp[A,B] => nvapply(nvo)
       case _ => kvapply(DSImg.toKVImg(ids),vo,ids.getImageType)
-
     }
     def kvapply[B](ikv: KVImg[A],vo: VoxOp[A,B], imgType: Int) =
       ikv(vo,imgType)
@@ -152,6 +199,53 @@ object VoxOps {
     def nvapply[B](nvo: neighborhoodVoxOp[A,B]): dsImgVoxOpImp[B] = ??? //TODO implement slice
     // based method
   }
+
+  trait canApplyArrayVoxOp[A] extends Serializable {
+    def apply[B](vo: ArrayVoxOp[A,B], paddingValue: A): canApplyArrayVoxOp[B]
+  }
+
+  class listArrVoxOpImp[A](inList: Seq[(D3int,A)]) extends canApplyArrayVoxOp[A] {
+    override def apply[B](avo: ArrayVoxOp[A,B], paddingValue: A): listArrVoxOpImp[B] = {
+      val outVox = avo.neededVoxels()
+      val pointMap = inList.toMap
+      val oList = for(cVox <- inList;
+                      voxs = outVox.map(pointMap.getOrElse(_,paddingValue)).toArray(avo.atag))
+        yield avo.process(cVox,voxs)
+      new listArrVoxOpImp[B](oList.flatten)
+    }
+  }
+
+  class rddArrVoxOpImp[A](inRdd: RDD[(D3int,A)]) extends canApplyArrayVoxOp[A] {
+    override def apply[B](avo: ArrayVoxOp[A,B], paddingValue: A): rddArrVoxOpImp[B] = {
+      val outVox = avo.neededVoxels()
+      val bImg = inRdd.flatMap(
+        curVox =>
+          outVox.map(offset => (curVox._1-offset,curVox))
+      ).groupByKey
+
+      val cImg = bImg.map {
+        inPts =>
+          val (cPos, allPts) = inPts
+          allPts.filter(_._1.isEqual(cPos)).headOption match {
+            case Some(cPt) => Some((cPt,allPts))
+            case None => None
+          }
+      }.filter(_.isDefined).map(_.get)
+      val fImg = cImg.mapValues{
+        inVals =>
+          val curMap = inVals.toMap
+          outVox.map(curMap.getOrElse(_,paddingValue)).toArray(avo.atag)
+      }.flatMap{
+        inKV =>
+          avo.process(inKV._1,inKV._2)
+      }
+
+      new rddArrVoxOpImp[B](fImg)
+    }
+
+
+  }
+
 
 
 }

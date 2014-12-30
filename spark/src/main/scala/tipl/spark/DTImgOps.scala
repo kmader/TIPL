@@ -46,8 +46,8 @@ object DTImgOps {
   }
 
   private[spark] def DTrddToKVrdd[@spec(Boolean, Byte, Short, Int, Long, Float,
-    Double) T : ClassTag](inImg: RDD[(D3int,TImgSlice[Array[T]])], pos: D3int, dim: D3int): RDD[
-    (D3int, T)] = {
+    Double) T](inImg: RDD[(D3int,TImgSlice[Array[T]])], pos: D3int, dim: D3int)(
+    implicit tct: ClassTag[T]): RDD[(D3int, T)] = {
     inImg.flatMap {
       cPoint =>
         val pos = cPoint._1

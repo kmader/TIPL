@@ -268,9 +268,8 @@ object DSImg {
   KVImg[T] = {
 
     val imgType = inImg.getImageType
-    new KVImg(inImg, imgType,
-      DTImgOps.DTrddToKVrdd(inImg.getBaseImg, imgType, inImg.getPos, inImg.getDim)
-    )
+    val kvRdd = DTImgOps.DTrddToKVrdd[T](inImg.getBaseImg, inImg.getPos, inImg.getDim)
+    new KVImg[T](inImg, imgType,kvRdd)
   }
 
   def fromKVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](inImg: KVImg[T])

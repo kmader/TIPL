@@ -25,6 +25,9 @@ object FilterImpl {
   trait MedianFilter extends Serializable {
     def neighborSize: D3int
     def isInside(a: D3int,b: D3int) = true
-    def kernelFactory() = BaseTIPLPluginIn.medianFilter(neighborSize.gx,neighborSize.gy, neighborSize.gz)
+    def kernelFactory() = BaseTIPLPluginIn.medianFilter(
+      neighborSize.gx,
+      neighborSize.gy,
+      neighborSize.gz)
   }
 }
