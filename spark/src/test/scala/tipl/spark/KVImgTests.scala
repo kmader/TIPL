@@ -4,8 +4,8 @@ import java.io.File
 
 import com.google.common.io.Files
 import org.scalatest.FunSuite
-import org.scalatest._
-import Matchers._
+import org.scalatest.Matchers._
+import spark.images.FilterImpl.GaussianFilter
 import tipl.spark.KVImgOps._
 import tipl.tests.LocalSparkContext
 import tipl.util.D3int
@@ -71,4 +71,25 @@ class KVImgTests extends FunSuite with LocalSparkContext {
     kvm.max.toDouble shouldBe (1.0+-1e-3)
   }
 
+}
+
+class VoxOpsTest extends FunSuite with LocalSparkContext {
+  import org.apache.spark.SparkContext._
+  import spark.images.VoxOps._
+  test("Basic Filter") {
+    sc = getSpark("KVImgOps")
+    val kv = sc.parallelize(1 to 100).
+      map { i => (new D3int(i), i)}
+    val kvsBefore = kv.map(_._2).stats
+
+    val imf2 = new VoxelFilter[Int]() with GaussianFilter {
+      val radius = 1.0
+    }
+
+    val nkv = kv(imf2)
+    val kvsAfter = nkv.getBaseImg().map(_._2).stats
+    println("Before:"+kvsBefore)
+    println("After:"+kvsAfter)
+
+  }
 }

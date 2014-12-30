@@ -40,7 +40,7 @@ object ImageTools2D extends Serializable {
    */
   trait TTImg2D[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T] extends
   ITImg2D {
-    implicit def ct: ClassTag[T]
+    implicit val ct: ClassTag[T]
     def getImage(): Array[T]
     override def getRegion(pos: ID2int, dim: ID2int): Array[T] = {
       val size = dim.gx()*dim.gy()
@@ -67,7 +67,7 @@ object ImageTools2D extends Serializable {
   }
 
   object TestTTImg {
-    class eTestImage extends TTImg2D[Double] {
+    class TestImage(implicit val ct: ClassTag[Double]) extends TTImg2D[Double] {
 
       override def getImage(): Array[Double] =  Array[Double](1,2,3,4)
 

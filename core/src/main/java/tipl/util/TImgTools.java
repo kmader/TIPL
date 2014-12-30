@@ -28,11 +28,12 @@ public class TImgTools {
     public static final int IMAGETYPE_INT = 2;
     public static final int IMAGETYPE_FLOAT = 3;
     public static final int IMAGETYPE_DOUBLE = 4;
-    public static final int IMAGETYPE_COMPLEX = 5;
-    public static final int IMAGETYPE_SPECTRAL = 6;
+    public static final int IMAGETYPE_INTARRAY = 5;
+    public static final int IMAGETYPE_DBLARRAY = 6;
     public static final int IMAGETYPE_GLOB = 7;
     public static final int IMAGETYPE_LONG = 8;
     public static final int IMAGETYPE_RGB = 9;
+    public static final int IMAGETYPE_UNKNOWN = -1;
     /**
      * A list of all supported image types
      */
