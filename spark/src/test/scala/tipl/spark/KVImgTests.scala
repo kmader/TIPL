@@ -3,6 +3,7 @@ package tipl.spark
 import java.io.File
 
 import com.google.common.io.Files
+import org.apache.spark.SparkContext
 import org.scalatest.FunSuite
 import org.scalatest.Matchers._
 import spark.images.FilterImpl.GaussianFilter
@@ -76,20 +77,46 @@ class KVImgTests extends FunSuite with LocalSparkContext {
 class VoxOpsTest extends FunSuite with LocalSparkContext {
   import org.apache.spark.SparkContext._
   import spark.images.VoxOps._
+  def pointImage(sc: SparkContext) = {
+    val xvals = sc.parallelize(4 to 6)
+    xvals.
+      cartesian(xvals).
+      cartesian(xvals).
+      map(pt => (new D3int(pt._1._1,pt._1._2,pt._2), if (pt==((5,5),5)) 1 else 0))
+  }
+  def makeGaussian(rad: Double) = {
+    new VoxelFilter[Int]() with GaussianFilter {
+      val radius = rad
+    }
+  }
   test("Basic Filter") {
     sc = getSpark("KVImgOps")
-    val kv = sc.parallelize(1 to 100).
-      map { i => (new D3int(i), i)}
+
+    val kv = pointImage(sc)
     val kvsBefore = kv.map(_._2).stats
 
-    val imf2 = new VoxelFilter[Int]() with GaussianFilter {
-      val radius = 1.0
-    }
-
-    val nkv = kv(imf2)
+    val nkv = kv(makeGaussian(1.0))
     val kvsAfter = nkv.getBaseImg().map(_._2).stats
     println("Before:"+kvsBefore)
+    kvsBefore.max.toDouble shouldBe (1)
     println("After:"+kvsAfter)
+    kvsAfter.max.toDouble shouldBe  (0.39+-1e-3)
+
+  }
+  test("Basic Filter Slow Voxel") {
+    sc = getSpark("KVImgOps")
+
+    val kv = pointImage(sc)
+    val kvsBefore = kv.map(_._2).stats
+
+    val nkv = kv.sapply(makeGaussian(1.0))
+    val kvsAfter = nkv.getBaseImg().map(_._2).stats
+
+    println("Before:"+kvsBefore)
+    println("After:"+kvsAfter)
+    kvsBefore.max.toDouble shouldBe (1)
+
+    kvsAfter.max.toDouble shouldBe  (0.375+-1e-3)
 
   }
 }

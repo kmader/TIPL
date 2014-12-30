@@ -2,7 +2,7 @@ package spark.images
 
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import tipl.spark.KVImg
+import tipl.spark.{DSImg, KVImg}
 import tipl.tools.BaseTIPLPluginIn
 import tipl.util.{TImgTools, D3int}
 import tipl.util.TIPLOps._
@@ -53,7 +53,8 @@ object VoxOps {
 
     override def process(curvox: (D3int, A), voxs: Seq[(D3int, A)]): Seq[(D3int, Double)] = {
       val kernel = kernelFactory()
-      for(cPt <- voxs) kernel.addpt(curvox._1.gx,cPt._1.gx,
+      for(cPt <- voxs) kernel.addpt(
+        curvox._1.gx,cPt._1.gx,
         curvox._1.gy,cPt._1.gy,
         curvox._1.gz,cPt._1.gz,tm.toDouble(cPt._2))
       Seq((curvox._1,kernel.value()))
@@ -83,10 +84,11 @@ object VoxOps {
   implicit class rddVoxOpImp[A](inRdd: RDD[(D3int,A)])(implicit val atag: ClassTag[A]) extends
   canApplyVoxOp[A] {
     def getBaseImg() = inRdd
-    override def apply[B](vo: VoxOp[A, B]): rddVoxOpImp[B] = vo match {
+    override def apply[B](vo: VoxOp[A, B]): rddVoxOpImp[B] =
+      vo match {
       case nvo: neighborhoodVoxOp[A,B] => nvapply(nvo)
       case _ => sapply(vo)
-    }
+      }
     def nvapply[B](nvo: neighborhoodVoxOp[A, B]): rddVoxOpImp[B] = {
       val bImg = inRdd.flatMap(
         curVox =>
@@ -130,10 +132,25 @@ object VoxOps {
 
   implicit class kvImgVoxOpImp[A](ikv: KVImg[A])(implicit am: ClassTag[A]) extends
   rddVoxOpImp[A](ikv.getBaseImg()) {
-    override def apply[B](vo: VoxOp[A, B]): kvImgVoxOpImp[B] = {
+    def apply[B](vo: VoxOp[A, B],outType: Int = TImgTools.IMAGETYPE_UNKNOWN):
+    kvImgVoxOpImp[B] = {
       val newRdd = super.apply(vo).getBaseImg()
-      new kvImgVoxOpImp[B](KVImg.fromRDD(ikv,TImgTools.IMAGETYPE_UNKNOWN,newRdd)(vo.btag))(vo.btag)
+      new kvImgVoxOpImp[B](KVImg.fromRDD(ikv,outType,newRdd)(vo.btag))(vo.btag)
     }
+  }
+
+  implicit class dsImgVoxOpImp[A](ids: DSImg[A])(implicit am: ClassTag[A]) extends Serializable {
+
+    def apply[B](vo: VoxOp[A, B],outType: Int = TImgTools.IMAGETYPE_UNKNOWN)= vo match {
+      case nvo: neighborhoodVoxOp[A,B] => nvapply(nvo)
+      case _ => kvapply(DSImg.toKVImg(ids),vo,ids.getImageType)
+
+    }
+    def kvapply[B](ikv: KVImg[A],vo: VoxOp[A,B], imgType: Int) =
+      ikv(vo,imgType)
+
+    def nvapply[B](nvo: neighborhoodVoxOp[A,B]): dsImgVoxOpImp[B] = ??? //TODO implement slice
+    // based method
   }
 
 

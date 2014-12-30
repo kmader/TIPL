@@ -256,6 +256,23 @@ object DSImg {
         + posVal.x - pos.x)
   }
 
+  /**
+   * Create a new KVImg from the given DSImg
+   * @param inImg the image to be converted
+   * @param tm classtag for the type
+   * @tparam T the type of the values (Array[T] for the dsimg slices)
+   * @return an KVImg
+   */
+  def toKVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](inImg: DSImg[T])
+                                                                      (implicit tm: ClassTag[T]):
+  KVImg[T] = {
+
+    val imgType = inImg.getImageType
+    new KVImg(inImg, imgType,
+      DTImgOps.DTrddToKVrdd(inImg.getBaseImg, imgType, inImg.getPos, inImg.getDim)
+    )
+  }
+
   def fromKVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](inImg: KVImg[T])
                                                                         (implicit T: ClassTag[T],
                                                                           num: Numeric[T]):
