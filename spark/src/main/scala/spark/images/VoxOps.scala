@@ -4,7 +4,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import tipl.spark.{DSImg, KVImg}
 import tipl.tools.BaseTIPLPluginIn
-import tipl.util.{TImgTools, D3int}
+import tipl.util.{TImgSlice, TImgTools, D3int}
 import tipl.util.TIPLOps._
 
 import scala.reflect.ClassTag
@@ -58,6 +58,18 @@ object VoxOps {
     }
   }
 
+
+  /**
+   * Single input single output array voxel operation
+   * This makes computing outputs on slice based data significantly easier
+   * @tparam A the type of the input
+   * @tparam B the type of the output
+   */
+  trait sisoArrayVoxOp[A,B] extends ArrayVoxOp[A,B] {
+    def sprocess(curvox: (D3int,A),voxs: Array[A]): B
+    override def process(curvox: (D3int,A),voxs: Array[A]): Seq[(D3int,B)] =
+      Seq((curvox._1,sprocess(curvox,voxs)))
+  }
   trait neighborhoodArrayVoxOp[A,B] extends ArrayVoxOp[A,B] {
     def neighborSize: D3int
 
@@ -201,11 +213,15 @@ object VoxOps {
   }
 
   trait canApplyArrayVoxOp[A] extends Serializable {
-    def apply[B](vo: ArrayVoxOp[A,B], paddingValue: A): canApplyArrayVoxOp[B]
+    def aapply[B](vo: ArrayVoxOp[A,B], paddingValue: A): canApplyArrayVoxOp[B]
+  }
+
+  trait canApplySISOArrayVoxOp[A] extends Serializable {
+    def aapply[B](vo: sisoArrayVoxOp[A,B], paddingValue: A): canApplySISOArrayVoxOp[B]
   }
 
   class listArrVoxOpImp[A](inList: Seq[(D3int,A)]) extends canApplyArrayVoxOp[A] {
-    override def apply[B](avo: ArrayVoxOp[A,B], paddingValue: A): listArrVoxOpImp[B] = {
+    override def aapply[B](avo: ArrayVoxOp[A,B], paddingValue: A): listArrVoxOpImp[B] = {
       val outVox = avo.neededVoxels()
       val pointMap = inList.toMap
       val oList = for(cVox <- inList;
@@ -215,8 +231,8 @@ object VoxOps {
     }
   }
 
-  class rddArrVoxOpImp[A](inRdd: RDD[(D3int,A)]) extends canApplyArrayVoxOp[A] {
-    override def apply[B](avo: ArrayVoxOp[A,B], paddingValue: A): rddArrVoxOpImp[B] = {
+  implicit class rddArrVoxOpImp[A](inRdd: RDD[(D3int,A)]) extends canApplyArrayVoxOp[A] {
+    override def aapply[B](avo: ArrayVoxOp[A,B], paddingValue: A): rddArrVoxOpImp[B] = {
       val outVox = avo.neededVoxels()
       val bImg = inRdd.flatMap(
         curVox =>
@@ -241,6 +257,56 @@ object VoxOps {
       }
 
       new rddArrVoxOpImp[B](fImg)
+    }
+
+    implicit class rddArrSliceOpImp[A](inRdd: RDD[(D3int,TImgSlice[Array[A]])])
+      extends canApplySISOArrayVoxOp[A] {
+      override def aapply[B](vo: sisoArrayVoxOp[A, B], paddingValue: A): rddArrSliceOpImp[B] = {
+        val nv = vo.neededVoxels()
+        implicit val atag: ClassTag[A] = vo.atag
+        implicit val btag: ClassTag[B] = vo.btag
+        val nslices = nv.map(_.gz).distinct
+        val gSlices = inRdd.flatMap {
+          inKV =>
+            val cpt = inKV._1
+            for(z <- nslices) yield (
+              new D3int(cpt.gx,cpt.gy,cpt.gz+z),
+              (cpt,inKV._2)
+              )
+        }.groupByKey
+
+        val outImage = gSlices.map{
+          inKV =>
+            val (pos,pts) = inKV
+            val coreSlice = pts.filter(_._1.isEqual(pos)).head._2
+            val coreSliceData = coreSlice.get
+            val sliceMap = pts.map(cslice => (cslice._1.gz-pos.gz,cslice._2.get())).toMap
+            val dim = coreSlice.getDim()
+
+            val outSlice = new Array[B](dim.gx*dim.gy)
+            var i=0
+            // for every voxel in the output slice
+            for(
+              iy<- pos.gy to pos.gy+dim.gy;
+              ix<- pos.gx to pos.gx+dim.gx) {
+              val cdex = (iy - pos.gy) * dim.gx + (ix - pos.gx)
+              val arrVals = nv.map {
+                relpos =>
+                  val slicedex = (iy + relpos.gy - pos.gy) * dim.gx + (ix + relpos.gx - pos.gx)
+                  sliceMap.get(relpos.gz).
+                    map(_.get(slicedex)).
+                    getOrElse(Some(paddingValue)).
+                    getOrElse(paddingValue)
+              }
+
+              outSlice(i)=vo.sprocess((pos,coreSliceData(cdex)),arrVals)
+
+              i+=1
+            }
+            (pos,new TImgSlice(outSlice,coreSlice))
+        }
+        new rddArrSliceOpImp[B](outImage)
+      }
     }
 
 

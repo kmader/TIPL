@@ -89,6 +89,7 @@ class VoxOpsTest extends FunSuite with LocalSparkContext {
       val radius = rad
     }
   }
+
   test("Basic Filter") {
     sc = getSpark("KVImgOps")
 
@@ -116,7 +117,9 @@ class VoxOpsTest extends FunSuite with LocalSparkContext {
     println("After:"+kvsAfter)
     kvsBefore.max.toDouble shouldBe (1)
 
-    kvsAfter.max.toDouble shouldBe  (0.375+-1e-3)
+    kvsAfter.max.toDouble shouldBe  (0.39+-1e-3)
 
   }
+
+
 }
