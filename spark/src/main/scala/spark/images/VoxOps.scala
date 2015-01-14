@@ -78,7 +78,7 @@ object VoxOps {
       val lseq = for(z<- -neighborSize.gz to neighborSize.gz;
                      y<- -neighborSize.gy to neighborSize.gy;
                      x<- -neighborSize.gx  to neighborSize.gx;
-                     if isInside(new D3int(0), new D3int(x,y,z)))
+                     if isInside(D3int.zero, new D3int(x,y,z)))
       yield new D3int(x,y,z)
       lseq.toArray
     }

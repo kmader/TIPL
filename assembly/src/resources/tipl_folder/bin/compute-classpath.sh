@@ -106,6 +106,14 @@ if [ -n "$datanucleus_jars" ]; then
   fi
 fi
 
+# add fiji jars to the classpath (if they are present in the library)
+export FIJI_HOME="$FWDIR/assembly/lib/Fiji.app/"
+fiji_jars=$(find "$FIJI_HOME" 2>/dev/null | grep ".*\\.jar")
+fiji_jars=$(echo "$fiji_jars" | tr "\n" : | sed s/:$//g)
+if [ -n "$fiji_jars" ]; then
+    CLASSPATH="$CLASSPATH:$fiji_jars"
+fi
+
 # Add test classes if we're running from SBT or Maven with SPARK_TESTING set to 1
 if [[ $SPARK_TESTING == 1 ]]; then
   CLASSPATH="$CLASSPATH:$FWDIR/core/target/scala-$SCALA_VERSION/test-classes"

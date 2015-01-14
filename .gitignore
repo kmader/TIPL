@@ -1,18 +1,16 @@
 /.apt_generated
 .DS_Store
-build/TIPL_basic.jar
-build/TIPL_core.jar
-build/TIPL_scala.jar
-build/TIPL_simple.jar
-build/TIPL.jar
+*.jar
 .idea
 .settings
 .classpath
 .project
 *.py
+*.pyc
 *.csv
 *.txt
 *.xml
 *.exe
 README
+target
 

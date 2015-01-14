@@ -30,6 +30,7 @@ object FilterImpl {
       neighborSize.gy,
       neighborSize.gz)
   }
+
 }
 
 trait FilterImpl extends Serializable {
