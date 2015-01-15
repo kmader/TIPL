@@ -9,12 +9,223 @@ import tipl.settings.FilterSettings
 import tipl.spark.SparkGlobal
 import tipl.util.{ArgumentList, ArgumentParser, TIPLGlobal, TypedPath}
 
-import scala.collection.concurrent.Map
+import scala.collection.Map
+import scala.collection.concurrent.TrieMap
+import scala.collection.mutable.{Map => MMap}
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future, future}
 import scala.util.{Failure, Success}
 
 object ParameterSweep {
+
+  object ImageJSweep extends Serializable {
+    import scala.util.control.Exception.allCatch
+    private def isLongNumber(s: String): Boolean = (allCatch opt s.toLong).isDefined
+    private def isDoubleNumber(s: String): Boolean = (allCatch opt s.toDouble).isDefined
+    private def parseArgs(argList: String) = {
+      argList.split("-").map(_.trim).filter(_.length > 0).map {
+        inArg =>
+          val argP = inArg.split("=").zipWithIndex.map(_.swap).toMap
+          (argP.getOrElse(0, "ERROR"), argP.getOrElse(1, "true"))
+      }.toMap
+    }
+
+    /**
+     *
+     * @param inSteps the steps of macro arguments
+     * @param steps how many steps between start and end
+     * @param cartesian cross argument list (steps**arguments instead of steps)
+     * @param distinct keep only distinct elements in the arguments (allows
+     *                                  interpolation for 2+ steps if there are only 2 unique values
+     * @return
+     */
+    def ImageJMacroStepsToSweep(inSteps: Array[String],
+                                 steps: Int = 5,
+                                 cartesian: Boolean = true,
+                                 distinct: Boolean = true): Array[String] = {
+      val pa = macroParseArgs(inSteps)
+      sweepArgs(pa,steps,cartesian,distinct)
+    }
+
+    def SweepToPath(sweepSteps: Array[String],
+                    newDirectories: Boolean = true,
+                     removeStatic: Boolean = true): Array[String] = {
+      val sweepMapParsed = sweepSteps.map(parseArgs(_))
+      val sweepMap = sweepMapParsed.zipWithIndex.
+        foldLeft(MMap.empty[String,Array[String]]) {
+        case (fullMap, (newMap,newInd)) =>
+          newMap.foreach {
+            case (cKey, cVal) =>
+              val oMap = fullMap.getOrElse(cKey,Array.fill(sweepSteps.length)("false"))
+              oMap(newInd)=cVal
+              fullMap.put(cKey,oMap)
+          }
+          fullMap
+      }
+      println(sweepMap)
+
+      val filteredMap = if (removeStatic) {
+        val keepKeys = sweepMap.filterNot{
+          case(key,kmap) =>
+            val firstValue = kmap.head
+            kmap.forall(_.equalsIgnoreCase(firstValue))
+        }.keySet
+        println(keepKeys)
+        sweepMap.filterKeys(keepKeys.contains(_))
+      } else {
+        sweepMap
+      }
+      val valSep = "_"
+      val argSep = if(newDirectories) {
+        File.separator
+      } else {
+        "__"
+      }
+      filteredMap.map{
+        case (key,vallist) => vallist.map(key + valSep + _).toList
+      }.transpose.
+      map(_.reduce(_ + argSep + _)).toArray
+    }
+
+    /**
+     * A parameter sweep based on 2 sets of arguments
+     * @param startArgs the starting set of macro arguments
+     * @param endArgs the final set of macro arguements
+     *                @note if the value of an argument is an integer 1 (vs 1.0) it will be
+     *                      treated as if this value MUST be an integer)
+     * @return a parse list of arguments
+     */
+    protected[blocks] def macroParseArgs(startArgs: String, endArgs: String):
+      Map[String, Array[String]] =
+      macroParseArgs(Array(startArgs, endArgs))
+
+    protected[blocks] def macroParseArgs(inArgs: Array[String]): Map[String, Array[String]] = {
+      val argMap = inArgs.map(parseArgs(_))
+
+      val allKeys = argMap.map(_.keySet).reduce(_ ++ _)
+      val joinArgs = MMap[String, Array[String]]()
+
+      argMap.zipWithIndex.foreach {
+        case (cMap,cInd) =>
+          cMap.foreach {
+            cKey =>
+              val oldVal = joinArgs.getOrElse(cKey._1, Array.fill(argMap.length)("false"))
+              oldVal(cInd)=cKey._2
+              joinArgs(cKey._1)=oldVal
+          }
+      }
+      joinArgs
+    }
+
+    private def createArgStr(key: String, arg: String) = {
+      arg match {
+        case "true" => "-"+key
+        case "false" => ""
+        case _ => "-"+key+"="+arg
+      }
+    }
+
+    /**
+     *
+     * @param parseArgs the parse arguments from macroParseArgs
+     * @param steps how many steps between start and end
+     * @param cartesian cross argument list (steps**arguments instead of steps)
+     *                  @param distinct keep only distinct elements in the arguments (allows
+     *                                  interpolation for 2+ steps if there are only 2 unique values
+     * @return a list of macro arguments to use
+     */
+    protected[blocks] def sweepArgs(parseArgs: Map[String,Array[String]],steps: Int = 5,
+                  cartesian: Boolean=true, distinct: Boolean=true):
+    Array[String] = {
+      val varArgs = parseArgs.map{
+        case(key,range) =>
+          (key,
+            if (range.forall(_.equalsIgnoreCase(range.head))) {
+              Array(range.head)
+            } else {
+              if(distinct) {
+                range.distinct
+              } else {
+                range
+              }
+            })
+      }
+
+      val stepList = (0 until steps).map(_/(steps-1.0))
+      val arrArgs = varArgs.map{
+        case(key,range) =>
+          (key,
+            range.head match {
+              case intStr if isLongNumber(intStr) & (range.length==2) =>
+              // if it is a long, treat it as if it has to be an integer
+                val intRng = (range.head.toFloat,range.last.toFloat)
+                stepList.map(_*(intRng._2-intRng._1) + intRng._1).
+                  map(_.toInt).distinct.map(_.toString).toArray
+              case floatStr if isDoubleNumber(floatStr) & (range.length==2) =>
+                val fltRng = (range.head.toFloat,range.last.toFloat)
+                stepList.map(_*(fltRng._2-fltRng._1) + fltRng._1).
+                  map(_.toString).toArray
+              case _ =>
+                range
+            }
+            )
+      }
+      val exArrArgs = if(cartesian || steps==2) {
+        arrArgs
+      } else {
+        // if it is not cartesian all of the two length arguments must be interpolated to length
+        // steps
+        arrArgs.map{
+          case(key,rangeVals) =>
+            (key,
+              rangeVals match {
+                case inArr if (inArr.length==steps) =>
+                  inArr
+                case inArr if (inArr.length==2) =>
+                  val bList = (Array.fill(steps/2)(inArr(0)) ++ Array.fill(steps/2)(inArr(1)))
+                  (steps % 2) match {
+                    case 0 =>
+                      bList.toArray
+                    case 1 =>
+                      (bList ++ Array(inArr(1))).toArray
+                  }
+                case inArr =>
+                  println("The array is neither length 2 nor steps, will be padded")
+                  val nArr = Array.fill((steps-inArr.length)/2)(inArr.head) ++ inArr
+                  nArr ++ Array.fill((steps-nArr.length))(inArr.last)
+
+              })
+        }
+      }
+
+      val argStr = exArrArgs.map{
+        case(key,rangeVals) =>
+          rangeVals.map(arg => createArgStr(key,arg))
+      }
+
+      val allVarArgs = if(cartesian) {
+        argStr.foldLeft(Seq.empty[String]){
+          (inx,iny) =>
+            (inx,iny) match {
+              case (x,y) if (x.size>0) & (y.size>0) => for(ax <- x; ay <- y) yield ax+" "+ay
+              case (x,y) if (x.size>0) => for(ax <- x) yield ax
+              case (x,y) if (y.size>0) => for(ay <- y) yield ay
+              case (x,y) => x
+            }
+        }.toArray
+      } else {
+        argStr.reduce{
+          (aArgs, bArgs) =>
+            aArgs.zip(bArgs).map{ case(aStr,bStr) => aStr+" "+bStr}
+        }.toArray
+      }
+
+      allVarArgs.
+        map(_.replaceAll("\\s+", " ").trim()).toArray
+    }
+  }
+
+
   case class NamedParameter(name: String, parameter: String) {
     def +(nm: NamedParameter): NamedParameter =
       NamedParameter(name+"_"+nm.name,parameter+" "+nm.parameter)
@@ -38,7 +249,7 @@ object ParameterSweep {
     }
 
     def logRange(name: String,parameter: String,min: Double, max: Double,
-                    steps: Int): Array[NamedParameter] = {
+                 steps: Int): Array[NamedParameter] = {
       val lmin = Math.log10(min)
       val lmax = Math.log10(max)
       fixedRange(name,parameter,(0 until steps).map(i => i*(lmax-lmin)/steps+lmin).map(Math.pow
@@ -98,17 +309,18 @@ object ParameterSweep {
     }
   }
 
-  val baosMap: Map[String, ByteArrayOutputStream] =
-    new scala.collection.concurrent.TrieMap[String, ByteArrayOutputStream]()
-  val psMap: Map[String, PrintStream] =
-    new scala.collection.concurrent.TrieMap[String, PrintStream]()
+  val baosMap: TrieMap[String, ByteArrayOutputStream] =
+    new TrieMap[String, ByteArrayOutputStream]()
+  val psMap: TrieMap[String, PrintStream] =
+    new TrieMap[String, PrintStream]()
 
   /**
-    * A nasty hack to to reroute output streams based on thread names
-    */
+   * A nasty hack to to reroute output streams based on thread names
+   */
   class ThreadSeperatedOutputStream extends PrintStream(new ByteArrayOutputStream()) {
     override def println(line: String): Unit = {
       val callerName = Thread.currentThread().getName
+
       ParameterSweep.baosMap.putIfAbsent(callerName, new ByteArrayOutputStream())
       ParameterSweep.psMap.putIfAbsent(callerName, new PrintStream(baosMap.get(callerName).head))
       psMap.get(callerName).head.println(line)
@@ -116,16 +328,16 @@ object ParameterSweep {
   }
 
   /**
-    * A class which automatically changes path names to the current analysis being run when writing
-    */
+   * A class which automatically changes path names to the current analysis being run when writing
+   */
   class ThreadSeperatedArgumentParser(customExceptions: Seq[String] = Seq[String]())
     extends TIPLGlobal.ArgumentParserFactory {
     lazy val exceptionList = customExceptions ++ Seq[String]("@localdir", "sge:tiplpath",
       "sge:javapath", "sge:tiplbeta", "sge:sparkpath", "sge:qsubpath", "@sparklocal")
 
     /**
-      * Change the path of the type
-      */
+     * Change the path of the type
+     */
     def fixType(argName: String, path: TypedPath, dirName: String) = {
       (argName, path) match {
         case (_, p: TypedPath) if (p.getPath().length < 1 || p.getPath().contains(dirName)) => p
@@ -154,7 +366,7 @@ object ParameterSweep {
       new ArgumentParser.CustomArgumentParser(args) {
 
         override def getOptionPath(argName: String, defaultPath: TypedPath,
-          helpText: String): TypedPath = {
+                                   helpText: String): TypedPath = {
           val stdType = super.getOptionPath(argName, defaultPath, helpText)
           val newPath = fixType(argName, stdType, Thread.currentThread().getName())
           val newArg = new ArgumentList.TypedArgument[TypedPath](argName,
@@ -164,7 +376,7 @@ object ParameterSweep {
         }
 
         override def getOptionPath(argName: String, defaultPath: String,
-          helpText: String): TypedPath = {
+                                   helpText: String): TypedPath = {
           val stdType = super.getOptionPath(argName, defaultPath, helpText)
           val newPath = fixType(argName, stdType, Thread.currentThread().getName())
           val newArg = new ArgumentList.TypedArgument[TypedPath](argName,
@@ -185,8 +397,8 @@ object ParameterSweep {
     val LinStep, IntLinStep, LogStep, SqrtStep = Value
 
     /**
-      * Get a string representation of the step (parseInt does not like decimals)
-      */
+     * Get a string representation of the step (parseInt does not like decimals)
+     */
     def getStr(curParm: vargVar, v: Double): String = {
       curParm.stepType match {
         case IntLinStep => "%d".format(v.intValue())
@@ -195,8 +407,8 @@ object ParameterSweep {
     }
 
     /**
-      * Get the nth step using whatever approach has been selected
-      */
+     * Get the nth step using whatever approach has been selected
+     */
     def getStep(curParm: vargVar, i: Int): Double = {
       curParm.stepType match {
         case LinStep =>
@@ -213,7 +425,7 @@ object ParameterSweep {
   }
 
   case class vargVar(varName: String, varMin: Double, varMax: Double, varSteps: Int,
-    stepType: StepType.StepType)
+                     stepType: StepType.StepType)
 
   def processArgs(p: ArgumentParser): Seq[vargVar] = {
     val vargCount = p.getOptionInt(prefix+"nargs", 1, "The number of arguments to vary", 0,
@@ -235,7 +447,7 @@ object ParameterSweep {
   }
 
   def runArguments(methodToCall: Array[String] => Unit, argString: String,
-    parameters: Seq[vargVar], isNested: Boolean, appendArgString: String = "")
+                   parameters: Seq[vargVar], isNested: Boolean, appendArgString: String = "")
                   (implicit ec: ExecutionContext): Seq[(String, Future[String])] = {
     val curParm = parameters.head
     var runResults: Seq[(String, Future[String])] = Seq()
@@ -287,11 +499,11 @@ object ParameterSweep {
   }
 
   def runSweep(methodToCall: Array[String] => Unit,
-    argsToProcess: Seq[vargVar],
-    newArguments: ArgumentParser,
-    inputArguments: Array[String],
-    baseLogName: TypedPath,
-    waitDuration: Duration, isNested: Boolean, coreCount: Int) = {
+               argsToProcess: Seq[vargVar],
+               newArguments: ArgumentParser,
+               inputArguments: Array[String],
+               baseLogName: TypedPath,
+               waitDuration: Duration, isNested: Boolean, coreCount: Int) = {
     // Start of the execution code
 
     val originalPS = new PrintStream(System.out)

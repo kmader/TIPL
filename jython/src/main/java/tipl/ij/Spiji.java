@@ -79,6 +79,9 @@ import tipl.util.TImgTools;
 
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -644,7 +647,6 @@ public class Spiji {
      * @return an N x M array representing the input image
      */
     public static Object get(ImagePlus imageplus) {
-        IJ.
         if (imageplus == null)
             return null;
         int width = imageplus.getWidth();
@@ -1213,6 +1215,47 @@ public class Spiji {
      */
     public static void run(String command) {
         IJ.run(command);
+    }
+
+    public static void runMacro(String macroData, String args) {
+        IJ.runMacro(macroData,args);
+    }
+
+    /**
+     * Get the list of available commands in ImageJ/FIJI
+     * @return
+     */
+    public static Set<String> getCommandList() {
+        return ij.Menus.getCommands().keySet();
+    }
+
+    /**
+     * Get the classname of a specific command
+     * @param commandName
+     * @return an array with the first element being the classname the second being the default
+     * arguments
+     */
+    public static String[] getCommandClassArgs(String commandName) {
+        final String className =  (String) ij.Menus.getCommands().get(commandName);
+        if(className != null) {
+            String arg = "";
+            if (className.endsWith("\")")) {
+                int argStart = className.lastIndexOf("(\"");
+                if (argStart > 0) {
+                    return new String[] {
+                            className.substring(0, argStart),
+                            className.substring(argStart + 2, className.length() - 2)
+                    };
+                }
+            }
+            return new String[] {className,arg};
+        }
+        return new String[] {};
+    }
+
+    public static Object runCommandAsPlugin(String commandName, String args) {
+        String[] cmdClassArg = getCommandClassArgs(commandName);
+        return IJ.runPlugIn(cmdClassArg[0],cmdClassArg[1]+args);
     }
 
     /**
