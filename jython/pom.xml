@@ -21,6 +21,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_${scala.binary.version}</artifactId>
+            <version>2.2.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>${scala.version}</version>
@@ -43,6 +49,11 @@
         <dependency> <!-- needed for show3d method in scops -->
             <groupId>quant.tipl</groupId>
             <artifactId>tipl-volviewer</artifactId>
+            <version>${tipl.version}</version>
+        </dependency>
+        <dependency> <!-- needed for parametersweep  -->
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-integration</artifactId>
             <version>${tipl.version}</version>
         </dependency>
         <dependency>

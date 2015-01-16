@@ -169,9 +169,11 @@ object DSImg {
     override def numPartitions: Int = Math.min(partitions,maxVal-minVal)
     override def getPartition(key: Any): Int = {
       val sliceId = key match {
-        case slice: D3int => slice.gz()
-        case slice: Int => slice
-        case slice: Number => slice.doubleValue()
+        case nKey: T => getIndexFromKey(nKey)
+        case iKey: Int => iKey
+        case nKey: Number => nKey.intValue()
+        case _ => throw new IllegalArgumentException("This kind of key is not handled by the " +
+          "parititoner : "+this.getClass().getName()+" = "+key)
       }
       if (sliceId>=minVal & sliceId<=maxVal) {
         Math.floor(((sliceId - minVal)) / (maxVal - minVal + 1) * numPartitions).toInt
@@ -184,6 +186,7 @@ object DSImg {
      * @return
      */
     def getAllKeys(): Array[T]
+    def getIndexFromKey(key: T): Int
   }
 
   case class D3IntSlicePartitioner(pos: D3int, dim: D3int) extends SlicePartitioner(pos.z,pos
@@ -194,12 +197,36 @@ object DSImg {
         D3int(pos.x,
       pos.y,ipos))
       .toArray
+
+    override def getIndexFromKey(key: T): Int = key.gz()
+  }
+
+  case class NamedSlicePartitioner[A](nameList: Array[A],partitions: Int) extends
+  SlicePartitioner(0,nameList.size,partitions) {
+    /**
+     * A partition for each item
+     */
+    def this(nameList: Array[A]) = this(nameList,nameList.length)
+    override type T = A
+    lazy val nameLookup = nameList.zipWithIndex.toMap
+    override def getIndexFromKey(key: T): Int = nameLookup.get(key) match {
+      case Some(ind) => ind
+      case None => throw new IllegalArgumentException("Item: "+ key+ " is not part of the current" +
+        " partitioner "+this+" = "+nameList)
+    }
+    /**
+     * A list of all the keys
+     * @return
+     */
+    override def getAllKeys(): Array[T] = nameList
   }
 
   case class IntSlicePartitioner(minVal: Int, maxVal: Int) extends SlicePartitioner(minVal,maxVal) {
     type T = Int
     def getAllKeys(): Array[Int] = (for(i <- minVal to maxVal) yield i)
       .toArray
+
+    override def getIndexFromKey(key: T): Int = key
   }
 
   var futureTImgMigrate = false

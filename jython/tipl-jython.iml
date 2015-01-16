@@ -15,6 +15,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.10" level="project" />
     <orderEntry type="library" name="Maven: org.hamcrest:hamcrest-core:1.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.scalatest:scalatest_2.10:2.2.1" level="project" />
+    <orderEntry type="library" name="Maven: org.scala-lang:scala-reflect:2.10.4" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.10.4" level="project" />
     <orderEntry type="library" name="Maven: org.apache.spark:spark-core_2.10:1.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-client:1.0.4" level="project" />
@@ -151,6 +153,7 @@
     <orderEntry type="library" name="Maven: com.miglayout:miglayout-core:4.2" level="project" />
     <orderEntry type="library" name="Maven: com.miglayout:miglayout-swing:4.2" level="project" />
     <orderEntry type="module" module-name="tipl-volviewer" />
+    <orderEntry type="module" module-name="tipl-integration" />
     <orderEntry type="library" name="Maven: org.python:jython:2.7-b3" level="project" />
     <orderEntry type="library" name="Maven: net.imagej:ij:1.48r" level="project" />
     <orderEntry type="module-library">
@@ -182,6 +185,5 @@
     </orderEntry>
     <orderEntry type="library" name="Maven: com.typesafe.genjavadoc:genjavadoc-plugin_2.10.4:0.8" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:scala-compiler:2.10.4" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang:scala-reflect:2.10.4" level="project" />
   </component>
 </module>

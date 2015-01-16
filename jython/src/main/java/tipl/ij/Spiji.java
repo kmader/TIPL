@@ -91,7 +91,7 @@ import java.util.StringTokenizer;
 /**
  * Matlab to ImageJ interface.
  *
- * @version 1.3.9 (17 March 2014).
+ * @version 2.0 (15 January 2015).
  *
  * @author <ul type="square">
  *         <li>Daniel Sage, Biomedical Imaging Group, EPFL, Switzerland.</li>
@@ -133,7 +133,7 @@ import java.util.StringTokenizer;
 public class Spiji {
 
     public static ImageJ imagej;
-    private static final String version = "1.3.9";
+    private static final String version = "2.0";
     private static final int CAL = 1;
     private static final int NOCAL = 0;
     private static boolean verbose = true;
@@ -192,8 +192,8 @@ public class Spiji {
     /**
      * Starts new instance of ImageJ from Matlab.
      */
-    public static void start() {
-        start(true);
+    public static void start(boolean visible) {
+        start(true,visible);
     }
 
     /**
@@ -201,10 +201,11 @@ public class Spiji {
      *
      * @param v
      *            indicate the verbose mode
+     *            @param visible show imagej
      */
-    public static void start(boolean v) {
+    public static void start(boolean v, boolean visible) {
         verbose = v;
-        launch(null);
+        launch(null,visible);
     }
 
     /**
@@ -214,12 +215,14 @@ public class Spiji {
      * @param IJpath
      *            String that points to the folder containing ij.jar and plugins
      *            and macros folder
+     *            @param visible show imagej
      */
-    public static void start(String IJpath) {
+    public static void start(String IJpath, boolean visible) {
         System.setProperty("plugins.dir", IJpath);
+        System.setProperty("ij.dir", IJpath);
         verbose = true;
         setupExt(IJpath);
-        launch(null);
+        launch(null,visible);
     }
 
     /**
@@ -237,14 +240,16 @@ public class Spiji {
      * @param IJpath
      *            String that points to the folder containing ij.jar and plugins
      *            and macros folder
+     *            @param visible show fiji (or not)
      */
-    public static void start(String homeDir, String IJpath, boolean v) {
+    public static void start(String homeDir, String IJpath, boolean v, boolean visible) {
         System.setProperty("plugins.dir", IJpath);
+        System.setProperty("ij.dir", IJpath);
         System.setProperty("user.dir", homeDir);
         System.setProperty("user.home", homeDir);
         verbose = v;
         setupExt(IJpath);
-        launch(null);
+        launch(null,visible);
     }
 
     /**
@@ -271,16 +276,16 @@ public class Spiji {
      *            String that points to the folder containing ij.jar and plugins
      *            and macros folder
      */
-    public static void start(String args, String IJpath) {
+    public static void start(String args, String IJpath, boolean visible) {
         setupExt(IJpath);
         verbose = true;
-        launch(args.split("\\s"));
+        launch(args.split("\\s"),visible);
     }
 
     /**
      * Starts new instance of ImageJ from Matlab using command-line arguments
      */
-    private static void launch(String myargs[]) {
+    private static synchronized void launch(String myargs[], boolean visible) {
         if (verbose) {
             System.out.println("--------------------------------------------------------------");
             System.out.println("MIJ " + version + ": Matlab to ImageJ Interface");
@@ -306,7 +311,8 @@ public class Spiji {
         // ///////////////////////////////
         // /////These are the important lines
         // //////////////////////////////////
-        imagej = new ImageJ();
+        if(visible) imagej = new ImageJ();
+        else imagej = new ImageJ(2);
         if (myargs != null) {
             if (verbose) {
                 System.out.println("ImageJ> Arguments:");
@@ -340,20 +346,6 @@ public class Spiji {
             System.out.println("--------------------------------------------------------------");
         }
         IJ.getInstance().setTitle("ImageJ [MIJ " + version + "]");
-    }
-
-    /**
-     * Starts new instance of ImageJ.
-     *
-     * @param args
-     *            Start up arguments for MIJ
-     */
-    public static void main(String[] args) {
-        try {
-            Spiji.start(args[0], args[1]);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            IJ.log(Spiji.help());
-        }
     }
 
     /**
@@ -1436,7 +1428,7 @@ public class Spiji {
             IOException {
         //TODO make a version of this compatible with the latest version of ImageJ2 to read in
         // files directly from the datastream since this is at the very least inefficient
-        File outputFile = File.createTempFile("ijtmp",suffix);
+        File outputFile = File.createTempFile("ijtmpin",suffix);
         return loadImageFromInputStream(imgStream,outputFile);
     }
 
@@ -1461,6 +1453,28 @@ public class Spiji {
         OutputStream fileStream = new FileOutputStream(outputFile);
         org.apache.commons.io.IOUtils.copy(imgStream,fileStream);
         return loadImageFromPath(outputFile.getAbsolutePath());
+    }
+
+    /**
+     * A function to save an image into a byte array
+     * @param curImage the imageplus object to save
+     * @param suffix the suffix so the correct writer is used
+     * @return a bytearray with the image data
+     * @throws IOException if there isn't enough space on the local volume for the image
+     */
+    public static byte[] saveImageAsByteArray(ImagePlus curImage, String suffix) throws
+            IOException {
+        //TODO make a version of this compatible with the latest version of ImageJ2 to write
+        // files directly to a datastream
+        File outputFile = File.createTempFile("ijtmpout",suffix);
+        IJ.save(curImage,outputFile.getAbsolutePath());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        org.apache.commons.io.IOUtils.copy(new FileInputStream(outputFile),baos);
+        return baos.toByteArray();
+    }
+
+    public static void saveImage(ImagePlus curImage, String path) throws IOException {
+        IJ.save(curImage,path);
     }
 }
 
