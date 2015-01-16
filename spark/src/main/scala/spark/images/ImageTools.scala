@@ -107,6 +107,7 @@ object ImageTools extends Serializable {
         (kv._1, outArr)
       }
     )
+    fvRdd
   }
 
   /**

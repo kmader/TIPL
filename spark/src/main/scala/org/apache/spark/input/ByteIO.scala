@@ -72,6 +72,7 @@ abstract class BinaryRecordReader[T](
 
   override def getCurrentValue = value
 
+
   override def nextKeyValue = {
     if (!processed) {
       val fileIn = fs.open(path)

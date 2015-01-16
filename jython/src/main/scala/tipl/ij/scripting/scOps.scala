@@ -1,16 +1,16 @@
 package tipl.ij.scripting
 
-import ij.plugin.PlugIn
-import ij.plugin.filter.PlugInFilter
-import ij.{WindowManager, ImagePlus, ImageStack, IJ}
-import org.apache.spark.rdd.RDD
+import ij.{IJ, ImagePlus, ImageStack}
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat => NewFileInputFormat}
+import org.apache.hadoop.mapreduce.{InputFormat => NewInputFormat, Job => NewHadoopJob}
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.{OldBinaryFileRDD, RDD}
 import tipl.formats.TImgRO
-import tipl.ij.{ImageStackToTImg, Spiji}
+import tipl.ij.Spiji
+import tipl.ij.scripting.ImagePlusIO.{ImagePlusFileInputFormat, PortableImagePlus}
 import tipl.util.TImgSlice.TImgSliceAsTImg
-import tipl.util.{D3int, TImgTools, TImgSlice}
-import java.io._
-
-
+import tipl.util.{D3int, TImgSlice, TImgTools}
 
 class rddImage extends ImageStack {
 
@@ -23,79 +23,67 @@ class rddImage extends ImageStack {
  */
 object scOps {
 
+  def StartFiji() = {
+    Spiji.start()
+    Spiji.startRecording()
+
+  }
+
+  def getRecentCommand() = {
+    println("Only run commands are current supported")
+    Spiji.getCommands().filter(_.contains("run")).last
+  }
+
+  def getLastCommand() = {
+    Spiji.getLastCommand().split("\n").filter(_.contains("run"))
+  }
+  def getLastCommandAsSweepInput() = {
+    val lc = getLastCommand()
+    lc.map{
+      cmd =>
+        val fxStr = cmd.replace(");","").replace("run(","").replace("\"","").split(",")
+        (fxStr.head,fxStr.tail.mkString(","))
+    }.map{
+      case(cmd,args) => args.trim().split(" ").map(cmd+":"+_).reduce(_ + " " + _)
+    }.reduce(_ + "_" + _)
+
+  }
+
+  /**
+   * Add imageplus reader to the sparkcontext
+   */
+  implicit class ImageJFriendlySparkContext(sc: SparkContext) {
+    import tipl.spark.IOOps._
+    val defMinPart = sc.defaultMinPartitions
+
+    def ijByteFile(path: String, minPartitions: Int = sc.defaultMinPartitions): RDD[(String,
+      PortableImagePlus)] = {
+      val job = new NewHadoopJob(sc.hadoopConfiguration)
+      NewFileInputFormat.addInputPath(job, new Path(path))
+      val updateConf = job.getConfiguration
+      new OldBinaryFileRDD(
+        sc,
+        classOf[ImagePlusFileInputFormat],
+        classOf[String],
+        classOf[PortableImagePlus],
+        updateConf,
+        minPartitions).setName(path)
+    }
+
+    def ijFile(path: String, minPartitions: Int = sc.defaultMinPartitions): RDD[(String,
+      PortableImagePlus)] = {
+      sc.binaryFiles(path,minPartitions).map{
+        case (pname, pdsObj) =>
+          (pname,new PortableImagePlus(Spiji.loadImageFromInputStream(pdsObj.open(),
+            pname.split("[.]").last)))
+      }
+    }
+
+  }
+
   implicit def ImagePlusToPortableImagePlus(imp: ImagePlus) = new PortableImagePlus(imp)
 
 
-  /**
-   * Since ImagePlus is not serializable this class allows for it to be serialized and thus used
-   * in operations besides map in Spark.
-   * @param baseData either an array of the correct type or an imageplus object
-   */
-  class PortableImagePlus(var baseData: Either[ImagePlus,AnyRef]) extends Serializable {
-    def this(inImage: ImagePlus) = this(Left(inImage))
-    def this(inArray: AnyRef) = this(Right(inArray))
-
-    private def calcImg: ImagePlus =
-      baseData match {
-        case Left(tImg) => tImg
-        case Right(tArr) => Spiji.createImage(File.createTempFile("img","").getName,tArr,false)
-      }
-
-    private def calcArray: AnyRef =
-    baseData match {
-      case Left(tImg) =>
-        WindowManager.setTempCurrentImage(tImg)
-        Spiji.getCurrentImage
-      case Right(tArr) => tArr
-    }
-
-    lazy val curImg = calcImg
-    lazy val curArr = calcArray
-    def getImg() = curImg
-    def getArray() = curArr
-
-    override def toString(): String = {
-      val nameFcn = (inCls: String) => this.getClass().getSimpleName()+"["+inCls+"]"
-      baseData.fold(
-        img => nameFcn(img.toString),
-        arr => nameFcn(scala.runtime.ScalaRunTime.stringOf(arr))
-      )
-    }
-    // useful commands in imagej
-    def run(cmd: String, args: String = ""): PortableImagePlus = {
-      WindowManager.setTempCurrentImage(curImg)
-      Spiji.run(cmd,args)
-      new PortableImagePlus(WindowManager.getCurrentImage())
-    }
-
-    def runAsPlugin(cmd: String, args: String = ""): Either[PlugIn,PlugInFilter] = {
-      WindowManager.setTempCurrentImage(curImg)
-      Spiji.runCommandAsPlugin(cmd,args) match {
-        case plug: PlugIn =>
-          Left(plug)
-        case plugfilt: PlugInFilter =>
-          Right(plugfilt)
-      }
-    }
-
-    def getTImgRO(): TImgRO =
-      ImageStackToTImg.FromImagePlus(curImg)
-
-    // custom serialization
-    @throws[IOException]("if the file doesn't exist")
-    private def writeObject(oos: ObjectOutputStream): Unit = {
-      oos.writeObject(curArr)
-    }
-    @throws[IOException]("if the file doesn't exist")
-    @throws[ClassNotFoundException]("if the class cannot be found")
-    private def readObject(in: ObjectInputStream): Unit =  {
-      baseData = Right(in.readObject())
-    }
-    @throws(classOf[ObjectStreamException])
-    private def readObjectNoData: Unit = {
-      throw new IllegalArgumentException("Cannot have a dataless protableimageplus");
-    }
-  }
 
   implicit class ijConvertableBlock[T](inBlock: TImgSlice[T]) {
     def asTImg() = {
@@ -117,5 +105,7 @@ object scOps {
     val curImage = IJ.getImage()
     tipl.ij.ImageStackToTImg.FromImagePlus(curImage)
   }
+
+
 
 }

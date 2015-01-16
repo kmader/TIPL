@@ -71,14 +71,18 @@ import ij.gui.OvalRoi;
 import ij.gui.PointRoi;
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
+import ij.io.Opener;
+import ij.macro.Interpreter;
 import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.Analyzer;
+import ij.plugin.frame.Recorder;
 import ij.process.*;
 import tipl.util.TImgTools;
 
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Set;
@@ -1362,5 +1366,101 @@ public class Spiji {
     }
 
 
+    // Macro code
+    protected static Recorder recObj = null;
+    protected static String lastParsedText = "";
+
+    /**
+     * Start recording
+     * @return the recorder object
+     */
+    public static Recorder startRecording() {
+        if(recObj==null) recObj = new Recorder(false);
+        return recObj;
+    }
+
+    /**
+     * Get the last command (since the last time getLastCommand was run)
+     * @return macro-formatted text
+     */
+    public static String getLastCommand() {
+        String newText = startRecording().getText();
+        String cmdText = "";
+        if(newText.contains(lastParsedText)) {
+            cmdText = newText.substring(lastParsedText.length());
+        } else {
+            cmdText = newText;
+        }
+        lastParsedText = newText;
+        return cmdText;
+    }
+
+    public static String[] getCommands() {
+        return startRecording().getText().split("\n");
+    }
+
+    public static String[] parseMarco(String inMacro) {
+        Interpreter cInt = new ij.macro.Interpreter();
+        return cInt.getVariables();
+    }
+
+    /**
+     * Force the creation of a new recorder object
+     * @return
+     */
+    public static Recorder resetRecorder() {
+        recObj=new Recorder(false);
+        return recObj;
+    }
+
+    /**
+     * Open a local image if you have the path
+     * @param imgPath
+     * @return
+     */
+    public static ImagePlus loadImageFromPath(String imgPath) {
+        return IJ.openImage(imgPath);
+    }
+
+    /**
+     * Load an image from an inputstream object
+     * @note this is a gigantic ugly hack (like pyspark) which saves the stream locally, and then
+     * reads it in again
+     * @param imgStream the inputstream containing the image
+     * @param suffix is the extension of the file which is useful to making sure
+     *                                it is still readable by imagej
+     * @return an imageplus object
+     * @throws IOException if the file cannot be written or not enough space is available
+     */
+    public static ImagePlus loadImageFromInputStream(InputStream imgStream, String suffix) throws
+            IOException {
+        //TODO make a version of this compatible with the latest version of ImageJ2 to read in
+        // files directly from the datastream since this is at the very least inefficient
+        File outputFile = File.createTempFile("ijtmp",suffix);
+        return loadImageFromInputStream(imgStream,outputFile);
+    }
+
+    /**
+     * Read an image directly from the bytearray
+     * @param imgData the bytearray representing the image
+     */
+    public static ImagePlus loadImageFromByteArray(byte[] imgData, String suffix) throws
+            IOException {
+
+        return loadImageFromInputStream(new ByteArrayInputStream(imgData),suffix);
+    }
+
+    /**
+     * In case the file is already specified (spark scratch instead of local scratch
+     * @param outputFile the actual output file to save to
+     * @return an imageplus object
+     * @throws IOException if the file cannot be written
+     */
+    public static ImagePlus loadImageFromInputStream(InputStream imgStream, File outputFile) throws
+            IOException {
+        OutputStream fileStream = new FileOutputStream(outputFile);
+        org.apache.commons.io.IOUtils.copy(imgStream,fileStream);
+        return loadImageFromPath(outputFile.getAbsolutePath());
+    }
 }
 

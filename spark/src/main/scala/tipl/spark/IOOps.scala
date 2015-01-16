@@ -6,8 +6,8 @@ import org.apache.hadoop.mapreduce.{InputFormat => NewInputFormat, Job => NewHad
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.api.java.JavaPairRDD
-import org.apache.spark.input.ByteInputFormat
-import org.apache.spark.rdd.{BinaryFileRDD, RDD}
+import org.apache.spark.input.{ByteInputFormat, PortableDataStream, StreamInputFormat}
+import org.apache.spark.rdd.{BinaryFileRDD, OldBinaryFileRDD, RDD}
 import org.apache.spark.streaming.StreamingContext._
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.dstream.DStream
@@ -39,7 +39,7 @@ object IOOps {
       val job = new NewHadoopJob(sc.hadoopConfiguration)
       NewFileInputFormat.addInputPath(job, new Path(path))
       val updateConf = job.getConfiguration
-      new BinaryFileRDD(
+      new OldBinaryFileRDD(
         sc,
         classOf[TiffFileInputFormat],
         classOf[String],
@@ -53,11 +53,25 @@ object IOOps {
       val job = new NewHadoopJob(sc.hadoopConfiguration)
       NewFileInputFormat.addInputPath(job, new Path(path))
       val updateConf = job.getConfiguration
-      new BinaryFileRDD(
+      new OldBinaryFileRDD(
         sc,
         classOf[ByteInputFormat],
         classOf[String],
         classOf[Array[Byte]],
+        updateConf,
+        minPartitions).setName(path)
+    }
+
+    def binaryFiles(path: String, minPartitions: Int = sc.defaultMinPartitions):
+    RDD[(String, PortableDataStream)] = {
+      val job = new NewHadoopJob(sc.hadoopConfiguration)
+      NewFileInputFormat.addInputPath(job, new Path(path))
+      val updateConf = job.getConfiguration
+      new BinaryFileRDD(
+        sc,
+        classOf[StreamInputFormat],
+        classOf[String],
+        classOf[PortableDataStream],
         updateConf,
         minPartitions).setName(path)
     }

@@ -22,8 +22,9 @@ object ParameterSweep {
     import scala.util.control.Exception.allCatch
     private def isLongNumber(s: String): Boolean = (allCatch opt s.toLong).isDefined
     private def isDoubleNumber(s: String): Boolean = (allCatch opt s.toDouble).isDefined
-    private def parseArgs(argList: String) = {
-      argList.split("-").map(_.trim).filter(_.length > 0).map {
+
+    protected[blocks] def parseArgsWithDelim(argList: String, sptChar: String  = "-") = {
+      argList.replaceAll("\\s+", " ").trim().split(sptChar).map(_.trim).filter(_.length > 0).map {
         inArg =>
           val argP = inArg.split("=").zipWithIndex.map(_.swap).toMap
           (argP.getOrElse(0, "ERROR"), argP.getOrElse(1, "true"))
@@ -42,15 +43,19 @@ object ParameterSweep {
     def ImageJMacroStepsToSweep(inSteps: Array[String],
                                  steps: Int = 5,
                                  cartesian: Boolean = true,
-                                 distinct: Boolean = true): Array[String] = {
-      val pa = macroParseArgs(inSteps)
-      sweepArgs(pa,steps,cartesian,distinct)
+                                 distinct: Boolean = true,
+                                 delim: String = "-"): Array[String] = {
+
+      val pa = macroParseArgs(inSteps,delim)
+      val prefix = if(delim.equalsIgnoreCase("-")) "-" else ""
+      sweepArgs(pa,prefix,steps,cartesian,distinct)
     }
 
     def SweepToPath(sweepSteps: Array[String],
                     newDirectories: Boolean = true,
-                     removeStatic: Boolean = true): Array[String] = {
-      val sweepMapParsed = sweepSteps.map(parseArgs(_))
+                     removeStatic: Boolean = true,
+                      delim: String): Array[String] = {
+      val sweepMapParsed = sweepSteps.map(parseArgsWithDelim(_,delim))
       val sweepMap = sweepMapParsed.zipWithIndex.
         foldLeft(MMap.empty[String,Array[String]]) {
         case (fullMap, (newMap,newInd)) =>
@@ -95,12 +100,16 @@ object ParameterSweep {
      *                      treated as if this value MUST be an integer)
      * @return a parse list of arguments
      */
-    protected[blocks] def macroParseArgs(startArgs: String, endArgs: String):
+    protected[blocks] def macroParseArgs(startArgs: String, endArgs: String,
+                                         delim: String):
       Map[String, Array[String]] =
-      macroParseArgs(Array(startArgs, endArgs))
+      macroParseArgs(Array(startArgs, endArgs),delim)
 
-    protected[blocks] def macroParseArgs(inArgs: Array[String]): Map[String, Array[String]] = {
-      val argMap = inArgs.map(parseArgs(_))
+    protected[blocks] def macroParseArgs(inArgs: Array[String],
+                                        delim: String
+                                          ): Map[String, Array[String]] = {
+
+      val argMap = inArgs.map(parseArgsWithDelim(_,delim))
 
       val allKeys = argMap.map(_.keySet).reduce(_ ++ _)
       val joinArgs = MMap[String, Array[String]]()
@@ -117,11 +126,11 @@ object ParameterSweep {
       joinArgs
     }
 
-    private def createArgStr(key: String, arg: String) = {
+    private def createArgStr(key: String, arg: String,prefix: String) = {
       arg match {
-        case "true" => "-"+key
+        case "true" => prefix+key
         case "false" => ""
-        case _ => "-"+key+"="+arg
+        case _ => prefix+key+"="+arg
       }
     }
 
@@ -134,7 +143,8 @@ object ParameterSweep {
      *                                  interpolation for 2+ steps if there are only 2 unique values
      * @return a list of macro arguments to use
      */
-    protected[blocks] def sweepArgs(parseArgs: Map[String,Array[String]],steps: Int = 5,
+    protected[blocks] def sweepArgs(parseArgs: Map[String,Array[String]],
+                                    prefix: String, steps: Int = 5,
                   cartesian: Boolean=true, distinct: Boolean=true):
     Array[String] = {
       val varArgs = parseArgs.map{
@@ -200,7 +210,7 @@ object ParameterSweep {
 
       val argStr = exArrArgs.map{
         case(key,rangeVals) =>
-          rangeVals.map(arg => createArgStr(key,arg))
+          rangeVals.map(arg => createArgStr(key,arg,prefix))
       }
 
       val allVarArgs = if(cartesian) {
