@@ -23,12 +23,35 @@ object ParameterSweep {
     private def isLongNumber(s: String): Boolean = (allCatch opt s.toLong).isDefined
     private def isDoubleNumber(s: String): Boolean = (allCatch opt s.toDouble).isDefined
 
-    protected[blocks] def parseArgsWithDelim(argList: String, sptChar: String  = "-") = {
+    def parseArgsWithDelim(argList: String, sptChar: String  = "-") = {
       argList.replaceAll("\\s+", " ").trim().split(sptChar).map(_.trim).filter(_.length > 0).map {
         inArg =>
           val argP = inArg.split("=").zipWithIndex.map(_.swap).toMap
           (argP.getOrElse(0, "ERROR"), argP.getOrElse(1, "true"))
       }.toMap
+    }
+
+    /**
+     * just a useful class for pulling argument values from a map
+     * @param am
+     */
+    implicit class argMap(am: Map[String,String]) {
+      def getDbl(key: String): Option[Double] = am.get(key) match {
+        case Some(dblVal) if isDoubleNumber(dblVal) => Some(dblVal.toDouble)
+        case _ => None
+      }
+      def getDbl(key: String, defVal: Double): Double = getDbl(key) match {
+        case Some(dblVal) => dblVal
+        case _ => defVal
+      }
+      def getInt(key: String): Option[Int] = am.get(key) match {
+        case Some(intVal) if isLongNumber(intVal) => Some(intVal.toInt)
+        case _ => None
+      }
+      def getInt(key: String, defVal: Int): Int = getInt(key) match {
+        case Some(intVal) => intVal
+        case _ => defVal
+      }
     }
 
     /**

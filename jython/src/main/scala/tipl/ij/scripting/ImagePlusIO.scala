@@ -9,10 +9,16 @@ import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.lib.input.{CombineFileSplit, CombineFileRecordReader}
 import org.apache.hadoop.mapreduce.{TaskAttemptContext, InputSplit}
 import org.apache.spark.input.{BinaryRecordReader, BinaryFileInputFormat}
+import tipl.blocks.ParameterSweep.ImageJSweep
 import tipl.formats.TImgRO
 import tipl.ij.{ImageStackToTImg, Spiji}
 
 object ImagePlusIO {
+  /**
+   * Should immutablity of imageplus be ensured at the cost of performance and memory
+   */
+    val ensureImmutability: Boolean = true
+
     /**
      * The new (Hadoop 2.0) InputFormat for imagej files (not be to be confused with the
      * recordreader
@@ -43,6 +49,7 @@ object ImagePlusIO {
    * @param baseData either an array of the correct type or an imageplus object
    */
   class PortableImagePlus(var baseData: Either[ImagePlus,AnyRef]) extends Serializable {
+
     def this(inImage: ImagePlus) = this(Left(inImage))
     def this(inArray: AnyRef) = this(Right(inArray))
 
@@ -72,10 +79,21 @@ object ImagePlusIO {
         arr => nameFcn(scala.runtime.ScalaRunTime.stringOf(arr))
       )
     }
+
     // useful commands in imagej
     def run(cmd: String, args: String = ""): PortableImagePlus = {
-      WindowManager.setTempCurrentImage(curImg)
-      Spiji.run(cmd,args)
+      lazy val pargs = ImageJSweep.parseArgsWithDelim(args," ")
+      val localImgCopy = if(ensureImmutability) curImg.duplicate() else curImg
+
+      WindowManager.setTempCurrentImage(localImgCopy)
+      cmd match {
+        case "setThreshold" =>
+          Spiji.setThreshold(pargs.get("lower").map(_.toDouble).getOrElse(Double.MinValue),
+            pargs.get("upper").map(_.toDouble).getOrElse(Double.MaxValue))
+        case _ =>
+          Spiji.run(cmd,args)
+      }
+
       new PortableImagePlus(WindowManager.getCurrentImage())
     }
 
@@ -88,6 +106,13 @@ object ImagePlusIO {
           Right(plugfilt)
       }
     }
+    case class ImageStatistics(min: Double,mean: Double, stdDev: Double,
+                               max: Double, pts: Long) extends Serializable
+    def getImageStatistics() ={
+      val istat = curImg.getStatistics
+      ImageStatistics(istat.min,istat.mean,istat.stdDev,istat.max,istat.longPixelCount)
+    }
+
 
     def getTImgRO(): TImgRO =
       ImageStackToTImg.FromImagePlus(curImg)

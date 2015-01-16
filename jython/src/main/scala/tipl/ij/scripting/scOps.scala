@@ -44,7 +44,7 @@ object scOps {
    * @param ijPath
    */
   case class ImageJSettings(ijPath: String, showGui: Boolean = false) extends Serializable
-  def SetuImageJInPartition(ijs: ImageJSettings): Unit = StartFiji(ijs.ijPath,ijs.showGui)
+  def SetupImageJInPartition(ijs: ImageJSettings): Unit = StartFiji(ijs.ijPath,ijs.showGui)
 
   def loadImages(path: String, partitions: Int)(implicit sc: SparkContext) = {
 
@@ -81,13 +81,14 @@ object scOps {
 
   }
 
+
   /**
-   * An ImageJ based RDD object
-   * @param inRDD the RDD containing the images
-   * @tparam A the type of the key (usually string or path, can also contain identifiers)
-   * @tparam B portableimageplus or a subclass
+   * Just the operations on the imageplus objects
+   * @param inRDD
+   * @tparam A
+   * @tparam B
    */
-  implicit class imageJRDD[A : ClassTag,B <: PortableImagePlus : ClassTag](inRDD: RDD[(A,B)]) {
+  implicit class ijOpsRDD[A : ClassTag,B <: PortableImagePlus : ClassTag](inRDD: RDD[(A,B)]) {
     /**
      * Runs the given command and arguments on all of the images in a list
      * @param cmd the imagej macro-style command to run (example "Add Noise")
@@ -97,7 +98,7 @@ object scOps {
     def runAll(cmd: String, args: String = "")(implicit fs: ImageJSettings) = {
       inRDD.mapPartitions{
         kvlist =>
-          SetuImageJInPartition(fs)
+          SetupImageJInPartition(fs)
           kvlist.map(kv => (kv._1,kv._2.run(cmd,args)))
       }
     }
@@ -121,13 +122,25 @@ object scOps {
       val swArgsPath = swSteps.zip(swPath)
       inRDD.mapPartitions{
         kvlist =>
-          SetuImageJInPartition(fs)
+          SetupImageJInPartition(fs)
           kvlist.flatMap{
             case (basepath,imgobj) =>
               for((args,pathsuffix) <- swArgsPath) yield (basepath+pathsuffix,imgobj.run(cmd,args))
           }
       }
     }
+
+    def getStatistics() = {
+      inRDD.mapValues(_.getImageStatistics())
+    }
+  }
+  /**
+   * The IO operations for an ImageJ based RDD object
+   * @param inRDD the RDD containing the images
+   * @tparam A the type of the key (usually string or path, can also contain identifiers)
+   * @tparam B portableimageplus or a subclass
+   */
+  implicit class ijIORDD[A : ClassTag,B <: PortableImagePlus : ClassTag](inRDD: RDD[(A,B)]) {
 
     /**
      * Saves the images locally using ImageJ
@@ -136,7 +149,7 @@ object scOps {
     def saveImagesLocal(suffix: String)(implicit fs: ImageJSettings) = {
       inRDD.foreachPartition{
         imglist =>
-          SetuImageJInPartition(fs)
+          SetupImageJInPartition(fs)
           imglist.foreach {
             case(filename,imgobj) =>
               Spiji.saveImage(imgobj.getImg,filename+suffix)
@@ -158,7 +171,7 @@ object scOps {
       inRDD.partitionBy(new DSImg.NamedSlicePartitioner(namelist)).
         mapPartitions {
         imglist =>
-          SetuImageJInPartition(fs)
+          SetupImageJInPartition(fs)
           imglist.map {
             case (keyobj, imgobj) =>
               (

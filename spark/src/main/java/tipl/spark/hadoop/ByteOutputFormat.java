@@ -18,6 +18,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
+ * @note jacked from http://blog.saliya.org/2010/04/hadoop-writing-byte-output.html
  * @author Saliya Ekanayake
  * @author Kevin Mader (moodifications
  */
