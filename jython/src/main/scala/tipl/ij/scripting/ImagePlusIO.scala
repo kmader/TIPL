@@ -17,31 +17,31 @@ object ImagePlusIO {
   /**
    * Should immutablity of imageplus be ensured at the cost of performance and memory
    */
-    val ensureImmutability: Boolean = true
+  val ensureImmutability: Boolean = true
 
-    /**
-     * The new (Hadoop 2.0) InputFormat for imagej files (not be to be confused with the
-     * recordreader
-     * itself)
-     */
-    class ImagePlusFileInputFormat extends BinaryFileInputFormat[PortableImagePlus] {
-      override def createRecordReader(split: InputSplit, taContext: TaskAttemptContext) = {
-        new CombineFileRecordReader[String, PortableImagePlus](split.asInstanceOf[CombineFileSplit],
-          taContext, classOf[ImagePlusRecordReader])
-      }
+  /**
+   * The new (Hadoop 2.0) InputFormat for imagej files (not be to be confused with the
+   * recordreader
+   * itself)
+   */
+  class ImagePlusFileInputFormat extends BinaryFileInputFormat[PortableImagePlus] {
+    override def createRecordReader(split: InputSplit, taContext: TaskAttemptContext) = {
+      new CombineFileRecordReader[String, PortableImagePlus](split.asInstanceOf[CombineFileSplit],
+        taContext, classOf[ImagePlusRecordReader])
     }
+  }
 
 
-    class ImagePlusRecordReader(
-                                 split: CombineFileSplit,
-                                 context: TaskAttemptContext,
-                                 index: Integer)
-      extends BinaryRecordReader[PortableImagePlus](split, context, index) {
+  class ImagePlusRecordReader(
+                               split: CombineFileSplit,
+                               context: TaskAttemptContext,
+                               index: Integer)
+    extends BinaryRecordReader[PortableImagePlus](split, context, index) {
 
-      def parseByteArray(path: Path,inArray: Array[Byte]) =
-        new PortableImagePlus(Spiji.loadImageFromByteArray(inArray,path.toString().
-          split("[.]").last))
-    }
+    def parseByteArray(path: Path,inArray: Array[Byte]) =
+      new PortableImagePlus(Spiji.loadImageFromByteArray(inArray,path.toString().
+        split("[.]").last))
+  }
 
   /**
    * Since ImagePlus is not serializable this class allows for it to be serialized and thus used
@@ -87,13 +87,20 @@ object ImagePlusIO {
 
       WindowManager.setTempCurrentImage(localImgCopy)
       cmd match {
-        case "setThreshold" =>
-          Spiji.setThreshold(pargs.get("lower").map(_.toDouble).getOrElse(Double.MinValue),
-            pargs.get("upper").map(_.toDouble).getOrElse(Double.MaxValue))
+        case "setThreshold" | "applyThreshold" =>
+          import ImageJSweep.argMap
+          val lower = pargs.getDbl("lower",Double.MinValue)
+          val upper = pargs.getDbl("upper",Double.MaxValue)
+          Spiji.setThreshold(lower,upper)
+          cmd match {
+            case "applyThreshold" =>
+              Spiji.run("Convert to Mask")
+            case _ =>
+              Unit
+          }
         case _ =>
           Spiji.run(cmd,args)
       }
-
       new PortableImagePlus(WindowManager.getCurrentImage())
     }
 
