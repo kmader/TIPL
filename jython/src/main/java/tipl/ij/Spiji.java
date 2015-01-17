@@ -366,6 +366,7 @@ public class Spiji {
      */
     public static String[] getListImages() {
         int[] is = WindowManager.getIDList();
+        if (is==null) is = new int[]{}; // this should be here
         String[] strings = new String[is.length];
         for (int i = 0; i < is.length; i++) {
             ImagePlus imageplus = WindowManager.getImage(is[i]);
@@ -1475,6 +1476,7 @@ public class Spiji {
 
     public static void saveImage(ImagePlus curImage, String path) throws IOException {
         IJ.save(curImage,path);
+
     }
 }
 

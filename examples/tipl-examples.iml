@@ -7,11 +7,16 @@
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/scala" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/scala" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" scope="TEST" name="Maven: junit:junit:3.8.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.10" level="project" />
+    <orderEntry type="library" name="Maven: org.hamcrest:hamcrest-core:1.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.scalatest:scalatest_2.10:2.2.1" level="project" />
+    <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.10.4" level="project" />
+    <orderEntry type="library" name="Maven: org.scala-lang:scala-reflect:2.10.4" level="project" />
     <orderEntry type="library" name="Maven: org.apache.spark:spark-core_2.10:1.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-client:1.0.4" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-core:1.0.4" level="project" />
@@ -75,7 +80,6 @@
     <orderEntry type="library" name="Maven: org.spark-project.protobuf:protobuf-java:2.4.1-shaded" level="project" />
     <orderEntry type="library" name="Maven: org.uncommons.maths:uncommons-maths:1.2.2a" level="project" />
     <orderEntry type="library" name="Maven: org.spark-project.akka:akka-slf4j_2.10:2.2.3-shaded-protobuf" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.10.4" level="project" />
     <orderEntry type="library" name="Maven: org.json4s:json4s-jackson_2.10:3.2.10" level="project" />
     <orderEntry type="library" name="Maven: org.json4s:json4s-core_2.10:3.2.10" level="project" />
     <orderEntry type="library" name="Maven: org.json4s:json4s-ast_2.10:3.2.10" level="project" />
@@ -109,7 +113,6 @@
     <orderEntry type="library" name="Maven: org.apache.spark:spark-streaming_2.10:1.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.spark:spark-sql_2.10:1.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.spark:spark-catalyst_2.10:1.1.0" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang:scala-reflect:2.10.4" level="project" />
     <orderEntry type="library" name="Maven: org.scalamacros:quasiquotes_2.10:2.0.1" level="project" />
     <orderEntry type="library" name="Maven: com.twitter:parquet-column:1.4.3" level="project" />
     <orderEntry type="library" name="Maven: com.twitter:parquet-common:1.4.3" level="project" />
@@ -125,7 +128,6 @@
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.3.0" level="project" />
     <orderEntry type="module" module-name="tipl-core" />
     <orderEntry type="library" name="Maven: junit:junit-dep:4.10" level="project" />
-    <orderEntry type="library" name="Maven: org.hamcrest:hamcrest-core:1.1" level="project" />
     <orderEntry type="library" name="Maven: javax.media:jai-core:1.1.3" level="project" />
     <orderEntry type="library" name="Maven: io.scif:scifio-jai-imageio:1.1.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: com.sun.media:jai-codec:1.1.3" level="project" />
@@ -162,6 +164,29 @@
     <orderEntry type="library" name="Maven: com.miglayout:miglayout-core:4.2" level="project" />
     <orderEntry type="library" name="Maven: com.miglayout:miglayout-swing:4.2" level="project" />
     <orderEntry type="module" module-name="tipl-volviewer" />
+    <orderEntry type="module" module-name="tipl-jython" />
+    <orderEntry type="module" module-name="tipl-integration" />
+    <orderEntry type="library" name="Maven: org.python:jython:2.7-b3" level="project" />
+    <orderEntry type="module-library">
+      <library name="Maven: stupid.fiji.scripting.shit:abstractinterpreter:99.0">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../tipl_libraries/fiji-integration/fiji-scripting.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Maven: stupid.fiji.scripting.shit:commonlibs:99.0">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../tipl_libraries/fiji-integration/ij-core.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="Maven: com.github.sarxos:webcam-capture:0.3.10" level="project" />
+    <orderEntry type="library" name="Maven: com.nativelibs4java:bridj:0.6.2" level="project" />
     <orderEntry type="library" name="Maven: com.typesafe.genjavadoc:genjavadoc-plugin_2.10.4:0.8" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:scala-compiler:2.10.4" level="project" />
   </component>

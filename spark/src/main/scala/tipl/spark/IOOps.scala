@@ -248,10 +248,6 @@ object IOOps {
 
 
   /**
-   * Streaming Code
-   */
-
-  /**
    * Add the byte reading and tiff file to the StreamingSparkContext
    */
   implicit class ImageFriendlyStreamingContext(ssc: StreamingContext) {
@@ -269,6 +265,7 @@ object IOOps {
     def tiffFolder(directory: String) =
       ssc.fileStream[String, TIFSliceReader, TiffFileInputFormat](directory)
 
+
   }
 
 
@@ -277,9 +274,9 @@ object IOOps {
    */
   implicit class StreamingContextFromSpark(sc: SparkContext) {
     def toStreaming(itiming: Duration): StreamingContext = new StreamingContext(sc, itiming)
-
     def toStreaming(isecs: Long): StreamingContext = toStreaming(Seconds(isecs))
   }
+
 
 
   implicit class StreamSliceToDTImg[T <: TSliceReader](srd: DStream[(String,

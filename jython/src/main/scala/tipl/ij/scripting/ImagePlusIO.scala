@@ -8,6 +8,7 @@ import ij.{WindowManager, ImagePlus}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.lib.input.{CombineFileSplit, CombineFileRecordReader}
 import org.apache.hadoop.mapreduce.{TaskAttemptContext, InputSplit}
+import org.apache.spark.annotation.Experimental
 import org.apache.spark.input.{BinaryRecordReader, BinaryFileInputFormat}
 import tipl.blocks.ParameterSweep.ImageJSweep
 import tipl.formats.TImgRO
@@ -123,6 +124,39 @@ object ImagePlusIO {
 
     def getTImgRO(): TImgRO =
       ImageStackToTImg.FromImagePlus(curImg)
+
+    /**
+     * average two portableimageplus objects together
+     * @note works for floating point images of the same size
+     * @param ip2 second image
+     * @return new image with average values
+     */
+    @Experimental
+    def average(ip2: PortableImagePlus): PortableImagePlus = {
+      val outImg = ip2.getImg().duplicate()
+      val outProc = outImg.getProcessor.convertToFloatProcessor()
+      val curArray = curImg.getProcessor.convertToFloatProcessor().
+        getPixels().asInstanceOf[Array[Float]]
+      val opixs = outProc.getPixels.asInstanceOf[Array[Float]]
+      var i = 0
+      while(i<opixs.length) {
+        opixs(i)=(opixs(i)+curArray(i))/2
+        i+=1
+      }
+      outProc.setPixels(opixs)
+      outImg.setProcessor(outProc)
+      new PortableImagePlus(outImg)
+    }
+
+    def ++(ip2: PortableImagePlus): PortableImagePlus = {
+      val outImg = ip2.getImg().duplicate()
+      val outStack = outImg.getImageStack
+      val curStack = curImg.getImageStack
+      for(i <- 1 to curStack.getSize)
+        outStack.addSlice(curStack.getSliceLabel(i),
+      curStack.getProcessor(i))
+      new PortableImagePlus(outImg)
+    }
 
     // custom serialization
     @throws[IOException]("if the file doesn't exist")

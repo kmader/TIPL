@@ -133,8 +133,8 @@ object RaberAnalysis {
 
     import tipl.settings.FilterSettings
 
-    val filtImgs = tImgs.mapValues(_.filter(1, 1, filterType = FilterSettings.MEDIAN)).persist
-    (PERSIST_LEVEL)
+    val filtImgs = tImgs.mapValues(_.filter(1, 1, filterType = FilterSettings.MEDIAN)).
+      persist(PERSIST_LEVEL)
     if (doCheckpoint) filtImgs.checkpoint()
 
     filtImgs.foreach(saveFiles("gfilt", _))

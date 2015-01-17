@@ -46,17 +46,76 @@ object scOps {
   case class ImageJSettings(ijPath: String, showGui: Boolean = false) extends Serializable
   def SetupImageJInPartition(ijs: ImageJSettings): Unit = StartFiji(ijs.ijPath,ijs.showGui)
 
-  def loadImages(path: String, partitions: Int)(implicit sc: SparkContext) = {
+  def loadImages(path: String, partitions: Int)(implicit sc: SparkContext,
+                                                ijs: ImageJSettings) = {
+    sc.loadImages(path,partitions)
+  }
 
-    val ioData = sc.binaryFiles(path,partitions)
-    val sliceNames = ioData.map(_._1).collect()
-    // get the names and partition before the files are copy and read (since this is expensive
-    // as is moving around large serialized objects
+  def pushImages(paths: Array[String],partitions: Int)(implicit sc: SparkContext,
+                                                      ijs: ImageJSettings) =
+  sc.loadImagesDriver(paths,partitions)
+
+  implicit class imageJSparkContext(sc: SparkContext) {
+    def loadImages(path: String, partitions: Int)(implicit ijs: ImageJSettings) = {
+      val ioData = sc.binaryFiles(path,partitions)
+      val sliceNames = ioData.map(_._1).collect()
+      // get the names and partition before the files are copy and read (since this is expensive
+      // as is moving around large serialized objects
       ioData.partitionBy(DSImg.NamedSlicePartitioner(sliceNames,partitions)).
-      map{
-      case (pname, pdsObj) =>
-        (pname,new PortableImagePlus(Spiji.loadImageFromInputStream(pdsObj.open(),
-          pname.split("[.]").last)))
+        mapPartitions{
+        partList =>
+          SetupImageJInPartition(ijs)
+           partList.map {
+          case (pname, pdsObj) =>
+            (pname, new PortableImagePlus(Spiji.loadImageFromInputStream(pdsObj.open(),
+              pname.split("[.]").last)))
+            }
+          }
+    }
+
+    /**
+     * to load images available on a local (shared with all workers) filesystem
+     * @param paths the list of paths to open
+     * @param partitions desired partition count
+     * @param ijs settings for configuring imagej
+     * @return imageplus rdd
+     */
+    def loadImagesLocally(paths: Array[String],partitions: Int)(implicit ijs: ImageJSettings) = {
+      sc.parallelize(paths).map(p => (p,"placeholder")).
+        partitionBy(DSImg.NamedSlicePartitioner(paths,partitions)).
+        mapPartitions{
+        partList =>
+          SetupImageJInPartition(ijs)
+          partList.map {
+            case (pname, pdsObj) =>
+              (pname, new PortableImagePlus(Spiji.loadImageFromPath(pname)))
+          }
+      }
+    }
+
+    /**
+     * load images which are only available on the driver machine to the cluster (useful in cloud
+     * situtations where much of the data is located locally)
+     * @param paths list of files to load
+     * @param partitions number of partitions of the data on the cluster
+     *                   @param parallel use a parallel array map implementation to load with
+     *                                   multiple threads on the driver (might be unsafe for some
+     *                                   filetypes
+     * @return imageplus rdd
+     */
+    def loadImagesDriver(paths: Array[String],partitions: Int, parallel: Boolean = true)(
+      implicit ijs: ImageJSettings) = {
+      SetupImageJInPartition(ijs)
+      val loadFcn = (cpath: String) => (cpath,new PortableImagePlus(Spiji.loadImageFromPath(cpath)))
+      val pathList = if (parallel) {
+        paths.par.map(loadFcn).toArray
+      }
+      else {
+        paths.map(loadFcn)
+      }
+      sc.parallelize(
+        pathList
+      ).partitionBy(DSImg.NamedSlicePartitioner(paths,partitions))
     }
   }
 
@@ -141,12 +200,27 @@ object scOps {
    * @tparam B portableimageplus or a subclass
    */
   implicit class ijIORDD[A : ClassTag,B <: PortableImagePlus : ClassTag](inRDD: RDD[(A,B)]) {
-
+    /**
+     * The command to save images (if path does not contain a url hdfs://, s3://, http://) the
+     * file is saved using the saveImagesLocal where the path will be prepended (best if it is
+     * empty)
+     * @note path must contain and ending seperator for local operation
+     *       @note if (A) contains an hadoop path this save will not work since all the files
+     *             have to be in the same path
+     * @param suffix the suffix to append so imagej knows the filetype
+     * @param path the path to prepend (if needed)
+     */
+    def saveImage(suffix: String,path: String = "")(implicit fs: ImageJSettings) = {
+      if (path.contains("://")) {
+        saveImages(path,suffix)
+      }
+      else inRDD.map( kv => (path+kv._1.toString,kv._2)).saveImagesLocal(suffix)
+    }
     /**
      * Saves the images locally using ImageJ
      * @param suffix text to add to the existing path
      */
-    def saveImagesLocal(suffix: String)(implicit fs: ImageJSettings) = {
+    protected[ij] def saveImagesLocal(suffix: String)(implicit fs: ImageJSettings) = {
       inRDD.foreachPartition{
         imglist =>
           SetupImageJInPartition(fs)
@@ -164,7 +238,7 @@ object scOps {
      * @param path the folder to write the images too
      * @param newSuffix the suffix (for writing the correct filetype
      */
-    def saveImages(path: String,newSuffix: String)(implicit fs: ImageJSettings) = {
+    protected[ij] def saveImages(path: String,newSuffix: String)(implicit fs: ImageJSettings) = {
       val format = classOf[ByteOutputFormat[NullWritable, BytesWritable]]
       val jobConf = new JobConf(inRDD.context.hadoopConfiguration)
       val namelist = inRDD.keys.collect
