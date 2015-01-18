@@ -146,7 +146,7 @@ object StreamingWebcam {
             curImg.repaintWindow()
             //curImg.show("Updated")
           case false =>
-            val tempImg = img.getImg
+            val tempImg = img.getImg.duplicate
             tempImg.setTitle(title)
             tempImg.show()
         }
@@ -155,13 +155,17 @@ object StreamingWebcam {
   }
   def main(args: Array[String]): Unit = {
     import org.apache.spark.streaming.StreamingContext._
+    //import org.apache.spark.streaming.StreamingContext._
+    //import org.apache.spark.SparkContext._
+    import org.apache.spark.SparkContext._
     import tipl.spark.IOOps._
     val p = SparkGlobal.activeParser(args)
     p.checkForInvalid()
 
-    val wr = new WebcamReceiver(StorageLevel.MEMORY_ONLY,100)
+    val wr = new WebcamReceiver(StorageLevel.MEMORY_ONLY,300,2)
     val sc = SparkGlobal.getContext("StreamingWebcam").sc
-    val ssc = sc.toStreaming(3)
+    val strTime = 5
+    val ssc = sc.toStreaming(strTime)
 
     val imgList = ssc.receiverStream(wr)
     val startTime = System.currentTimeMillis()
@@ -177,19 +181,33 @@ object StreamingWebcam {
           val imp = img.getImg
           val ip = imp.getProcessor()
           ip.drawString(rtime,30,0)
-        imp.setProcessor(ip)
-        (ntime,new PortableImagePlus(imp))
+        (ntime,new PortableImagePlus(ip))
     }
 
     val filtImgs = allImgs.mapValues(_.run("Median...","radius=3"))
-    val noisyImgs = allImgs.mapValues(_.run("Add Noise"))
+    val edgeImgs = filtImgs.mapValues(_.run("Find Edges"))
 
-    val threshImgs = noisyImgs.map(kv => (("noisy",kv._1),kv._2)).
-        union(filtImgs.map(kv => (("median",kv._1),kv._2))).mapValues {
+    val eventImages = filtImgs.//window(Seconds(12),Seconds(4)).
+      transform{
+      inImages =>
+        val bgImage = inImages.values.reduce(_.average(_))
+        val corImage = inImages.map {
+          case (inTime,inImage) =>
+            val corImage = inImage.subtract(bgImage)
+            (corImage.getImageStatistics().mean,(inTime,corImage))
+        }
+        corImage
+    }
+
+    val threshImgs = edgeImgs.map(kv => (("edges",kv._1),kv._2)).
+        union(filtImgs.map(kv => (("median",kv._1),kv._2))).
+      mapValues {
       cImg => cImg.
-        run("applyThreshold", "lower=0 upper=100").run("8-bit")
+        run("applyThreshold", "lower=100 upper=255").run("8-bit")
     }.map(kv => (kv._1._1,(kv._1._2,kv._2.getImageStatistics().mean/255*100))).
-      groupByKeyAndWindow(Seconds(6))
+      groupByKeyAndWindow(Seconds(strTime*3))
+
+
 
     val pwMap = new TrieMap[String,PlotWindow]()
     val xyMap = new TrieMap[String,Seq[(Double,Double)]]()
@@ -198,8 +216,9 @@ object StreamingWebcam {
       curRDD =>
         curRDD.collect().foreach{
           case (pname,newpdata) =>
-            val odata = xyMap.getOrElse(pname,Seq.empty[(Double,Double)])
-            val pdata = (odata ++ newpdata).toSeq.sortBy(_._1)
+
+            val pdata = (xyMap.getOrElse(pname,Seq.empty[(Double,Double)]) ++
+              newpdata).toSeq.sortBy(_._1)
             xyMap.put(pname,pdata)
 
             val xd = pdata.map(_._1).toArray
@@ -215,9 +234,38 @@ object StreamingWebcam {
         }
     }
 
+    val epwMap = new TrieMap[String,PlotWindow]()
+    val exyMap = new TrieMap[String,Seq[(Double,Double)]]()
+    val ename = "Outlier Detection Scores"
+    eventImages.map(ikv => (ikv._2._1,ikv._1)).foreachRDD {
+      curRDD =>
+        val newpdata = curRDD.collect()
+        val pdata = (exyMap.getOrElse(ename,Seq.empty[(Double,Double)]) ++
+          newpdata).toSeq.sortBy(_._1)
+        exyMap.put(ename,pdata)
+
+        val xd = pdata.map(_._1).toArray
+        val yd = pdata.map(_._2).toArray
+        val np = new Plot(ename,"Time (s)","Event Value", xd,yd)
+
+        np.addPoints(xd,yd,Plot.CIRCLE)
+        //np.setLimits(0,xd.max,-20,20)
+        val pwin = epwMap.getOrElseUpdate(ename,np.show())
+        pwin.drawPlot(np)
+    }
+
+
     //threshImgs.foreachRDD(showResults("combined_threshold",_))
+
+
     filtImgs.foreachRDD(showResults("median_filtered",_))
-    noisyImgs.foreachRDD(showResults("added_noise",_))
+    filtImgs.map(_._2).reduceByWindow(_.average(_),Seconds(strTime*3),Seconds(strTime*2)).
+      map((0.0,_)).
+      foreachRDD(showResults("time_filtered",_))
+
+    eventImages.filter(_._1>20).map(_._2).
+      foreachRDD(showResults("outlier",_))
+    edgeImgs.foreachRDD(showResults("find_edges",_))
     ssc.start()
 
     ssc.awaitTermination()

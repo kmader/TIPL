@@ -4,6 +4,7 @@ import java.io._
 
 import ij.plugin.PlugIn
 import ij.plugin.filter.PlugInFilter
+import ij.process.ImageProcessor
 import ij.{WindowManager, ImagePlus}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.lib.input.{CombineFileSplit, CombineFileRecordReader}
@@ -53,6 +54,8 @@ object ImagePlusIO {
 
     def this(inImage: ImagePlus) = this(Left(inImage))
     def this(inArray: AnyRef) = this(Right(inArray))
+    def this(inProc: ImageProcessor) = this(Left(
+      new ImagePlus(File.createTempFile("img","").getName,inProc)))
 
     private def calcImg: ImagePlus =
       baseData match {
@@ -133,8 +136,8 @@ object ImagePlusIO {
      */
     @Experimental
     def average(ip2: PortableImagePlus): PortableImagePlus = {
-      val outImg = ip2.getImg().duplicate()
-      val outProc = outImg.getProcessor.convertToFloatProcessor()
+      val outProc = ip2.getImg().getProcessor.
+        duplicate().convertToFloatProcessor()
       val curArray = curImg.getProcessor.convertToFloatProcessor().
         getPixels().asInstanceOf[Array[Float]]
       val opixs = outProc.getPixels.asInstanceOf[Array[Float]]
@@ -144,8 +147,22 @@ object ImagePlusIO {
         i+=1
       }
       outProc.setPixels(opixs)
-      outImg.setProcessor(outProc)
-      new PortableImagePlus(outImg)
+      new PortableImagePlus(outProc)
+    }
+
+    @Experimental
+    def subtract(bgImage: PortableImagePlus): PortableImagePlus = {
+      val outProc = curImg.getProcessor.duplicate().convertToFloatProcessor()
+      val bgArray = bgImage.getImg().getProcessor.convertToFloatProcessor().
+        getPixels().asInstanceOf[Array[Float]]
+      val opixs = outProc.getPixels.asInstanceOf[Array[Float]]
+      var i = 0
+      while(i<opixs.length) {
+        opixs(i)-=bgArray(i)
+        i+=1
+      }
+      outProc.setPixels(opixs)
+      new PortableImagePlus(outProc)
     }
 
     def ++(ip2: PortableImagePlus): PortableImagePlus = {
