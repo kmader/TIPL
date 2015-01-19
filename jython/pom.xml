@@ -56,6 +56,11 @@
             <artifactId>tipl-integration</artifactId>
             <version>${tipl.version}</version>
         </dependency>
+        <dependency> <!-- needed for webgui integration  -->
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-webgui</artifactId>
+            <version>${tipl.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.python</groupId>
             <artifactId>jython</artifactId>

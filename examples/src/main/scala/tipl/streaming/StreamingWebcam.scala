@@ -23,7 +23,7 @@ import scala.collection.mutable.ArrayBuffer
  */
 object StreamingWebcam {
 
-  import org.apache.spark.streaming.receiver.Receiver;
+  import org.apache.spark.streaming.receiver.Receiver
   /**
    * Generic receiver device with multiple reading threads
    */

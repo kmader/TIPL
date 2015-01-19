@@ -1,16 +1,20 @@
 package tipl.ij.scripting
 
 import java.io._
+import javax.imageio.ImageIO
+import javax.servlet.http.HttpServletRequest
 
 import ij.plugin.PlugIn
 import ij.plugin.filter.PlugInFilter
 import ij.process.ImageProcessor
-import ij.{WindowManager, ImagePlus}
+import ij.{ImagePlus, WindowManager}
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapreduce.lib.input.{CombineFileSplit, CombineFileRecordReader}
-import org.apache.hadoop.mapreduce.{TaskAttemptContext, InputSplit}
+import org.apache.hadoop.mapreduce.lib.input.{CombineFileRecordReader, CombineFileSplit}
+import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 import org.apache.spark.annotation.Experimental
-import org.apache.spark.input.{BinaryRecordReader, BinaryFileInputFormat}
+import org.apache.spark.input.{BinaryFileInputFormat, BinaryRecordReader}
+import org.apache.spark.ui.tipl.WebViz
+import org.apache.spark.ui.tipl.WebViz.ExtInfo
 import tipl.blocks.ParameterSweep.ImageJSweep
 import tipl.formats.TImgRO
 import tipl.ij.{ImageStackToTImg, Spiji}
@@ -92,7 +96,7 @@ object ImagePlusIO {
       WindowManager.setTempCurrentImage(localImgCopy)
       cmd match {
         case "setThreshold" | "applyThreshold" =>
-          import ImageJSweep.argMap
+          import tipl.blocks.ParameterSweep.ImageJSweep.argMap
           val lower = pargs.getDbl("lower",Double.MinValue)
           val upper = pargs.getDbl("upper",Double.MaxValue)
           Spiji.setThreshold(lower,upper)
@@ -196,9 +200,43 @@ object ImagePlusIO {
     }
     @throws(classOf[ObjectStreamException])
     private def readObjectNoData: Unit = {
-      throw new IllegalArgumentException("Cannot have a dataless protableimageplus");
+      throw new IllegalArgumentException("Cannot have a dataless PortableImagePlus");
     }
   }
+
+
+  /**
+   * Support for ImagePlus
+   * case ((_, firstImage: TImgRO), tRdd: RDD[(_, TImgRO)]) =>
+   */
+  abstract class ImagePlusViz(parentTabPrefix: String, slicePageName: String) extends WebViz
+    .VizTool {
+    val thumbPath = "/" + parentTabPrefix + "/" + slicePageName
+    val slicePath = thumbPath + "/png"
+
+    val format = "png"
+    val imgSize = 250
+
+    override type elementType = PortableImagePlus
+
+    /**
+     * Support the conversion of elements which have elementType in their key (less common)
+     * @return
+     */
+    override def supportKeys(): Boolean = false
+
+    override def typedRawRender(ele: elementType, info: ExtInfo, request: HttpServletRequest) = {
+      val baos = new ByteArrayOutputStream()
+
+      ImageIO.write(
+        ele.getImg().getProcessor().resize(250).getBufferedImage,
+        format, baos
+      )
+      baos.toByteArray
+    }
+
+  }
+
 }
 /**
  * Created by mader on 1/16/15.
