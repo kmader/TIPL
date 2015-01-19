@@ -25,7 +25,7 @@ object StreamingWebcam {
 
   import org.apache.spark.streaming.receiver.Receiver;
   /**
-   * Streaming Code
+   * Generic receiver device with multiple reading threads
    */
   abstract case class PortableImagePlusReceiver[A](sl: StorageLevel,delay: Int = 50,
                                                     ithreads: Int = 1)
@@ -70,9 +70,14 @@ object StreamingWebcam {
   class PanelFlasher(ip: JPanel) extends Thread {
     val parent = ip.getParent()
     override def run(): Unit = {
-      parent.setName("Reading")
-      Thread.sleep(50)
-      parent.setName("Waiting")
+      parent match {
+        case jf: JFrame =>
+          jf.setTitle("Reading")
+          Thread.sleep(50)
+          jf.setTitle("Waiting")
+        case _ => "Nothing"
+      }
+
     }
   }
 
@@ -102,7 +107,7 @@ object StreamingWebcam {
       val panel = new WebcamPanel(webcam)
       panel.setFPSDisplayed(true)
       panel.setDisplayDebugInfo(true)
-      panel.setImageSizeDisplayed(true)
+      //panel.setImageSizeDisplayed(true)
       panel.setMirrored(true)
       panel
     }
@@ -134,14 +139,18 @@ object StreamingWebcam {
     //webpanel.stop
     (window,tdObj)
   }
+  def showResults(title: String, inRDD: RDD[(Double,PortableImagePlus)]): Unit =
+    showResultsStr(title,inRDD.map(iv => ("Capture:"+iv._1+"s",iv._2)))
 
-  def showResults(title: String, inRDD: RDD[(Double,PortableImagePlus)]): Unit = {
+  def showResultsStr(title: String, inRDD: RDD[(String,PortableImagePlus)]): Unit = {
     inRDD.collect.foreach {
       case (ctime,img) =>
         Spiji.getListImages.contains(title) match {
           case true =>
             val curImg = WindowManager.getImage(title)
-            curImg.getStack.addSlice("Capture:"+ctime+"s",img.getImg.getProcessor)
+            val cs = curImg.getStack
+            cs.addSlice(ctime,img.getImg.getProcessor)
+            curImg.setStack(cs)
             curImg.setSlice(curImg.getStackSize())
             curImg.repaintWindow()
             //curImg.show("Updated")
@@ -160,22 +169,24 @@ object StreamingWebcam {
     import org.apache.spark.SparkContext._
     import tipl.spark.IOOps._
     val p = SparkGlobal.activeParser(args)
+    val wrThreads = p.getOptionInt("webthreads",1,"Number of webcam threads to use",1,20)
+    val wrDelay = p.getOptionInt("webdelay",500,"Delay between reading images")
+    val strTime = p.getOptionInt("streamtime",6,"Number of seconds to group together",1,100)
+    val showEdges = false
+    val showMedian = true
+    val showThreshold = false
     p.checkForInvalid()
 
-    val wr = new WebcamReceiver(StorageLevel.MEMORY_ONLY,300,2)
-    val sc = SparkGlobal.getContext("StreamingWebcam").sc
-    val strTime = 5
+    val wr = new WebcamReceiver(StorageLevel.MEMORY_ONLY,wrDelay,wrThreads)
+    val sc = SparkGlobal.getContext("StreamingWebcamDemo").sc
     val ssc = sc.toStreaming(strTime)
 
     val imgList = ssc.receiverStream(wr)
     val startTime = System.currentTimeMillis()
 
-    //val (webWind,tdObj) = showPanel()
-
 
     val allImgs = imgList.map{
       case (systime,img) =>
-        //val stats = img.getImageStatistics()
         val ntime = (systime-startTime)/1000.0
           val rtime = "CS %2.1f s".format(ntime)
           val imp = img.getImg
@@ -190,7 +201,8 @@ object StreamingWebcam {
     val eventImages = filtImgs.//window(Seconds(12),Seconds(4)).
       transform{
       inImages =>
-        val bgImage = inImages.values.reduce(_.average(_))
+        val totImgs = inImages.count()
+        val bgImage = inImages.values.reduce(_.average(_,1.0f)).multiply(1.0/totImgs)
         val corImage = inImages.map {
           case (inTime,inImage) =>
             val corImage = inImage.subtract(bgImage)
@@ -199,14 +211,14 @@ object StreamingWebcam {
         corImage
     }
 
+    // apply a threshold to the images
     val threshImgs = edgeImgs.map(kv => (("edges",kv._1),kv._2)).
-        union(filtImgs.map(kv => (("median",kv._1),kv._2))).
+      union(filtImgs.map(kv => (("median",kv._1),kv._2))).
       mapValues {
       cImg => cImg.
         run("applyThreshold", "lower=100 upper=255").run("8-bit")
     }.map(kv => (kv._1._1,(kv._1._2,kv._2.getImageStatistics().mean/255*100))).
       groupByKeyAndWindow(Seconds(strTime*3))
-
 
 
     val pwMap = new TrieMap[String,PlotWindow]()
@@ -229,45 +241,40 @@ object StreamingWebcam {
             np.setLimits(0,xd.max,0,100)
             val pwin = pwMap.getOrElseUpdate(pname,np.show())
             pwin.drawPlot(np)
-            //pwin.addPoints(xd,yd,PlotWindow.BOX)
-            //pwin.setLimits(0,xd.max,0,100)
         }
     }
 
+    // outlier detection
     val epwMap = new TrieMap[String,PlotWindow]()
     val exyMap = new TrieMap[String,Seq[(Double,Double)]]()
     val ename = "Outlier Detection Scores"
     eventImages.map(ikv => (ikv._2._1,ikv._1)).foreachRDD {
       curRDD =>
         val newpdata = curRDD.collect()
-        val pdata = (exyMap.getOrElse(ename,Seq.empty[(Double,Double)]) ++
+        val pdata = (exyMap.getOrElse(ename, Seq.empty[(Double, Double)]) ++
           newpdata).toSeq.sortBy(_._1)
-        exyMap.put(ename,pdata)
+        exyMap.put(ename, pdata)
 
         val xd = pdata.map(_._1).toArray
         val yd = pdata.map(_._2).toArray
-        val np = new Plot(ename,"Time (s)","Event Value", xd,yd)
+        val np = new Plot(ename, "Time (s)", "Event Value", xd, yd)
 
-        np.addPoints(xd,yd,Plot.CIRCLE)
-        //np.setLimits(0,xd.max,-20,20)
-        val pwin = epwMap.getOrElseUpdate(ename,np.show())
+        np.addPoints(xd, yd, Plot.CIRCLE)
+        val pwin = epwMap.getOrElseUpdate(ename, np.show())
         pwin.drawPlot(np)
     }
 
+    if (showMedian) filtImgs.foreachRDD(showResults("median_filtered",_))
+    filtImgs.map(_._2).reduce(_.average(_)). // reduceByWindow(,Seconds(strTime*3),Seconds
+    // (strTime*2)
+      map(img => (img.toString(),img)).foreachRDD(showResultsStr("time_filtered",_))
 
-    //threshImgs.foreachRDD(showResults("combined_threshold",_))
+    eventImages.filter(iv => Math.abs(iv._1)>20).map(iv => ("S:%2.0f".format(iv._1)+
+      ",T:%2.0f".format(iv._2._1), iv._2._2)).
+      foreachRDD(showResultsStr("outlier",_))
+    if (showEdges) edgeImgs.foreachRDD(showResults("find_edges",_))
 
-
-    filtImgs.foreachRDD(showResults("median_filtered",_))
-    filtImgs.map(_._2).reduceByWindow(_.average(_),Seconds(strTime*3),Seconds(strTime*2)).
-      map((0.0,_)).
-      foreachRDD(showResults("time_filtered",_))
-
-    eventImages.filter(_._1>20).map(_._2).
-      foreachRDD(showResults("outlier",_))
-    edgeImgs.foreachRDD(showResults("find_edges",_))
     ssc.start()
-
     ssc.awaitTermination()
 
   }

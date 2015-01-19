@@ -132,10 +132,11 @@ object ImagePlusIO {
      * average two portableimageplus objects together
      * @note works for floating point images of the same size
      * @param ip2 second image
+     *            @param rescale is the rescaling factor for the combined pixels
      * @return new image with average values
      */
     @Experimental
-    def average(ip2: PortableImagePlus): PortableImagePlus = {
+    def average(ip2: PortableImagePlus,rescale: Double = 2): PortableImagePlus = {
       val outProc = ip2.getImg().getProcessor.
         duplicate().convertToFloatProcessor()
       val curArray = curImg.getProcessor.convertToFloatProcessor().
@@ -143,10 +144,18 @@ object ImagePlusIO {
       val opixs = outProc.getPixels.asInstanceOf[Array[Float]]
       var i = 0
       while(i<opixs.length) {
-        opixs(i)=(opixs(i)+curArray(i))/2
+        opixs(i)=((opixs(i)+curArray(i))/rescale).toFloat
         i+=1
       }
       outProc.setPixels(opixs)
+      new PortableImagePlus(outProc)
+    }
+
+    @Experimental
+    def multiply(rescale: Double): PortableImagePlus = {
+      val outProc = curImg.getProcessor.
+        duplicate().convertToFloatProcessor()
+      outProc.multiply(rescale)
       new PortableImagePlus(outProc)
     }
 
