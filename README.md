@@ -1,4 +1,6 @@
 # Important Notes
+## Building
+When using pom-imagej based dependencies and imglib2 and other libraries make sure you update the local version of scijava-common which supports parallel building without the concurrentmodificationexception
 ## Checking Out / Cloning Notes 
 The tipl-libraries submodule folder will be empty unless you perform a
 ```
