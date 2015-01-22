@@ -57,6 +57,7 @@
         <scala.binary.version>2.10</scala.binary.version>
         <scala.macros.version>2.0.1</scala.macros.version>
         <spark.version>1.1.0</spark.version>
+        <ij.version>1.49m</ij.version>
         <javadoc.skip>false</javadoc.skip>
         <java.memory.min>-Xms1G</java.memory.min>
         <java.memory.max>-Xmx2G</java.memory.max>
@@ -78,6 +79,7 @@
             <id>imagej.public</id>
             <url>http://maven.imagej.net/content/groups/public</url>
         </repository>
+
         <repository>
             <id>maven-repo</id>
             <!-- This should be at top, it makes maven try the central repo first and then others and hence faster dep resolution -->

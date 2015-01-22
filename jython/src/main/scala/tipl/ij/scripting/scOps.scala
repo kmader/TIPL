@@ -12,7 +12,7 @@ import org.apache.spark.rdd.{OldBinaryFileRDD, RDD}
 import tipl.blocks.ParameterSweep
 import tipl.formats.TImgRO
 import tipl.ij.Spiji
-import tipl.ij.scripting.ImagePlusIO.{ImagePlusFileInputFormat, PortableImagePlus}
+import tipl.ij.scripting.ImagePlusIO.{ImageLog, ImagePlusFileInputFormat, LogEntry, PortableImagePlus}
 import tipl.spark.DSImg
 import tipl.spark.hadoop.ByteOutputFormat
 import tipl.util.TImgSlice.TImgSliceAsTImg
@@ -23,6 +23,7 @@ import scala.reflect.ClassTag
 class rddImage extends ImageStack {
 
 }
+
 
 /**
  * Tools for making previewing and exploring data in FIJI from Spark easy
@@ -43,7 +44,10 @@ object scOps {
    * @param showGui
    * @param ijPath
    */
-  case class ImageJSettings(ijPath: String, showGui: Boolean = false) extends Serializable
+  case class ImageJSettings(ijPath: String,
+                            showGui: Boolean = false
+                             ) extends Serializable
+
   def SetupImageJInPartition(ijs: ImageJSettings): Unit = StartFiji(ijs.ijPath,ijs.showGui)
 
   def loadImages(path: String, partitions: Int)(implicit sc: SparkContext,
@@ -51,9 +55,17 @@ object scOps {
     sc.loadImages(path,partitions)
   }
 
-  def pushImages(paths: Array[String],partitions: Int)(implicit sc: SparkContext,
-                                                      ijs: ImageJSettings) =
-  sc.loadImagesDriver(paths,partitions)
+  /**
+   * Push the list of images from the driver machine to the Spark Cluster (only if they are not
+   * available on the cluster / shared file system
+   * @param paths
+   * @param ijs imagej setup information
+   * @param parallel load images on driver machine in parallel (much faster)
+   * @return a list of images in an RDD
+   */
+  def pushImages(paths: Array[String],partitions: Int, parallel: Boolean = true)(
+    implicit sc: SparkContext,ijs: ImageJSettings) =
+    sc.loadImagesDriver(paths,partitions,parallel=parallel)
 
   implicit class imageJSparkContext(sc: SparkContext) {
     def loadImages(path: String, partitions: Int)(implicit ijs: ImageJSettings) = {
@@ -65,12 +77,15 @@ object scOps {
         mapPartitions{
         partList =>
           SetupImageJInPartition(ijs)
-           partList.map {
-          case (pname, pdsObj) =>
-            (pname, new PortableImagePlus(Spiji.loadImageFromInputStream(pdsObj.open(),
-              pname.split("[.]").last)))
-            }
+          partList.map {
+            case (pname, pdsObj) =>
+              (pname, new PortableImagePlus(Spiji.loadImageFromInputStream(pdsObj.open(),
+                pname.split("[.]").last),
+                new ImageLog(LogEntry.loadImages("loadImages",pname))
+              )
+                )
           }
+      }
     }
 
     /**
@@ -88,7 +103,11 @@ object scOps {
           SetupImageJInPartition(ijs)
           partList.map {
             case (pname, pdsObj) =>
-              (pname, new PortableImagePlus(Spiji.loadImageFromPath(pname)))
+              (pname, new PortableImagePlus(
+                Spiji.loadImageFromPath(pname),
+                new ImageLog(LogEntry.loadImages("loadImagesLocally",pname))
+              )
+                )
           }
       }
     }
@@ -98,19 +117,21 @@ object scOps {
      * situtations where much of the data is located locally)
      * @param paths list of files to load
      * @param partitions number of partitions of the data on the cluster
-     *                   @param parallel use a parallel array map implementation to load with
-     *                                   multiple threads on the driver (might be unsafe for some
-     *                                   filetypes
+     * @param parallel use a parallel array map implementation to load with multiple threads on
+     *                 the driver (might be unsafe for some filetypes
      * @return imageplus rdd
      */
     def loadImagesDriver(paths: Array[String],partitions: Int, parallel: Boolean = true)(
       implicit ijs: ImageJSettings) = {
       SetupImageJInPartition(ijs)
-      val loadFcn = (cpath: String) => (cpath,new PortableImagePlus(Spiji.loadImageFromPath(cpath)))
+      val loadFcn = (cpath: String) => (cpath,
+        new PortableImagePlus(Spiji.loadImageFromPath(cpath),
+          new ImageLog(LogEntry.loadImages("loadImagesDriver",cpath))
+        )
+        )
       val pathList = if (parallel) {
         paths.par.map(loadFcn).toArray
-      }
-      else {
+      } else {
         paths.map(loadFcn)
       }
       sc.parallelize(
@@ -139,7 +160,6 @@ object scOps {
     }.reduce(_ + "_" + _)
 
   }
-
 
   /**
    * Just the operations on the imageplus objects
@@ -193,6 +213,7 @@ object scOps {
       inRDD.mapValues(_.getImageStatistics())
     }
   }
+
   /**
    * The IO operations for an ImageJ based RDD object
    * @param inRDD the RDD containing the images
@@ -250,20 +271,18 @@ object scOps {
             case (keyobj, imgobj) =>
               (
                 NullWritable.get(),
-              new BytesWritable(Spiji.saveImageAsByteArray(imgobj.getImg(),newSuffix))
+                new BytesWritable(Spiji.saveImageAsByteArray(imgobj.getImg(),newSuffix))
                 )
           }
-      }.saveAsHadoopFile(path, classOf[NullWritable], classOf[BytesWritable], format)
+      }.
+        saveAsHadoopFile(path, classOf[NullWritable], classOf[BytesWritable], format)
     }
-
   }
-
 
   /**
    * Add imageplus reader to the sparkcontext
    */
   implicit class ImageJFriendlySparkContext(sc: SparkContext) {
-
     val defMinPart = sc.defaultMinPartitions
 
     def ijByteFile(path: String, minPartitions: Int = sc.defaultMinPartitions): RDD[(String,

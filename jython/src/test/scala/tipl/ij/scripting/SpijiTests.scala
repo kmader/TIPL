@@ -77,6 +77,17 @@ class SpijiTests extends FunSuite with LocalSparkContext {
 
   }
 
+  test("Testing Log Values") {
+    implicit val ijs = SpijiTests.ijs
+    sc = getSpark("Spiji")
+    val imgList = makeImages(sc)
+    val oLogs = imgList.runAll("Add Noise").
+      runRange("Median...","radius=1.0","radius=5.0").mapValues(_.imgLog)
+    oLogs.collect().foreach{
+      case (key,value) =>
+        println(key+"=\t"+ value.toJsStrArray.mkString("\n\t[", "\t", "]"))
+    }
+  }
 
 }
 object SpijiTests extends Serializable {

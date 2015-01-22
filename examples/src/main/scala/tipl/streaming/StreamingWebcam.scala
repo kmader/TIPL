@@ -160,8 +160,8 @@ object StreamingWebcam {
             tempImg.show()
         }
     }
-
   }
+
   def main(args: Array[String]): Unit = {
     import org.apache.spark.streaming.StreamingContext._
     //import org.apache.spark.streaming.StreamingContext._

@@ -110,7 +110,7 @@ object TypeMacros {
     def toKV(): KVImg[_] = {
       val ity = cImg.getImageType
       cImg match {
-        case m: KVImg[_] => m
+        case m: KVImg[_]  => m
         case m: DTImg[_] if ity == IMAGETYPE_BOOL =>
           KVImg.fromDTImg[Array[Boolean], Boolean](m.asInstanceOf[DTImg[Array[Boolean]]])
         case m: DTImg[_] if ity == IMAGETYPE_CHAR =>

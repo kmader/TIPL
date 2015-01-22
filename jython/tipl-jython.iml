@@ -116,7 +116,7 @@
     <orderEntry type="library" name="Maven: xml-apis:xml-apis:1.0.b2" level="project" />
     <orderEntry type="library" name="Maven: gov.nist.math:jama:1.0.3" level="project" />
     <orderEntry type="library" name="Maven: org.mongodb:mongo-java-driver:2.12.3" level="project" />
-    <orderEntry type="library" name="Maven: org.scijava:scijava-common:2.35.2-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.scijava:scijava-common:2.36.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: com.googlecode.gentyref:gentyref:1.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.bushe:eventbus:1.4" level="project" />
     <orderEntry type="module" module-name="tipl-workflows" />
@@ -157,7 +157,7 @@
     <orderEntry type="library" name="Maven: com.twitter:parquet-jackson:1.4.3" level="project" />
     <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-core-asl:1.9.11" level="project" />
     <orderEntry type="library" name="Maven: org.python:jython:2.7-b3" level="project" />
-    <orderEntry type="library" name="Maven: net.imagej:ij:1.48r" level="project" />
+    <orderEntry type="library" name="Maven: net.imagej:ij:1.49m" level="project" />
     <orderEntry type="module-library">
       <library name="Maven: com.sun:tools:1.4.2">
         <CLASSES>

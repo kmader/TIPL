@@ -138,6 +138,19 @@ public class Spiji {
     private static final int NOCAL = 0;
     private static boolean verbose = true;
 
+
+    /**
+     * The type of operations supported
+     */
+    public static enum PIPOps implements Serializable {
+            LOAD, SAVE, CREATE, RUN, MACRO, THRESHOLD, COMMENT, OTHER, MERGE, MERGE_STORE
+    }
+
+    public static enum PIPTools implements Serializable {
+        IMAGEJ, SIL, SPARK, OTHER
+    }
+
+
     /**
      * Class constructor.
      */
