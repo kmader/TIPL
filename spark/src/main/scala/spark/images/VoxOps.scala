@@ -192,21 +192,35 @@ object VoxOps {
 
   implicit class kvImgVoxOpImp[A](ikv: KVImg[A])(implicit am: ClassTag[A]) extends
   rddVoxOpImp[A](ikv.getBaseImg()) {
-    def apply[B](vo: VoxOp[A, B],outType: Int = TImgTools.IMAGETYPE_UNKNOWN):
+
+    def apply[B](vo: VoxOp[A, B],paddingVal: B,outType: Int = TImgTools.IMAGETYPE_UNKNOWN):
     kvImgVoxOpImp[B] = {
       val newRdd = super.apply(vo).getBaseImg()
-      new kvImgVoxOpImp[B](KVImg.fromRDD(ikv,outType,newRdd)(vo.btag))(vo.btag)
+      new kvImgVoxOpImp[B](KVImg.fromRDD(ikv,outType,newRdd,paddingVal)(vo.btag))(vo.btag)
     }
+
+    def apply[B](vo: VoxOp[A, B],outType: Int = TImgTools.IMAGETYPE_UNKNOWN)(implicit nm:
+    Numeric[B]): kvImgVoxOpImp[B] = apply(vo,nm.zero,outType)
   }
 
   implicit class dsImgVoxOpImp[A](ids: DSImg[A])(implicit am: ClassTag[A]) extends Serializable {
 
-    def apply[B](vo: VoxOp[A, B],outType: Int = TImgTools.IMAGETYPE_UNKNOWN)= vo match {
+    def apply[B](vo: VoxOp[A, B],paddingValA: A, paddingValB: B,
+                 outType: Int = TImgTools.IMAGETYPE_UNKNOWN) =
+      vo match {
       case nvo: neighborhoodVoxOp[A,B] => nvapply(nvo)
-      case _ => kvapply(DSImg.toKVImg(ids),vo,ids.getImageType)
+      case _ => kvapply(DSImg.toKVImg(ids,paddingValA),vo,paddingValB,ids.getImageType)
     }
-    def kvapply[B](ikv: KVImg[A],vo: VoxOp[A,B], imgType: Int) =
-      ikv(vo,imgType)
+
+    def apply[B](vo: VoxOp[A, B],outType: Int = TImgTools.IMAGETYPE_UNKNOWN)(implicit nma:
+    Numeric[A], nmb: Numeric[B]) =
+      vo match {
+        case nvo: neighborhoodVoxOp[A,B] => nvapply(nvo)
+        case _ => kvapply(DSImg.toKVImg(ids,nma.zero),vo,nmb.zero,ids.getImageType)
+      }
+
+    def kvapply[B](ikv: KVImg[A],vo: VoxOp[A,B], paddingVal: B, imgType: Int) =
+      ikv(vo,paddingVal,imgType)
 
     def nvapply[B](nvo: neighborhoodVoxOp[A,B]): dsImgVoxOpImp[B] = ??? //TODO implement slice
     // based method

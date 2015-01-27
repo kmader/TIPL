@@ -49,9 +49,13 @@ class SResize extends BaseTIPLPluginIO {
 
   override def execute(): Boolean = {
     print("Starting Plugin..." + getPluginName)
-    outImg = SResize.applyResize(inImage, pOutDim, pOutPos, pFindEdge)
+    outImg = SResize.applyResize(inImage, pOutDim, pOutPos, pFindEdge,
+      TypeMacros.getNumericFromType(inImage.getImageType).zero)
     true
   }
+
+
+
 
   var inImage: TImgRO = null
   var outImg: TImg = null
@@ -81,8 +85,8 @@ object SResize {
   case class SStats(minx: Int, maxx: Int, miny: Int, maxy: Int, count: Int)
 
 
-  def applyResize[A](inImg: TImgRO, outDim: D3int, outPos: D3int, findEdge: Boolean)(implicit aa:
-  ClassTag[A]) = {
+  def applyResize[A](inImg: TImgRO, outDim: D3int, outPos: D3int, findEdge: Boolean,paddingVal: A)(
+    implicit aa: ClassTag[A]) = {
 
     val imClass = TImgTools.imageTypeToClass(inImg.getImageType)
     inImg match {
@@ -92,7 +96,7 @@ object SResize {
         outDim, outPos, findEdge)
       case dImg: DTImg[_] if imClass == TImgTools.IMAGECLASS_BINARY => dtResize(dImg.asDTBool,
         outDim, outPos, findEdge)
-      case kvImg: KVImg[A] => kvResize(kvImg, outDim, outPos)
+      case kvImg: KVImg[A] => kvResize(kvImg, outDim, outPos,paddingVal)
       case normImg: TImgRO if imClass == TImgTools.IMAGECLASS_LABEL =>
         val dnormImg = normImg.toDTLabels
         val resizeImg = dtResize(dnormImg, outDim, outPos, findEdge)
@@ -113,8 +117,10 @@ object SResize {
 
   /**
    * Resize code for the KVImg
+   * @param paddingVal the value to fill the empty spaces with
    */
-  def kvResize[A](aImg: KVImg[A], outDim: D3int, outPos: D3int)(implicit aa: ClassTag[A]) = {
+  def kvResize[A](aImg: KVImg[A], outDim: D3int, outPos: D3int, paddingVal: A)(implicit aa:
+  ClassTag[A]) = {
     val finalPos = outPos + outDim
     val resImg = aImg.getBaseImg.filter {
       inVals =>
@@ -125,7 +131,7 @@ object SResize {
     }
     KVImg.fromRDD[A](
       TImgTools.SimpleDimensions(outDim, aImg.getElSize, outPos),
-      aImg.getImageType, resImg)
+      aImg.getImageType, resImg,paddingVal)
   }
 
   /**

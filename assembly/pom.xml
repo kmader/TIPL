@@ -107,6 +107,12 @@
             <artifactId>tipl-webgui</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-knime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     
     </dependencies>
 

@@ -29,6 +29,7 @@ abstract public class SparkGlobal {
     private final static int DISK_ONLY = 4;
     private static String memorySettings = "";
     private static String sparkLocal = "/scratch"; // much better than tmp
+
     private static boolean useKyro = false;
     private static final int kyroBufferSize = 200;
     private static final int shuffleBufferSize = 20 * 1024;
@@ -54,6 +55,14 @@ abstract public class SparkGlobal {
      */
     private static int sparkPersistence = -1;
     private static int intSlicesPerCore = 1;
+
+    /**
+     * Get the local directory for saving temporary files
+     * @return
+     */
+    static public String getSparkLocal() {
+        return sparkLocal;
+    }
 
     static public boolean inheritContext(final JavaSparkContext activeContext) {
         if (activeContext != null) currentContext = activeContext;

@@ -47,6 +47,7 @@
         <module>webgui</module>
         <module>examples</module>
         <module>il2-tools</module>
+        <module>knime</module>
     </modules>
     <properties>
         <scala.major>2.10</scala.major>
@@ -58,6 +59,7 @@
         <scala.macros.version>2.0.1</scala.macros.version>
         <spark.version>1.1.0</spark.version>
         <ij.version>1.49m</ij.version>
+        <knime.version>2.11</knime.version>
         <javadoc.skip>false</javadoc.skip>
         <java.memory.min>-Xms1G</java.memory.min>
         <java.memory.max>-Xmx2G</java.memory.max>

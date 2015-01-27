@@ -306,11 +306,15 @@ object ImageRDD {
     def LoadImages(inImgs: Array[TImgRO]): Unit = {
       this.inImgs = inImgs
     }
-    def getKVImg[T](sc: SparkContext, imgType: Int,index: Int)(implicit tm: ClassTag[T]): KVImg[T]
+    def getKVImg[T](sc: SparkContext, imgType: Int,index: Int)(implicit tm: ClassTag[T],
+                                                               nm: Numeric[T]): KVImg[T] =
+      getKVImg[T](sc,imgType,index,nm.zero)
+    def getKVImg[T](sc: SparkContext, imgType: Int,index: Int,paddingVal: T)(implicit tm:
+    ClassTag[T]): KVImg[T]
     = {
       require(inImgs!=null)
       require(index>=0 && index<inImgs.length)
-      new KVImg[T](sc, inImgs(index), imgType)
+      new KVImg[T](sc, inImgs(index), imgType,paddingVal)
     }
   }
 

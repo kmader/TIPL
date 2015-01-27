@@ -64,16 +64,11 @@ object DTImgOps {
     //val onImg = TypeMacros.correctlyTypeDTImg(inImg)
   }
 
-
-  def DTImgToKV(inImg: DTImg[_]) = {
-    new KVImg(inImg, inImg.getImageType, DTImgToKVRDD(inImg))
-  }
-
-  def DTImgToKVStrict[T, V](inImg: DTImg[T])(implicit V: ClassTag[V]): KVImg[V] = {
+  def DTImgToKVStrict[T, V](inImg: DTImg[T],paddingVal: V)(implicit V: ClassTag[V]): KVImg[V] = {
     val outImg = DTImgToKVRDD(inImg).mapValues {
       cValue => cValue.asInstanceOf[V]
     }
-    new KVImg[V](inImg, inImg.getImageType, outImg)
+    new KVImg[V](inImg, inImg.getImageType, outImg,paddingVal)
   }
 
 

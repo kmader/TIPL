@@ -7,6 +7,61 @@ import tipl.formats.TImgRO
 object TypeMacros {
 
   def exCT[V](inObj: V)(implicit lm: ClassTag[V]) = lm
+  implicit val tm_bnm: Numeric[Boolean] = new Numeric[Boolean]() {
+    override def plus(x: Boolean, y: Boolean): Boolean = ???
+
+    override def toDouble(x: Boolean): Double = if(x) 1.0 else 0.0
+
+    override def toFloat(x: Boolean): Float = if(x) 1.0f else 0.0f
+
+    override def toInt(x: Boolean): Int = if(x) 1 else 0
+
+    override def negate(x: Boolean): Boolean = !x
+
+    override def fromInt(x: Int): Boolean = (x>0)
+
+    override def toLong(x: Boolean): Long = if(x) 1L else 0L
+
+    override def times(x: Boolean, y: Boolean): Boolean = x & y
+
+    override def minus(x: Boolean, y: Boolean): Boolean = x & (!y)
+
+    override def compare(x: Boolean, y: Boolean): Int = (x,y) match {
+      case (true,true) => 0
+      case (false,false) => 0
+      case (true,false) => 1
+      case (false,true) => -1
+    }
+  }
+
+  class NumImps
+    (implicit val bnm: Numeric[Boolean],
+     implicit val cnm: Numeric[Char],
+     implicit val bynm: Numeric[Byte],
+     implicit val snm: Numeric[Short],
+     implicit val inm: Numeric[Int],
+     implicit val lnm: Numeric[Long],
+     implicit val fnm: Numeric[Float],
+     implicit val dnm: Numeric[Double]) {
+  }
+
+
+  def getNumericFromType[A](imageType: Int): Numeric[_] = {
+    val ni = new NumImps
+    import ni._
+    imageType match {
+
+      case IMAGETYPE_BOOL => bnm
+      case IMAGETYPE_CHAR => cnm
+      case IMAGETYPE_SHORT => snm
+      case IMAGETYPE_INT => inm
+      case IMAGETYPE_LONG => lnm
+      case IMAGETYPE_FLOAT => fnm
+      case IMAGETYPE_DOUBLE => dnm
+      case _ => throw new IllegalArgumentException("Type Not Found:" + imageType + " " +
+        getImageTypeName(imageType))
+    }
+  }
 
   /**
    * Converts an imagetype integer into the appropriate classtag for DTImg objects
@@ -112,7 +167,7 @@ object TypeMacros {
       cImg match {
         case m: KVImg[_]  => m
         case m: DTImg[_] if ity == IMAGETYPE_BOOL =>
-          KVImg.fromDTImg[Array[Boolean], Boolean](m.asInstanceOf[DTImg[Array[Boolean]]])
+          KVImg.fromDTImg[Array[Boolean], Boolean](m.asInstanceOf[DTImg[Array[Boolean]]],false)
         case m: DTImg[_] if ity == IMAGETYPE_CHAR =>
           KVImg.fromDTImg[Array[Char], Char](m.asInstanceOf[DTImg[Array[Char]]])
         case m: DTImg[_] if ity == IMAGETYPE_SHORT =>
@@ -125,7 +180,7 @@ object TypeMacros {
           KVImg.fromDTImg[Array[Float], Float](m.asInstanceOf[DTImg[Array[Float]]])
         case m: DTImg[_] if ity == IMAGETYPE_DOUBLE =>
           KVImg.fromDTImg[Array[Double], Double](m.asInstanceOf[DTImg[Array[Double]]])
-        case m: TImgRO => KVImg.ConvertTImg(SparkGlobal.getContext(), m, IMAGETYPE_INT)
+        case m: TImgRO => KVImg.ConvertTImg(SparkGlobal.getContext(), m, IMAGETYPE_INT,0)
       }
     }
 

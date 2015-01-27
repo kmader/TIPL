@@ -293,17 +293,23 @@ object TIPLOps {
     //TODO Implement advanced filter  plugObj.neighborKernel=shape
     //TODO plugObj.asInstanceOf[].scalingFilterGenerator = filter
 
+
     /**
      * simple apply a function to each point in the image
      */
-    def apply[B](mapFun: (Double => B))(implicit bm: ClassTag[B]) = {
+    def apply[B](mapFun: (Double => B),paddingVal: B)(implicit bm: ClassTag[B]): TImgRO = {
       val outputType = TImgTools.identifySliceType(new Array[B](1))
       inputImage match {
-        case a: DTImg[_] => a.getBaseImg().rdd.apply[B](mapFun).wrap(a.getElSize)
-        case a: KVImg[_] => new KVImg(a, outputType, a.toKVDouble.getBaseImg().mapValues(mapFun))
-        case a: TImgRO => new FImage(a, outputType, mapFun.asVF, true)
+        case a: DTImg[_] =>
+          a.getBaseImg().rdd.apply[B](mapFun).wrap(a.getElSize)
+        case a: KVImg[_] =>
+          new KVImg(a, outputType, a.toKVDouble.getBaseImg().mapValues(mapFun),paddingVal)
+        case a: TImgRO =>
+          new FImage(a, outputType, mapFun.asVF, true)
       }
     }
+    def apply[B](mapFun: (Double => B))(implicit bm: ClassTag[B], nm: Numeric[B]): TImgRO =
+      apply(mapFun,nm.zero)
 
   }
 

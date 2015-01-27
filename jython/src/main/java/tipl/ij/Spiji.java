@@ -60,7 +60,6 @@ package tipl.ij;
 // - Added a createImage method with the possibility to show or show the image
 //
 //=====================================================================================
-
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
@@ -78,6 +77,7 @@ import ij.measure.ResultsTable;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
 import ij.process.*;
+import tipl.spark.SparkGlobal;
 import tipl.util.TImgTools;
 
 import java.awt.Polygon;
@@ -206,7 +206,7 @@ public class Spiji {
      * Starts new instance of ImageJ from Matlab.
      */
     public static void start(boolean visible) {
-        start(true,visible);
+        start(true,visible,true);
     }
 
     /**
@@ -216,9 +216,9 @@ public class Spiji {
      *            indicate the verbose mode
      *            @param visible show imagej
      */
-    public static void start(boolean v, boolean visible) {
+    public static void start(boolean v, boolean visible, boolean runLaunch) {
         verbose = v;
-        launch(null,visible);
+        if(runLaunch) launch(null,visible);
     }
 
     /**
@@ -230,13 +230,14 @@ public class Spiji {
      *            and macros folder
      *            @param visible show imagej
      */
-    public static void start(String IJpath, boolean visible) {
+    public static void start(String IJpath, boolean visible, boolean runLaunch) {
         System.setProperty("plugins.dir", IJpath);
         System.setProperty("ij.dir", IJpath);
         verbose = true;
         setupExt(IJpath);
-        launch(null,visible);
+        if(runLaunch) launch(null,visible);
     }
+
 
     /**
      * Starts new instance of ImageJ specifying the plugins directory and macros
@@ -1442,7 +1443,7 @@ public class Spiji {
             IOException {
         //TODO make a version of this compatible with the latest version of ImageJ2 to read in
         // files directly from the datastream since this is at the very least inefficient
-        File outputFile = File.createTempFile("ijtmpin",suffix);
+        final File outputFile = getSparkTempFile("ijtmpin",suffix);
         return loadImageFromInputStream(imgStream,outputFile);
     }
 
@@ -1480,11 +1481,17 @@ public class Spiji {
             IOException {
         //TODO make a version of this compatible with the latest version of ImageJ2 to write
         // files directly to a datastream
-        File outputFile = File.createTempFile("ijtmpout",suffix);
+
+        File outputFile = getSparkTempFile("ijtmpout",suffix);
         IJ.save(curImage,outputFile.getAbsolutePath());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         org.apache.commons.io.IOUtils.copy(new FileInputStream(outputFile),baos);
         return baos.toByteArray();
+    }
+
+    protected static File getSparkTempFile(String prefix,String suffix) throws IOException {
+        File tempDir = new File(SparkGlobal.getSparkLocal());
+        return File.createTempFile(prefix,suffix,tempDir);
     }
 
     public static void saveImage(ImagePlus curImage, String path) throws IOException {

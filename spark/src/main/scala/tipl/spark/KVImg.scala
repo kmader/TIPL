@@ -6,30 +6,37 @@ package tipl.spark
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
+import tipl.tools.TypedSliceLookup
 import scala.reflect.ClassTag
-import tipl.util.D3int
-import tipl.util.D3float
-import tipl.util.TImgTools
+import tipl.util._
 import tipl.formats.TImgRO
 import tipl.formats.TImg
 import scala.{specialized => spec}
 
+
 /**
  * A KV Pair image where the key is the position and the value is the value
  * @author mader
- *
+ * @param dim
+ * @param pos
+ * @param elSize
+ * @param imageType
+ * @param baseImg
+ * @param paddingVal the value to assign points removed from the image
+ * @param lm needed for making arrays of that type to implement typedslicelookup
+ * @tparam T
  */
 class KVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](dim: D3int, pos: D3int,
                                                                      elSize: D3float,
                                                                      imageType: Int,
                                                                      baseImg: RDD[(D3int,
-                                                                       T)])(implicit lm:
-ClassTag[T])
-  extends TImg.ATImg(dim, pos, elSize, imageType) with TImg {
+                                                                       T)],paddingVal: T)(
+  implicit lm: ClassTag[T])
+  extends TImg.ATImg(dim, pos, elSize, imageType) with TImg with TypedSliceLookup[T] {
 
   def this(inImg: TImgTools.HasDimensions, imageType: Int, baseImg: RDD[(D3int,
-    T)])(implicit lm: ClassTag[T]) =
-    this(inImg.getDim, inImg.getPos, inImg.getElSize, imageType, baseImg)(lm)
+    T)],paddingVal: T)(implicit lm: ClassTag[T]) =
+    this(inImg.getDim, inImg.getPos, inImg.getElSize, imageType, baseImg,paddingVal)(lm)
 
   /**
    * Direct conversion from TImgRO data
@@ -39,44 +46,26 @@ ClassTag[T])
    * @param lm
    * @return
    */
-  def this(sc: SparkContext, cImg: TImgRO, imageType: Int)(implicit lm: ClassTag[T]) =
-    this(cImg, imageType, KVImg.TImgToKVRdd[T](sc, cImg, imageType))(lm)
+  def this(sc: SparkContext, cImg: TImgRO, imageType: Int,paddingVal: T)(implicit lm: ClassTag[T]) =
+    this(cImg, imageType, KVImg.TImgToKVRdd[T](sc, cImg, imageType),paddingVal)(lm)
+
+  def map[U: ClassTag](f: ((D3int,T)) => (D3int,U), newPaddingVal: U,
+                       newDim: D3int=dim,newPos:
+  D3int=pos,newElSize: D3float = elSize,newImageType: Int=imageType): KVImg[U] =
+    new KVImg[U](newDim,newPos,newElSize,newImageType,getBaseImg.map(f),newPaddingVal)
 
 
-  def map[U: ClassTag](f: ((D3int,T)) => (D3int,U),newDim: D3int=dim,newPos: D3int=pos,
-                       newElSize: D3float = elSize,newImageType: Int=imageType): KVImg[U] =
-    new KVImg[U](newDim,newPos,newElSize,newImageType,getBaseImg.map(f))
-
-  def mapValues[U: ClassTag](f: (T) => U,newImageType: Int=imageType): KVImg[U] =
-    new KVImg[U](dim,pos,elSize,newImageType,getBaseImg.mapValues(f))
+  def mapValues[U: ClassTag](f: (T) => U,newImageType: Int=imageType)(implicit
+  nm: Numeric[U]): KVImg[U] =
+    new KVImg[U](dim,pos,elSize,newImageType,getBaseImg.mapValues(f),nm.zero)
+  def mapValues[U: ClassTag](f: (T) => U,newPaddingVal: U,newImageType: Int=imageType): KVImg[U] =
+    new KVImg[U](dim,pos,elSize,newImageType,getBaseImg.mapValues(f),newPaddingVal)
 
   def filter(f: ((D3int,T)) => Boolean): KVImg[T] =
-    new KVImg[T](dim,pos,elSize,imageType,getBaseImg.filter(f))
+    new KVImg[T](dim,pos,elSize,imageType,getBaseImg.filter(f),paddingVal)
 
   def getBaseImg() = baseImg
 
-  /* The function to collect all the key value pairs and return it as the appropriate array for a
-   given slice
- * @see tipl.formats.TImgRO#getPolyImage(int, int)
- */
-  override def getPolyImage(sliceNumber: Int, asType: Int): Object = {
-    assert(TImgTools.isValidType(asType))
-    val sliceSize = dim.x * dim.y
-
-    val sliceAsList = baseImg.filter(_._1.z == (sliceNumber + pos.z)).map {
-      curElement: (D3int, T) =>
-        ((curElement._1.y - pos.y) * dim.x + curElement._1.x - pos.x, curElement._2);
-    }.sortByKey(true)
-    val tSlice = (0 until sliceSize).zip(new Array[T](sliceSize))
-    // since particularly after thresholds many points are missing,
-    // we need to add them back before making a slice out of the data
-    val allPoints = baseImg.sparkContext.parallelize(tSlice)
-    val missingPoints = allPoints.subtractByKey(sliceAsList)
-    val fixedList = sliceAsList.union(missingPoints)
-    // convert this array into the proper output format
-    TImgTools.convertArrayType(fixedList.map(_._2).collect(), imageType, asType, getSigned(),
-      getShortScaleFactor())
-  }
 
   /* (non-Javadoc)
 * @see tipl.formats.TImgRO#getSampleName()
@@ -84,33 +73,43 @@ ClassTag[T])
 
   override def getSampleName() = baseImg.name
 
-  override def inheritedAim(inImg: TImgRO): TImg = {
-    val outImage = KVImg.ConvertTImg(baseImg.sparkContext, inImg, inImg.getImageType())
-    outImage.appendProcLog("Merged with:" + getSampleName() + ":" + this + "\n" + getProcLog())
-    outImage
-  }
+
+  @deprecated("this function is not supported in Spark Image Layer","1.0")
+  override def inheritedAim(inImg: TImgRO): TImg =
+    throw new IllegalArgumentException("Not a supported function")
 
   /**
    * for manually specifying conversion functions
    */
-  private[KVImg] def toKVType[V](newImageType: Int, convFunc: (T => V))(implicit gv: ClassTag[V])
-  = {
-    new KVImg[V](this, newImageType, baseImg.mapValues(convFunc))
+  private[KVImg] def toKVType[V](newImageType: Int, convFunc: (T => V),paddingVal: V)(
+    implicit gv: ClassTag[V]) = {
+    new KVImg[V](this, newImageType, baseImg.mapValues(convFunc),paddingVal)
+  }
+
+  /**
+   * for using the automatic functions
+   * @note if it is numeric support it automatically
+   */
+  private[KVImg] def toKVAuto[V](newImageType: Int)(implicit gv: ClassTag[V], nm: Numeric[V]) = {
+    mapValues[V](KVImg.makeConvFunc[V](imageType, newImageType),
+      newPaddingVal=nm.zero,
+      newImageType=newImageType)
   }
 
   /**
    * for using the automatic functions
    */
-  private[KVImg] def toKVAuto[V](newImageType: Int)(implicit gv: ClassTag[V]) = {
-    new KVImg[V](this, newImageType, baseImg.mapValues(KVImg.makeConvFunc[V](imageType,
-      newImageType)))
+  private[KVImg] def toKVAuto[V](newImageType: Int,newPaddingVal: V)(implicit gv: ClassTag[V]) = {
+    mapValues[V](KVImg.makeConvFunc[V](imageType, newImageType),
+      newPaddingVal=newPaddingVal,
+      newImageType=newImageType)
   }
 
   def toKVLong() =
     toKVAuto[Long](TImgTools.IMAGETYPE_LONG)
 
   def toKVBoolean() =
-    toKVAuto[Boolean](TImgTools.IMAGETYPE_BOOL)
+    toKVAuto[Boolean](TImgTools.IMAGETYPE_BOOL,false)
 
   def toKVFloat() =
     toKVAuto[Float](TImgTools.IMAGETYPE_FLOAT)
@@ -128,14 +127,50 @@ ClassTag[T])
     schemaTab.saveAsParquetFile(path)
   }
 
+  /**
+   * Create a numeric KVImg out of the current image which supports more operations based on the
+   * tools implemented in numeric
+   * @param nm the automatically filled in numeric class for the given type
+   * @return a @NumericKVImg
+   */
+  def toNumeric(implicit nm: Numeric[T]) = new NumericKVImg[T](dim,pos,elSize,imageType,baseImg)
+
+  /**
+   * @note this will always return a slice, even if the result is outside the bounds of the image
+   */
+  override def getSlice(sliceNum: Int): Option[Array[T]] = {
+    val sliceSize = dim.x * dim.y
+
+    val sliceAsList = baseImg.filter(_._1.z == (sliceNum + pos.z)).map {
+      curElement: (D3int, T) =>
+        ((curElement._1.y - pos.y) * dim.x + curElement._1.x - pos.x, curElement._2);
+    }.sortByKey(true).collect
+    val outSlice = Array.fill[T](sliceSize)(paddingVal)
+    for(cv <- sliceAsList) outSlice(cv._1)=cv._2
+    Some(outSlice)
+  }
+}
+
+/**
+ * A KVImg where a known Numeric class exists
+ * @param nm
+ * @tparam T
+ */
+class NumericKVImg[T](dim: D3int, pos: D3int, elSize: D3float, imageType: Int,
+                      baseImg: RDD[(D3int, T)])(implicit lm: ClassTag[T], nm: Numeric[T]) extends
+KVImg[T](dim,pos,elSize,imageType,baseImg,nm.zero)(lm) {
+
+  def toDouble() = new NumericKVImg[Double](dim,pos,elSize,TImgTools.IMAGETYPE_DOUBLE,
+  baseImg.mapValues(nm.toDouble(_)))
+
+  def toLong() = new NumericKVImg[Long](dim,pos,elSize,TImgTools.IMAGETYPE_LONG,
+    baseImg.mapValues(nm.toLong(_)))
 }
 
 
 object KVImg {
 
-
   case class KVImgRowGeneric(x: Int, y: Int, z: Int, value: Double) extends Serializable
-
 
   private[spark] def TImgToKVRdd[T](sc: SparkContext, inImg: TImgRO,
                                     imType: Int)(implicit lm: ClassTag[T]) = {
@@ -153,8 +188,8 @@ object KVImg {
     }
   }
 
-  def ConvertTImg[T: ClassTag](sc: SparkContext, inImg: TImgRO, imType: Int) =
-    new KVImg[T](inImg, imType, TImgToKVRdd(sc, inImg, imType))
+  def ConvertTImg[T: ClassTag](sc: SparkContext, inImg: TImgRO, imType: Int,paddingVal: T) =
+    new KVImg[T](sc,inImg,imType,paddingVal)
 
   /** Load a parquet file
     *
@@ -169,7 +204,7 @@ object KVImg {
       (cPos, curRow.getDouble(3))
     }
     val (pos, dim) = inferShape(kvTab.map(_._1))
-    new KVImg(dim, pos, elSize, TImgTools.IMAGETYPE_DOUBLE, kvTab)
+    new KVImg(dim, pos, elSize, TImgTools.IMAGETYPE_DOUBLE, kvTab,0.0)
   }
 
   /**
@@ -188,30 +223,40 @@ object KVImg {
   /**
    * Transform the DTImg into a KVImg
    */
-  def fromDTImg[T, V](inImg: DTImg[T])(implicit lm: ClassTag[T], gm: ClassTag[V]): KVImg[V] = {
-    DTImgOps.DTImgToKVStrict[T, V](inImg)
+  def fromDTImg[T, V](inImg: DTImg[T])(implicit lm: ClassTag[T], gm: ClassTag[V],nm: Numeric[V]):
+  KVImg[V] = fromDTImg(inImg,nm.zero)
+
+  def fromDTImg[T, V](inImg: DTImg[T], paddingVal: V)(implicit lm: ClassTag[T], gm: ClassTag[V]):
+  KVImg[V] = {
+    DTImgOps.DTImgToKVStrict[T, V](inImg,paddingVal)
   }
 
   def fromDTImgBlind(inImg: DTImg[_]) = inImg.getImageType() match {
     case TImgTools.IMAGETYPE_BOOL => DTImgOps.DTImgToKVStrict(inImg
-      .asInstanceOf[DTImg[Array[Boolean]]])
+      .asInstanceOf[DTImg[Array[Boolean]]],false)
     case TImgTools.IMAGETYPE_CHAR => DTImgOps.DTImgToKVStrict(inImg
-      .asInstanceOf[DTImg[Array[Byte]]])
+      .asInstanceOf[DTImg[Array[Byte]]],0)
     case TImgTools.IMAGETYPE_SHORT => DTImgOps.DTImgToKVStrict(inImg
-      .asInstanceOf[DTImg[Array[Short]]])
-    case TImgTools.IMAGETYPE_INT => DTImgOps.DTImgToKVStrict(inImg.asInstanceOf[DTImg[Array[Int]]])
+      .asInstanceOf[DTImg[Array[Short]]],0)
+    case TImgTools.IMAGETYPE_INT => DTImgOps.DTImgToKVStrict(inImg
+      .asInstanceOf[DTImg[Array[Int]]],0)
     case TImgTools.IMAGETYPE_LONG => DTImgOps.DTImgToKVStrict(inImg
-      .asInstanceOf[DTImg[Array[Long]]])
+      .asInstanceOf[DTImg[Array[Long]]],0L)
     case TImgTools.IMAGETYPE_FLOAT => DTImgOps.DTImgToKVStrict(inImg
-      .asInstanceOf[DTImg[Array[Float]]])
+      .asInstanceOf[DTImg[Array[Float]]],0f)
     case TImgTools.IMAGETYPE_DOUBLE => DTImgOps.DTImgToKVStrict(inImg
-      .asInstanceOf[DTImg[Array[Double]]])
+      .asInstanceOf[DTImg[Array[Double]]],0)
     case m: Int => throw new IllegalArgumentException("Unknown type:" + m)
   }
 
-  def fromRDD[T](objToMirror: TImgTools.HasDimensions, imageType: Int, wrappedImage: RDD[(D3int,
-    T)])(implicit lm: ClassTag[T]) = {
-    new KVImg[T](objToMirror, imageType, wrappedImage)
+  def fromRDD[T](objToMirror: TImgTools.HasDimensions, imageType: Int,
+                 wrappedImage: RDD[(D3int, T)],paddingVal: T)(implicit lm: ClassTag[T]) = {
+    new KVImg[T](objToMirror, imageType, wrappedImage,paddingVal)
+  }
+
+  def fromRDD[T](objToMirror: TImgTools.HasDimensions, imageType: Int,
+                 wrappedImage: RDD[(D3int, T)])(implicit lm: ClassTag[T], nm: Numeric[T]) = {
+    new KVImg[T](objToMirror, imageType, wrappedImage,nm.zero)
   }
 
   private[KVImg] def makeConvFunc[T](inType: Int, outType: Int) = {
@@ -220,3 +265,4 @@ object KVImg {
   }
 
 }
+

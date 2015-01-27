@@ -383,7 +383,7 @@ object KVImgOps extends Serializable {
           if oVal > threshold
         } yield (new D3int(imgPos.x + x, imgPos.y + y, imgPos.z + cSlice), oVal)
     }
-    new KVImg(inImg, TImgTools.IMAGETYPE_DOUBLE, kvRdd)
+    new KVImg[Double](inImg, TImgTools.IMAGETYPE_DOUBLE, kvRdd,0.0)
   }
 
   // vector field support

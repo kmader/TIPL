@@ -207,14 +207,14 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
 
   override def ExportDistanceAim(inObj: CanExport): TImg = {
     labeledDistanceMap match {
-      case Some(ldm) => new KVImg[Float](inObj, TImgTools.IMAGETYPE_FLOAT, ldm.mapValues(_._1._2))
+      case Some(ldm) => new KVImg[Float](inObj, TImgTools.IMAGETYPE_FLOAT, ldm.mapValues(_._1._2),0)
       case None => throw new IllegalArgumentException(this+" has not yet been run!")
     }
   }
 
   override def ExportVolumesAim(inObj: CanExport): TImg = {
     labeledDistanceMap match {
-      case Some(ldm) => new KVImg[Long](inObj, TImgTools.IMAGETYPE_LONG, ldm.mapValues(_._1._1))
+      case Some(ldm) => new KVImg[Long](inObj, TImgTools.IMAGETYPE_LONG, ldm.mapValues(_._1._1),0L)
       case None => throw new IllegalArgumentException(this + " has not yet been run!")
     }
   }

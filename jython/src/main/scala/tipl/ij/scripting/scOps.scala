@@ -24,6 +24,9 @@ class rddImage extends ImageStack {
 
 }
 
+trait FijiInit {
+  def setupFiji(): Unit
+}
 
 /**
  * Tools for making previewing and exploring data in FIJI from Spark easy
@@ -33,10 +36,13 @@ class rddImage extends ImageStack {
 object scOps {
   import tipl.spark.IOOps._
 
-  def StartFiji(ijPath: String, show: Boolean = false): Unit = {
-    Spiji.start(ijPath, show)
+  def StartFiji(ijPath: String, show: Boolean = false,
+                 runLaunch: Boolean = true): Unit = {
+    Spiji.start(ijPath, show,runLaunch)
     Spiji.startRecording()
   }
+
+
 
   /**
    * A class which hangs around and keeps all of the imagej settings (so they can be sent to
@@ -45,10 +51,15 @@ object scOps {
    * @param ijPath
    */
   case class ImageJSettings(ijPath: String,
-                            showGui: Boolean = false
-                             ) extends Serializable
+                            showGui: Boolean = false,
+                           runLaunch: Boolean = true
+                             ) extends FijiInit {
+    override def setupFiji = StartFiji(ijPath,showGui,runLaunch)
+  }
 
-  def SetupImageJInPartition(ijs: ImageJSettings): Unit = StartFiji(ijs.ijPath,ijs.showGui)
+
+  def SetupImageJInPartition(ijs: ImageJSettings): Unit = ijs.setupFiji
+
 
   def loadImages(path: String, partitions: Int)(implicit sc: SparkContext,
                                                 ijs: ImageJSettings) = {

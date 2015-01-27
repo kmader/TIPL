@@ -14,7 +14,7 @@ import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 import org.apache.spark.annotation.Experimental
 import org.apache.spark.input.{BinaryFileInputFormat, BinaryRecordReader}
 import org.apache.spark.ui.tipl.WebViz
-import org.apache.spark.ui.tipl.WebViz.{RDDInfo, ExtInfo}
+import org.apache.spark.ui.tipl.WebViz.{ExtInfo, RDDInfo}
 import org.json4s.JsonAST.JValue
 import org.json4s.JsonDSL._
 import org.json4s._
@@ -25,6 +25,7 @@ import tipl.ij.Spiji.{PIPOps, PIPTools}
 import tipl.ij.{ImageStackToTImg, Spiji}
 
 import scala.collection.mutable.ArrayBuffer
+import scala.reflect.ClassTag
 
 
 object ImagePlusIO {
@@ -415,8 +416,8 @@ object ImagePlusIO {
    * Support for ImagePlus
    * case ((_, firstImage: TImgRO), tRdd: RDD[(_, TImgRO)]) =>
    */
-  abstract class ImagePlusViz(parentTabPrefix: String, slicePageName: String) extends WebViz
-  .VizTool {
+  abstract class ImagePlusViz(parentTabPrefix: String, slicePageName: String)(
+    implicit val et: ClassTag[PortableImagePlus]) extends WebViz.VizTool {
     val thumbPath = "/" + parentTabPrefix + "/" + slicePageName
     val slicePath = thumbPath + "/png"
 

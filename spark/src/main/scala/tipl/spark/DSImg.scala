@@ -4,6 +4,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, SparkContext}
 import tipl.formats.{TImg, TImgRO}
+import tipl.tools.TypedSliceLookup
 import tipl.util._
 
 import scala.collection.mutable.{Map => MuMap}
@@ -21,12 +22,15 @@ class FlatDSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
 (dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg: IndexedSeq[(D3int,
   TImgSlice[Array[T]])], path: TypedPath)
 (implicit lm: ClassTag[T])
-  extends TImg.ATImg(dim, pos, elSize, imageType) {
-  override def getPolyImage(sliceNumber: Int, asType: Int): AnyRef =
-    TImgTools.convertArrayType(baseImg(sliceNumber)._2.get(), getImageType, asType, getSigned,
-      getShortScaleFactor)
+  extends TImg.ATImg(dim, pos, elSize, imageType) with
+  TypedSliceLookup[T] {
 
   override def getSampleName: String = path.getPath()
+
+  override def getSlice(sliceNum: Int) = sliceNum match {
+    case sliceNum if (sliceNum>=0 & sliceNum<getDim.z) => Some(baseImg(sliceNum)._2.get())
+    case _ => None
+  }
 }
 
 
@@ -42,7 +46,8 @@ class DSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
 (dim: D3int, pos: D3int, elSize: D3float, imageType: Int, baseImg: RDD[(D3int,
   TImgSlice[Array[T]])], path: TypedPath, var desiredPartitions: Int = 100)
 (implicit lm: ClassTag[T])
-  extends TImg.ATImg(dim, pos, elSize, imageType) {
+  extends TImg.ATImg(dim, pos, elSize, imageType) with
+  TypedSliceLookup[T]{
 
   def this(hd: TImgTools.HasDimensions, baseImg: RDD[(D3int, TImgSlice[Array[T]])],
            imageType: Int)(implicit lm: ClassTag[T]) =
@@ -65,25 +70,6 @@ class DSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
   def getBaseImg() = baseImg
 
 
-  /**
-   * A fairly simple operation of filtering the RDD for the correct slice and returning that slice
-   */
-  override def getPolyImage(sliceNumber: Int, asType: Int): AnyRef = {
-    if ((sliceNumber < 0) || (sliceNumber >= getDim.z)) throw new IllegalArgumentException(this
-      .getSampleName + ": Slice requested (" + sliceNumber + ") exceeds image dimensions " + getDim)
-    val zPos: Int = getPos.z + sliceNumber
-
-    val outSlices = this.baseImg.lookup(new D3int(getPos.x, getPos.y, zPos))
-    if (outSlices.size != 1) {
-      throw new IllegalArgumentException(this.getSampleName + ", lookup failed (#" + outSlices
-        .size + " found):" + sliceNumber + " (z:" + zPos + "), of " + getDim + " of #" + this
-        .baseImg.count + " blocks")
-    }
-    val curSlice = outSlices(0).get
-    return TImgTools.convertArrayType(curSlice, getImageType, asType, getSigned,
-      getShortScaleFactor)
-  }
-
   override def getSampleName: String = path.getPath()
 
   def spreadSlices(zSlices: Int) = {
@@ -98,6 +84,15 @@ class DSImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
   def changeTypes[V](outType: Int)(implicit ctv: ClassTag[V],num: Numeric[V]): DSImg[V] = {
     new DSImg[V](this,getBaseImg.mapValues(_.changeType[V](outType)),outType)
   }
+
+
+  private var slicePos = getPos()
+  def getTSlice(sliceNum: Int) = {
+    slicePos.z = getPos().z + sliceNum
+    baseImg.lookup(slicePos).headOption
+  }
+
+  def getSlice(sliceNum: Int) = getTSlice(sliceNum).map(_.get)
 
 }
 
@@ -290,13 +285,14 @@ object DSImg {
    * @tparam T the type of the values (Array[T] for the dsimg slices)
    * @return an KVImg
    */
-  def toKVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](inImg: DSImg[T])
+  def toKVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](inImg: DSImg[T],
+                                                                        paddingVal: T)
                                                                       (implicit tm: ClassTag[T]):
   KVImg[T] = {
 
     val imgType = inImg.getImageType
     val kvRdd = DTImgOps.DTrddToKVrdd[T](inImg.getBaseImg, inImg.getPos, inImg.getDim)
-    new KVImg[T](inImg, imgType,kvRdd)
+    new KVImg[T](inImg, imgType,kvRdd,paddingVal)
   }
 
   def fromKVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](inImg: KVImg[T])
