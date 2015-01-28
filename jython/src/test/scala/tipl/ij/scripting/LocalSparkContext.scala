@@ -1,4 +1,4 @@
-package tipl.ij.scripting
+package org.apache.spark
 
 /**
  * Based on the implementation from the Spark Testing Suite, a set of commands to initialize a
@@ -7,7 +7,6 @@ package tipl.ij.scripting
  */
 
 import _root_.io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
-import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 import tipl.spark.SparkGlobal
 
@@ -37,10 +36,25 @@ trait LocalSparkContext extends BeforeAndAfterEach with BeforeAndAfterAll {
 
   def resetSparkContext() = {
     LocalSparkContext.stop(sc)
+    SparkGlobal.stopContext()
     sc = null
   }
 
-  def getSpark(testName: String) = SparkGlobal.getContext("Testing:" + testName).sc
+  def getSpark(testName: String) =
+    SparkGlobal.getContext("Testing:" + testName).sc
+  def getSpark(master: String, testName: String ) = {
+    SparkGlobal.activeParser(("-@masternode="+master).split("\n"))
+    SparkGlobal.getContext("Testing:" + testName).sc
+  }
+  lazy val masterNode = {
+    org.apache.spark.deploy.master.Master.main("".split(","))
+    Thread.sleep(5000)
+  }
+
+  lazy val workerNode = {
+    org.apache.spark.deploy.worker.Worker.main("spark://localhost:8080".split(","))
+    Thread.sleep(1000)
+  }
 
 }
 

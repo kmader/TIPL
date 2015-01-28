@@ -1,98 +1,148 @@
 package tipl.ij.scripting
 
-import org.apache.spark.SparkContext
-import org.scalatest.FunSuite
-import tipl.ij.scripting.ImagePlusIO.PortableImagePlus
+import org.apache.spark.LocalSparkContext
 import org.apache.spark.SparkContext._
+import org.scalatest.{FunSuite, Matchers}
+import tipl.ij.scripting.ImagePlusIO.{PortableImagePlus, makeTestImages}
 import tipl.ij.scripting.scOps._
+
+import scala.collection.mutable.ArrayBuffer
+
 /**
  * Ensure the distributed fiji code works as expected including reading and writing files, basic
  * plugin support, and histogram / table analysis
  * Created by mader on 1/16/15.
  */
-class SpijiTests extends FunSuite with LocalSparkContext {
-  def makeImages(sc: SparkContext, fact: Int = 1) =
-    sc.
-      parallelize(1 to SpijiTests.imgs).
-      map(i => ("/Users/mader/imgs/"+i.toString,Array.fill[Int](SpijiTests.width,SpijiTests
-      .height)(fact*(i-1)*1000+1000))).
-      mapValues(a => new PortableImagePlus(a))
-
-
-
-  test("Creating synthetic images") {
-    implicit val ijs = SpijiTests.ijs
-    sc = getSpark("Spiji")
-    val imgList = makeImages(sc)
-    imgList runAll("Add Noise")
-    imgList saveImages("/Users/mader/imgs",".jpg")
+class SpijiTests extends FunSuite with LocalSparkContext with Matchers {
+  def compareImages(p1: PortableImagePlus,p2: PortableImagePlus, cutOff: Double = 1e-5): Unit = {
+    p1.getImg().getDimensions should equal (p2.getImg().getDimensions())
+    val is1 = p1.getImageStatistics
+    val is2 = p2.getImageStatistics()
+    assert(is1.compareTo(is2,cutOff),"Image statistics should be within "+cutOff*100+"%")
   }
 
-  test("Image Immutability Test : Noise") {
-    implicit val ijs = SpijiTests.ijs
-    sc = getSpark("Spiji")
-    val imgList = makeImages(sc,0).cache
-    // execute them in the wrong order
-    val wwNoise = imgList.runAll("Add Noise").runAll("Add Noise").
-      getStatistics().values.takeSample(false,1)(0).stdDev
-    val wNoise = imgList.runAll("Add Noise").getStatistics().values.takeSample(false,1)(0).stdDev
-    val woNoise = imgList.getStatistics().values.takeSample(false,1)(0).stdDev
-    print("None:"+woNoise+"\tOnce:"+wNoise+"\tTwice:"+wwNoise)
-    assert(woNoise<1e-3,"Standard deviation of image is almost 0")
-    assert(wNoise>woNoise,"With noise is more than without noise")
-    assert(wwNoise>wNoise," With double noise is more then just noise")
-  }
+  val conList = ArrayBuffer(
+    ("LocalSpark",(a: String) => getSpark("local[8]",a))
+  )
+  val localWorkers = true
+  if(true) conList+=("LocalCluster",(a: String) => getSpark("local-cluster[2,2,512]",a))
+  if(false) conList+=("DistributedSpark",(a: String) => getSpark("spark://MacBook-Air" +
+    ".local:7077",a))
 
-  test("Image Immutability Test : Threshold ") {
-    implicit val ijs = SpijiTests.ijs
-    sc = getSpark("Spiji")
-    val imgList = makeImages(sc,0).cache
 
-    // execute them in the wrong order
-    val wNoisewThreshTwice = imgList.runAll("Add Noise").
-      runAll("applyThreshold","lower=0 upper=1000").runAll("applyThreshold","lower=0 upper=1000").
-      getStatistics().values.takeSample(false,1)(0)
-    val wNoisewThresh = imgList.runAll("Add Noise").runAll("applyThreshold","lower=0 upper=1000").
-      getStatistics().values.takeSample(false,1)(0)
-    val wNoise = imgList.runAll("Add Noise").
-      getStatistics().values.takeSample(false,1)(0)
-    val woNoise = imgList.getStatistics().values.takeSample(false,1)(0)
-    print("\tNone:"+woNoise+"\n\tNoise:"+wNoise+"\n\tThresh:"+wNoisewThresh+"\n\tTThres" +
-      ":"+wNoisewThreshTwice)
-    assert(woNoise.mean==1000,"Mean of standard image should be 1000")
-    assert(woNoise.stdDev<1e-3,"Std of standard image should be 0")
-    assert(wNoise.stdDev>1,"With noise is should have a greater than 1 std")
-    assert(wNoisewThresh.mean<255," With a threshold the mean should be below 255")
-    assert(wNoisewThresh.stdDev>1," With a threshold the std should be greater than 0")
-    assert(wNoisewThreshTwice.mean==255," With a second very loose threshold the mean should be 255")
-  }
+  for((conName,curCon) <- conList) {
 
-  test("Testing Parameter Sweep") {
-    implicit val ijs = SpijiTests.ijs
-    sc = getSpark("Spiji")
-    val imgList = makeImages(sc)
-    imgList.runAll("Add Noise").
-      runRange("Median...","radius=1.0","radius=5.0").
-      saveImagesLocal(".jpg")
-
-  }
-
-  test("Testing Log Values") {
-    implicit val ijs = SpijiTests.ijs
-    sc = getSpark("Spiji")
-    val imgList = makeImages(sc)
-    val oLogs = imgList.runAll("Add Noise").
-      runRange("Median...","radius=1.0","radius=5.0").mapValues(_.imgLog)
-    oLogs.collect().foreach{
-      case (key,value) =>
-        println(key+"=\t"+ value.toJsStrArray.mkString("\n\t[", "\t", "]"))
+    test(conName+":Creating synthetic images") {
+      implicit val ijs = SpijiTests.ijs
+      sc = curCon("Spiji")
+      val imgList = makeTestImages(sc,1,SpijiTests.imgs,SpijiTests.width,SpijiTests.height)
+      imgList runAll("Add Noise")
+      imgList saveImages("/Users/mader/imgs",".jpg")
     }
+
+    test(conName+":Image Immutability Test : Noise") {
+      implicit val ijs = SpijiTests.ijs
+      sc = curCon("Spiji")
+      val imgList =  makeTestImages(sc,0,SpijiTests.imgs,SpijiTests.width,SpijiTests.height).cache
+      // execute them in the wrong order
+      val wwNoise = imgList.runAll("Add Noise").runAll("Add Noise").
+        getStatistics().values.takeSample(false,1)(0).stdDev
+      val wNoise = imgList.runAll("Add Noise").getStatistics().values.takeSample(false,1)(0).stdDev
+      val woNoise = imgList.getStatistics().values.takeSample(false,1)(0).stdDev
+      print("None:"+woNoise+"\tOnce:"+wNoise+"\tTwice:"+wwNoise)
+      assert(woNoise<1e-3,"Standard deviation of image is almost 0")
+      assert(wNoise>woNoise,"With noise is more than without noise")
+      assert(wwNoise>wNoise," With double noise is more then just noise")
+    }
+
+    test(conName+":RDD vs Standard") {
+      sc = curCon("Spiji")
+      implicit val ijs = SpijiTests.ijs
+      val imgList =  makeTestImages(sc,0,SpijiTests.imgs,SpijiTests.width,SpijiTests.height).cache
+      // write the rdd to a list and process it
+      val procList = imgList.collect.
+        map(iv => (iv._1,iv._2.run("Median...","radius=3"))).toMap
+      // process it in rdd space
+      val procRdd = imgList.runAll("Median...","radius=3").collect.toMap
+      assert(procList.keySet.size==procRdd.keySet.size,"Same number of images")
+      for(ckey<- procList.keySet) {
+        println(procList(ckey).toString)
+        println(procRdd(ckey).toString)
+        compareImages(procList(ckey),procRdd(ckey))
+      }
+    }
+
+    test(conName+":Noisy RDD vs Standard") {
+      sc = curCon("Spiji")
+      implicit val ijs = SpijiTests.ijs
+      val imgList =  makeTestImages(sc,0,SpijiTests.imgs,SpijiTests.width,SpijiTests.height).cache
+      // write the rdd to a list and process it
+      val procList = imgList.collect.
+        map(iv => (iv._1,iv._2.run("Add Noise").getImageStatistics())).toMap
+      // process it in rdd space
+      val procRdd = imgList.runAll("Add Noise").getStatistics().collect.toMap
+      assert(procList.keySet.size==procRdd.keySet.size,"Same number of images")
+      for(ckey<- procList.keySet) {
+        assert(procList(ckey) compareTo(procRdd(ckey),10e-2),"Assure difference is less than 10%")
+      }
+    }
+
+    test(conName+":Image Immutability Test : Threshold ") {
+      implicit val ijs = SpijiTests.ijs
+      sc = curCon("Spiji")
+      val imgList =  makeTestImages(sc,0,SpijiTests.imgs,SpijiTests.width,SpijiTests.height).cache
+
+      // execute them in the wrong order
+      val wNoisewThreshTwice = imgList.runAll("Add Noise").
+        runAll("applyThreshold","lower=0 upper=1000").runAll("applyThreshold","lower=0 upper=1000").
+        getStatistics().values.takeSample(false,1)(0)
+      val wNoisewThresh = imgList.runAll("Add Noise").runAll("applyThreshold","lower=0 upper=1000").
+        getStatistics().values.takeSample(false,1)(0)
+      val wNoise = imgList.runAll("Add Noise").
+        getStatistics().values.takeSample(false,1)(0)
+      val woNoise = imgList.getStatistics().values.takeSample(false,1)(0)
+      print("\tNone:"+woNoise+"\n\tNoise:"+wNoise+"\n\tThresh:"+wNoisewThresh+"\n\tTThres" +
+        ":"+wNoisewThreshTwice)
+      assert(woNoise.mean==1000,"Mean of standard image should be 1000")
+      assert(woNoise.stdDev<1e-3,"Std of standard image should be 0")
+      assert(wNoise.stdDev>1,"With noise is should have a greater than 1 std")
+      assert(wNoisewThresh.mean<255," With a threshold the mean should be below 255")
+      assert(wNoisewThresh.stdDev>1," With a threshold the std should be greater than 0")
+      assert(wNoisewThreshTwice.mean==255," With a second very loose threshold the mean should be 255")
+    }
+
+    test(conName+":Testing Parameter Sweep") {
+      implicit val ijs = SpijiTests.ijs
+      sc = curCon("Spiji")
+      val imgList =  makeTestImages(sc,1,SpijiTests.imgs,SpijiTests.width,SpijiTests.height)
+      imgList.runAll("Add Noise").
+        runRange("Median...","radius=1.0","radius=5.0").
+        saveImagesLocal(".jpg")
+
+    }
+
+    test(conName+":Testing Log Values") {
+      implicit val ijs = SpijiTests.ijs
+      sc = curCon("Spiji")
+      val imgList =  makeTestImages(sc,1,SpijiTests.imgs,SpijiTests.width,SpijiTests.height)
+      val oLogs = imgList.runAll("Add Noise").
+        runRange("Median...", "radius=1.0", "radius=5.0").mapValues(_.imgLog)
+      oLogs.collect().foreach {
+        case (key, value) =>
+          println(key + "=\t" + value.toJsStrArray.mkString("\n\t[", "\t", "]"))
+      }
+    }
+
+    resetSparkContext()
+
   }
+
+
 
 }
 object SpijiTests extends Serializable {
   val width = 100
   val height = 50
-  val imgs = 20
+  val imgs = 5
   val ijs = ImageJSettings("/Applications/Fiji.app/")
 }

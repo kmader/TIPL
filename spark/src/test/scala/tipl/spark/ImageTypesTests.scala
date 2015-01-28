@@ -25,7 +25,7 @@ class ImageTypesTests extends FunSuite with LocalSparkContext {
   }
   test("Creation of KVImg") {
     sc = getSpark("Create KVImg")
-    val testKVImg = new KVImg[Boolean](sc, lineImage, TImgTools.IMAGETYPE_BOOL)
+    val testKVImg = new KVImg[Boolean](sc, lineImage, TImgTools.IMAGETYPE_BOOL,false)
     checkImage(lineImage, testKVImg)
   }
 }

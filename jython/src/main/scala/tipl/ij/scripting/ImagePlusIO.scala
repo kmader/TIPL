@@ -11,6 +11,8 @@ import ij.{ImagePlus, WindowManager}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.lib.input.{CombineFileRecordReader, CombineFileSplit}
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
 import org.apache.spark.annotation.Experimental
 import org.apache.spark.input.{BinaryFileInputFormat, BinaryRecordReader}
 import org.apache.spark.ui.tipl.WebViz
@@ -28,12 +30,19 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 
-object ImagePlusIO {
+object ImagePlusIO extends Serializable {
   /**
    * Should immutablity of imageplus be ensured at the cost of performance and memory
    */
   val ensureImmutability: Boolean = true
 
+  protected[scripting] def makeTestImages(sc: SparkContext, fact: Int = 1,
+                                          imgs: Int, width: Int, height: Int) =
+    sc.
+      parallelize(1 to imgs).
+      map(i => ("/Users/mader/imgs/"+i.toString,
+      Array.fill[Int](width, height)(fact*(i-1)*1000+1000))).
+      mapValues(a => new PortableImagePlus(a))
   /**
    * The new (Hadoop 2.0) InputFormat for imagej files (not be to be confused with the
    * recordreader
@@ -216,6 +225,24 @@ object ImagePlusIO {
       )
     }
   }
+
+  case class ImageStatistics(min: Double,mean: Double, stdDev: Double,
+                             max: Double, pts: Long) extends Serializable {
+    def compareTo(is2: ImageStatistics,cutOff: Double = 1e-5): Boolean = {
+
+      if (pts == is2.pts) {
+        if ((min == is2.min) & (mean == is2.mean) & (stdDev == is2.stdDev) &
+          (max == is2.max)) return true
+      } else {
+        val nf = if ((max-min)>0) {max-min} else {1}
+        return ((min - is2.min)/nf<cutOff) & ((max - is2.max)/nf<cutOff) &
+          ((stdDev - is2.stdDev)/(stdDev)<cutOff) & ((mean - is2.mean)/nf<cutOff)
+      }
+      return false
+    }
+
+  }
+
   val pipStoreSerialization = false
   /**
    * Since ImagePlus is not serializable this class allows for it to be serialized and thus used
@@ -315,11 +342,10 @@ object ImagePlusIO {
           Right(plugfilt)
       }
     }
-    case class ImageStatistics(min: Double,mean: Double, stdDev: Double,
-                               max: Double, pts: Long) extends Serializable
+
     def getImageStatistics() ={
       val istat = curImg.getStatistics
-      ImageStatistics(istat.min,istat.mean,istat.stdDev,istat.max,istat.longPixelCount)
+      ImageStatistics(istat.min,istat.mean,istat.stdDev,istat.max,istat.pixelCount)
     }
 
 
