@@ -126,4 +126,15 @@ public class D3int implements ID3int {
 
     public static final D3int zero = new D3int(0,0,0);
     public static final D3int one = new D3int(1,1,1);
+
+
+    public static final int AXIS_X = 0;
+    public static final int AXIS_Y = 1;
+    public static final int AXIS_Z = 2;
+    public static final int AXIS_T = 3;
+    public static final int AXIS_U = 4;
+    public static final int AXIS_V = 5;
+    public static final int AXIS_W = 6;
+
+
 }

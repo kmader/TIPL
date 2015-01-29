@@ -145,7 +145,7 @@ object RaberAnalysis {
         inObj =>
           val ((path,img),cthresh) = inObj
           (path.appendDir("thresh_"+cthresh.toString),
-            img(_>cthresh))
+            img(_>cthresh,0))
       }.repartition((imgCount*threshVals.count).asInstanceOf[Int])
     }
 

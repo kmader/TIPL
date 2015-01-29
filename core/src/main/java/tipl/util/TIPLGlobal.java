@@ -5,6 +5,7 @@ import tipl.util.TIPLMongo.ITIPLUsage;
 import tipl.util.TIPLMongo.TIPLUsage;
 
 import java.awt.*;
+import java.lang.reflect.Field;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -179,15 +180,32 @@ public class TIPLGlobal {
 
         System.setProperty("java.awt.headless", "" + sp.getOptionBoolean("@headless", isHeadless(), "Run TIPL in headless mode"));
         sp.createNewLayer("Application Settings");
-        //if (sp.hasOption("?")) System.out.println(sp.getHelp());
-        return sp;//.subArguments("@");
+        return sp;
     }
     /**
      * Is TIPLGlobal running headless currently
      * @return
      */
     public static boolean isHeadless() {
-        return Boolean.parseBoolean(System.getProperty("java.awt.headless"));
+        return java.awt.GraphicsEnvironment.isHeadless();
+    }
+
+    /**
+     * Force headless status
+     */
+    public static void forceHeadless() {
+        try {
+            Field defaultHeadlessField = java.awt.GraphicsEnvironment.class.getDeclaredField("defaultHeadless");
+            defaultHeadlessField.setAccessible(true);
+            defaultHeadlessField.set(null,Boolean.FALSE);
+            Field headlessField = java.awt.GraphicsEnvironment.class.getDeclaredField("headless");
+            headlessField.setAccessible(true);
+            headlessField.set(null,Boolean.TRUE);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

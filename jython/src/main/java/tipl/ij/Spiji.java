@@ -77,6 +77,8 @@ import ij.measure.ResultsTable;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
 import ij.process.*;
+import net.imagej.patcher.LegacyEnvironment;
+import net.imagej.patcher.LegacyInjector;
 import tipl.spark.SparkGlobal;
 import tipl.util.TImgTools;
 
@@ -137,7 +139,6 @@ public class Spiji {
     private static final int CAL = 1;
     private static final int NOCAL = 0;
     private static boolean verbose = true;
-
 
     /**
      * The type of operations supported
@@ -220,7 +221,9 @@ public class Spiji {
         verbose = v;
         if(runLaunch) launch(null,visible);
     }
-
+    public static void forceHeadless() {
+        System.setProperty("java.awt.headless","false");
+    }
     /**
      * Starts new instance of ImageJ specifying the plugins directory and macros
      * directory.
@@ -296,6 +299,20 @@ public class Spiji {
         launch(args.split("\\s"),visible);
     }
 
+    private static LegacyEnvironment ij1;
+
+    static {
+        final boolean useLegacy = false;
+        if(useLegacy) {
+            try {
+                ij1 = new LegacyEnvironment(null, true);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    ;
     /**
      * Starts new instance of ImageJ from Matlab using command-line arguments
      */
@@ -311,6 +328,14 @@ public class Spiji {
             System.out.println("JVM> Version: " + System.getProperty("java.version"));
             System.out.println("JVM> Total amount of memory: " + Math.round(runtime.totalMemory() / 1024) + " Kb");
             System.out.println("JVM> Amount of free memory: " + Math.round(runtime.freeMemory() / 1024) + " Kb");
+        }
+        if((!visible) && (ij1==null)) {
+            try {
+                ij1 = new LegacyEnvironment( Thread.currentThread().getContextClassLoader(), true);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                System.err.println("Classes could not be patched!");
+            }
         }
 
         if (imagej instanceof ImageJ) {
@@ -362,6 +387,11 @@ public class Spiji {
         IJ.getInstance().setTitle("ImageJ [MIJ " + version + "]");
     }
 
+    public static void setTempCurrentImage(ImagePlus ip) {
+        if(ij1==null) WindowManager.setTempCurrentImage(ip);
+        else ij1.setTempCurrentImage(ip);
+    }
+
     /**
      * Exits ImageJ.imagej instance
      */
@@ -395,7 +425,7 @@ public class Spiji {
      * @return Title of the current image window
      */
     public static String getCurrentTitle() {
-        ImagePlus imageplus = WindowManager.getCurrentImage();
+        ImagePlus imageplus =  getCurImage();
         return imageplus.getTitle();
     }
 
@@ -508,7 +538,10 @@ public class Spiji {
         }
         return ret;
     }
-
+    public static ImagePlus getCurImage() {
+        if(ij1==null) return WindowManager.getCurrentImage();
+        else return ij1.getCurrentImage();
+    }
 
     /**
      * Returns the current (selected) image from ImageJ.
@@ -516,7 +549,7 @@ public class Spiji {
      * @return Current image
      */
     public static Object getCurrentImage() {
-        ImagePlus imageplus = WindowManager.getCurrentImage();
+        ImagePlus imageplus = getCurImage();
         if (imageplus == null)
             return null;
         return get(imageplus);
@@ -548,7 +581,7 @@ public class Spiji {
      * @return histogram
      */
     public static Object getHistogram() {
-        ImagePlus imageplus = WindowManager.getCurrentImage();
+        ImagePlus imageplus = getCurImage();;
         if (imageplus == null)
             return null;
         return imageplus.getProcessor().getHistogram();
@@ -592,8 +625,10 @@ public class Spiji {
                 results[j][i] = rt.getValueAsDouble(index[i], j);
             }
         }
+
         return results;
     }
+
 
     /**
      * Returns a specifying column the current instance of ResultsTable.
@@ -1225,11 +1260,13 @@ public class Spiji {
      *            command to run
      */
     public static void run(String command) {
-        IJ.run(command);
+        if(ij1==null) IJ.run(command);
+        else ij1.run(command,"");
     }
 
     public static void runMacro(String macroData, String args) {
-        IJ.runMacro(macroData,args);
+        if(ij1==null)  IJ.runMacro(macroData,args);
+        else ij1.runMacro(macroData,args);
     }
 
     /**
@@ -1280,7 +1317,8 @@ public class Spiji {
      *            options for the command
      */
     public static void run(String command, String options) {
-        IJ.run(command, options);
+        if(ij1==null) IJ.run(command,options);
+        else ij1.run(command,options);
     }
 
     /**
@@ -1483,7 +1521,8 @@ public class Spiji {
         // files directly to a datastream
 
         File outputFile = getSparkTempFile("ijtmpout",suffix);
-        IJ.save(curImage,outputFile.getAbsolutePath());
+        runMacro("saveAs('"+suffix+"','"+outputFile.getAbsolutePath()+"');","");
+        //IJ.save(curImage,outputFile.getAbsolutePath());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         org.apache.commons.io.IOUtils.copy(new FileInputStream(outputFile),baos);
         return baos.toByteArray();

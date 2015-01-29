@@ -16,7 +16,7 @@ import tipl.ij.scripting.ImagePlusIO.{ImageLog, ImagePlusFileInputFormat, LogEnt
 import tipl.spark.DSImg
 import tipl.spark.hadoop.ByteOutputFormat
 import tipl.util.TImgSlice.TImgSliceAsTImg
-import tipl.util.{D3int, TImgSlice, TImgTools}
+import tipl.util.{D3int, TIPLGlobal, TImgSlice, TImgTools}
 
 import scala.reflect.ClassTag
 
@@ -25,6 +25,7 @@ class rddImage extends ImageStack {
 }
 
 trait FijiInit {
+  def setupSpark(sc: SparkContext): Unit
   def setupFiji(): Unit
 }
 
@@ -37,11 +38,12 @@ object scOps {
   import tipl.spark.IOOps._
 
   def StartFiji(ijPath: String, show: Boolean = false,
-                 runLaunch: Boolean = true): Unit = {
+                 runLaunch: Boolean = true, record: Boolean = true): Unit = {
     Spiji.start(ijPath, show,runLaunch)
-    Spiji.startRecording()
+    if(record) Spiji.startRecording()
   }
 
+  val forceHeadless = false
 
 
   /**
@@ -52,9 +54,22 @@ object scOps {
    */
   case class ImageJSettings(ijPath: String,
                             showGui: Boolean = false,
-                           runLaunch: Boolean = true
+                           runLaunch: Boolean = true,
+                           record: Boolean = false
                              ) extends FijiInit {
-    override def setupFiji = StartFiji(ijPath,showGui,runLaunch)
+    override def setupSpark(sc: SparkContext) = {
+      if(!showGui) {
+        if (forceHeadless) TIPLGlobal.forceHeadless();
+        sc.setLocalProperty("java.awt.headless","false")
+      }
+    }
+    override def setupFiji() = {
+      if(!showGui) {
+        if (forceHeadless) TIPLGlobal.forceHeadless();
+        System.setProperty("java.awt.headless","false")
+      }
+      StartFiji(ijPath,showGui,runLaunch,record)
+    }
   }
 
 
@@ -79,11 +94,25 @@ object scOps {
     sc.loadImagesDriver(paths,partitions,parallel=parallel)
 
   implicit class imageJSparkContext(sc: SparkContext) {
+    def createEmptyImages[A : ClassTag](prefix: String, imgs: Int, width: Int, height: Int,
+                          indFun: (Int) => A, ijs: Option[ImageJSettings] = None) = {
+      // set everything up correctly if it is present
+      ijs.map(_.setupSpark(sc))
+      sc.
+        parallelize(0 until imgs).
+        map(
+          i => (prefix+i.toString,
+          new PortableImagePlus(Array.fill[A](width, height)(indFun(i))))
+      )
+    }
+
     def loadImages(path: String, partitions: Int)(implicit ijs: ImageJSettings) = {
+      ijs.setupSpark(sc)
       val ioData = sc.binaryFiles(path,partitions)
       val sliceNames = ioData.map(_._1).collect()
       // get the names and partition before the files are copy and read (since this is expensive
       // as is moving around large serialized objects
+
       ioData.partitionBy(DSImg.NamedSlicePartitioner(sliceNames,partitions)).
         mapPartitions{
         partList =>
@@ -149,6 +178,8 @@ object scOps {
         pathList
       ).partitionBy(DSImg.NamedSlicePartitioner(paths,partitions))
     }
+
+
   }
 
   // macro related utilities

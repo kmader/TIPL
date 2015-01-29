@@ -4,15 +4,13 @@ import java.io._
 import javax.imageio.ImageIO
 import javax.servlet.http.HttpServletRequest
 
+import ij.ImagePlus
 import ij.plugin.PlugIn
 import ij.plugin.filter.PlugInFilter
 import ij.process.ImageProcessor
-import ij.{ImagePlus, WindowManager}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.lib.input.{CombineFileRecordReader, CombineFileSplit}
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
 import org.apache.spark.annotation.Experimental
 import org.apache.spark.input.{BinaryFileInputFormat, BinaryRecordReader}
 import org.apache.spark.ui.tipl.WebViz
@@ -29,20 +27,12 @@ import tipl.ij.{ImageStackToTImg, Spiji}
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-
 object ImagePlusIO extends Serializable {
   /**
    * Should immutablity of imageplus be ensured at the cost of performance and memory
    */
   val ensureImmutability: Boolean = true
-
-  protected[scripting] def makeTestImages(sc: SparkContext, fact: Int = 1,
-                                          imgs: Int, width: Int, height: Int) =
-    sc.
-      parallelize(1 to imgs).
-      map(i => ("/Users/mader/imgs/"+i.toString,
-      Array.fill[Int](width, height)(fact*(i-1)*1000+1000))).
-      mapValues(a => new PortableImagePlus(a))
+  //import tipl.ij.scripting.scOps.imageJSparkContext
   /**
    * The new (Hadoop 2.0) InputFormat for imagej files (not be to be confused with the
    * recordreader
@@ -289,7 +279,7 @@ object ImagePlusIO extends Serializable {
     private def calcArray: AnyRef =
       baseData match {
         case Left(tImg) =>
-          WindowManager.setTempCurrentImage(tImg)
+          Spiji.setTempCurrentImage(tImg)
           Spiji.getCurrentImage
         case Right(tArr) => tArr
       }
@@ -312,7 +302,7 @@ object ImagePlusIO extends Serializable {
       lazy val pargs = ImageJSweep.parseArgsWithDelim(args," ")
       val localImgCopy = if(ensureImmutability) curImg.duplicate() else curImg
 
-      WindowManager.setTempCurrentImage(localImgCopy)
+      Spiji.setTempCurrentImage(localImgCopy)
       cmd match {
         case "setThreshold" | "applyThreshold" =>
           import tipl.blocks.ParameterSweep.ImageJSweep.argMap
@@ -328,13 +318,13 @@ object ImagePlusIO extends Serializable {
         case _ =>
           Spiji.run(cmd,args)
       }
-      new PortableImagePlus(WindowManager.getCurrentImage(),
+      new PortableImagePlus(Spiji.getCurImage(),
         this.imgLog.appendAndCopy(LogEntry.ijRun(cmd,args))
       )
     }
 
     def runAsPlugin(cmd: String, args: String = ""): Either[PlugIn,PlugInFilter] = {
-      WindowManager.setTempCurrentImage(curImg)
+      Spiji.setTempCurrentImage(curImg)
       Spiji.runCommandAsPlugin(cmd,args) match {
         case plug: PlugIn =>
           Left(plug)
@@ -346,6 +336,10 @@ object ImagePlusIO extends Serializable {
     def getImageStatistics() ={
       val istat = curImg.getStatistics
       ImageStatistics(istat.min,istat.mean,istat.stdDev,istat.max,istat.pixelCount)
+    }
+
+    def analyzeParticles() = {
+      IJResultsTable.fromCL(Some(curImg))
     }
 
 

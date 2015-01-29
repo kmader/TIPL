@@ -14,7 +14,7 @@ class Histogram extends Serializable {
 object Histogram {
   def make(inImg: TImgRO, binCount: Int = 100) = {
     val asKV = KVImg.ConvertTImg(SparkGlobal.getContext("Histogram"), inImg,
-      TImgTools.IMAGETYPE_FLOAT).getBaseImg
+      TImgTools.IMAGETYPE_FLOAT,0.0f).getBaseImg
     val dv = asKV.map { npt => npt._2.asInstanceOf[Float]}
     val statview = dv.stats()
     val min = statview.min

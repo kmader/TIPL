@@ -5,6 +5,7 @@ package tipl.spark
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.mllib.linalg.distributed.{MatrixEntry, CoordinateMatrix, DistributedMatrix}
 import org.apache.spark.rdd.RDD
 import tipl.tools.TypedSliceLookup
 import scala.reflect.ClassTag
@@ -158,17 +159,56 @@ class KVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](dim: D3int,
  */
 class NumericKVImg[T](dim: D3int, pos: D3int, elSize: D3float, imageType: Int,
                       baseImg: RDD[(D3int, T)])(implicit lm: ClassTag[T], nm: Numeric[T]) extends
-KVImg[T](dim,pos,elSize,imageType,baseImg,nm.zero)(lm) {
+KVImg[T](dim,pos,elSize,imageType,baseImg,nm.zero)(lm) with SliceableImage[T,D3int] {
 
   def toDouble() = new NumericKVImg[Double](dim,pos,elSize,TImgTools.IMAGETYPE_DOUBLE,
   baseImg.mapValues(nm.toDouble(_)))
 
   def toLong() = new NumericKVImg[Long](dim,pos,elSize,TImgTools.IMAGETYPE_LONG,
     baseImg.mapValues(nm.toLong(_)))
+
+  private def asSliceArray(gDimA: Int, gDimB: Int, gInd: D3int) = {
+    //TODO implement the rest of this function / decide what it is useful for
+    (gDimA,gDimB) match {
+      case (D3int.AXIS_X,D3int.AXIS_Y) =>
+        Some(
+          baseImg.map{
+          case (spos,sval) =>
+            (spos.gz-spos.gz,
+              MatrixEntry(spos.gx-gInd.gx,spos.gy-gInd.gy,nm.toDouble(sval))
+              )
+        }
+        )
+      case _ =>
+        println("Axes combination "+(gDimA,gDimB)+" not supported")
+        None
+    }
+  }
+  override def getNSlice(gDimA: Int, gDimB: Int, gInd: D3int): Option[DistributedMatrix] = {
+    val filtFun = SlicingOps.getMissing3DIndex(gDimA,gDimB) match {
+      case Some(ind) => Some(SlicingOps.keyFilter[T](gInd,ind))
+      case _ => None
+    }
+    val mapFun = SlicingOps.kvPairToMatrixEntry[T](gDimA,gDimB,gInd)
+
+    (filtFun,mapFun) match {
+      case (Some(filtOp),Some(mapOp)) =>
+        Some(
+          new CoordinateMatrix(
+          baseImg.filter(filtOp).map(mapOp)
+          )
+        )
+      case  _ =>
+        println("Axes combination "+(gDimA,gDimB)+" not supported")
+        None
+    }
+  }
 }
 
 
 object KVImg {
+
+
 
   case class KVImgRowGeneric(x: Int, y: Int, z: Int, value: Double) extends Serializable
 

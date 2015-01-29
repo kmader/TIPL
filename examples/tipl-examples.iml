@@ -167,6 +167,7 @@
     <orderEntry type="module" module-name="tipl-jython" />
     <orderEntry type="module" module-name="tipl-integration" />
     <orderEntry type="library" name="Maven: org.python:jython:2.7-b3" level="project" />
+    <orderEntry type="library" name="Maven: net.imagej:ij1-patcher:0.11.2-SNAPSHOT" level="project" />
     <orderEntry type="module-library">
       <library name="Maven: stupid.fiji.scripting.shit:abstractinterpreter:99.0">
         <CLASSES>

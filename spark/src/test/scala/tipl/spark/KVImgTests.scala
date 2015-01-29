@@ -9,8 +9,8 @@ import org.scalatest.Matchers._
 import spark.images.FilterImpl.GaussianFilter
 import tipl.spark.KVImgOps._
 import tipl.tests.LocalSparkContext
-import tipl.util.D3int
 import tipl.util.TIPLOps._
+import tipl.util.{D3float, D3int, TImgTools}
 
 /**
  * Created by mader on 10/10/14.
@@ -72,6 +72,31 @@ class KVImgTests extends FunSuite with LocalSparkContext {
     kvm.max.toDouble shouldBe (1.0+-1e-3)
   }
 
+  def testKVImage(sc: SparkContext,maxCnt: Int = 10) = {
+    sc.parallelize(0 to maxCnt).
+      map { i => (new D3int(3*i,3*i,3*i), i.toDouble)}.
+      flatMap{ i =>
+      for(x<- -1 to 1; y<- -1 to 1; z<- -1 to 1) yield (i._1+new D3int(x,y,z),i._2)
+    }
+  }
+
+  test("MLLib On Slices") {
+    import tipl.spark.SliceableOps._
+    val kvnorm = testKVImage(sc,10)
+    val kvobj = new NumericKVImg(new D3int(30),new D3int(0),
+      new D3float(1.0f),TImgTools.IMAGETYPE_DOUBLE,kvnorm)
+    val dm = kvobj.getZSlice(new D3int(0,0,3)) match {
+      case Some(idm) =>
+        assert(idm.toCM.entries.count==9,"Total entries are 9")
+        assert(idm.toRM.rows.count==3,"Rows should be 3")
+      case _ => fail("Get Z Slice is a valid command")
+    }
+
+    kvobj.getNSlice(0,0,new D3int(0,0,0)) match {
+      case Some(a) => fail("Matching indices should produce no output")
+      case None => Unit
+    }
+  }
 }
 
 class VoxOpsTest extends FunSuite with LocalSparkContext {
