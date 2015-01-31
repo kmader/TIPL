@@ -21,7 +21,7 @@ class RowImage(dim: D3int, pos: D3int,
                 elSize: D3float,
                 imageType: Int, baseImg: RDD[(ID3int,linalg.Vector)]) extends
 TImg.ATImg(dim, pos, elSize, imageType) with TypedSliceLookup[Double] with
-SliceableImage[Double, D3int] {
+SliceableImage[D3int] {
 
   override def getSlice(sliceNum: Int): Option[Array[Double]] = {
     val slicePos = sliceNum+pos.gz

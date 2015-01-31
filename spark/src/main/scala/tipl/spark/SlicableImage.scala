@@ -9,13 +9,13 @@ import tipl.util.{D3int, ID3int}
  * @note unsupported ways return a None and must be handled in the calling function
  * Created by mader on 1/28/15.
  */
-trait SliceableImage[T,P <: ID3int] {
+trait SliceableImage[P <: ID3int] {
   def getNSlice(gDimA: Int, gDimB: Int, gInd: P): Option[DistributedMatrix]
   def getZSlice(gInd: P) = getNSlice(0,1,gInd)
 }
 
 
-trait NaiveSliceableImage extends SliceableImage[Double,D3int] {
+trait NaiveSliceableImage extends SliceableImage[D3int] {
   this: TImgRO =>
 
 }
@@ -126,3 +126,5 @@ object SlicingOps {
   }
 
 }
+
+

@@ -109,7 +109,6 @@ public class CLTest {
         final ITIPLPluginIn CL = makeCL(testImg);
         CL.execute();
         checkVals(CL, 5, 100);
-
     }
 
     /**

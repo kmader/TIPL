@@ -145,6 +145,4 @@ class VoxOpsTest extends FunSuite with LocalSparkContext {
     kvsAfter.max.toDouble shouldBe  (0.39+-1e-3)
 
   }
-
-
 }

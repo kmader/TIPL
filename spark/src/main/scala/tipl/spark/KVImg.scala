@@ -159,7 +159,7 @@ class KVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](dim: D3int,
  */
 class NumericKVImg[T](dim: D3int, pos: D3int, elSize: D3float, imageType: Int,
                       baseImg: RDD[(D3int, T)])(implicit lm: ClassTag[T], nm: Numeric[T]) extends
-KVImg[T](dim,pos,elSize,imageType,baseImg,nm.zero)(lm) with SliceableImage[T,D3int] {
+KVImg[T](dim,pos,elSize,imageType,baseImg,nm.zero)(lm) with SliceableImage[D3int] {
 
   def toDouble() = new NumericKVImg[Double](dim,pos,elSize,TImgTools.IMAGETYPE_DOUBLE,
   baseImg.mapValues(nm.toDouble(_)))
