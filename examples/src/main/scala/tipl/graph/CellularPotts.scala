@@ -54,13 +54,11 @@ object CellularPotts extends Serializable {
     /**
      * The edges consist of a link (vertex->vertex) and a boolean indicating if it is a border
      */
-    val graphTopology = vertices.
+    val grpVert =  vertices.
       flatMap(vp => ImageTools.spread_voxels_bin((vp.pos,vp),D3int.one, true)).
       groupByKey. // get rid of the extra position information
-      filter{
-      // keep the point as long as one is the original
-      case (pos,pointList) => pointList.reduce(_._2 || _._2)
-    }. flatMap {
+      filter(_._2.filter(_._2).size>0) // keep points with an original in them
+    val graphTopology = grpVert.flatMap {
       case (cPos,pointList) =>
         val centralPoint = pointList.filter(_._2).head._1
         val neighborPoints = pointList.filter(!_._2).map(_._1)
