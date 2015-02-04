@@ -345,5 +345,30 @@ object TIPLOps {
   }
 
 
+  /**
+   * allow an RDD to be treated as factor (as in R) where distinct values are used
+   * @param baseRDD
+   * @tparam T the type of the factors (strings, ints, tuples make sense, double probably does not)
+   */
+  implicit class factorRDD[T](baseRDD: RDD[T]) {
+    /**
+     * Return a histogram (map) for the rdd
+     * @param approxTime allows an approximation time to be given in seconds without changing the
+     *                   result type
+     * @return map of keys T and values
+     */
+    def factorHistogram(approxTime: Option[Long] = None) = {
+      approxTime match {
+        case Some(timeout) =>
+          baseRDD.countByValueApprox(timeout,0.95).
+          map(_.mapValues(_.mean.toLong)).getFinalValue()
+        case None =>
+          baseRDD.countByValue()
+      }
+
+    }
+  }
+
+
 }
 

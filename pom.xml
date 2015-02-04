@@ -61,6 +61,7 @@
         <ij.version>1.49j</ij.version>
         <knime.version>2.11</knime.version>
         <javadoc.skip>false</javadoc.skip>
+
         <java.memory.min>-Xms1G</java.memory.min>
         <java.memory.max>-Xmx2G</java.memory.max>
 

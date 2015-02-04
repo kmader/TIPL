@@ -10,5 +10,6 @@ public interface ID3int extends ID2int {
      * @return
      */
     public int gz();
-    public void setPos(int x,int y, int z);
+    @Deprecated // these should be immutable
+    public ID3int setPos(int x,int y, int z);
 }

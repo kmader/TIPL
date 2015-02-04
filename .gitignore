@@ -1,6 +1,7 @@
 /.apt_generated
 .DS_Store
 *.jar
+*.class
 .idea
 .settings
 .classpath

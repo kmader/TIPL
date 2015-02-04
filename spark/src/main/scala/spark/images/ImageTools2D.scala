@@ -10,10 +10,7 @@ import scala.reflect.ClassTag
 case class D2int(var x: Int,var  y: Int) extends ID2int {
   override def gx(): Int = x
 
-  override def setPos(x: Int, y: Int): Unit = {
-    this.x=x
-    this.y=y
-  }
+  override def setPos(ix: Int, iy: Int) = D2int(ix,iy)
 
   override def gy(): Int = y
 }

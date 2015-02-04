@@ -279,7 +279,7 @@ matchObjects<-function(groundTruth,susData,maxVolDifference=0.5,
     cVec<-dist.fun(susData,groundTruth[i,],in.offset)
     cDist<-min(cVec)
     gdist[i]<-sqrt(cDist) # perform square root operation before saving and only on one value
-    gmatch[i]<-which(cVec==cDist)
+    gmatch[i]<-which(cVec==cDist)[1]
   }
   mData<-susData[gmatch,]
   mData$MATCH_DIST<-gdist
@@ -290,7 +290,7 @@ matchObjects<-function(groundTruth,susData,maxVolDifference=0.5,
       # distance from matched bubble to all bubbles in ground truth
       cVec<-dist.fun(groundTruth,susData[c.susbubble,],-1*in.offset)
       cDist<-min(cVec)
-      gincl[i]<-(i==which(cVec==cDist))
+      gincl[i]<-(i==which(cVec==cDist)[1])
     }
     mData$BIJ_MATCHED<-gincl
   }

@@ -10,6 +10,14 @@ import scala.reflect.ClassTag
  * A series of tools that are useful for image data
  */
 object ImageTools extends Serializable {
+
+
+  /**
+   * Simply an index in an array, but it is typed to make it clear to other tools what it is
+   * @param index the value
+   */
+  case class ArrayIndex(index: Int) extends AnyVal
+
   /**
    * spread voxels out (S instead of T since S includes for component labeling the long as well
    * (Long,T)
@@ -40,10 +48,18 @@ object ImageTools extends Serializable {
     yield (new D3int(pos.x + x, pos.y + y, pos.z + z),
       (label,
 
-        ((-z-sz)*(ey-sy+1)+(-y-sy))*(ex-sx+1)+(-x-sx)
+       ArrayIndex( ((-z-sz)*(ey-sy+1)+(-y-sy))*(ex-sx+1)+(-x-sx) )
 
         ))
   }
+
+  /**
+   * A version of the spread voxels code which returns a binary rather than an index
+   * @param pvec
+   * @param windSize
+   * @param startAtZero
+   * @return the label type as well as a binary if it is the zero point or not
+   */
   def spread_voxels_bin[S](pvec: (D3int, S),
                            windSize: D3int = new D3int(1, 1, 1),
                            startAtZero: Boolean = true
@@ -65,14 +81,17 @@ object ImageTools extends Serializable {
   def spread_zero(windSize: D3int = new D3int(1,1,1),
                   startAtZero: Boolean = true) = spread_index(new D3int(0,0,0),windSize,startAtZero)
 
+
   def spread_index(pos: D3int,windSize: D3int,
-                   startAtZero: Boolean): Int = {
+                   startAtZero: Boolean): ArrayIndex = {
     if(startAtZero) {
-      0
+      ArrayIndex(0)
     } else {
       val (sx,sy,sz) = (-windSize.x,-windSize.y,-windSize.z)
       val (ex,ey,ez) = (windSize.x,windSize.y,windSize.z)
-      ((pos.z-sz)*(ey-sy+1)+(pos.y-sy))*(ex-sx+1)+(pos.x-sx)
+     ArrayIndex(
+       ((pos.z-sz)*(ey-sy+1)+(pos.y-sy))*(ex-sx+1)+(pos.x-sx)
+     )
     }
   }
 
@@ -102,7 +121,7 @@ object ImageTools extends Serializable {
         val iter = kv._2.toIterator
         while (iter.hasNext) {
           val outVal = iter.next
-          outArr(outVal._2) = outVal._1
+          outArr(outVal._2.index) = outVal._1
         }
         (kv._1, outArr)
       }

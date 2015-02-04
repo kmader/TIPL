@@ -17,6 +17,14 @@ public interface ID2int extends Serializable {
      * @return
      */
     public int gy();
-    public void setPos(int x,int y);
+
+    /**
+     * when changing the position return the updated position (many times the same)
+     * @param x
+     * @param y
+     * @return a position with the new x and y
+     */
+    @Deprecated
+    public ID2int setPos(int x,int y);
 
 }

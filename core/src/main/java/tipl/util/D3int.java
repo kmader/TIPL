@@ -99,9 +99,12 @@ public class D3int implements ID3int {
     }
 
     @Override
-    public void setPos(final int x, final int y, final int z) {
-        setPos(x,y);
+    @Deprecated
+    public ID3int setPos(final int x, final int y, final int z) {
+        this.x=x;
+        this.y=y;
         this.z=z;
+        return this;
     }
 
     @Override
@@ -115,9 +118,10 @@ public class D3int implements ID3int {
     }
 
     @Override
-    public void setPos(final int x, final int y) {
+    public ID2int setPos(final int x, final int y) {
         this.x=x;
         this.y=y;
+        return this;
     }
 
     public D3float asFloat() {

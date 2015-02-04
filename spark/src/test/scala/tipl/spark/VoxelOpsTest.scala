@@ -53,7 +53,7 @@ class VoxelOpsTest extends FunSuite {
         val iter = kv._2.toIterator
         while (iter.hasNext) {
           val outVal = iter.next
-          outArr(outVal._2._2) = outVal._2._1
+          outArr(outVal._2._2.index) = outVal._2._1
         }
         (kv._1,
           outArr
