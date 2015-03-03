@@ -21,6 +21,9 @@ public class TIPLGlobal {
     private static int TIPLDebugLevel = DEBUG_BASIC;
     public static final int DEBUG_OFF = 0;
     public static boolean useDaemonThreads = true;
+
+    private static String usageLoginUsername = "27032014";
+
     /**
      * so the threads do not need to manually be shutdown
      */
@@ -178,10 +181,34 @@ public class TIPLGlobal {
                 TIPLGlobal.getDebugLevel(),
                 "Debug level from " + DEBUG_OFF + " to " + DEBUG_ALL));
 
+        TIPLGlobal.usageLoginUsername=sp.getOptionString("@usagelogin",
+                TIPLGlobal.usageLoginUsername,"Login for the usage logging system");
+
         System.setProperty("java.awt.headless", "" + sp.getOptionBoolean("@headless", isHeadless(), "Run TIPL in headless mode"));
         sp.createNewLayer("Application Settings");
+
         return sp;
     }
+
+    /**
+     * A parser designed for jython that returns the script name as a parameter (if needed)
+     * @param args the argument array
+     */
+    public static ArgumentParser jythonParser(String[] args) {
+        args[0]="-script="+args[0];
+        return activeParser(args);
+    }
+
+    /**
+     * Get the username for the login to the usage database
+     * @return the username
+     */
+    public static String getUsageLogin() {
+        if(usageLoginUsername.equalsIgnoreCase("Medebach"))
+            return null; // if it returns null skip the entire usage authentication
+        return usageLoginUsername;
+    }
+
     /**
      * Is TIPLGlobal running headless currently
      * @return
@@ -397,8 +424,18 @@ public class TIPLGlobal {
         }
     }
 
+    /**
+     * Get an instance of the TIPLUsage class for monitoring usage of plugins
+     * @return the class to use
+     */
     public static ITIPLUsage getUsage() {
-        if (tuCore == null) tuCore = TIPLUsage.getTIPLUsage();
+        if (tuCore == null) {
+            if(getUsageLogin()==null) {
+                tuCore=isLocalUsage(22515);
+            } else {
+                tuCore = TIPLUsage.getTIPLUsage();
+            }
+        }
         return tuCore;
     }
 

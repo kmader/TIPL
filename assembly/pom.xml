@@ -186,6 +186,7 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/json/tipl.util.ITIPLFileSystem$FileSystemInfo</resource>
                                 </transformer>
+
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>reference.conf</resource>
                                 </transformer>

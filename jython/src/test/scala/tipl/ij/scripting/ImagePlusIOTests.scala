@@ -3,8 +3,8 @@ package tipl.ij.scripting
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.scalatest.FunSuite
-import tipl.ij.Spiji.PIPOps
-import tipl.ij.scripting.ImagePlusIO.{PortableImagePlus, LogEntry}
+import _root_.tipl.ij.Spiji.PIPOps
+import _root_.tipl.ij.scripting.ImagePlusIO.{PortableImagePlus, LogEntry}
 
 /**
  * Created by mader on 1/20/15.

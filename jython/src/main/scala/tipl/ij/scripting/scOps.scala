@@ -1,5 +1,12 @@
 package tipl.ij.scripting
 
+import _root_.tipl.blocks.ParameterSweep
+import _root_.tipl.formats.TImgRO
+import _root_.tipl.ij.Spiji
+import _root_.tipl.ij.scripting.ImagePlusIO.{ImageLog, ImagePlusFileInputFormat, LogEntry, PortableImagePlus}
+import _root_.tipl.spark.DSImg
+import _root_.tipl.util.TImgSlice.TImgSliceAsTImg
+import _root_.tipl.util.{D3int, TIPLGlobal, TImgSlice, TImgTools}
 import ij.{IJ, ImagePlus, ImageStack}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{BytesWritable, NullWritable}
@@ -9,14 +16,6 @@ import org.apache.hadoop.mapreduce.{InputFormat => NewInputFormat, Job => NewHad
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.{OldBinaryFileRDD, RDD}
-import tipl.blocks.ParameterSweep
-import tipl.formats.TImgRO
-import tipl.ij.Spiji
-import tipl.ij.scripting.ImagePlusIO.{ImageLog, ImagePlusFileInputFormat, LogEntry, PortableImagePlus}
-import tipl.spark.DSImg
-import tipl.spark.hadoop.ByteOutputFormat
-import tipl.util.TImgSlice.TImgSliceAsTImg
-import tipl.util.{D3int, TIPLGlobal, TImgSlice, TImgTools}
 
 import scala.reflect.ClassTag
 
@@ -35,7 +34,6 @@ trait FijiInit {
  *
  */
 object scOps {
-  import tipl.spark.IOOps._
 
   def StartFiji(ijPath: String, show: Boolean = false,
                  runLaunch: Boolean = true, record: Boolean = true): Unit = {
@@ -372,7 +370,7 @@ object scOps {
   def OpenImg(path: String): TImgRO = TImgTools.ReadTImg(path)
   def GetCurrentImage() = {
     val curImage = IJ.getImage()
-    tipl.ij.ImageStackToTImg.FromImagePlus(curImage)
+    _root_.tipl.ij.ImageStackToTImg.FromImagePlus(curImage)
   }
 
 

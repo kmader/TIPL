@@ -5,13 +5,15 @@ import java.awt.image.BufferedImage
 import javax.swing.{JFrame, JPanel}
 
 import com.github.sarxos.webcam.{Webcam, WebcamPanel}
+import fourquant.imagej.ImagePlusIO.PortableImagePlus
+import fourquant.imagej.Spiji
+import fourquant.imagej.scOps.ImageJSettings
 import ij.gui.{Plot, PlotWindow}
 import ij.{ImagePlus, WindowManager}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.Seconds
-import tipl.ij.Spiji
-import tipl.ij.scripting.ImagePlusIO.PortableImagePlus
+
 import tipl.spark.SparkGlobal
 import tipl.streaming.LiveImagePanel.BISourceInformation
 
@@ -32,6 +34,7 @@ object StreamingWebcam {
     extends Receiver[(A,PortableImagePlus)](sl) {
     var streamingThread: ArrayBuffer[Thread] = new ArrayBuffer[Thread]()
 
+    lazy val startTime = System.currentTimeMillis()
 
     override def onStart(): Unit = {
       startImageSource()
@@ -52,19 +55,27 @@ object StreamingWebcam {
     private def createImageThread() = {
       val pipObj = this
       new Thread() {
-        def wrapImage(bi: BufferedImage) = new PortableImagePlus(new ImagePlus(bi.toString(),bi))
+
         override def run(): Unit = {
           while(true) {
-            val (key,biImg) = getImageBuffer()
-            pipObj.store((key,wrapImage(biImg)))
+            pipObj.store(getWrappedImage())
             Thread.sleep(pipObj.delay)
           }
         }
       }
     }
+
+    def getWrappedImage() = {
+      val (key,bi) = getImageBuffer()
+      (key,
+        new PortableImagePlus(new ImagePlus(bi.toString(), bi))
+        )
+    }
+
     def startImageSource(): Unit
     def stopImageSource(): Unit
     def getImageBuffer(): (A,BufferedImage)
+
   }
 
   class PanelFlasher(ip: JPanel) extends Thread {
@@ -81,6 +92,14 @@ object StreamingWebcam {
     }
   }
 
+
+  /**
+   * A webcam object
+   * @param storage
+   * @param delay
+   * @param nthreads
+   * @param showPanel
+   */
   class WebcamReceiver(storage: StorageLevel, delay: Int = 50, nthreads: Int = 1,
                         showPanel: Boolean = true) extends
   PortableImagePlusReceiver[Long](storage,delay,nthreads){
@@ -99,7 +118,7 @@ object StreamingWebcam {
     }
     def stopImageSource(): Unit = {webcam.close()}
     def getImageBuffer() = {
-      val out = (System.currentTimeMillis(),webcam.getImage)
+      val out = (System.currentTimeMillis()-startTime,webcam.getImage)
       if(showPanel) new PanelFlasher(wcPanel).start()
       out
     }
@@ -111,6 +130,24 @@ object StreamingWebcam {
       panel.setMirrored(true)
       panel
     }
+  }
+
+
+  /**
+   * A random image reader to test throughput rates
+   */
+  class RandomImageReceiver(storage: StorageLevel, delay: Int = 50, nthreads: Int = 1,
+                             width: Int = 1000, height: Int = 1000,
+                             defaultValue: Int = 5) extends
+  PortableImagePlusReceiver[Long](storage,delay,nthreads) {
+
+    override def startImageSource(): Unit = println("Started Random: "+(width,height,defaultValue))
+    override def getImageBuffer(): (Long, BufferedImage) = ???
+    override def getWrappedImage() =
+      (System.currentTimeMillis()-startTime,
+        new PortableImagePlus(Array.fill[Int](width, height)(defaultValue)))
+
+    override def stopImageSource(): Unit = println("Stopped Random")
   }
 
 
@@ -172,18 +209,26 @@ object StreamingWebcam {
     val wrThreads = p.getOptionInt("webthreads",1,"Number of webcam threads to use",1,20)
     val wrDelay = p.getOptionInt("webdelay",500,"Delay between reading images")
     val strTime = p.getOptionInt("streamtime",6,"Number of seconds to group together",1,100)
-    val showEdges = false
-    val showMedian = true
+    val fakeSource = p.getOptionBoolean("fake",false,"Fake input stream (empty images)")
+    val showEdges = p.getOptionBoolean("showedges",false,"Show an edge enhanced image")
+    val showMedian = p.getOptionBoolean("showmedian",true,"Show an median filtered image")
     val showThreshold = false
     p.checkForInvalid()
 
-    val wr = new WebcamReceiver(StorageLevel.MEMORY_ONLY,wrDelay,wrThreads)
+    val ijs = ImageJSettings("",showGui=false,runLaunch=false,record=false)
+
+
+    val wr = if(fakeSource)
+      new RandomImageReceiver(StorageLevel.MEMORY_ONLY,wrDelay,wrThreads,height=1000,width=1000,
+        defaultValue=10)
+    else
+      new WebcamReceiver(StorageLevel.MEMORY_ONLY,wrDelay,wrThreads)
     val sc = SparkGlobal.getContext("StreamingWebcamDemo").sc
+    ijs.setupSpark(sc)
     val ssc = sc.toStreaming(strTime)
 
     val imgList = ssc.receiverStream(wr)
     val startTime = System.currentTimeMillis()
-
 
     val allImgs = imgList.map{
       case (systime,img) =>
@@ -212,14 +257,16 @@ object StreamingWebcam {
     }
 
     // apply a threshold to the images
-    val threshImgs = edgeImgs.map(kv => (("edges",kv._1),kv._2)).
-      union(filtImgs.map(kv => (("median",kv._1),kv._2))).
+    val justFiltImages = filtImgs.map(kv => (("median",kv._1),kv._2))
+    val threshImgs = {if(showEdges)
+      justFiltImages
+    else
+      justFiltImages.union(edgeImgs.map(kv => (("edges",kv._1),kv._2)))}.
       mapValues {
       cImg => cImg.
         run("applyThreshold", "lower=100 upper=255").run("8-bit")
     }.map(kv => (kv._1._1,(kv._1._2,kv._2.getImageStatistics().mean/255*100))).
       groupByKeyAndWindow(Seconds(strTime*3))
-
 
     val pwMap = new TrieMap[String,PlotWindow]()
     val xyMap = new TrieMap[String,Seq[(Double,Double)]]()

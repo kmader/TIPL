@@ -23,15 +23,15 @@ public abstract class FuncImage implements TImgRO {
 
 	public static double[] typeRange(final int cType) {
 		switch (cType) {
-		case 0:
+		case TImgTools.IMAGETYPE_CHAR:
 			return byteRange;
-		case 1:
+		case TImgTools.IMAGETYPE_SHORT:
 			return shortRange;
-		case 2:
+		case TImgTools.IMAGETYPE_INT:
 			return intRange;
-		case 3:
+		case TImgTools.IMAGETYPE_FLOAT:
 			return floatRange;
-		case 10:
+		case TImgTools.IMAGETYPE_BOOL:
 			return boolRange;
 		default:
 			System.out.println("What sort of type should this be??" + cType);
@@ -178,8 +178,7 @@ public abstract class FuncImage implements TImgRO {
 
 	/**
 	 * The output value for a given position and value
-	 * 
-	 * @param xyzPos
+	 *
 	 * @param v
 	 * @return value
 	 */

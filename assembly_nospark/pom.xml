@@ -35,10 +35,6 @@
         <sbt.project.name>assembly_nospark</sbt.project.name>
         <tipl.jar.basename>tipl-core-${project.version}.jar</tipl.jar.basename>
         <tipl.jar>${project.build.directory}/${tipl.jar.basename}</tipl.jar>
-        <deb.pkg.name>tipl</deb.pkg.name>
-        <deb.install.path>/usr/share/tipl</deb.install.path>
-        <deb.user>root</deb.user>
-        <deb.bin.filemode>744</deb.bin.filemode>
     </properties>
 
     <dependencies>
@@ -184,8 +180,13 @@
                             <exclude>jline:*</exclude>
                             <exclude>dom4j:*</exclude>
 
+                            <exclude>com.google.protobuf:*</exclude>
 
-
+                            <exclude>com.sun.jersey*:*</exclude>
+                            <exclude>javax.activation*:*</exclude>
+                            <exclude>stax*:*</exclude>
+                            <exclude>org.codehaus*:*</exclude>
+                            <exclude>org.glassfish*:*</exclude>
 
                         </excludes>
                     </artifactSet>
@@ -230,6 +231,10 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/json/tipl.util.TIPLStorageManager$StorageInfo</resource>
                                 </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/json/tipl.util.ITIPLFileSystem$FileSystemInfo</resource>
+                                </transformer>
+
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>reference.conf</resource>
                                 </transformer>

@@ -106,7 +106,13 @@ public interface TypedPath extends Serializable {
         public String[] getText();
         public InputStream getInputStream();
 
-        public OutputStream getOutputStream();
+        /**
+         * Get an output stream from the object
+         * @param append if the file should be appended or created fresh
+         * @return an outputstream object
+         */
+        public OutputStream getOutputStream(boolean append);
+
 
     }
 

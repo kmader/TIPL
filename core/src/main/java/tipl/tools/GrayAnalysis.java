@@ -1398,7 +1398,7 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
             }
 
             final OutputStreamWriter out =
-                    new OutputStreamWriter(csvName.getFileObject().getOutputStream());
+                    new OutputStreamWriter(csvName.getFileObject().getOutputStream(false));
             out.write(headerStr);
             out.flush();
             out.close();
@@ -1511,9 +1511,8 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
      */
     public void writeOutputToCSV(GrayVoxels[] gvArray, boolean useInsert, int startingIndex, boolean useLabel) {
         try {
-
             final OutputStreamWriter out =
-                    new OutputStreamWriter(csvName.getFileObject().getOutputStream());
+                    new OutputStreamWriter(csvName.getFileObject().getOutputStream(true));
             if (useInsert) {
 
                 final CSVFile insFile = CSVFile.FromPath(insName, 2);
@@ -1870,7 +1869,6 @@ public class GrayAnalysis extends BaseTIPLPluginIn {
 		if ((mapA.isGood()) & (gfiltGood)) {
 			writeHeader(useInsert);
 			// Restart running time
-
 
 			intGvArray=runAllSlices();
 

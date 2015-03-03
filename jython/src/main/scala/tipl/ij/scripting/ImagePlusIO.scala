@@ -19,10 +19,10 @@ import org.json4s.JsonAST.JValue
 import org.json4s.JsonDSL._
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
-import tipl.blocks.ParameterSweep.ImageJSweep
-import tipl.formats.TImgRO
-import tipl.ij.Spiji.{PIPOps, PIPTools}
-import tipl.ij.{ImageStackToTImg, Spiji}
+import _root_.tipl.blocks.ParameterSweep.ImageJSweep
+import _root_.tipl.formats.TImgRO
+import _root_.tipl.ij.Spiji.{PIPOps, PIPTools}
+import _root_.tipl.ij.{ImageStackToTImg, Spiji}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -305,7 +305,7 @@ object ImagePlusIO extends Serializable {
       Spiji.setTempCurrentImage(localImgCopy)
       cmd match {
         case "setThreshold" | "applyThreshold" =>
-          import tipl.blocks.ParameterSweep.ImageJSweep.argMap
+          import _root_.tipl.blocks.ParameterSweep.ImageJSweep.argMap
           val lower = pargs.getDbl("lower",Double.MinValue)
           val upper = pargs.getDbl("upper",Double.MaxValue)
           Spiji.setThreshold(lower,upper)

@@ -372,40 +372,40 @@ public class FilterScale extends BaseTIPLPluginMult implements FilterSettings.Ha
 
 						double dcVox = 0;
 						switch (imageType) {
-						case 0: // Byte
+						case TImgTools.IMAGETYPE_CHAR: // Byte
 							dcVox = inAimByte[inoff];
 							break;
-						case 1:
+						case TImgTools.IMAGETYPE_SHORT:
 							dcVox = inAimShort[inoff];
 							break;
-						case 2:
+						case TImgTools.IMAGETYPE_INT:
 							dcVox = inAimInt[inoff];
 							break;
-						case 3:
+						case TImgTools.IMAGETYPE_FLOAT:
 							dcVox = inAimFloat[inoff];
 							break;
-						case 10:
+						case TImgTools.IMAGETYPE_BOOL:
 							if (inAimMask[inoff])
 								dcVox++;
 							break;
 						}
 						switch (curSettings.oimageType) {
-						case 0: // Byte
+						case TImgTools.IMAGETYPE_CHAR: // Byte
 							outAimByte[ooff] = (char) dcVox;
 
 							break;
-						case 1: // Short
+						case TImgTools.IMAGETYPE_SHORT: // Short
 							outAimShort[ooff] = (short) dcVox;
 							break;
-						case 2: // Int
+						case TImgTools.IMAGETYPE_INT: // Int
 							outAimInt[ooff] = (int) dcVox;
 
 							break;
-						case 3: // Float
+						case TImgTools.IMAGETYPE_FLOAT: // Float
 							outAimFloat[ooff] = (float) dcVox;
 
 							break;
-						case 10: // Boolean
+						case TImgTools.IMAGETYPE_BOOL: // Boolean
 							outAimMask[ooff] = dcVox >= 0.5;
 							break;
 						}
@@ -461,22 +461,22 @@ public class FilterScale extends BaseTIPLPluginMult implements FilterSettings.Ha
 						outCnt++;
 						switch (curSettings.oimageType) {
 
-						case 0: // Byte
+						case TImgTools.IMAGETYPE_CHAR: // Byte
 							outAimByte[ooff] = (char) outputVal;
 
 							break;
-						case 1: // Short
+						case TImgTools.IMAGETYPE_SHORT: // Short
 							outAimShort[ooff] = (short) outputVal;
 							break;
-						case 2: // Int
+						case TImgTools.IMAGETYPE_INT: // Int
 							outAimInt[ooff] = (int) outputVal;
 
 							break;
-						case 3: // Float
+						case TImgTools.IMAGETYPE_FLOAT: // Float
 							outAimFloat[ooff] = (float) outputVal;
 
 							break;
-						case 10: // Boolean
+						case TImgTools.IMAGETYPE_BOOL: // Boolean
 							outAimMask[ooff] = outputVal >= 0.5;
 							break;
 						}

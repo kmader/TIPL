@@ -3,9 +3,9 @@ package tipl.ij.scripting
 import org.apache.spark.SparkContext._
 import org.apache.spark.{LocalSparkContext, SparkContext}
 import org.scalatest.{FunSuite, Matchers}
-import tipl.ij.Spiji
-import tipl.ij.scripting.ImagePlusIO.PortableImagePlus
-import tipl.ij.scripting.scOps._
+import _root_.tipl.ij.Spiji
+import _root_.tipl.ij.scripting.ImagePlusIO.PortableImagePlus
+import _root_.tipl.ij.scripting.scOps._
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -82,7 +82,7 @@ class SpijiTests extends FunSuite with Matchers {
 }
 
 class DistributedSpijiTests extends FunSuite with LocalSparkContext with Matchers {
-  import tipl.ij.scripting.SpijiTests.makeTestImages
+  import _root_.tipl.ij.scripting.SpijiTests.makeTestImages
   val conList = ArrayBuffer(
     ("LocalSpark",(a: String) => getSpark("local[8]",a))
   )

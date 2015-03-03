@@ -1,7 +1,7 @@
 package tipl.ij.scripting
 
+import _root_.tipl.ij.Spiji
 import ij.{ImagePlus, WindowManager}
-import tipl.ij.Spiji
 
 /**
  * Created by mader on 1/28/15.

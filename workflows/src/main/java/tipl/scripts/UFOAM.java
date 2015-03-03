@@ -108,7 +108,7 @@ public class UFOAM {
                 .getOptionInt(
                         "stage",
                         0,
-                        "Point to start script : 0 -Filter and Scale, " +
+                        "Point to start script : 0 - Filter and Scale, " +
                                 "1 - Threshold and Generate Plat and Bubbles, " +
                                 "2 - Sample Masks and peeling, 3 - Distance map, " +
                                 "4 - bubble labeling, 5 - bubble filling, " +
@@ -366,12 +366,12 @@ public class UFOAM {
 
         Morpho platClose = new Morpho(threshoutAim);
 
-        platClose.erode(new D3int(2, 2, 0), 0.2); // Remove single xy voxels
+        if (closeIter>0) platClose.erode(new D3int(2, 2, 0), 0.2); // Remove single xy voxels
 
         platClose.closeMany(closeIter, closeNH, 1.0);
         platClose.useSphKernel(morphRadius * closeNH);
         // Erode once to remove small groups 5/125 of voxels
-        platClose.erode(2, 0.08);
+        if (closeIter>0) platClose.erode(2, 0.08);
         // Remove single voxels groups in the xy plane
 
         platClose.erode(new D3int(2, 2, 0), 0.2);

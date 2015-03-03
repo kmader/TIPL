@@ -95,7 +95,10 @@ public class VirtualTypedPath extends TypedPath.NonPosixTypedPath {
         }
 
         @Override
-        public OutputStream getOutputStream() {
+        public OutputStream getOutputStream(boolean append) {
+            if(!append) {
+                baos = new ByteArrayOutputStream();
+            }
             return baos;
         }
     }

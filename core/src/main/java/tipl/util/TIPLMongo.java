@@ -115,6 +115,9 @@ public class TIPLMongo {
         }
 
         static public ITIPLUsage getTIPLUsage() {
+            String uName = TIPLGlobal.getUsageLogin();
+            if (uName==null)  return TIPLGlobal.isLocalUsage(22515);
+
             // check to see if the address can be resolved
             try {
                 ServerAddress mongoLab = new ServerAddress(usIp, usPort);

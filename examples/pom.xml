@@ -83,12 +83,19 @@
             <artifactId>tipl-volviewer</artifactId>
             <version>${tipl.version}</version>
         </dependency>
-        <!-- for interacting with imagej -->
+        <!-- for interacting with imagej
         <dependency>
             <groupId>quant.tipl</groupId>
             <artifactId>tipl-jython</artifactId>
             <version>${tipl.version}</version>
         </dependency>
+        -->
+         <dependency>
+            <groupId>fourquant</groupId>
+            <artifactId>spark-ij</artifactId>
+            <version>${tipl.version}</version>
+        </dependency>
+
         <!-- for numerics and gpu code -->
         <dependency>
             <groupId>org.nd4j</groupId>
