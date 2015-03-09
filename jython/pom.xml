@@ -67,11 +67,7 @@
             <version>2.7-b3</version>
         </dependency>
 
-        <dependency>
-            <groupId>net.imagej</groupId>
-            <artifactId>ij1-patcher</artifactId>
-            <version>0.11.2-SNAPSHOT</version>
-        </dependency>
+
         <!--
         <dependency>
             <groupId>com.quantifind</groupId>
@@ -79,10 +75,11 @@
             <version>0.0.2</version>
         </dependency>
         -->
+
         <dependency>
-            <groupId>net.imagej</groupId>
-            <artifactId>ij</artifactId>
-            <version>${ij.version}</version>
+            <groupId>fourquant</groupId>
+            <artifactId>spark-ij</artifactId>
+            <version>${tipl.version}</version>
         </dependency>
         <dependency>
             <groupId>stupid.fiji.scripting.shit</groupId>

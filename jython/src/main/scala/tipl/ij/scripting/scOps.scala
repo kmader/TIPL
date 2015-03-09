@@ -2,26 +2,20 @@ package tipl.ij.scripting
 
 import _root_.tipl.blocks.ParameterSweep
 import _root_.tipl.formats.TImgRO
-import _root_.tipl.ij.Spiji
-import _root_.tipl.ij.scripting.ImagePlusIO.{ImageLog, ImagePlusFileInputFormat, LogEntry, PortableImagePlus}
 import _root_.tipl.spark.DSImg
 import _root_.tipl.util.TImgSlice.TImgSliceAsTImg
 import _root_.tipl.util.{D3int, TIPLGlobal, TImgSlice, TImgTools}
-import ij.{IJ, ImagePlus, ImageStack}
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.{BytesWritable, NullWritable}
-import org.apache.hadoop.mapred.JobConf
+import fourquant.imagej.ImagePlusIO.{ImageLog, LogEntry, PortableImagePlus}
+import fourquant.imagej.Spiji
+import ij.{IJ, ImagePlus}
 import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat => NewFileInputFormat}
 import org.apache.hadoop.mapreduce.{InputFormat => NewInputFormat, Job => NewHadoopJob}
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
-import org.apache.spark.rdd.{OldBinaryFileRDD, RDD}
+import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-class rddImage extends ImageStack {
-
-}
 
 trait FijiInit {
   def setupSpark(sc: SparkContext): Unit
@@ -254,101 +248,6 @@ object scOps {
     }
   }
 
-  /**
-   * The IO operations for an ImageJ based RDD object
-   * @param inRDD the RDD containing the images
-   * @tparam A the type of the key (usually string or path, can also contain identifiers)
-   * @tparam B portableimageplus or a subclass
-   */
-  implicit class ijIORDD[A : ClassTag,B <: PortableImagePlus : ClassTag](inRDD: RDD[(A,B)]) {
-    /**
-     * The command to save images (if path does not contain a url hdfs://, s3://, http://) the
-     * file is saved using the saveImagesLocal where the path will be prepended (best if it is
-     * empty)
-     * @note path must contain and ending seperator for local operation
-     *       @note if (A) contains an hadoop path this save will not work since all the files
-     *             have to be in the same path
-     * @param suffix the suffix to append so imagej knows the filetype
-     * @param path the path to prepend (if needed)
-     */
-    def saveImage(suffix: String,path: String = "")(implicit fs: ImageJSettings) = {
-      if (path.contains("://")) {
-        saveImages(path,suffix)
-      }
-      else inRDD.map( kv => (path+kv._1.toString,kv._2)).saveImagesLocal(suffix)
-    }
-    /**
-     * Saves the images locally using ImageJ
-     * @param suffix text to add to the existing path
-     */
-    protected[ij] def saveImagesLocal(suffix: String)(implicit fs: ImageJSettings) = {
-      inRDD.foreachPartition{
-        imglist =>
-          SetupImageJInPartition(fs)
-          imglist.foreach {
-            case(filename,imgobj) =>
-              Spiji.saveImage(imgobj.getImg,filename+suffix)
-          }
-      }
-    }
-
-    /**
-     * Save images in a hadoop style using a directory with subnames (part-0000 ...),
-     * @note these files have no extension so the filenames/ metadata should be stored elsewhere
-     *       @note it is recommended to use saveImageLocal for most cases
-     * @param path the folder to write the images too
-     * @param newSuffix the suffix (for writing the correct filetype
-     */
-    protected[ij] def saveImages(path: String,newSuffix: String)(implicit fs: ImageJSettings) = {
-      val format = classOf[ByteOutputFormat[NullWritable, BytesWritable]]
-      val jobConf = new JobConf(inRDD.context.hadoopConfiguration)
-      val namelist = inRDD.keys.collect
-      inRDD.partitionBy(new DSImg.NamedSlicePartitioner(namelist)).
-        mapPartitions {
-        imglist =>
-          SetupImageJInPartition(fs)
-          imglist.map {
-            case (keyobj, imgobj) =>
-              (
-                NullWritable.get(),
-                new BytesWritable(Spiji.saveImageAsByteArray(imgobj.getImg(),newSuffix))
-                )
-          }
-      }.
-        saveAsHadoopFile(path, classOf[NullWritable], classOf[BytesWritable], format)
-    }
-  }
-
-  /**
-   * Add imageplus reader to the sparkcontext
-   */
-  implicit class ImageJFriendlySparkContext(sc: SparkContext) {
-    val defMinPart = sc.defaultMinPartitions
-
-    def ijByteFile(path: String, minPartitions: Int = sc.defaultMinPartitions): RDD[(String,
-      PortableImagePlus)] = {
-      val job = new NewHadoopJob(sc.hadoopConfiguration)
-      NewFileInputFormat.addInputPath(job, new Path(path))
-      val updateConf = job.getConfiguration
-      new OldBinaryFileRDD(
-        sc,
-        classOf[ImagePlusFileInputFormat],
-        classOf[String],
-        classOf[PortableImagePlus],
-        updateConf,
-        minPartitions).setName(path)
-    }
-
-    def ijFile(path: String, minPartitions: Int = sc.defaultMinPartitions): RDD[(String,
-      PortableImagePlus)] = {
-      sc.binaryFiles(path,minPartitions).map{
-        case (pname, pdsObj) =>
-          (pname,new PortableImagePlus(Spiji.loadImageFromInputStream(pdsObj.open(),
-            pname.split("[.]").last)))
-      }
-    }
-
-  }
 
   implicit def ImagePlusToPortableImagePlus(imp: ImagePlus) = new PortableImagePlus(imp)
 

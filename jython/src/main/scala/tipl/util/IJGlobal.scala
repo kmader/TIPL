@@ -1,8 +1,8 @@
-package tipl.ij.scripting.tipl.util
+package tipl.util
 
-import tipl.ij.scripting.scOps.ImageJSettings
+
+import fourquant.imagej.scOps.ImageJSettings
 import tipl.spark.SparkGlobal
-import tipl.util.ArgumentParser
 
 /**
  * For keeping consistent settings for ImageJ, its path and plugin setups
