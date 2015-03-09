@@ -1,0 +1,227 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>il2-tools</artifactId>
+    <packaging>jar</packaging>
+    <name>imglib2-tools</name>
+    <description>TIPL tools built on top of the imglib2 library</description>
+
+    <url>http://www.4quant.com</url>
+    <parent>
+        <groupId>quant.tipl</groupId>
+        <artifactId>quant-tipl</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <properties>
+        <imglib2.groupId>net.imglib2</imglib2.groupId>
+        <imglib2.version>2.0.0-beta-25</imglib2.version>
+        <imglib2-io.version>2.0.0-beta-21</imglib2-io.version>
+        <imglib2-ij.version>2.0.0-beta-25</imglib2-ij.version>
+       <scifio.version>0.17.1</scifio.version><!--0.13.2, 0.16.4, 0.17.1-->
+   </properties>
+
+
+   <dependencies>
+       <dependency>
+           <groupId>junit</groupId>
+           <artifactId>junit</artifactId>
+           <version>4.10</version>
+           <scope>test</scope>
+       </dependency>
+
+       <dependency>
+           <groupId>org.scalatest</groupId>
+           <artifactId>scalatest_${scala.binary.version}</artifactId>
+           <version>2.2.1</version>
+           <scope>test</scope>
+       </dependency>
+
+       <dependency>
+           <groupId>org.scala-lang</groupId>
+           <artifactId>scala-library</artifactId>
+           <version>${scala.version}</version>
+       </dependency>
+       <dependency>
+           <groupId>org.apache.spark</groupId>
+           <artifactId>spark-core_${scala.binary.version}</artifactId>
+           <version>${spark.version}</version>
+       </dependency>
+       <dependency>
+           <groupId>org.apache.spark</groupId>
+           <artifactId>spark-mllib_${scala.binary.version}</artifactId>
+           <version>${spark.version}</version>
+       </dependency>
+       <dependency>
+           <groupId>org.apache.spark</groupId>
+           <artifactId>spark-sql_${scala.binary.version}</artifactId>
+           <version>${spark.version}</version>
+       </dependency>
+       <dependency>
+           <groupId>org.apache.spark</groupId>
+           <artifactId>spark-streaming_${scala.binary.version}</artifactId>
+           <version>${spark.version}</version>
+       </dependency>
+       <dependency>
+           <groupId>quant.tipl</groupId>
+           <artifactId>tipl-core</artifactId>
+           <version>${tipl.version}</version>
+       </dependency>
+
+
+       <dependency> <!-- needed for shapeanalysis -->
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-ccgeom</artifactId>
+            <version>${tipl.version}</version>
+        </dependency>
+        <dependency> <!-- needed for sc functions functions -->
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-io</artifactId>
+            <version>${tipl.version}</version>
+        </dependency>
+
+       <dependency> <!--needed for spark tools -->
+           <groupId>quant.tipl</groupId>
+           <artifactId>tipl-spark</artifactId>
+           <version>${tipl.version}</version>
+       </dependency>
+
+
+       <!-- base illib-->
+       <!-- imaglib2 dependencies
+               <dependency>
+       <groupId>${imglib2.groupId}</groupId>
+       <artifactId>imglib2</artifactId>
+       <version>${imglib2.version}</version>
+   </dependency>
+
+       -->
+        <!-- gui things -->
+
+       <dependency>
+           <groupId>${imglib2.groupId}</groupId>
+           <artifactId>imglib2-ui</artifactId>
+           <version>${imglib2.version}</version>
+       </dependency>
+<!--
+
+        <dependency>
+            <groupId>${imglib2.groupId}</groupId>
+            <artifactId>imglib2-algorithms</artifactId>
+            <version>${imglib2.version}</version>
+        </dependency>
+
+
+
+       <dependency>
+           <groupId>${imglib2.groupId}</groupId>
+           <artifactId>imglib2-io</artifactId>
+           <version>${imglib2-io.version}</version>
+       </dependency>
+
+ <dependency>
+            <groupId>io.scif</groupId>
+            <artifactId>scifio-jai-imageio</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+
+         -->
+       <dependency>
+           <groupId>${imglib2.groupId}</groupId>
+           <artifactId>imglib2-io</artifactId>
+           <version>${imglib2-io.version}</version>
+       </dependency>
+
+       <!-- ImageJ dependencies -->
+
+<!--
+        <dependency>
+            <groupId>net.imagej</groupId>
+            <artifactId>ij</artifactId>
+            <version>${ij.version}</version>
+        </dependency>
+       <dependency>
+           <groupId>net.imagej</groupId>
+           <artifactId>imagej-common</artifactId>
+       </dependency>
+       -->
+
+       <dependency>
+           <groupId>net.imagej</groupId>
+           <artifactId>imagej</artifactId>
+           <version>2.0.0-rc-22</version>
+       </dependency>
+<!--
+       <dependency>
+           <groupId>net.imagej</groupId>
+           <artifactId>imagej-ops</artifactId>
+           <version>0.8.1-SNAPSHOT</version>
+       </dependency>
+
+       <dependency>
+           <groupId>net.imglib2</groupId>
+           <artifactId>imglib2-ij</artifactId>
+           <version>${imglib2.version}</version>
+       </dependency>
+       -->
+
+    </dependencies>
+
+    <build>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>3.3</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+
+            <plugin>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest-maven-plugin</artifactId>
+
+                <version>1.0-RC2</version>
+                <configuration>
+                    <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+                    <junitxml>.</junitxml>
+                    <filereports>${project.build.directory}/SparkTestSuite.txt</filereports>
+                    <argLine>-Xmx3g -XX:MaxPermSize=${MaxPermGen} -XX:ReservedCodeCacheSize=512m</argLine>
+                    <stderr/>
+                    <environmentVariables>
+                        <SPARK_TESTING>1</SPARK_TESTING>
+                    </environmentVariables>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- skip the dependencies resolution which takes ages -->
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </reporting>
+
+
+</project>
