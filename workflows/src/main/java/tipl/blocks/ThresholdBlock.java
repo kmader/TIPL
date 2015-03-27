@@ -68,18 +68,19 @@ public class ThresholdBlock extends LocalTIPLBlock {
 
     final static String blockName = "ThresholdBlock";
 
-    @Deprecated
-    public ThresholdBlock() {
-        this(new LocalTIPLBlock.LocalIOHelper(),"");
-    }
-
     public ThresholdBlock(final BlockIOHelper helperTools,final String inPrefix) {
         super(helperTools,blockName);
         prefix = inPrefix;
     }
+    public ThresholdBlock(final String inPrefix) {
+        this(new LocalTIPLBlock.LocalIOHelper(), inPrefix);
+    }
 
 
-
+    @Deprecated
+    public ThresholdBlock() {
+        this("");
+    }
 
 
     @Override

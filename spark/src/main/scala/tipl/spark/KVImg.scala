@@ -4,14 +4,13 @@
 package tipl.spark
 
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.mllib.linalg.distributed.{MatrixEntry, CoordinateMatrix, DistributedMatrix}
+import org.apache.spark.mllib.linalg.distributed.{CoordinateMatrix, DistributedMatrix, MatrixEntry}
 import org.apache.spark.rdd.RDD
+import tipl.formats.{TImg, TImgRO}
 import tipl.tools.TypedSliceLookup
-import scala.reflect.ClassTag
 import tipl.util._
-import tipl.formats.TImgRO
-import tipl.formats.TImg
+
+import scala.reflect.ClassTag
 import scala.{specialized => spec}
 
 
@@ -123,7 +122,7 @@ class KVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](dim: D3int,
     val sqlContext = new SQLContext(baseImg.sparkContext)
     // first convert the image to a double (it makes it easier for now,
     // since otherwise sqlcontext goes crazy with javamirrors and type tags and all that
-    val schemaTab = sqlContext.createSchemaRDD(toKVDouble.getBaseImg.map { inRow => KVImg
+    val schemaTab = sqlContext.createDataFrame(toKVDouble.getBaseImg.map { inRow => KVImg
       .KVImgRowGeneric(inRow._1.x, inRow._1.y, inRow._1.z, inRow._2)})
     schemaTab.saveAsParquetFile(path)
   }

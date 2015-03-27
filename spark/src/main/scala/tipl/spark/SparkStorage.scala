@@ -15,7 +15,7 @@ import tipl.util.TypedPath
  * @author mader
  *
  */
-
+@deprecated("Not a usuable system for future storage, remove","1.0")
 class SSTImg(baseImg: TImgRO) extends TImg.ATImg(baseImg, baseImg.getImageType) {
 
   override def getPolyImage(sliceNumber: Int, asType: Int) =
@@ -27,12 +27,12 @@ class SSTImg(baseImg: TImgRO) extends TImg.ATImg(baseImg, baseImg.getImageType) 
     DTImg.ConvertTImg(SparkGlobal.getContext, inAim, inAim.getImageType)
 }
 
-
+@deprecated("Not a usuable system for future storage, remove","1.0")
 abstract class SparkStorage extends ITIPLStorage {
   override def readTImg(path: TypedPath, readFromCache: Boolean, saveToCache: Boolean): TImg = {
     val sc = SparkGlobal.getContext().sc
     // keep it compatible with the older version
-    val bf = sc.byteFolder(path.append("/*.tif").getPath)
+    val bf = sc.binaryFiles(path.append("/*.tif").getPath).mapValues(_.toArray)
 
     val tifLoad = bf.toTiffSlices
     //val outImage = tifLoad.load
@@ -46,7 +46,6 @@ abstract class SparkStorage extends ITIPLStorage {
 
 
 object SparkStorage {
-
 
   trait DeadTImg extends TImg {
 

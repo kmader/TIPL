@@ -34,6 +34,11 @@ public class AnalyzePhase extends LocalTIPLBlock {
         this(new LocalTIPLBlock.LocalIOHelper(),"");
     }
 
+    @Deprecated
+    public AnalyzePhase(final String inPrefix) {
+        this(new LocalTIPLBlock.LocalIOHelper(),inPrefix);
+    }
+
     public AnalyzePhase(final BlockIOHelper helperTools,final String inPrefix) {
         super(helperTools,"AnalyzePhase");
         prefix = inPrefix;

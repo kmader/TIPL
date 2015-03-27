@@ -51,15 +51,20 @@ public class XDFBlock extends LocalTIPLBlock {
 
     final static String blockName = "XDFBlock";
 
-    @Deprecated
-    public XDFBlock() {
-        this(new LocalTIPLBlock.LocalIOHelper(),"");
-    }
-
     public XDFBlock(final BlockIOHelper helperTools,final String inPrefix) {
         super(helperTools,blockName);
         prefix = inPrefix;
     }
+
+    public XDFBlock(final String inPrefix) {
+        this(new LocalTIPLBlock.LocalIOHelper(), inPrefix);
+    }
+    @Deprecated
+    public XDFBlock() {
+        this("");
+    }
+
+
 
     @Override
     protected IBlockImage[] bGetInputNames() {

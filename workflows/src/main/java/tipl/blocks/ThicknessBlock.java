@@ -41,15 +41,23 @@ public class ThicknessBlock extends LocalTIPLBlock {
 
     final static String blockName = "ThicknessBlock";
 
+    public ThicknessBlock(final BlockIOHelper helperTools,final String inPrefix) {
+        super(helperTools,blockName);
+        prefix = inPrefix;
+    }
+
     @Deprecated
     public ThicknessBlock() {
         this(new LocalTIPLBlock.LocalIOHelper(),"");
     }
 
-    public ThicknessBlock(final BlockIOHelper helperTools,final String inPrefix) {
-        super(helperTools,blockName);
-        prefix = inPrefix;
+
+    @Deprecated
+    public ThicknessBlock(String prefix) {
+        this(new LocalTIPLBlock.LocalIOHelper(),prefix);
     }
+
+
 
 
     @Override

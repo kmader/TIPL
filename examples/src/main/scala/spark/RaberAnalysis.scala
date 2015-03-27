@@ -5,9 +5,11 @@ import org.apache.spark.ui.tipl.TiplUI
 import tipl.blocks.BaseBlockRunner
 import tipl.formats.TImgRO
 import tipl.spark.IOOps._
-import tipl.spark.SparkGlobal
 import tipl.util.TIPLOps._
 import tipl.util._
+import tipl.spark.SparkGlobal
+
+
 /**
  * Created by mader on 10/16/14.
  */

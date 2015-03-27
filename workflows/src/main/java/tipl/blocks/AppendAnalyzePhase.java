@@ -23,7 +23,16 @@ public class AppendAnalyzePhase extends AnalyzePhase {
     };
 
     public AppendAnalyzePhase(final BlockIOHelper helperTools, final String inPrefix) {
-        super(helperTools,inPrefix);
+        super(helperTools, inPrefix);
+    }
+
+    @Deprecated
+    public AppendAnalyzePhase(final String inPrefix) {
+        this(new LocalTIPLBlock.LocalIOHelper(), inPrefix);
+    }
+    @Deprecated
+    public AppendAnalyzePhase() {
+        this("");
     }
 
 

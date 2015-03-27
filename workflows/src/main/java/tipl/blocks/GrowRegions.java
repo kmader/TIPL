@@ -78,15 +78,22 @@ public class GrowRegions extends LocalTIPLBlock {
                     false)};
 
 
-    @Deprecated
-    public GrowRegions() {
-        this(new LocalTIPLBlock.LocalIOHelper(),"");
-    }
 
     public GrowRegions(final BlockIOHelper helperTools,final String inPrefix) {
         super(helperTools,"GrowRegions");
         prefix = inPrefix;
     }
+
+    public GrowRegions(final String inPrefix) {
+        this(new LocalTIPLBlock.LocalIOHelper(), inPrefix);
+    }
+
+    @Deprecated
+    public GrowRegions() {
+        this("");
+    }
+
+
 
 
     @Override

@@ -57,10 +57,11 @@
 
         <scala.binary.version>2.10</scala.binary.version>
         <scala.macros.version>2.0.1</scala.macros.version>
-        <spark.version>1.2.1</spark.version>
+        <spark.version>1.3.0</spark.version>
         <ij.version>1.49j</ij.version>
         <knime.version>2.11</knime.version>
         <javadoc.skip>false</javadoc.skip>
+
 
         <java.memory.min>-Xms1G</java.memory.min>
         <java.memory.max>-Xmx2G</java.memory.max>

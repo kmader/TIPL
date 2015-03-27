@@ -33,7 +33,7 @@
 
     <properties>
         <sbt.project.name>assembly_nospark</sbt.project.name>
-        <tipl.jar.basename>tipl-core-${project.version}.jar</tipl.jar.basename>
+        <tipl.jar.basename>TIPL_core.jar</tipl.jar.basename>
         <tipl.jar>${project.build.directory}/${tipl.jar.basename}</tipl.jar>
     </properties>
 

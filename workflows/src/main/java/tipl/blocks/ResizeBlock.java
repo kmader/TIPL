@@ -35,15 +35,23 @@ public class ResizeBlock extends LocalTIPLBlock {
     ITIPLPluginIO fs = new Resize();
 
 
-    @Deprecated
-    public ResizeBlock() {
-        this(new LocalTIPLBlock.LocalIOHelper(),"");
-    }
-
     public ResizeBlock(final BlockIOHelper helperTools,final String inPrefix) {
         super(helperTools,blockName);
         prefix = inPrefix;
     }
+
+    @Deprecated
+    public ResizeBlock(final String inPrefix) {
+        this(new LocalTIPLBlock.LocalIOHelper(), inPrefix);
+    }
+
+    @Deprecated
+    public ResizeBlock() {
+        this("");
+    }
+
+
+
 
 
 

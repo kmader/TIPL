@@ -33,15 +33,21 @@ public class FilterBlock extends LocalTIPLBlock {
             "gfilt", "gfilt.tif", "Post-filtering image", true)};
 
 
-    @Deprecated
-    public FilterBlock() {
-        this(new LocalTIPLBlock.LocalIOHelper(),"");
-    }
-
     public FilterBlock(final BlockIOHelper helperTools,final String inPrefix) {
         super(helperTools,blockName);
         prefix = inPrefix;
     }
+
+    public FilterBlock(final String inPrefix) {
+        this(new LocalTIPLBlock.LocalIOHelper(),inPrefix);
+    }
+
+    @Deprecated
+    public FilterBlock() {
+        this("");
+    }
+
+
 
     @Override
     protected IBlockImage[] bGetInputNames() {

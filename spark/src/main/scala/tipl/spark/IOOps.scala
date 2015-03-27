@@ -1,20 +1,16 @@
 package tipl.spark
 
-import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat => NewFileInputFormat}
 import org.apache.hadoop.mapreduce.{InputFormat => NewInputFormat, Job => NewHadoopJob}
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
 import org.apache.spark.api.java.JavaPairRDD
-import org.apache.spark.input.{ByteInputFormat, PortableDataStream, StreamInputFormat}
-import org.apache.spark.rdd.{BinaryFileRDD, OldBinaryFileRDD, RDD}
-import org.apache.spark.streaming.StreamingContext._
+import org.apache.spark.input.ByteInputFormat
+import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.dstream.DStream
 import tipl.formats.TReader.TSliceReader
 import tipl.formats.TiffFolder.TIFSliceReader
 import tipl.formats.{TImg, TImgRO}
-import tipl.spark.hadoop.TiffFileInputFormat
 import tipl.util._
 
 import scala.reflect.ClassTag
@@ -35,46 +31,15 @@ object IOOps {
     val defMinPart = sc.defaultMinPartitions
 
     def tiffFolder(path: String, minPartitions: Int = sc.defaultMinPartitions): RDD[(String,
-      TIFSliceReader)] = {
-      val job = new NewHadoopJob(sc.hadoopConfiguration)
-      NewFileInputFormat.addInputPath(job, new Path(path))
-      val updateConf = job.getConfiguration
-      new OldBinaryFileRDD(
-        sc,
-        classOf[TiffFileInputFormat],
-        classOf[String],
-        classOf[TIFSliceReader],
-        updateConf,
-        minPartitions).setName(path)
-    }
+      TIFSliceReader)] =
+      sc.binaryFiles(path,minPartitions).mapValues{
+        cPDS =>
+          val imgData = cPDS.toArray()
+          val decoders = TIFSliceReader.IdentifyDecoderNames(imgData)
+          new TIFSliceReader(imgData,decoders(0))
+      }
 
-    def byteFolder(path: String, minPartitions: Int = sc.defaultMinPartitions): RDD[(String,
-      Array[Byte])] = {
-      val job = new NewHadoopJob(sc.hadoopConfiguration)
-      NewFileInputFormat.addInputPath(job, new Path(path))
-      val updateConf = job.getConfiguration
-      new OldBinaryFileRDD(
-        sc,
-        classOf[ByteInputFormat],
-        classOf[String],
-        classOf[Array[Byte]],
-        updateConf,
-        minPartitions).setName(path)
-    }
 
-    def binaryFiles(path: String, minPartitions: Int = sc.defaultMinPartitions):
-    RDD[(String, PortableDataStream)] = {
-      val job = new NewHadoopJob(sc.hadoopConfiguration)
-      NewFileInputFormat.addInputPath(job, new Path(path))
-      val updateConf = job.getConfiguration
-      new BinaryFileRDD(
-        sc,
-        classOf[StreamInputFormat],
-        classOf[String],
-        classOf[PortableDataStream],
-        updateConf,
-        minPartitions).setName(path)
-    }
   }
 
 
@@ -85,10 +50,10 @@ object IOOps {
     def toTiffSlices() = {
       val tSlice = srd.first
       val decoders = TIFSliceReader.IdentifyDecoderNames(tSlice._2)
-      val outRdd = srd.mapValues {
-        new TIFSliceReader(_, decoders(0))
+
+      srd.map {
+        x => (x._1,new TIFSliceReader(x._2, decoders(0)))
       }
-      outRdd
     }
   }
 
@@ -262,9 +227,13 @@ object IOOps {
     def byteFolder(directory: String) =
       ssc.fileStream[String, Array[Byte], ByteInputFormat](directory)
 
-    def tiffFolder(directory: String) =
-      ssc.fileStream[String, TIFSliceReader, TiffFileInputFormat](directory)
-
+    def tiffFolder(directory: String) = {
+      byteFolder(directory).mapValues {
+        imgData =>
+          val decoders = TIFSliceReader.IdentifyDecoderNames(imgData)
+          new TIFSliceReader(imgData, decoders(0))
+      }
+    }
 
   }
 
