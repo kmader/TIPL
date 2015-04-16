@@ -98,6 +98,44 @@
             <artifactId>tipl-webgui</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <!-- make all spark dependencies provided -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-mllib_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-graphx_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-repl_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
     
     </dependencies>
 
@@ -126,7 +164,7 @@
                         <includes>
                             <include>*:*</include>
                         </includes>
-                        <excludes>
+                        <!-- <excludes>
                             <exclude>com.twitter:*</exclude>
                             <exclude>org.json4s:*</exclude>
                             <exclude>com.esotericsoftware.kryo:*</exclude>
@@ -188,7 +226,7 @@
                             <exclude>org.codehaus*:*</exclude>
                             <exclude>org.glassfish*:*</exclude>
 
-                        </excludes>
+                        </excludes> -->
                     </artifactSet>
                     <filters>
                         <filter>

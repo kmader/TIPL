@@ -12,7 +12,7 @@ object UFEMCloudTest {
 
   def main(args: Array[String]): Unit = {
     val p = SparkGlobal.activeParser(args) // for gui code
-    p.checkForInvalid()
+    //p.checkForInvalid()
     // setup spark context
     val sc = SparkGlobal.getContext("RaberAnalysis").sc
 
@@ -64,7 +64,8 @@ object UFEMCloudTest {
 
     // setup s3 access
     sc.hadoopConfiguration.set("fs.s3n.awsAccessKeyId","AKIAJM4PPKISBYXFZGKA")
-    sc.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey","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")
+    sc.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey",
+      "4kLzCphyFVvhnxZ3qVg1rE9EDZNFBZIl5FnqzOQi")
     // load the data
     val baseString = "s3n://ksmbench3/"
     //val basePath = TIPLStorageManager.openPath()

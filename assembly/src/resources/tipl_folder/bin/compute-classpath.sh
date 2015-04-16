@@ -38,7 +38,7 @@ else
   CLASSPATH="$CLASSPATH:$FWDIR/conf"
 fi
 
-ASSEMBLY_DIR="$FWDIR/assembly/target/scala-$SPARK_SCALA_VERSION"
+ASSEMBLY_DIR="$FWDIR/../../../../assembly/target/"
 
 if [ -n "$JAVA_HOME" ]; then
   JAR_CMD="$JAVA_HOME/bin/jar"
@@ -76,7 +76,7 @@ fi
 
 num_jars=0
 
-for f in "${assembly_folder}"/spark-assembly*hadoop*.jar; do
+for f in "${assembly_folder}"/tipl-assembly*.jar; do
   if [[ ! -e "$f" ]]; then
     echo "Failed to find Spark assembly in $assembly_folder" 1>&2
     echo "You need to build Spark before running this program." 1>&2

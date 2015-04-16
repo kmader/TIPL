@@ -147,6 +147,7 @@ abstract public class SparkGlobal {
             System.setProperty("spark.cleaner.ttl", "" + metaDataMemoryTime); // time to remember
             // metadata
 
+
             currentContext = new JavaSparkContext(getMasterName(), jobName,
                     System.getenv("SPARK_HOME"), JavaSparkContext.jarOfClass(SparkGlobal.class));
 

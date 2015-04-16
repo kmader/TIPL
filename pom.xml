@@ -46,7 +46,7 @@
         <module>jython</module>
         <module>webgui</module>
         <module>examples</module>
-        <module>il2-tools</module>
+        <!-- <module>il2-tools</module> -->
         <module>knime</module>
     </modules>
     <properties>
@@ -138,7 +138,7 @@
     <dependencies>
         <dependency>
             <groupId>com.typesafe.genjavadoc</groupId>
-            <artifactId>genjavadoc-plugin_2.10.4</artifactId>
+            <artifactId>genjavadoc-plugin_${scala.version}</artifactId>
             <version>0.8</version>
         </dependency>
     </dependencies>
