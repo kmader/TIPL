@@ -1,6 +1,6 @@
 package tipl.formats;
 
-import java.io.Serializable;
+import java.io.*;
 
 import tipl.formats.TImgRO.FullReadable;
 import tipl.util.D3float;
@@ -52,6 +52,9 @@ public interface TImg extends TImgRO, TImgRO.CanExport,
     	 * @return
     	 */
     	public static ArrayBackedTImg CreateFromTImg(TImgRO inAim,final int stype) {
+            if ((inAim instanceof ArrayBackedTImg) & (inAim.getImageType()==stype)) {
+                return (ArrayBackedTImg) inAim;
+            }
     		Object[] sData = new Object[inAim.getDim().z];
     		for(int z=0;z<inAim.getDim().z;z++) sData[z]=inAim.getPolyImage(z, stype);
     		return new ArrayBackedTImg(inAim.getDim(),inAim.getPos(),inAim.getElSize(),stype,sData);
@@ -163,6 +166,36 @@ public interface TImg extends TImgRO, TImgRO.CanExport,
             }
             return outArray;
         }
+
+        /**
+         * Serialize the image data as a byte array
+         * @return the type as the first value and the slices as the second
+         * @throws IOException
+         */
+        public byte[] serializeImageData() throws IOException {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeInt(this.sliceType);
+            oos.writeObject(this.sliceData);
+            oos.close();
+            baos.close();
+            return baos.toByteArray();
+        }
+
+        public static ArrayBackedTImg CreateFromSerializedData(
+                D3int idim, D3int ipos, D3float ielSize, byte[] serImgData
+        ) throws IOException, ClassNotFoundException {
+            ByteArrayInputStream bais = new ByteArrayInputStream(serImgData);
+            ObjectInputStream ois = new ObjectInputStream(bais);
+
+            final int iimageType = ois.readInt();
+            final Object[] isliceData = (Object[]) ois.readObject();
+            ois.close();
+            bais.close();
+            return new ArrayBackedTImg(idim, ipos, ielSize, iimageType,isliceData);
+        }
+
+
     }
     
     	
