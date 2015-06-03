@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 import javax.servlet.http.HttpServletRequest
 
-import fourquant.imagej.ImagePlusIO.PortableImagePlus
+import fourquant.imagej.PortableImagePlus
 import org.apache.spark.ui.tipl.WebViz
 import org.apache.spark.ui.tipl.WebViz.{RDDInfo, ExtInfo}
 

@@ -5,15 +5,13 @@ import java.awt.image.BufferedImage
 import javax.swing.{JFrame, JPanel}
 
 import com.github.sarxos.webcam.{Webcam, WebcamPanel}
-import fourquant.imagej.ImagePlusIO.PortableImagePlus
-import fourquant.imagej.Spiji
 import fourquant.imagej.scOps.ImageJSettings
+import fourquant.imagej.{PortableImagePlus, Spiji}
 import ij.gui.{Plot, PlotWindow}
 import ij.{ImagePlus, WindowManager}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.Seconds
-
 import tipl.spark.SparkGlobal
 import tipl.streaming.LiveImagePanel.BISourceInformation
 
@@ -200,10 +198,8 @@ object StreamingWebcam {
   }
 
   def main(args: Array[String]): Unit = {
-    import org.apache.spark.streaming.StreamingContext._
     //import org.apache.spark.streaming.StreamingContext._
     //import org.apache.spark.SparkContext._
-    import org.apache.spark.SparkContext._
     import tipl.spark.IOOps._
     val p = SparkGlobal.activeParser(args)
     val wrThreads = p.getOptionInt("webthreads",1,"Number of webcam threads to use",1,20)

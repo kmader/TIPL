@@ -35,7 +35,7 @@
     <orderEntry type="library" name="Maven: org.scijava:scijava-common:2.36.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: com.googlecode.gentyref:gentyref:1.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.bushe:eventbus:1.4" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.spark:spark-core_2.10:1.3.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.spark:spark-core_2.10:1.3.1" level="project" />
     <orderEntry type="library" name="Maven: com.twitter:chill_2.10:0.5.0" level="project" />
     <orderEntry type="library" name="Maven: com.esotericsoftware.kryo:kryo:2.21" level="project" />
     <orderEntry type="library" name="Maven: com.esotericsoftware.reflectasm:reflectasm:shaded:1.07" level="project" />
@@ -55,7 +55,6 @@
     <orderEntry type="library" name="Maven: commons-digester:commons-digester:1.8" level="project" />
     <orderEntry type="library" name="Maven: commons-beanutils:commons-beanutils:1.7.0" level="project" />
     <orderEntry type="library" name="Maven: commons-beanutils:commons-beanutils-core:1.8.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.avro:avro:1.7.4" level="project" />
     <orderEntry type="library" name="Maven: com.google.protobuf:protobuf-java:2.5.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-auth:2.2.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-compress:1.4.1" level="project" />
@@ -86,7 +85,6 @@
     <orderEntry type="library" name="Maven: com.sun.jersey:jersey-core:1.9" level="project" />
     <orderEntry type="library" name="Maven: com.sun.jersey:jersey-json:1.9" level="project" />
     <orderEntry type="library" name="Maven: org.codehaus.jettison:jettison:1.1" level="project" />
-    <orderEntry type="library" name="Maven: stax:stax-api:1.0.1" level="project" />
     <orderEntry type="library" name="Maven: com.sun.xml.bind:jaxb-impl:2.2.3-1" level="project" />
     <orderEntry type="library" name="Maven: javax.xml.bind:jaxb-api:2.2.2" level="project" />
     <orderEntry type="library" name="Maven: javax.activation:activation:1.1" level="project" />
@@ -100,8 +98,8 @@
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-yarn-common:2.2.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-mapreduce-client-jobclient:2.2.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-annotations:2.2.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.spark:spark-network-common_2.10:1.3.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.spark:spark-network-shuffle_2.10:1.3.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.spark:spark-network-common_2.10:1.3.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.spark:spark-network-shuffle_2.10:1.3.1" level="project" />
     <orderEntry type="library" name="Maven: net.java.dev.jets3t:jets3t:0.7.1" level="project" />
     <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.3" level="project" />
     <orderEntry type="library" name="Maven: commons-httpclient:commons-httpclient:3.1" level="project" />
@@ -153,10 +151,10 @@
     <orderEntry type="library" name="Maven: net.sf.py4j:py4j:0.8.2.1" level="project" />
     <orderEntry type="module" module-name="tipl-io" />
     <orderEntry type="module" module-name="tipl-spark" />
-    <orderEntry type="library" name="Maven: org.apache.spark:spark-mllib_2.10:1.3.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.spark:spark-mllib_2.10:1.3.1" level="project" />
     <orderEntry type="library" name="Maven: org.jblas:jblas:1.2.3" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.spark:spark-sql_2.10:1.3.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.spark:spark-catalyst_2.10:1.3.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.spark:spark-sql_2.10:1.3.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.spark:spark-catalyst_2.10:1.3.1" level="project" />
     <orderEntry type="library" name="Maven: org.scalamacros:quasiquotes_2.10:2.0.1" level="project" />
     <orderEntry type="library" name="Maven: com.twitter:parquet-column:1.6.0rc3" level="project" />
     <orderEntry type="library" name="Maven: com.twitter:parquet-common:1.6.0rc3" level="project" />
@@ -168,7 +166,7 @@
     <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-mapper-asl:1.9.11" level="project" />
     <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-core-asl:1.9.11" level="project" />
     <orderEntry type="library" name="Maven: org.jodd:jodd-core:3.6.3" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.spark:spark-streaming_2.10:1.3.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.spark:spark-streaming_2.10:1.3.1" level="project" />
     <orderEntry type="module" module-name="tipl-ccgeom" />
     <orderEntry type="module" module-name="tipl-VIB" />
     <orderEntry type="module" module-name="tipl-workflows" />
@@ -249,6 +247,49 @@
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.jruby:jruby-stdlib:1.7.12" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:scripting-jython:0.1.4" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.scijava:jython-shaded:2.5.3" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.spark:spark-hive_2.10:1.3.1" level="project" />
+    <orderEntry type="library" name="Maven: org.spark-project.hive:hive-metastore:0.13.1a" level="project" />
+    <orderEntry type="library" name="Maven: org.spark-project.hive:hive-shims:0.13.1a" level="project" />
+    <orderEntry type="library" name="Maven: org.spark-project.hive.shims:hive-shims-common:0.13.1a" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.spark-project.hive.shims:hive-shims-0.20:0.13.1a" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.mortbay.jetty:jetty:6.1.26" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.mortbay.jetty:servlet-api:2.5-20081211" level="project" />
+    <orderEntry type="library" name="Maven: org.spark-project.hive.shims:hive-shims-common-secure:0.13.1a" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.spark-project.hive.shims:hive-shims-0.20S:0.13.1a" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.spark-project.hive.shims:hive-shims-0.23:0.13.1a" level="project" />
+    <orderEntry type="library" name="Maven: com.jolbox:bonecp:0.8.0.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.derby:derby:10.10.1.1" level="project" />
+    <orderEntry type="library" name="Maven: org.datanucleus:datanucleus-api-jdo:3.2.6" level="project" />
+    <orderEntry type="library" name="Maven: org.datanucleus:datanucleus-core:3.2.10" level="project" />
+    <orderEntry type="library" name="Maven: org.datanucleus:datanucleus-rdbms:3.2.9" level="project" />
+    <orderEntry type="library" name="Maven: javax.jdo:jdo-api:3.0.1" level="project" />
+    <orderEntry type="library" name="Maven: javax.transaction:jta:1.1" level="project" />
+    <orderEntry type="library" name="Maven: org.antlr:antlr-runtime:3.4" level="project" />
+    <orderEntry type="library" name="Maven: org.antlr:stringtemplate:3.2.1" level="project" />
+    <orderEntry type="library" name="Maven: antlr:antlr:2.7.7" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.thrift:libfb303:0.9.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.thrift:libthrift:0.9.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.1.3" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.1.3" level="project" />
+    <orderEntry type="library" name="Maven: org.spark-project.hive:hive-exec:0.13.1a" level="project" />
+    <orderEntry type="library" name="Maven: org.spark-project.hive:hive-ant:0.13.1a" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.velocity:velocity:1.5" level="project" />
+    <orderEntry type="library" name="Maven: org.spark-project.hive:hive-common:0.13.1a" level="project" />
+    <orderEntry type="library" name="Maven: com.twitter:parquet-hadoop-bundle:1.3.2" level="project" />
+    <orderEntry type="library" name="Maven: javolution:javolution:5.5.1" level="project" />
+    <orderEntry type="library" name="Maven: org.antlr:ST4:4.0.4" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.ant:ant:1.9.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.ant:ant-launcher:1.9.1" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.groovy:groovy-all:2.1.6" level="project" />
+    <orderEntry type="library" name="Maven: com.googlecode.javaewah:JavaEWAH:0.3.2" level="project" />
+    <orderEntry type="library" name="Maven: org.iq80.snappy:snappy:0.2" level="project" />
+    <orderEntry type="library" name="Maven: org.json:json:20090211" level="project" />
+    <orderEntry type="library" name="Maven: stax:stax-api:1.0.1" level="project" />
+    <orderEntry type="library" name="Maven: org.spark-project.hive:hive-serde:0.13.1a" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.avro:avro:1.7.7" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.avro:avro-mapred:hadoop2:1.7.7" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.avro:avro-ipc:1.7.7" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.avro:avro-ipc:tests:1.7.7" level="project" />
     <orderEntry type="module-library">
       <library name="Maven: stupid.fiji.scripting.shit:abstractinterpreter:99.0">
         <CLASSES>
@@ -289,7 +330,7 @@
     <orderEntry type="library" name="Maven: jfree:jcommon:1.0.15" level="project" />
     <orderEntry type="library" name="Maven: org.swinglabs:pdf-renderer:1.0.5" level="project" />
     <orderEntry type="module" module-name="tipl-examples" />
-    <orderEntry type="library" name="Maven: org.apache.spark:spark-graphx_2.10:1.3.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.spark:spark-graphx_2.10:1.3.1" level="project" />
     <orderEntry type="library" name="Maven: fourquant:spark-imageio:1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: javax.media:jai_imageio:1.1" level="project" />
     <orderEntry type="library" name="Maven: fourquant:spark-scifio:1.0-SNAPSHOT" level="project" />
@@ -326,10 +367,10 @@
     <orderEntry type="module" module-name="tipl-knime" />
     <orderEntry type="library" name="Maven: org.scala-lang:scala-compiler:2.10.4" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:scala-reflect:2.10.4" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.spark:spark-repl_2.10:1.3.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.spark:spark-repl_2.10:1.3.1" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:jline:2.10.4" level="project" />
     <orderEntry type="library" name="Maven: org.fusesource.jansi:jansi:1.4" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Maven: org.apache.spark:spark-bagel_2.10:1.3.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.apache.spark:spark-bagel_2.10:1.3.1" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:jul-to-slf4j:1.7.10" level="project" />
     <orderEntry type="library" name="Maven: org.spark-project.spark:unused:1.0.0" level="project" />
     <orderEntry type="library" name="Maven: com.typesafe.genjavadoc:genjavadoc-plugin_2.10.4:0.8" level="project" />

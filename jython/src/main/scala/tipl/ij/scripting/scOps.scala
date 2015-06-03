@@ -5,13 +5,12 @@ import _root_.tipl.formats.TImgRO
 import _root_.tipl.spark.DSImg
 import _root_.tipl.util.TImgSlice.TImgSliceAsTImg
 import _root_.tipl.util.{D3int, TIPLGlobal, TImgSlice, TImgTools}
-import fourquant.imagej.ImagePlusIO.{ImageLog, LogEntry, PortableImagePlus}
-import fourquant.imagej.Spiji
+import fourquant.imagej.ImagePlusIO.{ImageLog, LogEntry}
+import fourquant.imagej.{PortableImagePlus, Spiji}
 import ij.{IJ, ImagePlus}
 import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat => NewFileInputFormat}
 import org.apache.hadoop.mapreduce.{InputFormat => NewInputFormat, Job => NewHadoopJob}
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
