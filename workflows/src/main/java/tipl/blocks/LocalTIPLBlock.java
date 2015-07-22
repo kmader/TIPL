@@ -208,6 +208,7 @@ public abstract class LocalTIPLBlock implements ITIPLBlock {
             for (final IBlockImage cImage : aboutMe.getInputNames()) {
                 if (cImage.isEssential()) {
                     final String carg = prefix + cImage.getName();
+
                     final TypedPath curFile = this.getFileParameter(carg);
                     if (!tryOpenImagePath(curFile)) {
                         System.out.println("Not ready for block " + toString()
@@ -267,6 +268,8 @@ public abstract class LocalTIPLBlock implements ITIPLBlock {
         @Override
         @Deprecated
         public TypedPath getFileParameter(final String argument) {
+            if (!ioParameters.containsKey(argument))
+                throw new IllegalArgumentException("Block:"+this+" has no argument "+argument);
             return ioParameters.get(argument);
         }
 

@@ -194,6 +194,5 @@
     <orderEntry type="library" name="Maven: com.miglayout:miglayout-swing:4.2" level="project" />
     <orderEntry type="library" name="Maven: com.typesafe.genjavadoc:genjavadoc-plugin_2.10.4:0.8" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:scala-compiler:2.10.4" level="project" />
-    <orderEntry type="library" name="scala-sdk-2.10.4 (2)" level="application" />
   </component>
 </module>
