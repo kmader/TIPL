@@ -1,3 +1,7 @@
+![](https://github.com/kmader/TIPL/workflows/maven_build/badge.svg)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/kmader/TIPL.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kmader/TIPL/context:java)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/kmader/TIPL.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kmader/TIPL/alerts/)
+
 # Important Notes
 ## Building
 When using pom-imagej based dependencies and imglib2 and other libraries make sure you update the local version of scijava-common which supports parallel building without the concurrentmodificationexception
