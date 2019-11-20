@@ -1,0 +1,59 @@
+<!DOCTYPE html ng-app="myApp">
+<!--[if lt IE 7]>      <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en" ng-app="myApp" class="no-js"> <!--<![endif]-->
+<head>
+
+<title>Histotest</title>
+
+<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link type="text/css" href="angular_test.css" rel="stylesheet"/>
+<link href="http://fonts.googleapis.com/css?family=Cookie|Open+Sans:400,700" rel="stylesheet" />
+</head>
+
+	<body>
+	    <div class="jumbotron">
+	    <h2>Spark Image Layer</h2><h3> Configuration</h3>
+
+	    </div>
+      <div class="view-container" ng-view>
+        <div ng-view class="view-frame"></div>
+    </div>
+    <!-- Include AngularJS from Google's CDN -->
+
+<script src="jquery-2.1.1.min.js"></script>
+<!-- <script src="bootstrap/js/bootstrap.min.js"></script> -->
+<script src="angular/angular.min.js"></script> 
+<script src="angular/angular-route.min.js"></script>
+<script src="angular/angular-sanitize.min.js"></script>
+<script src="angular/angular-resource.min.js"></script>
+<script src="angular/ui-bootstrap-tpls-0.12.0.min.js"></script> 
+<script src="mermaid.min.js"></script>
+<script src="angular_test.js"></script>
+
+<script>
+var myApp = angular.module('myApp', [
+  'ngRoute',
+  'myAppControllers',
+  'myAppServices'
+]);
+
+myApp.config(['$routeProvider',
+  function($routeProvider) {
+    $routeProvider.
+      when('/list', {
+        templateUrl: 'partials/plug_list.html',
+        controller: 'PluginListController'
+      }).
+      when('/plugin/:pluginName', {
+        templateUrl: 'partials/arguments.html',
+        controller: 'PluginSettings'
+      }).
+      otherwise({
+        redirectTo: '/list'
+      });
+  }]);
+</script>
+</body>
+</html>

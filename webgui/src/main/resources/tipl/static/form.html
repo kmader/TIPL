@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<head>
+<title>Histotest</title>
+
+<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link type="text/css" href="http://code.cloudcms.com/alpaca/1.5.1/bootstrap/alpaca.min.css" rel="stylesheet"/>
+</head>
+<body>
+    <div class="container">
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <div id="form"></div>
+
+            </div>
+        </div>
+    </div>
+<script src="jquery-2.1.1.min.js"></script>
+<script src="handlebars.runtime-v2.0.0.js"></script>
+
+<script src="d3.min.js"></script>
+<script src="histogram.js"></script>
+<script src="http://code.cloudcms.com/alpaca/1.5.1/bootstrap/alpaca.min.js"></script>
+
+<script src="plugins.js"></script>
+
+<script>
+
+$(document).ready(function() {
+var histJsonPath = "plugtest.json"
+var query = window.location.search.substring(1);
+
+var plugNames = ["Old"]
+
+d3.json(histJsonPath,function(err,data) {
+    plugNames = data.map(function (d) { return d.name; })
+    var plugLabels = data.map(function (d) { return d.name+": "+d.desc; })
+    showPlugins(plugNames,plugLabels)
+});
+
+
+});
+</script>
+</body>
+</html>

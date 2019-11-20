@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<title>Histotest</title>
+<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<style>
+
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #eee;
+    shape-rendering: crispEdges;
+  }
+
+  .axis text {
+    font-size: 11px;
+  }
+
+  .bar {
+    fill: steelblue;
+  }
+</style>
+
+<div class="container">
+  <div class="row">
+    <div id="graph" class="span12">
+    </div>
+  </div>
+</div>
+
+<script src="d3.min.js"></script>
+<script src="histogram.js"></script>
+<script>
+var query = window.location.search.substring(1);
+var jsId = getQueryVariable("jsid")
+console.log(query)
+console.log(jsId)
+var histJsonPath = "hist.json"
+if(jsId) histJsonPath=jsId
+else {
+    if (query) histJsonPath=query
+}
+makeHistogramFromURL(histJsonPath,"graph")
+</script>
