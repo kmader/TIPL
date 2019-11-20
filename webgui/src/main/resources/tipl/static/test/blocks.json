@@ -1,0 +1,36 @@
+[ {
+  "name" : "ThresholdBlock",
+  "desc" : "",
+  "input" : [ "gray valued image" ],
+  "output" : [ "threshold image", "inverse threshold", "mask image" ]
+}, {
+  "name" : "FilterBlock",
+  "desc" : "",
+  "input" : [ "unfiltered image" ],
+  "output" : [ "filtered image" ]
+}, {
+  "name" : "XDFBlock",
+  "desc" : "",
+  "input" : [ "object(s) image", "mask image", "gray value image" ],
+  "output" : [ "correlation function" ]
+}, {
+  "name" : "ThicknessBlock",
+  "desc" : "",
+  "input" : [ "threshold image" ],
+  "output" : [ "thickness map", "distance map", "ridge map" ]
+}, {
+  "name" : "ResizeBlock",
+  "desc" : "",
+  "input" : [ "entire image" ],
+  "output" : [ "rescaled image" ]
+}, {
+  "name" : "GrowRegionsBlock",
+  "desc" : "",
+  "input" : [ "labeled image", "mask image" ],
+  "output" : [ "filled labels", "filled neighborhood" ]
+}, {
+  "name" : "Foam Threshold",
+  "desc" : "",
+  "input" : [ "gray valued image" ],
+  "output" : [ "threshold image", "inverse threshold", "mask image" ]
+} ]

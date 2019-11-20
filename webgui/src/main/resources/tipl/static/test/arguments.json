@@ -1,0 +1,225 @@
+[ {
+  "arg_help" : "Use commas in output, Default Value (:false)",
+  "key" : "usecsv",
+  "arg_name" : "usecsv",
+  "layer" : "GrayAnalysis-Basic",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "use threshold value, Default Value (:false)",
+  "key" : "usethresh",
+  "arg_name" : "usethresh",
+  "layer" : "GrayAnalysis-Basic",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "use lacuna mode, Default Value (:false)",
+  "key" : "lacuna",
+  "arg_name" : "lacuna",
+  "layer" : "GrayAnalysis-Basic",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "remove blank lines where count is zero, Default Value (:false)",
+  "key" : "noblank",
+  "arg_name" : "noblank",
+  "layer" : "GrayAnalysis-Basic",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "calculated distance based on a box of the region of interest (box edge distance), Default Value (:false)",
+  "key" : "boxroidist",
+  "arg_name" : "boxroidist",
+  "layer" : "GrayAnalysis-Basic",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "add columns for shape tensor, Default Value (:false)",
+  "key" : "shapetensor",
+  "arg_name" : "shapetensor",
+  "layer" : "GrayAnalysis-Basic",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "Name of analysis, Default Value (:GrayAnalysis)",
+  "key" : "analysis",
+  "arg_name" : "analysis",
+  "layer" : "GrayAnalysis-Basic",
+  "arg_value" : "GrayAnalysis",
+  "values" : [ ],
+  "class" : "String"
+}, {
+  "arg_help" : "insert results into an existing csv, Default Value (:)",
+  "key" : "insert",
+  "arg_name" : "insert",
+  "layer" : "GrayAnalysis-Basic",
+  "arg_value" : "",
+  "values" : [ ],
+  "class" : "LocalTypedPath"
+}, {
+  "arg_help" : "Add mean value column, Default Value (:true)",
+  "key" : "meancol",
+  "arg_name" : "meancol",
+  "layer" : "GrayAnalysis-Columns",
+  "arg_value" : "true",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "Add standard deviation column, Default Value (:true)",
+  "key" : "stdcol",
+  "arg_name" : "stdcol",
+  "layer" : "GrayAnalysis-Columns",
+  "arg_value" : "true",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "Add max column, Default Value (:false)",
+  "key" : "maxcol",
+  "arg_name" : "maxcol",
+  "layer" : "GrayAnalysis-Columns",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "Add min column, Default Value (:false)",
+  "key" : "mincol",
+  "arg_name" : "mincol",
+  "layer" : "GrayAnalysis-Columns",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "Add count column, Default Value (:false)",
+  "key" : "cntcol",
+  "arg_name" : "cntcol",
+  "layer" : "GrayAnalysis-Columns",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "Add covariance columns, Default Value (:false)",
+  "key" : "covcol",
+  "arg_name" : "covcol",
+  "layer" : "GrayAnalysis-Columns",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "Add center of mass columns, Default Value (:false)",
+  "key" : "comcol",
+  "arg_name" : "comcol",
+  "layer" : "GrayAnalysis-Columns",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "Add std center of mass colums, Default Value (:false)",
+  "key" : "sovcol",
+  "arg_name" : "sovcol",
+  "layer" : "GrayAnalysis-Columns",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "Add gradient columns, Default Value (:false)",
+  "key" : "gradcol",
+  "arg_name" : "gradcol",
+  "layer" : "GrayAnalysis-Columns",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "Add angular column (calculated from gradient, Default Value (:false)",
+  "key" : "angcol",
+  "arg_name" : "angcol",
+  "layer" : "GrayAnalysis-Columns",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "Add principal component columns, Default Value (:false)",
+  "key" : "pcacols",
+  "arg_name" : "pcacols",
+  "layer" : "GrayAnalysis-Columns",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "invert the values in the value image (gfilt), Default Value (:false)",
+  "key" : "invert",
+  "arg_name" : "invert",
+  "layer" : "GrayAnalysis-Values",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "use a gfilt image, Default Value (:false)",
+  "key" : "gfilt",
+  "arg_name" : "gfilt",
+  "layer" : "GrayAnalysis-Values",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "Threshold value to use, Default Value (:0.0)",
+  "key" : "thresh",
+  "arg_name" : "thresh",
+  "layer" : "GrayAnalysis-Values",
+  "arg_value" : "0.0",
+  "values" : [ ],
+  "class" : "Float"
+}, {
+  "arg_help" : "Min value for float binning of value image, Default Value (:0.0)",
+  "key" : "fmin",
+  "arg_name" : "fmin",
+  "layer" : "GrayAnalysis-Values",
+  "arg_value" : "0.0",
+  "values" : [ ],
+  "class" : "Double"
+}, {
+  "arg_help" : "Max value for float binning of value image, Default Value (:32765.0)",
+  "key" : "fmax",
+  "arg_name" : "fmax",
+  "layer" : "GrayAnalysis-Values",
+  "arg_value" : "32765.0",
+  "values" : [ ],
+  "class" : "Double"
+}, {
+  "arg_help" : "Number of bins for float binning of value image, Default Value (:500000)",
+  "key" : "fbins",
+  "arg_name" : "fbins",
+  "layer" : "GrayAnalysis-Values",
+  "arg_value" : "500000",
+  "values" : [ ],
+  "class" : "Integer"
+}, {
+  "arg_help" : "don use threshold, Default Value (:false)",
+  "key" : "nothresh",
+  "arg_name" : "nothresh",
+  "layer" : "GrayAnalysis-Values",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "use short values for value image, Default Value (:false)",
+  "key" : "useshort",
+  "arg_name" : "useshort",
+  "layer" : "GrayAnalysis-Values",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+}, {
+  "arg_help" : "use float values for value image, Default Value (:false)",
+  "key" : "usefloat",
+  "arg_name" : "usefloat",
+  "layer" : "GrayAnalysis-Values",
+  "arg_value" : "false",
+  "values" : [ ],
+  "class" : "Boolean"
+} ]

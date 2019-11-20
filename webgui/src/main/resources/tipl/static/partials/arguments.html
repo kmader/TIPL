@@ -1,0 +1,50 @@
+    
+    
+    
+<div ng-repeat="clayer in layers()" class="col-xs-12 col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{clayer}}</h3>
+      </div>
+      
+    <div class="panel-body">
+       
+        
+     
+    <div ng-repeat="carg in arguments | filter:{ layer: clayer }" ng-click="toggleActive(arg)">
+    
+        <ng-form name="cArgForm">
+        <span class="label label-primary">{{carg.key}}</span>
+        <span class="label label-info">{{carg.class}}</span>
+        <div class="well">
+
+                    <span ng-switch="carg.class">
+                        <div ng-switch-when="Double" class="alert alert-warning" role="alert">{{carg.class}} is not supported!</div>
+                        <label ng-switch-when="Boolean" class="checkbox-inline"><input type="checkbox" class="form-control" ng-model="carg.arg_value" value="{{arg_value}}">{{carg.arg_help}}</label>
+                        <label ng-switch-default class="text"><input type="text" class="form-control" name="cval" ng-model="carg.arg_value">{{carg.arg_help}}</label>
+                    </span>
+                    
+                    <div ng-show="cArgForm.cval.$invalid" class="alert alert-warning" role="alert">Valid {{carg.key}} Required, {{carg.arg_help}}</div>
+         </div>
+         </ng-form>
+         
+    
+        </div>
+    </div>
+                
+  
+    </div>
+</div>
+<div class="row">
+<div class="col-xs-12 col-md-4">
+<ul class="list-group">
+    <li ng-repeat="carg in arguments" class="list-group-item">
+       {{carg.key}} = {{carg.arg_value}} </br>
+    </li>
+</ul>
+        
+</div>
+</div>
+    
+
+

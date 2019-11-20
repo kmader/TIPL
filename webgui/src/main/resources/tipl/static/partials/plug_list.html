@@ -1,0 +1,13 @@
+    <div class="row">
+    <div ng-repeat="plugin in plugins" ng-click="openSettings(plugin.name);addToRun(plugin)" class="col-xs-6 col-md-3">
+                <div class="thumbnail">
+                    <p class="stdcaption">{{plugin.desc}}</p>
+                    <div class="caption"><h3 ng-class="getClass(plugin)">{{plugin.name}}</h3></div>
+                </div>
+                
+	</div>
+	<div class="col-xs-6 col-md-3">
+					    <div class="mermaid" ng-bind-html="getGraph()"></div>
+			</div>
+	</div>	
+

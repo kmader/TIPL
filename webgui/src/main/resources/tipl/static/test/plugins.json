@@ -1,0 +1,126 @@
+[ {
+  "name" : "GrayAnalysis2D",
+  "desc" : "Full memory 2D grayscale analysis",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "XDF",
+  "desc" : "Full memory xdf command",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "Morpho",
+  "desc" : "Full memory morphological operations",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "DistLabel",
+  "desc" : "Full memory dist labeling",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "HildThickness",
+  "desc" : "Full memory hildebrand thickness",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "VolumeViewer",
+  "desc" : "Full memory volume viewer",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "cVoronoi",
+  "desc" : "Full memory center voronoi",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "ComponentLabel",
+  "desc" : "Full memory component labeling",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "MCThickness",
+  "desc" : "Full memory monte carlo thickness calculation tool",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "kVoronoi",
+  "desc" : "Full memory kvoronoi tesselation, optimized with shrinking bounds",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "DistGrow",
+  "desc" : "Full memory distgrowing with ring based distance filling",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "GrayAnalysis",
+  "desc" : "Full memory gray value analysis",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "JDZ",
+  "desc" : "Java DeepZoom Tool",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "EasyContour",
+  "desc" : "Full memory easy contouring",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "JDZ-File",
+  "desc" : "Java DeepZoom Tool for Single Images",
+  "slice" : true,
+  "spark" : false
+}, {
+  "name" : "Curvature",
+  "desc" : "Full memory curvature (using VFIlterScale)",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "FractalDimension",
+  "desc" : "Full memory fractal dimesnion analysis",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "DistGrow",
+  "desc" : "Full memory distance growing",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "Filter",
+  "desc" : "Full memory filter",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "Peel",
+  "desc" : "Full memory peel command",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "Filter",
+  "desc" : "Slice based filter tool",
+  "slice" : true,
+  "spark" : false
+}, {
+  "name" : "Resize",
+  "desc" : "Slice-based and full memory resize command",
+  "slice" : true,
+  "spark" : false
+}, {
+  "name" : "ShapeAnalysis",
+  "desc" : "Full memory shape analysis",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "kVoronoi",
+  "desc" : "Full memory kvoronoi tesselation",
+  "slice" : false,
+  "spark" : false
+}, {
+  "name" : "Neighbors",
+  "desc" : "Full memory neighborhood analysis",
+  "slice" : false,
+  "spark" : false
+} ]
