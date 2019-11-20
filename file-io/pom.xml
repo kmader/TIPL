@@ -1,0 +1,85 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>quant.tipl</groupId>
+    <artifactId>tipl-io</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <name>tipl-io</name>
+    <url>http://www.4quant.com</url>
+
+    <parent>
+        <groupId>quant.tipl</groupId>
+        <artifactId>quant-tipl</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit-dep</artifactId>
+            <version>4.10</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.media</groupId>
+            <artifactId>jai-core</artifactId>
+            <version>1.1.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.scif</groupId>
+            <artifactId>scifio-jai-imageio</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.media</groupId>
+            <artifactId>jai-codec</artifactId>
+            <version>1.1.3</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.9-RC2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>gov.nist.math</groupId>
+            <artifactId>jama</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>2.12.3</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>net.imagej</groupId>
+            <artifactId>ij</artifactId>
+            <version>1.49h</version>
+        </dependency>
+
+        <dependency> <!-- initially just for the annotations, use the development version until something better comes along -->
+            <groupId>org.scijava</groupId>
+            <artifactId>scijava-common</artifactId>
+            <version>2.33.1</version>
+        </dependency>
+        
+         <dependency>
+            <groupId>quant.tipl</groupId>
+            <artifactId>tipl-core</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+
+    </dependencies>
+
+
+
+</project>
