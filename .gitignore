@@ -10,8 +10,9 @@
 *.pyc
 *.csv
 *.txt
-*.xml
+*-output.xml
 *.exe
 README
 target
 
+.Rproj.user
