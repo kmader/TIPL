@@ -37,6 +37,7 @@
         <module>core</module>
         <module>file-io</module>
         <module>workflows</module>
+        <module>ccgeom</module>
         <module>spark</module>
         <module>volviewer</module>
         <module>integration</module>
