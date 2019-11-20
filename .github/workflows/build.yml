@@ -25,7 +25,3 @@ jobs:
         cd file-io
         mvn install
         cd ..;
-    - name: Build all
-      run: mvn install
-    - name: Javadoc
-      run: mvn javadoc:javadoc
