@@ -15,6 +15,10 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
+    - name: install_geotiff
+      run: |
+        wget https://github.com/kmader/spark-imageio/releases/download/just_geo/geotiff-jai.jar
+        mvn install:install-file -Dfile=geotiff-jai.jar -DgroupId=geotiff -DartifactId=geotiff-jai -Dversion=0.0 -Dpackaging=jar -DlocalRepositoryPath=
     - name: Build Core
       run: |
         cd core
