@@ -43,8 +43,6 @@
         <module>jython</module>
         <module>webgui</module>
         <module>examples</module>
-        <!-- <module>il2-tools</module> -->
-        <module>knime</module>
     </modules>
     <properties>
         <scala.major>2.10</scala.major>
