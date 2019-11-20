@@ -36,13 +36,10 @@
     <modules>
         <module>core</module>
         <module>file-io</module>
-        <module>ccgeom</module>
-        <module>VIB-lib</module>
         <module>workflows</module>
         <module>spark</module>
         <module>volviewer</module>
         <module>integration</module>
-       <!-- throws stupid errors <module>charts</module> -->
         <module>jython</module>
         <module>webgui</module>
         <module>examples</module>
