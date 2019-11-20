@@ -16,15 +16,20 @@ import scala.reflect.ClassTag
 
 /**
  * A spark based code to resize an image
+ *
  * @author mader
  *
  */
 class SResize extends BaseTIPLPluginIO {
+  lazy val partitioner = SparkGlobal.getPartitioner(inImage)
   var pOutDim = new D3int(-1, -1, -1)
   var pOutPos = new D3int(-1, -1, -1)
   var pFindEdge = false
   var pIsMask = false
   var pFillBlanks = false
+  var inImage: TImgRO = null
+  var outImg: TImg = null
+  var objDim: D3int = null
 
   override def setParameter(p: ArgumentParser, cPrefix: String): ArgumentParser = {
 
@@ -54,14 +59,6 @@ class SResize extends BaseTIPLPluginIO {
     true
   }
 
-
-
-
-  var inImage: TImgRO = null
-  var outImg: TImg = null
-  var objDim: D3int = null
-  lazy val partitioner = SparkGlobal.getPartitioner(inImage)
-
   /**
    * The first image is the
    */
@@ -82,10 +79,12 @@ class SResize extends BaseTIPLPluginIO {
 object SResize {
 
 
-  case class SStats(minx: Int, maxx: Int, miny: Int, maxy: Int, count: Int)
+  val fillImage = (tempObj: TImgTools.HasDimensions, defValue: Double) => {
+    val defFloat = new PureFImage.ConstantValue(defValue)
+    KVImgOps.createFromPureFun(SparkGlobal.getContext("SResize"), tempObj, defFloat).toKVFloat
+  }
 
-
-  def applyResize[A](inImg: TImgRO, outDim: D3int, outPos: D3int, findEdge: Boolean,paddingVal: A)(
+  def applyResize[A](inImg: TImgRO, outDim: D3int, outPos: D3int, findEdge: Boolean, paddingVal: A)(
     implicit aa: ClassTag[A]) = {
 
     val imClass = TImgTools.imageTypeToClass(inImg.getImageType)
@@ -96,7 +95,7 @@ object SResize {
         outDim, outPos, findEdge)
       case dImg: DTImg[_] if imClass == TImgTools.IMAGECLASS_BINARY => dtResize(dImg.asDTBool,
         outDim, outPos, findEdge)
-      case kvImg: KVImg[A] => kvResize(kvImg, outDim, outPos,paddingVal)
+      case kvImg: KVImg[A] => kvResize(kvImg, outDim, outPos, paddingVal)
       case normImg: TImgRO if imClass == TImgTools.IMAGECLASS_LABEL =>
         val dnormImg = normImg.toDTLabels
         val resizeImg = dtResize(dnormImg, outDim, outPos, findEdge)
@@ -117,6 +116,7 @@ object SResize {
 
   /**
    * Resize code for the KVImg
+   *
    * @param paddingVal the value to fill the empty spaces with
    */
   def kvResize[A](aImg: KVImg[A], outDim: D3int, outPos: D3int, paddingVal: A)(implicit aa:
@@ -131,11 +131,12 @@ object SResize {
     }
     KVImg.fromRDD[A](
       TImgTools.SimpleDimensions(outDim, aImg.getElSize, outPos),
-      aImg.getImageType, resImg,paddingVal)
+      aImg.getImageType, resImg, paddingVal)
   }
 
   /**
    * Resize a DTImg
+   *
    * @param ibasePos is the new upper corner position
    * @param ibaseDim is the new dimensions
    */
@@ -149,29 +150,29 @@ object SResize {
 
       val sliceStats = imgObj.map(inpt => (inpt._1.z, inpt._2)). // get rid of the d3int
         mapValues {
-        inBlock =>
-          val ptArray = inBlock.get()
-          val bPos = inBlock.getPos
-          val bDim = new D3int(inBlock.getDim,1)
-          var minx = bDim.x
-          var miny = bDim.y
-          var maxx = 0
-          var maxy = 0
-          var count = 0
-          for (
-            iy <- 0 until bDim.y;
-            ix <- 0 until bDim.x;
-            idx = iy * bDim.x + ix
-            if ptArray(idx)
-          ) {
-            if (ix < minx) minx = ix
-            if (ix > maxx) maxx = ix
-            if (iy < miny) miny = iy
-            if (iy > maxy) maxy = iy
-            count += 1
-          }
-          SStats(minx + bPos.x, maxx + bPos.x, miny + bPos.y, maxy + bPos.y, count)
-      }.filter(_._2.count > 0)
+          inBlock =>
+            val ptArray = inBlock.get()
+            val bPos = inBlock.getPos
+            val bDim = new D3int(inBlock.getDim, 1)
+            var minx = bDim.x
+            var miny = bDim.y
+            var maxx = 0
+            var maxy = 0
+            var count = 0
+            for (
+              iy <- 0 until bDim.y;
+              ix <- 0 until bDim.x;
+              idx = iy * bDim.x + ix
+              if ptArray(idx)
+            ) {
+              if (ix < minx) minx = ix
+              if (ix > maxx) maxx = ix
+              if (iy < miny) miny = iy
+              if (iy > maxy) maxy = iy
+              count += 1
+            }
+            SStats(minx + bPos.x, maxx + bPos.x, miny + bPos.y, maxy + bPos.y, count)
+        }.filter(_._2.count > 0)
       basePos = new D3int(
         sliceStats.map(_._2.minx).min(),
         sliceStats.map(_._2.miny).min(),
@@ -196,7 +197,7 @@ object SResize {
 
       val oldPos = inBlock._1
 
-      val oldDim = new D3int(inBlock._2.getDim,1)
+      val oldDim = new D3int(inBlock._2.getDim, 1)
       val oldSlice = inBlock._2.get
       val outPos = new D3int(basePos.x, basePos.y, oldPos.z) // the slices get cropped by z stays
       // the same value
@@ -221,9 +222,9 @@ object SResize {
     val missingSlices = zFilter.sparkContext.
       parallelize(basePos.z until finalPos.z, baseDim.z).
       map { z =>
-      val outPos = new D3int(basePos.x, basePos.y, z)
-      (outPos, outPos)
-    }
+        val outPos = new D3int(basePos.x, basePos.y, z)
+        (outPos, outPos)
+      }
     // combine all the slices with the resized old image and then merge them
     val combSlices = missingSlices.leftOuterJoin(resImg).mapValues {
       inVals =>
@@ -240,14 +241,10 @@ object SResize {
       dImg.getImageType())
   }
 
-  val fillImage = (tempObj: TImgTools.HasDimensions, defValue: Double) => {
-    val defFloat = new PureFImage.ConstantValue(defValue)
-    KVImgOps.createFromPureFun(SparkGlobal.getContext("SResize"), tempObj, defFloat).toKVFloat
-  }
-
   /**
    * Resize a DTImg without using the generic B tag
    * longer solution
+   *
    * @param basePos is the new upper corner position
    * @param baseDim is the new dimensions
    */
@@ -288,6 +285,9 @@ object SResize {
       JavaPairRDD.fromRDD(resImg),
       dImg.getImageType())
   }
+
+  case class SStats(minx: Int, maxx: Int, miny: Int, maxy: Int, count: Int)
+
 }
 
 

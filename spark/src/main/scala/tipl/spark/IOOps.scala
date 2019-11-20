@@ -23,7 +23,6 @@ import scala.reflect.ClassTag
 object IOOps {
 
 
-
   /**
    * Add the byte reading to the SparkContext
    */
@@ -32,11 +31,11 @@ object IOOps {
 
     def tiffFolder(path: String, minPartitions: Int = sc.defaultMinPartitions): RDD[(String,
       TIFSliceReader)] =
-      sc.binaryFiles(path,minPartitions).mapValues{
+      sc.binaryFiles(path, minPartitions).mapValues {
         cPDS =>
           val imgData = cPDS.toArray()
           val decoders = TIFSliceReader.IdentifyDecoderNames(imgData)
-          new TIFSliceReader(imgData,decoders(0))
+          new TIFSliceReader(imgData, decoders(0))
       }
 
 
@@ -52,7 +51,7 @@ object IOOps {
       val decoders = TIFSliceReader.IdentifyDecoderNames(tSlice._2)
 
       srd.map {
-        x => (x._1,new TIFSliceReader(x._2, decoders(0)))
+        x => (x._1, new TIFSliceReader(x._2, decoders(0)))
       }
     }
   }
@@ -111,7 +110,8 @@ object IOOps {
 
     /**
      * Read slices as a block of 2D objects instead of a 3D stack
-     * @param sorted performs a filename based sort on the images first
+     *
+     * @param sorted      performs a filename based sort on the images first
      * @param nameToValue parses the string using the associated function
      */
     def loadAs2D(sorted: Boolean = true, nameToValue: Option[(String => Long)] = None) = {
@@ -122,6 +122,41 @@ object IOOps {
     def loadAs2DLabels(sorted: Boolean = true, nameToValue: Option[(String => Long)] = None) = {
       parseSlices[Array[Long]](srd, TImgTools.IMAGETYPE_LONG,
         inObj => inObj.asInstanceOf[Array[Long]], sorted, nameToValue = nameToValue)._1
+    }
+
+    private[IOOps] def parseSlices[A](
+                                       srdIn: RDD[(String, T)],
+                                       asType: Int,
+                                       transFcn: (Any => A),
+                                       sorted: Boolean,
+                                       nameToValue: Option[(String => Long)] = None,
+                                       partitions: Int = 20) = {
+      TImgTools.isValidType(asType)
+      // sort by file name and then remove the filename
+      val srdPreSorted = if (sorted) srdIn.sortByKey(true, partitions) else srdIn
+      val srdSorted = nameToValue match {
+        case Some(f: (String => Long)) => srdPreSorted.map { inKV => (inKV._2, f(inKV._1)) }
+        case None => srdPreSorted.map(_._2).zipWithIndex
+      }
+
+      // keep the first element for reference
+      val fst = srdSorted.first._1
+      val spos = fst.getPos
+      val dim = fst.getDim
+
+      val srdMixed = srdSorted.
+        map(cval => (cval._2, cval._1.polyReadImage(asType))).
+        map {
+          cBnd =>
+            val cPos = new D3int(spos.x, spos.y, spos.z + cBnd._1.toInt)
+            (cPos, (cBnd._2, cPos, dim))
+        }
+
+      val outArr = srdMixed.mapValues {
+        cBnd =>
+          new TImgSlice[A](transFcn(cBnd._1), cBnd._2, cBnd._3)
+      }
+      (outArr, fst)
     }
 
     def loadAs2DBinary(sorted: Boolean = true, nameToValue: Option[(String => Long)] = None) = {
@@ -156,41 +191,6 @@ object IOOps {
       DTImg.WrapRDD[A](efImg, JavaPairRDD.fromRDD(outRdd), asType)
     }
 
-    private[IOOps] def parseSlices[A](
-                                       srdIn: RDD[(String, T)],
-                                       asType: Int,
-                                       transFcn: (Any => A),
-                                       sorted: Boolean,
-                                       nameToValue: Option[(String => Long)] = None,
-                                       partitions: Int = 20) = {
-      TImgTools.isValidType(asType)
-      // sort by file name and then remove the filename
-      val srdPreSorted = if (sorted) srdIn.sortByKey(true, partitions) else srdIn
-      val srdSorted = nameToValue match {
-        case Some(f: (String => Long)) => srdPreSorted.map { inKV => (inKV._2, f(inKV._1))}
-        case None => srdPreSorted.map(_._2).zipWithIndex
-      }
-
-      // keep the first element for reference
-      val fst = srdSorted.first._1
-      val spos = fst.getPos
-      val dim = fst.getDim
-
-      val srdMixed = srdSorted.
-        map(cval => (cval._2, cval._1.polyReadImage(asType))).
-        map {
-        cBnd =>
-          val cPos = new D3int(spos.x, spos.y, spos.z + cBnd._1.toInt)
-          (cPos, (cBnd._2, cPos, dim))
-      }
-
-      val outArr = srdMixed.mapValues {
-        cBnd =>
-          new TImgSlice[A](transFcn(cBnd._1), cBnd._2, cBnd._3)
-      }
-      (outArr, fst)
-    }
-
   }
 
   import scala.{specialized => spec}
@@ -217,16 +217,6 @@ object IOOps {
    */
   implicit class ImageFriendlyStreamingContext(ssc: StreamingContext) {
 
-    /**
-     * Create a input stream that monitors a Hadoop-compatible filesystem
-     * for new files and reads them as a byte stream. Files must be written to the
-     * monitored directory by "moving" them from another location within the same
-     * file system. File names starting with . are ignored.
-     * @param directory HDFS directory to monitor for new file
-     */
-    def byteFolder(directory: String) =
-      ssc.fileStream[String, Array[Byte], ByteInputFormat](directory)
-
     def tiffFolder(directory: String) = {
       byteFolder(directory).mapValues {
         imgData =>
@@ -235,6 +225,17 @@ object IOOps {
       }
     }
 
+    /**
+     * Create a input stream that monitors a Hadoop-compatible filesystem
+     * for new files and reads them as a byte stream. Files must be written to the
+     * monitored directory by "moving" them from another location within the same
+     * file system. File names starting with . are ignored.
+     *
+     * @param directory HDFS directory to monitor for new file
+     */
+    def byteFolder(directory: String) =
+      ssc.fileStream[String, Array[Byte], ByteInputFormat](directory)
+
   }
 
 
@@ -242,10 +243,10 @@ object IOOps {
    * Convert easily between sparkcontext and a streaming context
    */
   implicit class StreamingContextFromSpark(sc: SparkContext) {
-    def toStreaming(itiming: Duration): StreamingContext = new StreamingContext(sc, itiming)
     def toStreaming(isecs: Long): StreamingContext = toStreaming(Seconds(isecs))
-  }
 
+    def toStreaming(itiming: Duration): StreamingContext = new StreamingContext(sc, itiming)
+  }
 
 
   implicit class StreamSliceToDTImg[T <: TSliceReader](srd: DStream[(String,
@@ -256,6 +257,19 @@ object IOOps {
         inObj => inObj.asInstanceOf[Array[Boolean]])
     }
 
+    private[IOOps] def processSlices[A](asType: Int, transFcn: (Any => A)) = {
+      TImgTools.isValidType(asType)
+      // keep everything since we do not know how much information is coming
+      srd.
+        mapValues { cval =>
+          (cval.polyReadImage(asType), cval.getPos(), cval.getDim())
+        }.mapValues {
+        cBnd =>
+          new TImgSlice[A](transFcn(cBnd._1), cBnd._2, cBnd._3)
+      }
+
+    }
+
     def loadAsLabels() = {
       processSlices[Array[Long]](TImgTools.IMAGETYPE_LONG, inObj => inObj.asInstanceOf[Array[Long]])
     }
@@ -263,19 +277,6 @@ object IOOps {
     def loadAsValues() = {
       processSlices[Array[Double]](TImgTools.IMAGETYPE_DOUBLE,
         inObj => inObj.asInstanceOf[Array[Double]])
-    }
-
-    private[IOOps] def processSlices[A](asType: Int, transFcn: (Any => A)) = {
-      TImgTools.isValidType(asType)
-      // keep everything since we do not know how much information is coming
-      srd.
-        mapValues { cval =>
-        (cval.polyReadImage(asType), cval.getPos(), cval.getDim())
-      }.mapValues {
-        cBnd =>
-          new TImgSlice[A](transFcn(cBnd._1), cBnd._2, cBnd._3)
-      }
-
     }
   }
 

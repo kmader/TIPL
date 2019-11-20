@@ -89,9 +89,9 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
 
             final List<TImgSlice<U>> inBlocks = IteratorUtils.toList(inTuple._2().iterator());
             final TImgSlice<U> templateBlock = inBlocks.get(0);
-            final D3int blockSize = new D3int(templateBlock.getDim(),1);
+            final D3int blockSize = new D3int(templateBlock.getDim(), 1);
             final BaseTIPLPluginIn.morphKernel mKernel = getKernel();
-            final int eleCount = (int) templateBlock.getDim().gx()*templateBlock.getDim().gy();
+            final int eleCount = (int) templateBlock.getDim().gx() * templateBlock.getDim().gy();
             // the output image
             final V outData = createObj(eleCount);
             final BaseTIPLPluginIn.filterKernel[] kernelList = new BaseTIPLPluginIn
@@ -100,22 +100,22 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
             for (final TImgSlice<U> cBlock : inBlocks) {
                 final U curBlock = cBlock.get();
                 final int zp = 0;
-                    for (int yp = 0; yp < templateBlock.getDim().gy(); yp++) {
-                        for (int xp = 0; xp < templateBlock.getDim().gx(); xp++) {
-                            final int off = ((0) * blockSize.y + (yp))
-                                    * blockSize.x + (xp);
-                            final BaseTIPLPluginIn.filterKernel curKernel = kernelList[off];
-                            for (D4int cPos : BaseTIPLPluginIn.getScanPositions(mKernel,
-                                    new D3int(xp, yp, zp), cBlock.getOffset(), off, blockSize,
-                                    ns)) {
-                                //if (mKernel.inside(off, cPos.offset, xp, cPos.x, yp, cPos.y,
-                                // zp, cPos.z)) {
-                                curKernel.addpt(xp, cPos.x, yp, cPos.y, zp, cPos.z,
-                                        getEle(curBlock, cPos.offset));
-                                //}
-                            }
+                for (int yp = 0; yp < templateBlock.getDim().gy(); yp++) {
+                    for (int xp = 0; xp < templateBlock.getDim().gx(); xp++) {
+                        final int off = ((0) * blockSize.y + (yp))
+                                * blockSize.x + (xp);
+                        final BaseTIPLPluginIn.filterKernel curKernel = kernelList[off];
+                        for (D4int cPos : BaseTIPLPluginIn.getScanPositions(mKernel,
+                                new D3int(xp, yp, zp), cBlock.getOffset(), off, blockSize,
+                                ns)) {
+                            //if (mKernel.inside(off, cPos.offset, xp, cPos.x, yp, cPos.y,
+                            // zp, cPos.z)) {
+                            curKernel.addpt(xp, cPos.x, yp, cPos.y, zp, cPos.z,
+                                    getEle(curBlock, cPos.offset));
+                            //}
                         }
                     }
+                }
 
             }
             for (int i = 0; i < eleCount; i++) setEle(outData, i, kernelList[i].value());
@@ -150,14 +150,14 @@ abstract public interface NeighborhoodPlugin<U extends Cloneable, V extends Clon
             final D3int ns = getNeighborSize();
             final List<TImgSlice<float[]>> inBlocks = IteratorUtils.toList(inTuple._2().iterator());
             final TImgSlice<float[]> templateBlock = inBlocks.get(0);
-            final D3int blockSize = new D3int(templateBlock.getDim(),1);
+            final D3int blockSize = new D3int(templateBlock.getDim(), 1);
             final BaseTIPLPluginIn.morphKernel mKernel = getKernel();
             // the output image
             final float[] outData = new float[templateBlock.get().length];
             // Make the output image first as kernels, then add the respective
             // points to it
             final BaseTIPLPluginIn.filterKernel[] curKernels = new BaseTIPLPluginIn.filterKernel[
-                    blockSize.gx()*blockSize.gy()];
+                    blockSize.gx() * blockSize.gy()];
 
             for (int ci = 0; ci < curKernels.length; ci++)
                 curKernels[ci] = getImageKernel();

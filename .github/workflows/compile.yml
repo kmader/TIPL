@@ -18,10 +18,10 @@ jobs:
     - name: Build Core
       run: |
         cd core
-        mvn install -DskipTests
+        mvn install -DskipTests -Dcheckstyle.skip
         cd ..;
     - name: Build IO
       run: |
         cd file-io
-        mvn install -DskipTests
+        mvn install -DskipTests -Dcheckstyle.skip
         cd ..;

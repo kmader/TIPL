@@ -10,21 +10,11 @@ import tipl.util.{D3int, TImgTools}
 
 /**
  * A script to create a labeled thickness ridge from a ridge and a thickness image.
+ *
  * @author mader
  *
  */
 object LabeledThicknessRidge {
-  def getParameters(args: Array[String]) = {
-    val p = SparkGlobal.activeParser(args)
-    val ridgeFile = p.getOptionPath("ridge", "ridge.tif", "The ridge map")
-    val labelFile = p.getOptionPath("label", "bubblelabels.tif", "The labels to use")
-    val thickFile = p.getOptionPath("thickness", "thickmap.tif", "The thickness map")
-    val neighbors = p.getOptionD3int("neighbors", new D3int(1, 1, 1),
-      "The neighborhood for connecting ridge points")
-    val savePath = p.getOptionPath("save", ridgeFile + "_cl", "Directory for output")
-    (ridgeFile, labelFile, thickFile, neighbors, savePath, p)
-  }
-
   def main(args: Array[String]) {
     val (ridgeFile, labelFile, thickFile, neighbors, savePath, p) = getParameters(args)
     p.checkForInvalid()
@@ -45,6 +35,17 @@ object LabeledThicknessRidge {
         pvec._1.x + "," + pvec._1.y + "," + pvec._1.z + "," + pvec._2._2._1 + "," +
           "" + pvec._2._1 + "," + pvec._2._2._2
     }.saveAsTextFile(savePath.getPath)
+  }
+
+  def getParameters(args: Array[String]) = {
+    val p = SparkGlobal.activeParser(args)
+    val ridgeFile = p.getOptionPath("ridge", "ridge.tif", "The ridge map")
+    val labelFile = p.getOptionPath("label", "bubblelabels.tif", "The labels to use")
+    val thickFile = p.getOptionPath("thickness", "thickmap.tif", "The thickness map")
+    val neighbors = p.getOptionD3int("neighbors", new D3int(1, 1, 1),
+      "The neighborhood for connecting ridge points")
+    val savePath = p.getOptionPath("save", ridgeFile + "_cl", "Directory for output")
+    (ridgeFile, labelFile, thickFile, neighbors, savePath, p)
   }
 
   def maskImage(mask: TImgRO, value: TImgRO, asType: Int = TImgTools.IMAGETYPE_FLOAT): TImgRO = {

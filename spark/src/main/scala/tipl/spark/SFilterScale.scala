@@ -20,25 +20,25 @@ import scala.collection.JavaConversions._
 
 /**
  * A spark based code to perform filters similarly to the code provided VFilterScale
+ *
  * @author mader
  *
  */
 class SFilterScale extends BaseTIPLPluginIO with FilterSettings.HasFilterSettings {
 
+  var inputImage: DTImg[Array[Double]] = null
+  var outputImage: RDD[(D3int, TImgSlice[Array[Double]])] = null
+  var outputSize: D3int = null
   private var filtSettings = new FilterSettings
+
+  override def getFilterSettings() = filtSettings
 
   override def setFilterSettings(in: FilterSettings) = {
     filtSettings = in
   }
 
-  override def getFilterSettings() = filtSettings
-
   override def setParameter(p: ArgumentParser, prefix: String): ArgumentParser = {
     filtSettings.setParameter(p, prefix)
-  }
-
-  override def getPluginName() = {
-    "FilterScale:Spark"
   }
 
   override def execute(): Boolean = {
@@ -58,9 +58,9 @@ class SFilterScale extends BaseTIPLPluginIO with FilterSettings.HasFilterSetting
     true
   }
 
-  var inputImage: DTImg[Array[Double]] = null
-  var outputImage: RDD[(D3int, TImgSlice[Array[Double]])] = null
-  var outputSize: D3int = null
+  override def getPluginName() = {
+    "FilterScale:Spark"
+  }
 
   override def LoadImages(inImages: Array[TImgRO]) = {
     inputImage = inImages(0).toDTValues
@@ -88,9 +88,6 @@ class SFilterScale extends BaseTIPLPluginIO with FilterSettings.HasFilterSetting
 
 
 object SFilterScale {
-
-
-  case class partialFilter[T](newpos: D3int, block: TImgSlice[T], finished: Boolean)
 
 
   /**
@@ -123,7 +120,7 @@ object SFilterScale {
             }
             else {
               for (curSlice <- sliceList)
-              yield (pos, partialFilter[Array[Double]](cSlices._1, curSlice._2, false))
+                yield (pos, partialFilter[Array[Double]](cSlices._1, curSlice._2, false))
             }
             outVal.toIterator
         }.toIterator
@@ -152,7 +149,7 @@ object SFilterScale {
       val cPos = curSlice._1
       val curBlock = curSlice._2
       val curArr = curBlock.get
-      val curDim = new D3int(curBlock.getDim,1)
+      val curDim = new D3int(curBlock.getDim, 1)
       val blockPos = curBlock.getPos
       val zp = blockPos.z
       for (yp <- 0 until curDim.y) {
@@ -177,6 +174,8 @@ object SFilterScale {
 
     (templateImg._1, partialFilter[Array[Double]](templateImg._1, outBlock, false))
   }
+
+  case class partialFilter[T](newpos: D3int, block: TImgSlice[T], finished: Boolean)
 }
 
 

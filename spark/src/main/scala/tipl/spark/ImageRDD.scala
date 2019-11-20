@@ -16,10 +16,6 @@ import scala.{specialized => spec}
  */
 trait TImgROLike extends TImgRO {
 
-  def baseSize: TImgTools.HasDimensions
-
-  def imageType: Int
-
   var baseDimensions: TImgRO = new TImgRO.ATImgRO(baseSize, imageType) {
     println("Warning: Creating mock TImgRO class!")
 
@@ -27,6 +23,10 @@ trait TImgROLike extends TImgRO {
 
     override def getSampleName: String = "Mock TImgRO class, should not be used for anything at all"
   }
+
+  def baseSize: TImgTools.HasDimensions
+
+  def imageType: Int
 
   def getDim(): D3int = baseSize.getDim()
 
@@ -118,6 +118,7 @@ abstract class ImageRDD[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
 
   /**
    * A map by point on all the points in the image
+   *
    * @param f
    * @param newType
    * @tparam U
@@ -127,6 +128,7 @@ abstract class ImageRDD[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
 
   /**
    * A map by slice on all slices in the image
+   *
    * @param f
    * @param newType
    * @tparam U
@@ -142,6 +144,47 @@ abstract class ImageRDD[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T]
 object ImageRDD {
 
 
+  trait LoadImagesAsDSImg extends ITIPLPluginIO {
+    var inImgs: Array[TImgRO] = null
+
+    def LoadImages(inImgs: Array[TImgRO]): Unit = {
+      this.inImgs = inImgs
+    }
+
+    def getDSImg[T](sc: SparkContext, imgType: Int, index: Int)(implicit tm: ClassTag[T]): DSImg[T]
+    = {
+      require(inImgs != null)
+      require(index >= 0 && index < inImgs.length)
+      new DSImg[T](sc, inImgs(index), imgType)
+    }
+
+    def ExportDSImg[T](templateIm: TImgRO): DSImg[T]
+
+    override def ExportImages(templateIm: TImgRO): Array[TImg] = {
+      Array(ExportDSImg(templateIm))
+    }
+
+  }
+
+  trait LoadImagesAsKVImg {
+    var inImgs: Array[TImgRO] = null
+
+    def LoadImages(inImgs: Array[TImgRO]): Unit = {
+      this.inImgs = inImgs
+    }
+
+    def getKVImg[T](sc: SparkContext, imgType: Int, index: Int)(implicit tm: ClassTag[T],
+                                                                nm: Numeric[T]): KVImg[T] =
+      getKVImg[T](sc, imgType, index, nm.zero)
+
+    def getKVImg[T](sc: SparkContext, imgType: Int, index: Int, paddingVal: T)(implicit tm:
+    ClassTag[T]): KVImg[T]
+    = {
+      require(inImgs != null)
+      require(index >= 0 && index < inImgs.length)
+      new KVImg[T](sc, inImgs(index), imgType, paddingVal)
+    }
+  }
 
   class PointRDD[T](dim: D3int,
                     pos: D3int,
@@ -160,6 +203,7 @@ object ImageRDD {
 
     /**
      * A map by slice on all slices in the image
+     *
      * @param f
      * @param newType
      * @tparam U
@@ -216,14 +260,13 @@ object ImageRDD {
 
   }
 
-
   class SliceRDD[T](dim: D3int,
                     pos: D3int,
                     elSize: D3float,
                     imageType: Int,
                     path: TypedPath,
                     baseImg: RDD[(D3int, TImgSlice[Array[T]])])(implicit lm: ClassTag[T]) extends
-  ImageRDD[T](dim, pos, elSize, imageType, path) {
+    ImageRDD[T](dim, pos, elSize, imageType, path) {
 
     override type objType = TImgSlice[Array[T]]
 
@@ -231,17 +274,18 @@ object ImageRDD {
       new SliceRDD[U](dim, pos, elSize, newType, path.append(f.toString()),
         baseImg.
           map {
-          inKV =>
-            val (pos, block) = inKV
-            val slice = block.get()
-            (pos, new TImgSlice[Array[U]](slice.map(cval => f(pos, cval)), block.getPos,
-              block.getDim))
-        })
+            inKV =>
+              val (pos, block) = inKV
+              val slice = block.get()
+              (pos, new TImgSlice[Array[U]](slice.map(cval => f(pos, cval)), block.getPos,
+                block.getDim))
+          })
 
     }
 
     /**
      * A map by slice on all slices in the image
+     *
      * @param f
      * @param newType
      * @tparam U
@@ -278,44 +322,6 @@ object ImageRDD {
 
     override def getRdd(): RDD[Tuple2[D3int, objType]] = baseImg
 
-  }
-
-
-  trait LoadImagesAsDSImg extends ITIPLPluginIO {
-    var inImgs: Array[TImgRO] = null
-    def LoadImages(inImgs: Array[TImgRO]): Unit = {
-      this.inImgs = inImgs
-    }
-    def getDSImg[T](sc: SparkContext, imgType: Int,index: Int)(implicit tm: ClassTag[T]): DSImg[T]
-    = {
-      require(inImgs!=null)
-      require(index>=0 && index<inImgs.length)
-      new DSImg[T](sc, inImgs(index), imgType)
-    }
-
-    def ExportDSImg[T](templateIm: TImgRO): DSImg[T]
-
-    override def ExportImages(templateIm: TImgRO): Array[TImg] = {
-      Array(ExportDSImg(templateIm))
-    }
-
-  }
-
-  trait LoadImagesAsKVImg {
-    var inImgs: Array[TImgRO] = null
-    def LoadImages(inImgs: Array[TImgRO]): Unit = {
-      this.inImgs = inImgs
-    }
-    def getKVImg[T](sc: SparkContext, imgType: Int,index: Int)(implicit tm: ClassTag[T],
-                                                               nm: Numeric[T]): KVImg[T] =
-      getKVImg[T](sc,imgType,index,nm.zero)
-    def getKVImg[T](sc: SparkContext, imgType: Int,index: Int,paddingVal: T)(implicit tm:
-    ClassTag[T]): KVImg[T]
-    = {
-      require(inImgs!=null)
-      require(index>=0 && index<inImgs.length)
-      new KVImg[T](sc, inImgs(index), imgType,paddingVal)
-    }
   }
 
 }

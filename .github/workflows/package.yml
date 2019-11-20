@@ -16,4 +16,4 @@ jobs:
       with:
         java-version: 1.8
     - name: Build Core
-      run: mvn install -DskipTests
+      run: mvn install -DskipTests -Dcheckstyle.skip

@@ -17,8 +17,6 @@ import org.apache.hadoop.mapreduce.lib.input.CombineFileRecordReader
  */
 abstract class BinaryFileInputFormat[T]
   extends CombineFileInputFormat[String, T] with Serializable {
-  override protected def isSplitable(context: JobContext, file: Path): Boolean = false
-
   /**
    * Allow minPartitions set by end-user in order to keep compatibility with old Hadoop API.
    */
@@ -38,6 +36,8 @@ abstract class BinaryFileInputFormat[T]
 
   def createRecordReader(split: InputSplit, taContext: TaskAttemptContext): RecordReader[String, T]
 
+  override protected def isSplitable(context: JobContext, file: Path): Boolean = false
+
 }
 
 
@@ -55,11 +55,9 @@ abstract class BinaryRecordReader[T](
 
   private val path = split.getPath(index)
   private val fs = path.getFileSystem(context.getConfiguration)
-
+  private val key = path.toString
   // True means the current file has been processed, then skip it.
   private var processed = false
-
-  private val key = path.toString
   private var value: T = null.asInstanceOf[T]
 
   override def initialize(split: InputSplit, context: TaskAttemptContext) = {}
@@ -77,7 +75,7 @@ abstract class BinaryRecordReader[T](
     if (!processed) {
       val fileIn = fs.open(path)
       val innerBuffer = ByteStreams.toByteArray(fileIn)
-      value = parseByteArray(path,innerBuffer)
+      value = parseByteArray(path, innerBuffer)
       Closeables.close(fileIn, false)
 
       processed = true
@@ -87,7 +85,7 @@ abstract class BinaryRecordReader[T](
     }
   }
 
-  def parseByteArray(path: Path,inArray: Array[Byte]): T
+  def parseByteArray(path: Path, inArray: Array[Byte]): T
 }
 
 

@@ -7,6 +7,7 @@ import tipl.formats.TImg
 
 /**
  * Scala Version of KVImg
+ *
  * @author mader
  *
  */

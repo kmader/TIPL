@@ -14,9 +14,9 @@ case class IOPartitioner[T](keyList: Seq[T], numPartitions: Int, overlap: Int)(
   implicit tm: Ordering[T]) {
   val outputPartitions = keyList.sorted.zipWithIndex.
     groupBy { i =>
-    val slicePerPartition = Math.floor((keyList.length - 0.0) / (numPartitions * 1.0))
-    Math.floor((i._2) / (slicePerPartition * 1.0 + 0.5)).toInt
-  }.
+      val slicePerPartition = Math.floor((keyList.length - 0.0) / (numPartitions * 1.0))
+      Math.floor((i._2) / (slicePerPartition * 1.0 + 0.5)).toInt
+    }.
     map(cpt => (cpt._1, cpt._2.map(_._1)))
   val prePartitions = outputPartitions.toSeq.flatMap {
     case (partId, keys) =>
@@ -37,9 +37,6 @@ case class IOPartitioner[T](keyList: Seq[T], numPartitions: Int, overlap: Int)(
   }
   val inputPartitions = prePartitions.groupBy(_._1).
     mapValues(_.map(_._2).reduce(_ ++ _))
-
-  private def toTypeT(s: Any): Option[T] = (allCatch opt s.asInstanceOf[T])
-  private def toInteger(s: Any): Option[Int] = (allCatch opt s.asInstanceOf[Int])
 
   def getInputPartitions(key: T) = inputPartitions.filter(_._2.contains(key)).map(_._1)
 
@@ -65,16 +62,21 @@ case class IOPartitioner[T](keyList: Seq[T], numPartitions: Int, overlap: Int)(
     override def numPartitions: Int = numPartitions
   }
 
+  private def toTypeT(s: Any): Option[T] = (allCatch opt s.asInstanceOf[T])
+
+  private def toInteger(s: Any): Option[Int] = (allCatch opt s.asInstanceOf[Int])
+
 }
 
-trait neighborMap[K,A,B] extends Serializable {
-  def apply(key: K, pts: Seq[(K,A)]): B
+trait neighborMap[K, A, B] extends Serializable {
+  def apply(key: K, pts: Seq[(K, A)]): B
 }
 
 
 /**
  * A repartitioned dataset designed to make doing neighborhood operations in spark easier and
  * more performant
+ *
  * @param srdd
  * @param partitions
  * @param overlap
@@ -82,20 +84,20 @@ trait neighborMap[K,A,B] extends Serializable {
  * @tparam K
  * @tparam V
  */
-case class iopRDD[K : ClassTag,V: ClassTag](srdd: RDD[(K,V)],partitions: Int, overlap: Int)(
+case class iopRDD[K: ClassTag, V: ClassTag](srdd: RDD[(K, V)], partitions: Int, overlap: Int)(
   implicit km: Ordering[K]) {
   lazy val keyList = srdd.map(_._1).collect
-  lazy val ioPart = IOPartitioner(keyList,partitions,overlap)
-  lazy val inputRDD = srdd.flatMap{
-    case (key,value) => for(cPart <- ioPart.getInputPartitions(key)) yield (cPart,(key,value))
+  lazy val ioPart = IOPartitioner(keyList, partitions, overlap)
+  lazy val inputRDD = srdd.flatMap {
+    case (key, value) => for (cPart <- ioPart.getInputPartitions(key)) yield (cPart, (key, value))
   }.groupByKey.partitionBy(ioPart.getInputPartitioner())
 
-  def map[B: ClassTag](nm: neighborMap[K,V,B]): RDD[(K,B)] = {
+  def map[B: ClassTag](nm: neighborMap[K, V, B]): RDD[(K, B)] = {
     inputRDD.flatMap {
       case (partId, partList) =>
         ioPart.outputPartitions.get(partId) match {
-          case Some(keys) => keys.map(ik => (ik,nm(ik,partList.toSeq)))
-          case None => Seq[(K,B)]()
+          case Some(keys) => keys.map(ik => (ik, nm(ik, partList.toSeq)))
+          case None => Seq[(K, B)]()
         }
     }
   }
@@ -104,7 +106,7 @@ case class iopRDD[K : ClassTag,V: ClassTag](srdd: RDD[(K,V)],partitions: Int, ov
 
 object IOPartitioner extends Serializable {
 
-  def overpartition[V](inRdd: RDD[(Int,V)],overlap: Int) = {
+  def overpartition[V](inRdd: RDD[(Int, V)], overlap: Int) = {
     val pts = inRdd.partitions.length
     inRdd.mapPartitionsWithIndex {
       case (partId, partConts) => partConts
@@ -113,33 +115,31 @@ object IOPartitioner extends Serializable {
 }
 
 
-
 /**
  * Created by mader on 2/4/15.
  */
 class IOPartionerTests extends FunSuite { //with LocalSparkContext {
-  val longList = (0 to 20).map(i => (i,i.toString))
+  val longList = (0 to 20).map(i => (i, i.toString))
   test("Partitioner has the correct number") {
-    val ip = IOPartitioner(longList.map(_._1),4,2)
+    val ip = IOPartitioner(longList.map(_._1), 4, 2)
     ip.outputPartitions.size shouldBe (4)
     ip.inputPartitions.size shouldBe (4)
   }
   test("Create simple partitioner") {
-    val ip = IOPartitioner(longList.map(_._1),4,2)
+    val ip = IOPartitioner(longList.map(_._1), 4, 2)
     println("Output:" + ip.outputPartitions.mapValues(_.mkString(",")).mkString("\n"))
     println("Input:" + ip.inputPartitions.mapValues(_.mkString(",")).mkString("\n"))
-    ip.outputPartitions(0) should contain (5)
-    ip.outputPartitions(0) shouldNot contain (6)
-    ip.inputPartitions(0) should contain (5)
-    ip.inputPartitions(0) should contain (6)
-    ip.inputPartitions(0) shouldNot contain (8)
+    ip.outputPartitions(0) should contain(5)
+    ip.outputPartitions(0) shouldNot contain(6)
+    ip.inputPartitions(0) should contain(5)
+    ip.inputPartitions(0) should contain(6)
+    ip.inputPartitions(0) shouldNot contain(8)
 
-    ip.outputPartitions(3) should contain (20)
-    ip.outputPartitions(3) shouldNot contain (15)
-    ip.inputPartitions(3) should contain (15)
+    ip.outputPartitions(3) should contain(20)
+    ip.outputPartitions(3) shouldNot contain(15)
+    ip.inputPartitions(3) should contain(15)
 
   }
-
 
 
 }

@@ -9,6 +9,7 @@ import tipl.util.TImgTools
  */
 trait TypedSliceLookup[T] extends TImgRO {
   def getSlice(sliceNum: Int): Option[Array[T]]
+
   /**
    * A fairly simple operation of filtering the RDD for the correct slice and returning that slice
    */

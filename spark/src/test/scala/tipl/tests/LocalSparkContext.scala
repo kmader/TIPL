@@ -15,7 +15,7 @@ import tipl.spark.SparkGlobal
 trait LocalSparkContext extends BeforeAndAfterEach with BeforeAndAfterAll {
   self: Suite =>
 
-  @transient var sc: SparkContext = SparkGlobal.getContext("test",false).sc //_
+  @transient var sc: SparkContext = SparkGlobal.getContext("test", false).sc //_
 
   override def beforeAll() {
     InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory())

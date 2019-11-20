@@ -13,36 +13,23 @@ import scala.collection.JavaConversions._
 
 /**
  * A spark based code to perform shape analysis similarly to the code provided GrayAnalysis
+ *
  * @author mader
  *
  */
 class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
 
 
-  @TIPLPluginManager.PluginInfo(pluginType = "ShapeAnalysis",
-    desc = "Spark-based shape analysis",
-    sliceBased = false, sparkBased = true)
-  class saSparkFactory extends TIPLPluginManager.TIPLPluginFactory {
-    override def get(): ITIPLPlugin = {
-      new ShapeAnalysis
-    }
-  }
-
+  var analysisName = "Shape"
+  var outputName = TIPLStorageManager.openPath("output.csv")
+  var singleGV: Array[GrayVoxels] = Array()
+  var labeledImage: KVImg[Long] = null
 
   override def setParameter(p: ArgumentParser, prefix: String): ArgumentParser = {
     analysisName = p.getOptionString(prefix + "analysis", analysisName, "Name of analysis")
     outputName = p.getOptionPath(prefix + "csvname", outputName, "Name of analysis")
     p
   }
-
-  var analysisName = "Shape"
-  var outputName = TIPLStorageManager.openPath("output.csv")
-
-  override def getPluginName() = {
-    "ShapeAnalysis:Spark"
-  }
-
-  var singleGV: Array[GrayVoxels] = Array()
 
   override def execute(): Boolean = {
     print("Starting Plugin..." + getPluginName)
@@ -60,7 +47,9 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
     true
   }
 
-  var labeledImage: KVImg[Long] = null
+  override def getPluginName() = {
+    "ShapeAnalysis:Spark"
+  }
 
   override def LoadImages(inImages: Array[TImgRO]) = {
     labeledImage = inImages(0).toKV.toKVLong
@@ -71,6 +60,15 @@ class ShapeAnalysis extends BaseTIPLPluginIn with Serializable {
     val output = GrayAnalysis.getInfoFromGVArray(singleGV, singleGV.length, request)
     if (output == null) super.getInfo(request)
     else output
+  }
+
+  @TIPLPluginManager.PluginInfo(pluginType = "ShapeAnalysis",
+    desc = "Spark-based shape analysis",
+    sliceBased = false, sparkBased = true)
+  class saSparkFactory extends TIPLPluginManager.TIPLPluginFactory {
+    override def get(): ITIPLPlugin = {
+      new ShapeAnalysis
+    }
   }
 
 }

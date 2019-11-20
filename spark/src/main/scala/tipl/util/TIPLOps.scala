@@ -22,19 +22,22 @@ object TIPLOps {
 
   /**
    * Allow the nice get (option) and getorelse to be used on array objects
+   *
    * @param inArr
    * @tparam T
    */
   implicit class optionArray[T](inArr: Array[T]) {
     def get(ind: Int): Option[T] = {
-      if(ind>=0 & ind<inArr.length) Some(inArr(ind))
+      if (ind >= 0 & ind < inArr.length) Some(inArr(ind))
       else None
     }
+
     def getOrElse(ind: Int, elseVal: T) = {
-      if(ind>=0 & ind<inArr.length) inArr(ind)
+      if (ind >= 0 & ind < inArr.length) inArr(ind)
       else elseVal
     }
   }
+
   trait NeighborhoodOperation[T, U] {
     def blockOperation(windSize: D3int, kernel: Option[BaseTIPLPluginIn.morphKernel],
                        mapFun: (Iterable[T] => U)): RDD[(D3int, U)]
@@ -72,11 +75,11 @@ object TIPLOps {
       new D3float(ip.x / iv.x, ip.y / iv.y, ip.z / iv.z)
     }
 
+    def <(iv: Double) = mag() < iv
+
     def mag() = {
       sqrt(pow(ip.x, 2) + pow(ip.y, 2) + pow(ip.z, 2))
     }
-
-    def <(iv: Double) = mag() < iv
 
     def >(iv: Double) = mag() > iv
 
@@ -109,6 +112,7 @@ object TIPLOps {
 
   /**
    * valid for a list of TImgRO objects
+   *
    * @param inputImageList list of images
    * @tparam T any image type
    * @return an object with many more operators than TImgRO or array
@@ -118,6 +122,7 @@ object TIPLOps {
 
   /**
    * valid for a single TImgRO objects
+   *
    * @param inputImage single object (to be converted to a one element list)
    * @tparam T any image type
    * @return an object with many more operators than TImgRO or array
@@ -128,17 +133,10 @@ object TIPLOps {
 
   class RichTImgList[T <: TImgRO](val inputImageList: Array[T]) extends Serializable {
 
-    def pluginIO(name: String): ITIPLPluginIO = {
-      TIPLPluginManager.createBestPluginIO[T](name, inputImageList)
-    }
-
     def plugin(name: String): ITIPLPlugin = {
       TIPLPluginManager.createBestPlugin[T](name, inputImageList)
     }
 
-    def pluginIn(name: String): ITIPLPluginIn = {
-      TIPLPluginManager.createBestPluginIn[T](name, inputImageList)
-    }
 
     def run(name: String, parameters: String): Array[TImg] = {
       val plug = pluginIO(name)
@@ -148,26 +146,21 @@ object TIPLOps {
       plug.ExportImages(inputImageList(0))
     }
 
+
+    def pluginIO(name: String): ITIPLPluginIO = {
+      TIPLPluginManager.createBestPluginIO[T](name, inputImageList)
+    }
+
+
     def show(index: Int = 0) = {
       val ip = tipl.ij.TImgToImagePlus.MakeImagePlus(inputImageList(index))
       ip.show(inputImageList(index).getPath().getPath())
     }
 
-    /**
-     * Show a 3d rendering view of the object
-     * @param index
-     * @param p
-     * @return
-     */
-    def show3D(index: Int = 0, p: Option[ArgumentParser] = None) = {
-      val vvPlug = pluginIn("VolumeViewer")
-      vvPlug.LoadImages(Array[TImgRO](inputImageList(index)))
-      p.foreach(apval => vvPlug.setParameter(apval, ""))
-      vvPlug.execute("waitForClose")
-    }
 
     /**
      * Render a 3d image and save it to disk
+     *
      * @param output the path to save the image to
      * @param index
      */
@@ -185,6 +178,26 @@ object TIPLOps {
       val p = TIPLGlobal.activeParser(argStr.split(" "))
       p.getOptionPath("output", output, "")
       show3D(index, Some(p))
+    }
+
+
+    /**
+     * Show a 3d rendering view of the object
+     *
+     * @param index
+     * @param p
+     * @return
+     */
+    def show3D(index: Int = 0, p: Option[ArgumentParser] = None) = {
+      val vvPlug = pluginIn("VolumeViewer")
+      vvPlug.LoadImages(Array[TImgRO](inputImageList(index)))
+      p.foreach(apval => vvPlug.setParameter(apval, ""))
+      vvPlug.execute("waitForClose")
+    }
+
+
+    def pluginIn(name: String): ITIPLPluginIn = {
+      TIPLPluginManager.createBestPluginIn[T](name, inputImageList)
     }
   }
 
@@ -293,23 +306,23 @@ object TIPLOps {
     //TODO Implement advanced filter  plugObj.neighborKernel=shape
     //TODO plugObj.asInstanceOf[].scalingFilterGenerator = filter
 
+    def apply[B](mapFun: (Double => B))(implicit bm: ClassTag[B], nm: Numeric[B]): TImgRO =
+      apply(mapFun, nm.zero)
 
     /**
      * simple apply a function to each point in the image
      */
-    def apply[B](mapFun: (Double => B),paddingVal: B)(implicit bm: ClassTag[B]): TImgRO = {
+    def apply[B](mapFun: (Double => B), paddingVal: B)(implicit bm: ClassTag[B]): TImgRO = {
       val outputType = TImgTools.identifySliceType(new Array[B](1))
       inputImage match {
         case a: DTImg[_] =>
           a.getBaseImg().rdd.apply[B](mapFun).wrap(a.getElSize)
         case a: KVImg[_] =>
-          new KVImg(a, outputType, a.toKVDouble.getBaseImg().mapValues(mapFun),paddingVal)
+          new KVImg(a, outputType, a.toKVDouble.getBaseImg().mapValues(mapFun), paddingVal)
         case a: TImgRO =>
           new FImage(a, outputType, mapFun.asVF, true)
       }
     }
-    def apply[B](mapFun: (Double => B))(implicit bm: ClassTag[B], nm: Numeric[B]): TImgRO =
-      apply(mapFun,nm.zero)
 
   }
 
@@ -318,7 +331,6 @@ object TIPLOps {
   implicit class RichFunction[@spec(Boolean, Byte, Short, Int, Long, Float,
     Double) B](val mapFun: (Double => B))(implicit bm: ClassTag[B]) extends Serializable {
 
-    val outputType = TImgTools.identifySliceType(new Array[B](1))
     lazy val vf = new FImage.VoxelFunction() {
       override def get(ipos: Array[java.lang.Double], voxval: Double): Double = {
         mapFun(voxval) match {
@@ -340,6 +352,7 @@ object TIPLOps {
 
       override def toString() = name()
     }
+    val outputType = TImgTools.identifySliceType(new Array[B](1))
 
     def asVF() = vf
   }
@@ -347,12 +360,14 @@ object TIPLOps {
 
   /**
    * allow an RDD to be treated as factor (as in R) where distinct values are used
+   *
    * @param baseRDD
    * @tparam T the type of the factors (strings, ints, tuples make sense, double probably does not)
    */
   implicit class factorRDD[T](baseRDD: RDD[T]) {
     /**
      * Return a histogram (map) for the rdd
+     *
      * @param approxTime allows an approximation time to be given in seconds without changing the
      *                   result type
      * @return map of keys T and values
@@ -360,8 +375,8 @@ object TIPLOps {
     def factorHistogram(approxTime: Option[Long] = None) = {
       approxTime match {
         case Some(timeout) =>
-          baseRDD.countByValueApprox(timeout,0.95).
-          map(_.mapValues(_.mean.toLong)).getFinalValue()
+          baseRDD.countByValueApprox(timeout, 0.95).
+            map(_.mapValues(_.mean.toLong)).getFinalValue()
         case None =>
           baseRDD.countByValue()
       }
