@@ -258,7 +258,7 @@
                     <failOnWarning>false</failOnWarning>
                     <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
                     <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
-                    <configLocation>${basedir}/../scalastyle-config.xml</configLocation>
+                    <configLocation>${basedir}/scalastyle-config.xml</configLocation>
                     <outputFile>scalastyle-output.xml</outputFile>
                     <outputEncoding>UTF-8</outputEncoding>
                 </configuration>

@@ -1,4 +1,4 @@
-name: maven_build
+name: test
 
 on: [push, pull_request]
 
@@ -15,13 +15,5 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: Build Core
-      run: |
-        cd core
-        mvn install
-        cd ..;
-    - name: Build IO
-      run: |
-        cd file-io
-        mvn install
-        cd ..;
+    - name: Build all
+      run: mvn install

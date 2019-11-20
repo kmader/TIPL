@@ -1,4 +1,4 @@
-name: build_all
+name: package
 
 on: [push, pull_request]
 
@@ -16,16 +16,4 @@ jobs:
       with:
         java-version: 1.8
     - name: Build Core
-      run: |
-        cd core
-        mvn install
-        cd ..;
-    - name: Build IO
-      run: |
-        cd file-io
-        mvn install
-        cd ..;
-    - name: Build all
-      run: mvn install
-    - name: Javadoc
-      run: mvn javadoc:javadoc
+      run: mvn install -DskipTests

@@ -15,8 +15,6 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: get_submodules
-      run: git submodule update --init --recursive
     - name: Build Core
       run: |
         cd core
