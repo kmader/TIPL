@@ -1,4 +1,4 @@
-name: Maven Build
+name: maven_build
 
 on: [push, pull_request]
 
