@@ -21,3 +21,12 @@ jobs:
         mvn install:install-file -Dfile=geotiff-jai.jar -DgroupId=geotiff -DartifactId=geotiff-jai -Dversion=0.0 -Dpackaging=jar -DlocalRepositoryPath=
     - name: build
       run: mvn install -DskipTests -Dcheckstyle.skip
+    - name: uberjar
+      run: |
+        cd assembly
+        mvn install
+        cd ..
+    - uses: actions/upload-artifact@master
+      with:
+        name: tipl_uberjar
+        path: assembly/target/tipl-assembly-1.0-SNAPSHOT.jar 

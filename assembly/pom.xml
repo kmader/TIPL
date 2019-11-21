@@ -62,11 +62,7 @@
             <artifactId>tipl-ccgeom</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>quant.tipl</groupId>
-            <artifactId>tipl-VIB</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+        
         <dependency>
             <groupId>quant.tipl</groupId>
             <artifactId>tipl-workflows</artifactId>
@@ -84,17 +80,6 @@
             <artifactId>tipl-integration</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>quant.tipl</groupId>
-            <artifactId>tipl-jython</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>quant.tipl</groupId>
-            <artifactId>tipl-charts</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         
         <dependency>
             <groupId>quant.tipl</groupId>
@@ -105,12 +90,6 @@
         <dependency>
             <groupId>quant.tipl</groupId>
             <artifactId>tipl-webgui</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>quant.tipl</groupId>
-            <artifactId>tipl-knime</artifactId>
             <version>${project.version}</version>
         </dependency>
 
