@@ -37,6 +37,18 @@ class KVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](dim: D3int,
                                                                        T)], paddingVal: T)(
                                                                       implicit lm: ClassTag[T])
   extends TImg.ATImg(dim, pos, elSize, imageType) with TImg with TypedSliceLookup[T] {
+  /**
+   * Creation from an RDD
+   *
+   * @param inImg
+   * @param imageType
+   * @param baseImg
+   * @param paddingVal
+   * @param lm
+   */
+  def this(inImg: TImgTools.HasDimensions, imageType: Int, baseImg: RDD[(D3int,
+    T)], paddingVal: T)(implicit lm: ClassTag[T]) =
+    this(inImg.getDim, inImg.getPos, inImg.getElSize, imageType, baseImg, paddingVal)(lm)
 
   /**
    * Direct conversion from TImgRO data
@@ -159,10 +171,6 @@ class KVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](dim: D3int,
     implicit gv: ClassTag[V]) = {
     new KVImg[V](this, newImageType, baseImg.mapValues(convFunc), paddingVal)
   }
-
-  def this(inImg: TImgTools.HasDimensions, imageType: Int, baseImg: RDD[(D3int,
-    T)], paddingVal: T)(implicit lm: ClassTag[T]) =
-    this(inImg.getDim, inImg.getPos, inImg.getElSize, imageType, baseImg, paddingVal)(lm)
 }
 
 /**

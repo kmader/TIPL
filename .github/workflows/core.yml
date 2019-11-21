@@ -1,4 +1,4 @@
-name: compile
+name: core
 
 on: [push, pull_request]
 
