@@ -8,7 +8,7 @@ import tipl.tests.TestPosFunctions
 import tipl.tests.TestPosFunctions.{ProgYImage, ProgZImage, ProgXImage}
 import tipl.util.{TIPLGlobal, TImgSlice, TImgTools, D3int}
 import tipl.util.TIPLOps._
-import tipl.spark.DSImg.FancyTImgSlice
+import tipl.spark.SliceOps.FancyTImgSlice
 
 /**
  * Created by mader on 12/19/14.
