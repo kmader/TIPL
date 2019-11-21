@@ -44,7 +44,6 @@
         <module>workflows</module>
         <module>volviewer</module>
         <module>integration</module>
-        <module>jython</module>
         <module>webgui</module>
         <module>examples</module>
     </modules>
