@@ -5,6 +5,7 @@ import tipl.util.{TImgSlice, TImgTools}
 import scala.reflect.ClassTag
 
 object SliceOps {
+
   implicit class FancyTImgSlice[T: ClassTag](ts: TImgSlice[Array[T]]) {
     /**
      * Concatenate two images together for multivalued data
@@ -55,4 +56,5 @@ object SliceOps {
     }
 
   }
+
 }
