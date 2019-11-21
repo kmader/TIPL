@@ -2,11 +2,10 @@ package tipl.streaming
 
 import java.awt.Dimension
 import java.awt.image.BufferedImage
-import javax.swing.{JFrame, JPanel}
 
+import javax.swing.{JFrame, JPanel}
 import com.github.sarxos.webcam.{Webcam, WebcamPanel}
-import fourquant.imagej.scOps.ImageJSettings
-import fourquant.imagej.{PortableImagePlus, Spiji}
+import fourquant.imagej.{ImageJSettings, PortableImagePlus, Spiji}
 import ij.gui.{Plot, PlotWindow}
 import ij.{ImagePlus, WindowManager}
 import org.apache.spark.rdd.RDD
