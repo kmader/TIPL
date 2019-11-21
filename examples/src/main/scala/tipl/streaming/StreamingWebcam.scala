@@ -157,7 +157,7 @@ object StreamingWebcam {
 
     override def getWrappedImage() = (System.currentTimeMillis() - startTime,
       new PortableImagePlus(Array.fill[Int](width, height)(defaultValue), IJMetaData.emptyMetaData()))
-    
+
 
     override def stopImageSource(): Unit = println("Stopped Random")
   }
@@ -230,11 +230,12 @@ object StreamingWebcam {
     val ijs = ImageJSettings("", showGui = false, runLaunch = false, record = false)
 
 
-    val wr = if (fakeSource)
+    val wr = if (fakeSource) {
       new RandomImageReceiver(StorageLevel.MEMORY_ONLY, wrDelay, wrThreads, height = 1000, width = 1000,
         defaultValue = 10)
-    else
+    } else {
       new WebcamReceiver(StorageLevel.MEMORY_ONLY, wrDelay, wrThreads)
+    }
     val sc = SparkGlobal.getContext("StreamingWebcamDemo").sc
     ijs.setupSpark(sc)
     val ssc = sc.toStreaming(strTime)
@@ -271,10 +272,11 @@ object StreamingWebcam {
     // apply a threshold to the images
     val justFiltImages = filtImgs.map(kv => (("median", kv._1), kv._2))
     val threshImgs = {
-      if (showEdges)
+      if (showEdges) {
         justFiltImages
-      else
+      } else {
         justFiltImages.union(edgeImgs.map(kv => (("edges", kv._1), kv._2)))
+      }
       }.
       mapValues {
         cImg =>
