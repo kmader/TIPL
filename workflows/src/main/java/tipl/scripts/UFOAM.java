@@ -804,8 +804,10 @@ public class UFOAM {
                 if (curveAimFile.length() > 0) {
                     if (bubblesAim == null)
                         bubblesAim = TImgTools.ReadTImg(bubblesAimFile);
-                    curveAim = Curvature.RunCC(bubblesAim, ccsigma, ccup, ccdown,
-                            (float) ccthresh);
+
+                    /*curveAim = Curvature.RunCC(bubblesAim, ccsigma, ccup, ccdown,
+                            (float) ccthresh); */
+                    curveAim = bubblesAim;
                     TImgTools.WriteTImg(curveAim, curveAimFile);
                     GrayAnalysis.StartHistogram(curveAim, curveAimFile.append(".csv"),
                             -1, 1, 32765);

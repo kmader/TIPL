@@ -12,10 +12,11 @@ import tipl.util.TypedPath
 /**
  * A SparkBased version of the Storage Module which loads and
  * processes images using Spark instead of the old VirtualAim basis
+ *
  * @author mader
  *
  */
-@deprecated("Not a usuable system for future storage, remove","1.0")
+@deprecated("Not a usuable system for future storage, remove", "1.0")
 class SSTImg(baseImg: TImgRO) extends TImg.ATImg(baseImg, baseImg.getImageType) {
 
   override def getPolyImage(sliceNumber: Int, asType: Int) =
@@ -27,7 +28,7 @@ class SSTImg(baseImg: TImgRO) extends TImg.ATImg(baseImg, baseImg.getImageType) 
     DTImg.ConvertTImg(SparkGlobal.getContext, inAim, inAim.getImageType)
 }
 
-@deprecated("Not a usuable system for future storage, remove","1.0")
+@deprecated("Not a usuable system for future storage, remove", "1.0")
 abstract class SparkStorage extends ITIPLStorage {
   override def readTImg(path: TypedPath, readFromCache: Boolean, saveToCache: Boolean): TImg = {
     val sc = SparkGlobal.getContext().sc

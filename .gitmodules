@@ -2,3 +2,12 @@
 [submodule "volviewer"]
 	path = volviewer
 	url = https://github.com/4Quant/volviewer.git
+[submodule "spark-imageio"]
+	path = spark-imageio
+	url = https://github.com/kmader/spark-imageio
+[submodule "spark-ij"]
+	path = spark-ij
+	url = https://github.com/kmader/spark-ij
+[submodule "spark-scifio"]
+	path = spark-scifio
+	url = https://github.com/kmader/spark-scifio

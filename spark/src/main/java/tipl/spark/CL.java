@@ -35,20 +35,6 @@ import java.util.Map.Entry;
 public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],int[]> {
 
 
-    @TIPLPluginManager.PluginInfo(pluginType = "ComponentLabel",
-            desc = "Spark-based component labeling",
-            sliceBased = false,
-            maximumSize = -1,
-            bytesPerVoxel = 3,
-            sparkBased = true)
-    public final static class clSparkFactory implements TIPLPluginManager.TIPLPluginFactory {
-        @Override
-        public ITIPLPlugin get() {
-            return new CL();
-        }
-    }
-
-
     protected static canJoin<Long> LongAdder = new canJoin<Long>() {
         @Override
         public Long join(Long a, Long b) {
@@ -59,7 +45,6 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
     private DTImg<boolean[]> maskImg;
     private DTImg<long[]> labelImg;
     private ComponentLabel.CLFilter objFilter;
-
     private CL() {
     }
 
@@ -164,7 +149,7 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
                         final TImgSlice<boolean[]> inBlock = arg0._2();
                         final boolean[] cSlice = inBlock.get();
                         final D3int spos = inBlock.getPos();
-                        final D3int sdim = new D3int(inBlock.getDim(),1);
+                        final D3int sdim = new D3int(inBlock.getDim(), 1);
                         final D3int gOffset = D3int.zero;
                         final long[] oSlice = new long[cSlice.length];
                         final int z = 0;
@@ -550,6 +535,18 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
         public Si join(Si a, Si b);
     }
 
+    @TIPLPluginManager.PluginInfo(pluginType = "ComponentLabel",
+            desc = "Spark-based component labeling",
+            sliceBased = false,
+            maximumSize = -1,
+            bytesPerVoxel = 3,
+            sparkBased = true)
+    public final static class clSparkFactory implements TIPLPluginManager.TIPLPluginFactory {
+        @Override
+        public ITIPLPlugin get() {
+            return new CL();
+        }
+    }
 
     /**
      * Effectively a map but it uses only primitives instead of objects so it doesn't really
@@ -740,7 +737,7 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
 
             final List<TImgSlice<long[]>> inBlocks = IteratorUtils.toList(inTuple._2().iterator());
             final TImgSlice<long[]> templateBlock = inBlocks.get(0);
-            final D3int blockSize = new D3int(templateBlock.getDim(),1);
+            final D3int blockSize = new D3int(templateBlock.getDim(), 1);
             final BaseTIPLPluginIn.morphKernel mKernel = getMKernel();
             final int eleCount = (int) blockSize.prod();
 
@@ -750,7 +747,7 @@ public class CL extends BaseTIPLPluginIO {//extends GatherBasedPlugin<boolean[],
             // the output image
             for (final TImgSlice<long[]> cBlock : inBlocks) {
                 final long[] curBlock = cBlock.get();
-                final int zp =0;
+                final int zp = 0;
                 for (int yp = 0; yp < templateBlock.getDim().gy(); yp++) {
                     for (int xp = 0; xp < templateBlock.getDim().gx(); xp++) {
                         final int off = ((zp) * blockSize.gy() + (yp))

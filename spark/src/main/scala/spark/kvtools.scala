@@ -15,26 +15,12 @@ object KVTools extends Serializable {
     runFilter(sc, args(1), true)
   }
 
-  def roi(pvec: (D3int, Double)) = {
-    pvec._1.x >= 0 & pvec._1.y >= 0 & pvec._1.z >= 0 &
-      pvec._1.x < 100 & pvec._1.y < 100 & pvec._1.z < 100
-  }
-
-  def noRoi(pvec: (D3int, Double)) = {
-    true
-  }
-
-  def tinyroi(pvec: (D3int, Double)) = {
-    pvec._1.x >= 0 & pvec._1.y >= 0 & pvec._1.z >= 0 &
-      pvec._1.x < 10 & pvec._1.y < 10 & pvec._1.z < 10
-  }
-
   def runFilter(sc: SparkContext, fileName: String, useROI: Boolean) = {
     val textImg = sc.textFile(fileName)
     // convert csv to position, value
     val rImg = textImg.map(_.split(",")).
       map(cLine => (new D3int(cLine(0).toInt, cLine(1).toInt, cLine(2).toInt),
-      cLine(3).toDouble))
+        cLine(3).toDouble))
 
     // define volume of interest
 
@@ -57,6 +43,20 @@ object KVTools extends Serializable {
     filtImg
   }
 
+  def roi(pvec: (D3int, Double)) = {
+    pvec._1.x >= 0 & pvec._1.y >= 0 & pvec._1.z >= 0 &
+      pvec._1.x < 100 & pvec._1.y < 100 & pvec._1.z < 100
+  }
+
+  def noRoi(pvec: (D3int, Double)) = {
+    true
+  }
+
+  def tinyroi(pvec: (D3int, Double)) = {
+    pvec._1.x >= 0 & pvec._1.y >= 0 & pvec._1.z >= 0 &
+      pvec._1.x < 10 & pvec._1.y < 10 & pvec._1.z < 10
+  }
+
   def compLabeling(sc: SparkContext, inImg: RDD[(D3int, Double)]) = {
     // perform a threshold and relabel points
     var labelImg = inImg.filter(_._2 > 0).map(
@@ -69,6 +69,7 @@ object KVTools extends Serializable {
       for (x <- wind; y <- wind; z <- wind) yield (new D3int(pos.x + x, pos.y + y, pos.z + z),
         (label, x == 0 & y == 0 & z == 0))
     }
+
     var groupList = Array((0L, 0))
     var running = true
     var iterations = 0

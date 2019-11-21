@@ -1,6 +1,8 @@
-![](https://github.com/kmader/TIPL/workflows/compile/badge.svg)
-![](https://github.com/kmader/TIPL/workflows/maven_build/badge.svg)
-![](https://github.com/kmader/TIPL/workflows/build_all/badge.svg)
+![](https://github.com/kmader/TIPL/workflows/core/badge.svg)
+![](https://github.com/kmader/TIPL/workflows/package/badge.svg)
+
+![](https://github.com/kmader/TIPL/workflows/test/badge.svg)
+
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/kmader/TIPL.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kmader/TIPL/context:java)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/kmader/TIPL.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kmader/TIPL/alerts/)
 

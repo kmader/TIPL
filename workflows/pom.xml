@@ -26,12 +26,13 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <!-- I would like to get rid of this dependency, just UFOAM uses it now 
-        for curvature -->
+
         <dependency>
             <groupId>quant.tipl</groupId>
             <artifactId>tipl-VIB</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        for curvature -->
         <dependency>
             <groupId>quant.tipl</groupId>
             <artifactId>tipl-spark</artifactId>

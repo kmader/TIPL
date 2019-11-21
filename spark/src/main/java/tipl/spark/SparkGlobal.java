@@ -27,29 +27,26 @@ abstract public class SparkGlobal {
     private final static int MEMORY_AND_DISK = 2;
     private final static int MEMORY_AND_DISK_SER = 3;
     private final static int DISK_ONLY = 4;
-    private static String memorySettings = "";
-    private static String sparkLocal = "/scratch"; // much better than tmp
-
-    private static boolean useKyro = false;
     private static final int kyroBufferSize = 200;
     private static final int shuffleBufferSize = 20 * 1024;
     private static final int maxMBforReduce = 128;
-    static public boolean useCompression = true;
     private static final double memFraction = 0.3;
     private static final int retainedStages = 10;
-    static public int defaultPartitions = 25;
-
     /**
      * how long to remember in seconds stage and task information (default 12 hours)
      */
     private static final int metaDataMemoryTime = 12 * 60 * 60;
-    private static JavaSparkContext currentContext = null;
-    private static String masterName = "";
+    static public boolean useCompression = true;
+    static public int defaultPartitions = 25;
     /**
      * The maximum number of cores which can be used per job
      */
     static int maxCores = -1;
-
+    private static String memorySettings = "";
+    private static String sparkLocal = "/scratch"; // much better than tmp
+    private static boolean useKyro = false;
+    private static JavaSparkContext currentContext = null;
+    private static String masterName = "";
     /**
      * Utility Function Section
      */
@@ -58,6 +55,7 @@ abstract public class SparkGlobal {
 
     /**
      * Get the local directory for saving temporary files
+     *
      * @return
      */
     static public String getSparkLocal() {
@@ -110,7 +108,7 @@ abstract public class SparkGlobal {
      * @return
      */
     static public JavaSparkContext getContext(final String jobName) {
-        return getContext(jobName,true);
+        return getContext(jobName, true);
     }
 
     static public JavaSparkContext getContext(final String jobName, boolean autoKill) {
@@ -151,7 +149,7 @@ abstract public class SparkGlobal {
             currentContext = new JavaSparkContext(getMasterName(), jobName,
                     System.getenv("SPARK_HOME"), JavaSparkContext.jarOfClass(SparkGlobal.class));
 
-            if(autoKill) StopSparkeAtFinish(currentContext);
+            if (autoKill) StopSparkeAtFinish(currentContext);
         }
         return currentContext;
     }
@@ -210,6 +208,12 @@ abstract public class SparkGlobal {
         }
     }
 
+    private static void setSparkPersistence(int inPersist) {
+        assert (inPersist < 4);
+        assert (inPersist == -1 || inPersist >= 0);
+        sparkPersistence = inPersist;
+    }
+
     /**
      * asserts the persistence on a DTImg or JavaRDD if the sparkpersistence value is above 0
      * otherwise it does nothing
@@ -227,12 +231,6 @@ abstract public class SparkGlobal {
             return inRdd.persist(getSparkPersistence());
         }
         return inRdd;
-    }
-
-    private static void setSparkPersistence(int inPersist) {
-        assert (inPersist < 4);
-        assert (inPersist == -1 || inPersist >= 0);
-        sparkPersistence = inPersist;
     }
 
     private static int getSlicesPerCore() {
@@ -257,8 +255,8 @@ abstract public class SparkGlobal {
         int partCount = 1;
         if (slicesPerCore < slices) partCount = (int)
                 Math.ceil(slices * 1.0 / slicesPerCore);
-        assert(partCount > 0);
-        assert(partCount <= slices);
+        assert (partCount > 0);
+        assert (partCount <= slices);
         return partCount;
     }
 
@@ -268,11 +266,12 @@ abstract public class SparkGlobal {
 
     /**
      * Get the default slice-based partitioner from DSImg. This greatly speeds up lookup operations
+     *
      * @param pos position of the first slice
      * @param dim the dimensions of the entire image
      * @return partitioner object
      */
-    static public Partitioner getPartitioner(final D3int pos,final D3int dim) {
+    static public Partitioner getPartitioner(final D3int pos, final D3int dim) {
         return new DSImg.D3IntSlicePartitioner(pos, dim);
     }
 

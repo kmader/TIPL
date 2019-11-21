@@ -26,37 +26,13 @@ import tipl.util.TIPLOps._
 
 /**
  * A spark based code to perform shape analysis similarly to the code provided GrayAnalysis
+ *
  * @author mader
  *
  */
 class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
 
-  var preserveLabels = false
-
-  var alreadyCopied = false
-
-  var includeEdges = false
-
-  var maxUsuableDistance = -1.0
   val stepSize = 0.5f
-
-  override def setParameter(p: ArgumentParser, prefix: String): ArgumentParser = {
-    val args: ArgumentParser = super.setParameter(p, prefix)
-    preserveLabels = args.getOptionBoolean(prefix + "preservelabels", preserveLabels,
-      "Preserve the labels in old image")
-    alreadyCopied = args.getOptionBoolean(prefix + "alreadycopied", alreadyCopied,
-      "Has the image already been copied")
-    includeEdges = args.getOptionBoolean(prefix + "includeedges", includeEdges,
-      "Include the edges")
-    maxUsuableDistance = args.getOptionDouble(prefix + "maxdistance", maxUsuableDistance,
-      "The maximum distance to run the voronoi tesselation until")
-    args
-  }
-
-  override def getPluginName() = {
-    "kVoronoi:Spark"
-  }
-
   /**
    * (avec: (D3int,((Long,Float),Boolean,Boolean))
    * position, (label, distance), alive, is_moved
@@ -72,10 +48,10 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
       for (x <- windx; y <- windy; z <- windz
            if kernel.map(_.inside(0, 0, pos.x, pos.x + x, pos.y, pos.y + y, pos.z,
              pos.z + z)).getOrElse(true))
-      yield (new D3int(pos.x + x, pos.y + y, pos.z + z),
-        (
-          (pvec._2._1._1, pvec._2._1._2 + sqrt(1.0 * x * x + y * y + z * z).floatValue()),
-          true, x == 0 & y == 0 & z == 0))
+        yield (new D3int(pos.x + x, pos.y + y, pos.z + z),
+          (
+            (pvec._2._1._1, pvec._2._1._2 + sqrt(1.0 * x * x + y * y + z * z).floatValue()),
+            true, x == 0 & y == 0 & z == 0))
     } else {
       Seq((pos,
         (
@@ -92,7 +68,6 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
   }
   val compare_point_distance = (a: ((Long, Float), Boolean), b: ((Long, Float), Boolean, Boolean))
   => a._1._2 compare b._1._2
-
   val collect_voxels =
     (pvec: Iterable[((Long, Float), Boolean, Boolean)]) => {
       val tval = pvec.minBy(_._1._2)
@@ -102,6 +77,30 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
   val get_empty = (avec: (D3int, ((Long, Float), Boolean))) => avec._2._1._1 < 1L
   val get_distance = (avec: (D3int, ((Long, Float), Boolean))) => avec._2._1._2.doubleValue
   val get_label = (avec: (D3int, ((Long, Float), Boolean))) => avec._2._1._1.doubleValue
+  val fillImage = (tempObj: TImgTools.HasDimensions, defValue: Double) => {
+    val defFloat = new PureFImage.ConstantValue(defValue)
+    KVImgOps.createFromPureFun(SparkGlobal.getContext(getPluginName()), tempObj, defFloat).toKVFloat
+  }
+  var preserveLabels = false
+  var alreadyCopied = false
+  var includeEdges = false
+  var maxUsuableDistance = -1.0
+  var labeledDistanceMap: Option[RDD[(D3int, ((Long, Float), Boolean))]] = None
+  var objDim: Option[D3int] = None
+  var partitioner: Option[Partitioner] = None
+
+  override def setParameter(p: ArgumentParser, prefix: String): ArgumentParser = {
+    val args: ArgumentParser = super.setParameter(p, prefix)
+    preserveLabels = args.getOptionBoolean(prefix + "preservelabels", preserveLabels,
+      "Preserve the labels in old image")
+    alreadyCopied = args.getOptionBoolean(prefix + "alreadycopied", alreadyCopied,
+      "Has the image already been copied")
+    includeEdges = args.getOptionBoolean(prefix + "includeedges", includeEdges,
+      "Include the edges")
+    maxUsuableDistance = args.getOptionDouble(prefix + "maxdistance", maxUsuableDistance,
+      "The maximum distance to run the voronoi tesselation until")
+    args
+  }
 
   override def execute(): Boolean = {
     print("Starting Plugin..." + getPluginName)
@@ -159,20 +158,17 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
 
   }
 
-  val fillImage = (tempObj: TImgTools.HasDimensions, defValue: Double) => {
-    val defFloat = new PureFImage.ConstantValue(defValue)
-    KVImgOps.createFromPureFun(SparkGlobal.getContext(getPluginName()), tempObj, defFloat).toKVFloat
+  override def getPluginName() = {
+    "kVoronoi:Spark"
   }
-  var labeledDistanceMap: Option[RDD[(D3int, ((Long, Float), Boolean))]] = None
-  var objDim: Option[D3int] = None
-  var partitioner: Option[Partitioner] = None
+
   /**
    * The first image is the
    */
   override def LoadImages(inImages: Array[TImgRO]) = {
     var labelImage = inImages(0)
     objDim = Some(labelImage.getDim)
-    val liPart = SparkGlobal.getPartitioner (labelImage)
+    val liPart = SparkGlobal.getPartitioner(labelImage)
     partitioner = Some(liPart)
     val labeledImage = labelImage.toKV.toKVLong.getBaseImg.partitionBy(liPart)
 
@@ -205,24 +201,24 @@ class SKVoronoi extends BaseTIPLPluginIO with IVoronoiTransform {
       50).mkString(", "))
   }
 
+  override def ExportImages(templateImage: TImgRO): Array[TImg] = {
+    val tiEx = TImgTools.makeTImgExportable(templateImage)
+    Array(ExportVolumesAim(tiEx),
+      ExportDistanceAim(tiEx))
+  }
+
   override def ExportDistanceAim(inObj: CanExport): TImg = {
     labeledDistanceMap match {
-      case Some(ldm) => new KVImg[Float](inObj, TImgTools.IMAGETYPE_FLOAT, ldm.mapValues(_._1._2),0)
-      case None => throw new IllegalArgumentException(this+" has not yet been run!")
+      case Some(ldm) => new KVImg[Float](inObj, TImgTools.IMAGETYPE_FLOAT, ldm.mapValues(_._1._2), 0)
+      case None => throw new IllegalArgumentException(this + " has not yet been run!")
     }
   }
 
   override def ExportVolumesAim(inObj: CanExport): TImg = {
     labeledDistanceMap match {
-      case Some(ldm) => new KVImg[Long](inObj, TImgTools.IMAGETYPE_LONG, ldm.mapValues(_._1._1),0L)
+      case Some(ldm) => new KVImg[Long](inObj, TImgTools.IMAGETYPE_LONG, ldm.mapValues(_._1._1), 0L)
       case None => throw new IllegalArgumentException(this + " has not yet been run!")
     }
-  }
-
-  override def ExportImages(templateImage: TImgRO): Array[TImg] = {
-    val tiEx = TImgTools.makeTImgExportable(templateImage)
-    Array(ExportVolumesAim(tiEx),
-      ExportDistanceAim(tiEx))
   }
 
   override def WriteVolumesAim(exObj: TImgRO.CanExport, filename: TypedPath) = {
@@ -243,7 +239,6 @@ object SKTest extends SKVoronoi {
       "Size of the image to run the test with")
     val testImg = TestPosFunctions.wrapItAs(imSize,
       new TestPosFunctions.DotsFunction(), TImgTools.IMAGETYPE_INT)
-
 
 
     LoadImages(Array(testImg))

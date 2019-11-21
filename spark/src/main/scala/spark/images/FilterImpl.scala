@@ -14,8 +14,11 @@ object FilterImpl {
    */
   trait GaussianFilter extends FilterImpl {
     val radius: Double
-    override def neighborSize: D3int = new D3int(math.ceil(radius+1).toInt)
-    override def isInside(a: D3int,b: D3int) = true
+
+    override def neighborSize: D3int = new D3int(math.ceil(radius + 1).toInt)
+
+    override def isInside(a: D3int, b: D3int) = true
+
     override def kernelFactory() = BaseTIPLPluginIn.gaussFilter(radius)
   }
 
@@ -24,7 +27,9 @@ object FilterImpl {
    */
   trait MedianFilter extends FilterImpl {
     override def neighborSize: D3int
-    override def isInside(a: D3int,b: D3int) = true
+
+    override def isInside(a: D3int, b: D3int) = true
+
     override def kernelFactory() = BaseTIPLPluginIn.medianFilter(
       neighborSize.gx,
       neighborSize.gy,
@@ -35,6 +40,8 @@ object FilterImpl {
 
 trait FilterImpl extends Serializable {
   def neighborSize: D3int
-  def isInside(a: D3int,b: D3int): Boolean
+
+  def isInside(a: D3int, b: D3int): Boolean
+
   def kernelFactory(): BaseTIPLPluginIn.filterKernel
 }

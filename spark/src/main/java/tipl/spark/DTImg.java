@@ -300,6 +300,26 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
     }
 
     /**
+     * Convert the current image into an integer image (for labels useful)
+     *
+     * @return
+     */
+    private static <To, Tn> DTImg<Tn> changeType(DTImg<To> inImage, final int outType) {
+        assert (TImgTools.isValidType(outType));
+        return inImage.mapValues(new Function<TImgSlice<To>, TImgSlice<Tn>>() {
+            @Override
+            public TImgSlice<Tn> call(TImgSlice<To> startingBlock) throws Exception {
+                To curPts = startingBlock.get();
+                Tn ipts = (Tn) TImgTools.convertArrayType(curPts, TImgTools.identifySliceType
+                                (curPts),
+                        outType, true, 1, Integer.MAX_VALUE);
+
+                return new TImgSlice<Tn>(ipts, startingBlock);
+            }
+        }, outType);
+    }
+
+    /**
      * get the javasparkcontext not the scala sparkcontext
      *
      * @return
@@ -337,7 +357,6 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
 
         });
     }
-
 
     /**
      * Save the image into a series of text files without header (format x,y,z,val)
@@ -382,265 +401,242 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
 
                 outFile.close();
             }
-            });
-            try {
-                FileWriter fstream = new FileWriter(plPath);
-                BufferedWriter out = new BufferedWriter(fstream);
-                out.write(this.getProcLog() + "\n");
-                out.write("POS:" + this.getPos() + "\n");
-                out.write("ELESIZE:" + this.getElSize() + "\n");
-                out.write("DIM:" + this.getDim() + "\n");
-                // Close the output stream
-                out.close();
-                fstream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Error, Header for " + plPath + " could not be written");
+        });
+        try {
+            FileWriter fstream = new FileWriter(plPath);
+            BufferedWriter out = new BufferedWriter(fstream);
+            out.write(this.getProcLog() + "\n");
+            out.write("POS:" + this.getPos() + "\n");
+            out.write("ELESIZE:" + this.getElSize() + "\n");
+            out.write("DIM:" + this.getDim() + "\n");
+            // Close the output stream
+            out.close();
+            fstream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Error, Header for " + plPath + " could not be written");
+        }
+
+
+    }
+
+    /**
+     * A fairly simple operation of filtering the RDD for the correct slice and returning that slice
+     */
+    @Override
+    public Object getPolyImage(int sliceNumber, final int asType) {
+        if ((sliceNumber < 0) || (sliceNumber >= getDim().z))
+            throw new IllegalArgumentException(this.getSampleName() + ": Slice requested (" +
+                    sliceNumber + ") exceeds image dimensions " + getDim());
+
+        final int zPos = getPos().z + sliceNumber;
+
+        List<TImgSlice<T>> outSlices = this.baseImg.lookup(new D3int(getPos().x, getPos().y, zPos));
+
+        if (outSlices.size() != 1) throw
+                new IllegalArgumentException(this.getSampleName() + ", " +
+                        "lookup failed (#" + outSlices.size() + " found):" + sliceNumber + " (z:"
+                        + zPos + "), of " + getDim() + " of #" + this.baseImg.count() + " blocks");
+
+        T curSlice = outSlices.get(0).get();
+
+        return TImgTools.convertArrayType(curSlice, getImageType(), asType, getSigned(),
+                getShortScaleFactor());
+    }
+
+    @Override
+    public String getSampleName() {
+        return path.getPath();
+    }
+
+    @Override
+    protected TImg makeImageFromDataArray(D3int dim, D3int pos, D3float elSize, int stype,
+                                          Object[] sliceData) {
+        final TImg tempConstruct = new ArrayBackedTImg(dim, pos, elSize, stype, sliceData);
+        final JavaSparkContext cJsc = SparkGlobal.getContext();
+        final JavaPairRDD<D3int, TImgSlice<T>> oldImage = MigrateImage(cJsc,
+                tempConstruct, stype);
+        return DTImg.WrapRDD(tempConstruct, oldImage, getImageType());
+    }
+
+    @Override
+    public boolean InitializeImage(D3int dPos, D3int cDim, D3int dOffset,
+                                   D3float elSize, int imageType) {
+        throw new IllegalArgumentException("Not Implemented");
+    }
+
+    /**
+     * passes basically directly through to the JavaPair RDD but it wraps
+     * everything in a DTImg class. Automatically partition
+     *
+     * @param mapFunc
+     * @return
+     */
+    public <U> DTImg<U> map(
+            final PairFunction<Tuple2<D3int, TImgSlice<T>>, D3int, TImgSlice<U>> mapFunc,
+            final int outType) {
+        return DTImg.WrapRDD(this, this.baseImg.mapToPair(mapFunc).partitionBy(SparkGlobal
+                .getPartitioner(getPos(), getDim())), outType);
+    }
+
+    /**
+     * passes basically directly through to the JavaPair RDD but it wraps
+     * everything in a DTImg class and automatically partitions
+     *
+     * @param mapFunc
+     * @return
+     */
+    <U> DTImg<U> mapValues(
+            final Function<TImgSlice<T>, TImgSlice<U>> mapFunc,
+            final int outType) {
+        return DTImg.WrapRDD(this, this.baseImg.mapValues(mapFunc).partitionBy(SparkGlobal
+                .getPartitioner(getPos(), getDim())), outType);
+    }
+
+    /**
+     * apply a given voxel function in parallel to every point in the image
+     *
+     * @param inFunction
+     * @return
+     */
+    public DTImg<double[]> applyVoxelFunction(final FImage.VoxelFunction inFunction) {
+        return mapValues(new Function<TImgSlice<T>, TImgSlice<double[]>>() {
+
+            @Override
+            public TImgSlice<double[]> call(TImgSlice<T> startingBlock) throws Exception {
+
+                T curPts = startingBlock.get();
+                D3int sPos = startingBlock.getPos();
+                double[] dblPts = (double[]) TImgTools.convertArrayType(curPts,
+                        TImgTools.identifySliceType(curPts),
+                        TImgTools.IMAGETYPE_DOUBLE, true, 1, Integer.MAX_VALUE);
+                double[] outPts = new double[dblPts.length];
+                D3int sbDim = new D3int(startingBlock.getDim(), 1);
+                Double zpos = (double) (sPos.z);
+                for (int yi = 0; yi < sbDim.y; yi++) {
+                    Double ypos = (double) (yi + sPos.y);
+                    for (int xi = 0; xi < sbDim.x; xi++) {
+                        int ind = yi * getDim().y + xi;
+                        Double xpos = (double) (xi + sPos.x);
+                        Double[] ipos = new Double[]{xpos, ypos, zpos};
+                        outPts[ind] = inFunction.get(ipos, dblPts[ind]);
+                    }
+                }
+
+                return new TImgSlice<double[]>(outPts, startingBlock);
+
             }
 
+        }, TImgTools.IMAGETYPE_DOUBLE);
+    }
 
-        }
+    /**
+     * Convert the current image into an float image (for labels useful)
+     *
+     * @return
+     */
+    public DTImg<float[]> asDTFloat() {
+        return DTImg.changeType(this, TImgTools.IMAGETYPE_FLOAT);
+    }
 
-                /**
-                 * A fairly simple operation of filtering the RDD for the correct slice and returning that slice
-                 */
-        @Override
-        public Object getPolyImage(int sliceNumber, final int asType) {
-            if ((sliceNumber < 0) || (sliceNumber >= getDim().z))
-                throw new IllegalArgumentException(this.getSampleName() + ": Slice requested (" +
-                        sliceNumber + ") exceeds image dimensions " + getDim());
+    /**
+     * Convert the current image into an float image (for labels useful)
+     *
+     * @return
+     */
+    public DTImg<double[]> asDTDouble() {
+        return DTImg.changeType(this, TImgTools.IMAGETYPE_DOUBLE);
 
-            final int zPos = getPos().z + sliceNumber;
+    }
 
-            List<TImgSlice<T>> outSlices = this.baseImg.lookup(new D3int(getPos().x, getPos().y, zPos));
+    /**
+     * Convert the current image into an integer image (for labels useful)
+     *
+     * @return
+     */
+    public DTImg<int[]> asDTInt() {
+        return DTImg.changeType(this, TImgTools.IMAGETYPE_INT);
+    }
 
-            if (outSlices.size() != 1) throw
-                    new IllegalArgumentException(this.getSampleName() + ", " +
-                            "lookup failed (#" + outSlices.size() + " found):" + sliceNumber + " (z:"
-                            + zPos + "), of " + getDim() + " of #" + this.baseImg.count() + " blocks");
+    /**
+     * Convert the current image into an long image (for labels useful)
+     *
+     * @return
+     */
+    public DTImg<long[]> asDTLong() {
+        return DTImg.changeType(this, TImgTools.IMAGETYPE_LONG);
+    }
 
-            T curSlice = outSlices.get(0).get();
+    /**
+     * Convert the current image into an boolean image (for labels useful)
+     *
+     * @return
+     */
+    public DTImg<boolean[]> asDTBool() {
+        return DTImg.changeType(this, TImgTools.IMAGETYPE_BOOL);
+    }
 
-            return TImgTools.convertArrayType(curSlice, getImageType(), asType, getSigned(),
-                    getShortScaleFactor());
-        }
+    /**
+     * Performs a subselection (a function filter) of the dataset based on the blocks
+     *
+     * @param filtFunc the function to filter with
+     * @return a subselection of the image
+     */
+    DTImg<T> subselect(
+            final Function<Tuple2<D3int, TImgSlice<T>>, Boolean> filtFunc
+    ) {
+        final JavaPairRDD<D3int, TImgSlice<T>> subImg = this.baseImg.filter(filtFunc);
+        DTImg<T> outImage = DTImg.WrapRDD(this, subImg, this.getImageType());
+        //TODO Only works on slices
+        int sliceCount = (int) subImg.count();
+        outImage.setDim(new D3int(outImage.getDim().x, outImage.getDim().y, sliceCount));
 
+        outImage.setPos(subImg.first()._1());
+        return outImage;
+    }
 
-        @Override
-        public String getSampleName() {
-            return path.getPath();
-        }
+    /**
+     * The same as subselect but takes a function which operates on just the positions instead
+     * (needs to be erased because of strange type erasure behavior)
+     *
+     * @param filtFunc
+     * @return
+     */
+    public DTImg<T> subselectPos(
+            final Function<D3int, Boolean> filtFunc
+    ) {
+        return subselect(new Function<Tuple2<D3int, TImgSlice<T>>, Boolean>() {
 
-        @Override
-        protected TImg makeImageFromDataArray(D3int dim, D3int pos, D3float elSize, int stype,
-        Object[] sliceData) {
-            final TImg tempConstruct = new ArrayBackedTImg(dim, pos, elSize, stype, sliceData);
-            final JavaSparkContext cJsc = SparkGlobal.getContext();
-            final JavaPairRDD<D3int, TImgSlice<T>> oldImage = MigrateImage(cJsc,
-                    tempConstruct, stype);
-            return DTImg.WrapRDD(tempConstruct, oldImage, getImageType());
-        }
+            @Override
+            public Boolean call(Tuple2<D3int, TImgSlice<T>> arg0)
+                    throws Exception {
+                return filtFunc.call(arg0._1());
+            }
 
+        });
+    }
 
-        @Override
-        public boolean InitializeImage(D3int dPos, D3int cDim, D3int dOffset,
-                D3float elSize, int imageType) {
-            throw new IllegalArgumentException("Not Implemented");
-        }
+    /**
+     * first spreads the slices out, then runs a group by key, then applies the given mapfunction
+     * and creates a new DTImg that wraps around the object
+     *
+     * @param spreadWidth number of slices to spread out over
+     * @param mapFunc
+     * @return
+     */
+    public <U> DTImg<U> spreadMap(
+            final int spreadWidth,
+            final PairFunction<Tuple2<D3int, Iterable<TImgSlice<T>>>, D3int,
+                    TImgSlice<U>> mapFunc) {
 
+        JavaPairRDD<D3int, Iterable<TImgSlice<T>>> joinImg;
+        joinImg = this.spreadSlices(spreadWidth).
+                groupByKey(getPartitions()).
+                partitionBy(SparkGlobal.getPartitioner(getPos(), getDim()));
 
-        /**
-         * passes basically directly through to the JavaPair RDD but it wraps
-         * everything in a DTImg class. Automatically partition
-         *
-         * @param mapFunc
-         * @return
-         */
-        public <U> DTImg<U> map(
-        final PairFunction<Tuple2<D3int, TImgSlice<T>>, D3int, TImgSlice<U>> mapFunc,
-        final int outType) {
-            return DTImg.WrapRDD(this, this.baseImg.mapToPair(mapFunc).partitionBy(SparkGlobal
-                    .getPartitioner(getPos(),getDim())), outType);
-        }
-
-        /**
-         * passes basically directly through to the JavaPair RDD but it wraps
-         * everything in a DTImg class and automatically partitions
-         *
-         * @param mapFunc
-         * @return
-         */
-        <U> DTImg<U> mapValues(
-        final Function<TImgSlice<T>, TImgSlice<U>> mapFunc,
-        final int outType) {
-            return DTImg.WrapRDD(this, this.baseImg.mapValues(mapFunc).partitionBy(SparkGlobal
-                    .getPartitioner(getPos(),getDim())), outType);
-        }
-
-        /**
-         * apply a given voxel function in parallel to every point in the image
-         *
-         * @param inFunction
-         * @return
-         */
-        public DTImg<double[]> applyVoxelFunction(final FImage.VoxelFunction inFunction) {
-            return mapValues(new Function<TImgSlice<T>, TImgSlice<double[]>>() {
-
-                @Override
-                public TImgSlice<double[]> call(TImgSlice<T> startingBlock) throws Exception {
-
-                    T curPts = startingBlock.get();
-                    D3int sPos = startingBlock.getPos();
-                    double[] dblPts = (double[]) TImgTools.convertArrayType(curPts,
-                            TImgTools.identifySliceType(curPts),
-                            TImgTools.IMAGETYPE_DOUBLE, true, 1, Integer.MAX_VALUE);
-                    double[] outPts = new double[dblPts.length];
-                    D3int sbDim = new D3int(startingBlock.getDim(),1);
-                    Double zpos = (double) (sPos.z);
-                    for (int yi = 0; yi < sbDim.y; yi++) {
-                        Double ypos = (double) (yi + sPos.y);
-                        for (int xi = 0; xi < sbDim.x; xi++) {
-                            int ind = yi * getDim().y + xi;
-                            Double xpos = (double) (xi + sPos.x);
-                            Double[] ipos = new Double[]{xpos, ypos, zpos};
-                            outPts[ind] = inFunction.get(ipos, dblPts[ind]);
-                        }
-                    }
-
-                    return new TImgSlice<double[]>(outPts, startingBlock);
-
-                }
-
-            }, TImgTools.IMAGETYPE_DOUBLE);
-        }
-
-        /**
-         * Convert the current image into an integer image (for labels useful)
-         *
-         * @return
-         */
-        private static <To, Tn> DTImg<Tn> changeType(DTImg<To> inImage, final int outType) {
-            assert (TImgTools.isValidType(outType));
-            return inImage.mapValues(new Function<TImgSlice<To>, TImgSlice<Tn>>() {
-                @Override
-                public TImgSlice<Tn> call(TImgSlice<To> startingBlock) throws Exception {
-                    To curPts = startingBlock.get();
-                    Tn ipts = (Tn) TImgTools.convertArrayType(curPts, TImgTools.identifySliceType
-                                    (curPts),
-                            outType, true, 1, Integer.MAX_VALUE);
-
-                    return new TImgSlice<Tn>(ipts, startingBlock);
-                }
-            }, outType);
-        }
-
-        /**
-         * Convert the current image into an float image (for labels useful)
-         *
-         * @return
-         */
-        public DTImg<float[]> asDTFloat() {
-            return DTImg.changeType(this, TImgTools.IMAGETYPE_FLOAT);
-        }
-
-        /**
-         * Convert the current image into an float image (for labels useful)
-         *
-         * @return
-         */
-        public DTImg<double[]> asDTDouble() {
-            return DTImg.changeType(this, TImgTools.IMAGETYPE_DOUBLE);
-
-        }
-
-        /**
-         * Convert the current image into an integer image (for labels useful)
-         *
-         * @return
-         */
-        public DTImg<int[]> asDTInt() {
-            return DTImg.changeType(this, TImgTools.IMAGETYPE_INT);
-        }
-
-        /**
-         * Convert the current image into an long image (for labels useful)
-         *
-         * @return
-         */
-        public DTImg<long[]> asDTLong() {
-            return DTImg.changeType(this, TImgTools.IMAGETYPE_LONG);
-        }
-
-        /**
-         * Convert the current image into an boolean image (for labels useful)
-         *
-         * @return
-         */
-        public DTImg<boolean[]> asDTBool() {
-            return DTImg.changeType(this, TImgTools.IMAGETYPE_BOOL);
-        }
-
-        /**
-         * Performs a subselection (a function filter) of the dataset based on the blocks
-         *
-         * @param filtFunc the function to filter with
-         * @return a subselection of the image
-         */
-        DTImg<T> subselect(
-        final Function<Tuple2<D3int, TImgSlice<T>>, Boolean> filtFunc
-        ) {
-            final JavaPairRDD<D3int, TImgSlice<T>> subImg = this.baseImg.filter(filtFunc);
-            DTImg<T> outImage = DTImg.WrapRDD(this, subImg, this.getImageType());
-            //TODO Only works on slices
-            int sliceCount = (int) subImg.count();
-            outImage.setDim(new D3int(outImage.getDim().x, outImage.getDim().y, sliceCount));
-
-            outImage.setPos(subImg.first()._1());
-            return outImage;
-        }
-
-        /**
-         * The same as subselect but takes a function which operates on just the positions instead
-         * (needs to be erased because of strange type erasure behavior)
-         *
-         * @param filtFunc
-         * @return
-         */
-        public DTImg<T> subselectPos(
-        final Function<D3int, Boolean> filtFunc
-        ) {
-            return subselect(new Function<Tuple2<D3int, TImgSlice<T>>, Boolean>() {
-
-                @Override
-                public Boolean call(Tuple2<D3int, TImgSlice<T>> arg0)
-                        throws Exception {
-                    return filtFunc.call(arg0._1());
-                }
-
-            });
-        }
-
-        /**
-         * first spreads the slices out, then runs a group by key, then applies the given mapfunction
-         * and creates a new DTImg that wraps around the object
-         *
-         * @param spreadWidth number of slices to spread out over
-         * @param mapFunc
-         * @return
-         */
-        public <U> DTImg<U> spreadMap(
-        final int spreadWidth,
-        final PairFunction<Tuple2<D3int, Iterable<TImgSlice<T>>>, D3int,
-        TImgSlice<U>> mapFunc) {
-
-            JavaPairRDD<D3int, Iterable<TImgSlice<T>>> joinImg;
-            joinImg = this.spreadSlices(spreadWidth).
-                    groupByKey(getPartitions()).
-                    partitionBy(SparkGlobal.getPartitioner(getPos(),getDim()));
-
-            return DTImg.WrapRDD(this, joinImg.
-                    mapToPair(mapFunc), TImgTools.IMAGETYPE_FLOAT);
-        }
+        return DTImg.WrapRDD(this, joinImg.
+                mapToPair(mapFunc), TImgTools.IMAGETYPE_FLOAT);
+    }
 
     public void showPartitions() {
         //this.baseImg.mapPartition()
@@ -695,7 +691,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
                 1)));
         JavaPairRDD<D3int, Tuple3<Iterable<TImgSlice<T>>, Iterable<TImgSlice<T>>,
                 Iterable<TImgSlice<T>>>> joinImg = baseImg.cogroup(down1, up1,
-                SparkGlobal.getPartitioner(getPos(),getDim()));
+                SparkGlobal.getPartitioner(getPos(), getDim()));
         return joinImg.mapValues(new Function<Tuple3<Iterable<TImgSlice<T>>,
                 Iterable<TImgSlice<T>>, Iterable<TImgSlice<T>>>, List<TImgSlice<T>>>() {
 
@@ -854,7 +850,7 @@ public class DTImg<T> extends TImg.ATImg implements TImg, Serializable {
                 Tuple2<D3int, TImgSlice<U>> arg0) throws Exception {
             TImgSlice<U> cBlock = arg0._2();
             final U curSlice = cBlock.get();
-            final D3int dim = new D3int(cBlock.getDim(),1);
+            final D3int dim = new D3int(cBlock.getDim(), 1);
             final D3int pos = arg0._1();
             int sliceLength;
             switch (imageType) {

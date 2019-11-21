@@ -24,13 +24,14 @@ import tipl.util.TImgTools;
  * @author mader
  */
 public class DTImgTests {
+    private static JavaSparkContext jsc;
     final TImgRO lineImage = TestPosFunctions.wrapItAs(10,
             new TestPosFunctions.LinesFunction(), TImgTools.IMAGETYPE_FLOAT);
     final TImgRO lineImageDouble = TestPosFunctions.wrapItAs(10,
             new TestPosFunctions.LinesFunction(), TImgTools.IMAGETYPE_DOUBLE);
     final TImgRO pointImage = TestPosFunctions.wrapItAs(10,
             new TestPosFunctions.SinglePointFunction(5, 5, 5), TImgTools.IMAGETYPE_FLOAT);
-    private static JavaSparkContext jsc;
+    private final int zsize = 10;
 
     /**
      * @throws java.lang.Exception
@@ -46,8 +47,6 @@ public class DTImgTests {
     @Before
     public void setUp() throws Exception {
     }
-
-    private final int zsize = 10;
 
     /**
      *
