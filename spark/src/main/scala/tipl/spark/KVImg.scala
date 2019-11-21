@@ -9,6 +9,9 @@ import org.apache.spark.rdd.RDD
 import tipl.formats.{TImg, TImgRO}
 import tipl.tools.TypedSliceLookup
 import tipl.util._
+import tipl.spark._
+import tipl.spark.TypeMacros
+import tipl.tools.TypedSliceLookup
 
 import scala.reflect.ClassTag
 import scala.{specialized => spec}
@@ -44,8 +47,14 @@ class KVImg[@spec(Boolean, Byte, Short, Int, Long, Float, Double) T](dim: D3int,
    * @param lm
    * @return
    */
-  def this(sc: SparkContext, cImg: TImgRO, imageType: Int, paddingVal: T)(implicit lm: ClassTag[T]) =
-    this(cImg, imageType, KVImg.TImgToKVRdd[T](sc, cImg, imageType), paddingVal)(lm)
+  def this(sc: SparkContext,
+           cImg: TImgRO,
+           imageType: Int,
+           paddingVal: T)(implicit lm: ClassTag[T]) =
+    this(cImg,
+      imageType,
+      KVImg.TImgToKVRdd[T](sc, cImg, imageType),
+      paddingVal)(lm)
 
   def map[U: ClassTag](f: ((D3int, T)) => (D3int, U), newPaddingVal: U,
                        newDim: D3int = dim, newPos:

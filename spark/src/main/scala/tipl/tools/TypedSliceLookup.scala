@@ -14,9 +14,10 @@ trait TypedSliceLookup[T] extends TImgRO {
    * A fairly simple operation of filtering the RDD for the correct slice and returning that slice
    */
   override def getPolyImage(sliceNumber: Int, asType: Int): AnyRef = {
-    if ((sliceNumber < 0) || (sliceNumber >= getDim.z))
+    if ((sliceNumber < 0) || (sliceNumber >= getDim.z)) {
       throw new IllegalArgumentException(getSampleName + ": Slice requested (" + sliceNumber +
         ") exceeds image dimensions " + getDim)
+    }
 
     val zPos: Int = getPos.z + sliceNumber
 
