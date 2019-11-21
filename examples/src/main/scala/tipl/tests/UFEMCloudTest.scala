@@ -63,9 +63,9 @@ object UFEMCloudTest {
     TiplUI.attachUI(sc)
 
     // setup s3 access
-    sc.hadoopConfiguration.set("fs.s3n.awsAccessKeyId","AKIAJM4PPKISBYXFZGKA")
+    sc.hadoopConfiguration.set("fs.s3n.awsAccessKeyId","")
     sc.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey",
-      "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")
+      "")
     // load the data
     val baseString = "s3n://ksmbench3/"
     //val basePath = TIPLStorageManager.openPath()
