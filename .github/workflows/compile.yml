@@ -24,8 +24,18 @@ jobs:
         cd core
         mvn install -DskipTests -Dcheckstyle.skip
         cd ..;
-    - name: Build IO
+    - name: Build Scifio
       run: |
-        cd file-io
+        cd spark-scifio
+        mvn install -DskipTests -Dcheckstyle.skip
+        cd ..;
+    - name: Build IJ
+      run: |
+        cd spark-ij
+        mvn install -DskipTests -Dcheckstyle.skip
+        cd ..;
+    - name: Build ImageIO
+      run: |
+        cd spark-imageio
         mvn install -DskipTests -Dcheckstyle.skip
         cd ..;
