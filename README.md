@@ -1,6 +1,7 @@
 ![](https://github.com/kmader/TIPL/workflows/core/badge.svg) ![](https://github.com/kmader/TIPL/workflows/package/badge.svg) ![](https://github.com/kmader/TIPL/workflows/test/badge.svg)
 
-[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/kmader/TIPL.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kmader/TIPL/context:java)
+[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/kmader/TIPL.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kmader/TIPL/context:java)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/kmader/TIPL.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kmader/TIPL/context:python)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/kmader/TIPL.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kmader/TIPL/alerts/)
 
 # Important Notes
